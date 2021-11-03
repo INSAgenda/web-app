@@ -1,0 +1,26 @@
+[package]
+name = "web-app"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+yew = "0.18"
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+console_error_panic_hook = "0.1"
+chrono = {version="0.4", features=["wasmbind"]}
+anyhow = "1.0"
+agenda-parser = {path="../agenda-parser"}
+serde_json = "1.0"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "console",
+]
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = "z"
