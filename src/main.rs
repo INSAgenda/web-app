@@ -134,11 +134,20 @@ impl Component for App {
                     let sec_offset = event.start_unixtime - (self.weekstart as u64 + offset as u64 * 86400 + 8*3600);
                     let px_offset = 106.95/(6300.0)*sec_offset as f64;
                     let px_height = 106.95/(6300.0)*(event.end_unixtime - event.start_unixtime) as f64;
+
+                    let name = match &event.kind {
+                        agenda_parser::event::EventKind::Td(kind) => format!("TD: {}", kind),
+                        agenda_parser::event::EventKind::Cm(kind) => format!("CM: {}", kind),
+                        agenda_parser::event::EventKind::Tp(kind) => format!("TP: {}", kind),
+                        agenda_parser::event::EventKind::Other(kind) => kind.to_string(),
+                    };
+
+                    let class = match event.
                     
                     events.push(html! {
                         <div style=format!("background-color: #98fb98; position: absolute; top: {}px; height: {}px;", px_offset, px_height) class="event">
-                            <span class="name">{ format!("{:?}", event.kind) }</span>
-                            <span class="teacher">{ format!("{:?}", event.teachers) }</span>
+                            <span class="name">{ name }</span>
+                            <span class="teacher">{ event.teachers.join(", ") }</span>
                             <span>{"Dumont Durville - B - Rj - 11"}</span>
                             <div class="lesson-details" style="display: none;">
                                 <div class="lesson-details-header">
