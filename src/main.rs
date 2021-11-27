@@ -175,12 +175,12 @@ impl Component for App {
                     </div>
                     <div id="day-container">
                         <div id="line-container">
-                            <div class="line"></div>
-                            <div class="line"></div>
-                            <div class="line"></div>
-                            <div class="line"></div>
-                            <div class="line"></div>
-                            <div class="line"></div>
+                            <div class="line"><div></div></div>
+                            <div class="line"><div></div></div>
+                            <div class="line"><div></div></div>
+                            <div class="line"><div></div></div>
+                            <div class="line"><div></div></div>
+                            <div class="line"><div></div></div>
                         </div>
                         { days }
                     </div>
