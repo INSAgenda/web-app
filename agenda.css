@@ -1,5 +1,9 @@
 /* Section calendar */
 
+html {
+    --background: white;
+}
+
 main {
     display: flex;
     justify-content: space-around;

@@ -1,5 +1,6 @@
 use agenda_parser::Event;
 use chrono::{offset::FixedOffset, Weekday, Datelike, TimeZone, Timelike};
+use event::EventGlobalData;
 use wasm_bindgen::{JsCast, JsValue};
 use yew::{
     prelude::*,
@@ -7,7 +8,10 @@ use yew::{
     services::fetch::{FetchService, FetchTask, Request, Response},
 };
 
-#[allow(unused_macros)]
+mod event;
+use crate::event::EventComp;
+
+#[macro_export]
 macro_rules! log {
     ($($t:tt)*) => (web_sys::console::log_1(&format_args!($($t)*).to_string().into()))
 }
@@ -20,7 +24,8 @@ enum Msg {
 }
 
 struct App {
-    weekstart: i64,
+    weekstart: u64,
+    event_global: std::rc::Rc<EventGlobalData>,
     api_key: u64,
     counter: u64,
     events: Vec<Event>,
@@ -36,8 +41,8 @@ impl Component for App {
         let date = chrono::Local::now();
         let date = date.with_timezone(&chrono::offset::FixedOffset::east(1 * 3600));
 
-        let daystart = date.timestamp() - (date.timestamp() + 1 * 3600) % 86400;
-        let mut weekstart = daystart - (date.weekday().number_from_monday() as i64 - 1) * 86400;
+        let daystart = (date.timestamp() - (date.timestamp() + 1 * 3600) % 86400) as u64;
+        let mut weekstart = daystart - (date.weekday().number_from_monday() as u64 - 1) * 86400;
         if date.weekday().number_from_monday() >= 6 {
             weekstart += 7 * 86400;
         }
@@ -53,6 +58,7 @@ impl Component for App {
             counter,
             fetch_task: None,
             events: Vec::new(),
+            event_global: std::rc::Rc::new(EventGlobalData::default()),
             link,
         };
         app.new_fetch_task(0..i64::MAX);
@@ -90,7 +96,7 @@ impl Component for App {
         let mut day_names = Vec::new();
         for offset in 0..5 {
             let datetime =
-                FixedOffset::east(1 * 3600).timestamp(self.weekstart + offset * 86400, 0);
+                FixedOffset::east(1 * 3600).timestamp((self.weekstart + offset * 86400) as i64, 0);
             let day = datetime.day();
             let month = match datetime.month() {
                 1 => "Janvier",
@@ -123,39 +129,8 @@ impl Component for App {
                 if (event.start_unixtime as i64) > datetime.timestamp()
                     && (event.start_unixtime as i64) < datetime.timestamp() + 86400
                 {
-                    let start_time = FixedOffset::east(1 * 3600).timestamp(event.start_unixtime as i64, 0);
-                    let end_time = FixedOffset::east(1 * 3600).timestamp(event.end_unixtime as i64, 0);
-                    let start_time_is_common = [(8,0), (9,30), (9,45), (11,15), (11,30), (13,0), (15,0), (16,30), (16,45), (18,15)]
-                        .contains(&(start_time.hour(), start_time.minute()));
-                    let end_time_is_common = [(8,0), (9,30), (9,45), (11,15), (11,30), (13,0), (15,0), (16,30), (16,45), (18,15)]
-                        .contains(&(end_time.hour(), end_time.minute()));
-                    let times_are_common = start_time_is_common && end_time_is_common;
-
-                    let sec_offset = event.start_unixtime - (self.weekstart as u64 + offset as u64 * 86400 + 8*3600);
-                    let px_offset = 106.95/(6300.0)*sec_offset as f64;
-                    let px_height = 106.95/(6300.0)*(event.end_unixtime - event.start_unixtime) as f64;
-
-                    let name = match &event.kind {
-                        agenda_parser::event::EventKind::Td(kind) => format!("TD: {}", kind),
-                        agenda_parser::event::EventKind::Cm(kind) => format!("CM: {}", kind),
-                        agenda_parser::event::EventKind::Tp(kind) => format!("TP: {}", kind),
-                        agenda_parser::event::EventKind::Other(kind) => kind.to_string(),
-                    };
-                    
                     events.push(html! {
-                        <div style=format!("background-color: #98fb98; position: absolute; top: {}px; height: {}px;", px_offset, px_height) class="event">
-                            <span class="name">{ name }</span>
-                            <span class="teacher">{ event.teachers.join(", ") }</span>
-                            <span>{"Dumont Durville - B - Rj - 11"}</span>
-                            <div class="lesson-details" style="display: none;">
-                                <div class="lesson-details-header">
-                                    <span>{"01h00 - Lundi 3 janvier"}</span>
-                                </div>
-                                <div class="lesson-details-content">
-                                    
-                                </div>
-                            </div>
-                        </div>
+                        <EventComp event=event.clone() day_start={self.weekstart+offset*86400} global=self.event_global.clone()></EventComp>
                     });
                 }
             }
