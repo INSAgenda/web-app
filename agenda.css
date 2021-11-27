@@ -1,6 +1,6 @@
 /* Section calendar */
 
-#calendar {
+main {
     display: flex;
     justify-content: space-around;
 }
@@ -8,7 +8,7 @@
 
 /* Section in calendar */
 
-#classes,
+#calendar,
 #option {
     box-shadow: 0px 0px 7px #00000029;
     border-radius: 15px;
@@ -24,24 +24,21 @@
 }
 
 
-/* Classes */
+/* Calendar */
 
-#classes-content {
-    margin: 36px 32px 25px 32px;
+#calendar {
+    width: 80%;
+    padding: .5rem 1rem 1rem 1rem;
     display: flex;
 }
 
-#classes {
-    width: 80%;
-}
-
-#left-part-classes {
+#calendar-hours {
     display: flex;
     flex-direction: column;
-    margin: 20px 0 0 0;
+    margin: calc(2rem - 0.7rem/2) 0 0 0;
 }
 
-#left-part-classes span {
+#calendar-hours>span {
     max-width: 70px;
     height: 14.28%;
     font-size: .7rem;
@@ -75,19 +72,19 @@
     z-index: 2;
 }
 
-#right-part-classes {
+#calendar-main-part {
     display: flex;
     flex-direction: column;
     width: 100%;
 }
 
-#legend-container {
+#calendar-top {
     display: flex;
-    margin: 0 0 10px 0;
+    height: 2rem;
 }
 
-#legend-container span,
-#legend-mobile {
+#calendar-top>span,
+#mobile-day-name {
     max-width: 234px;
     width: 100%;
     display: flex;
@@ -97,7 +94,7 @@
     color: var(--calendar-text);
 }
 
-#legend-mobile {
+#mobile-day-name {
     display: none;
     color: var(--calendar-text);
     text-decoration: none;
@@ -135,9 +132,9 @@
 }
 
 
-/* Lesson détails */
+/* Event details */
 
-.lesson-details {
+.event-details {
     width: 214px;
     min-height: 346px;
     position: absolute;
@@ -152,7 +149,7 @@
     text-align: start;
 }
 
-.lesson-details-header {
+.event-details-header {
     height: 36px;
     background-color: #BFE3BA;
     border-radius: 15px 15px 0 0;
@@ -163,19 +160,19 @@
     align-items: center;
 }
 
-.lesson-details-content {
+.event-details-content {
     margin: 9px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
 }
 
-.lesson-details-title {
+.event-details-title {
     font-size: 1.05em;
     color: var(--title-color);
 }
 
-.lesson-details-results {
+.event-details-results {
     margin: 5px 0 8px 3px;
     color: var(--input-text);
     font-size: 1em;
@@ -310,8 +307,8 @@
 
 /* For mobile */
 
-@media screen and (max-width: 1280px) {
-    #calendar {
+@media screen and (max-width: 1000px) {
+    main {
         justify-content: center;
     }
     #small-calendar {
@@ -320,25 +317,18 @@
         top: 1px;
         left: 1;
     }
-    #classes {
+    #calendar {
         width: 95%;
-    }
-    #classes-content {
-        margin: 20px 10px 25px 10px;
     }
     #option {
         display: none;
     }
-    .lesson-details {
+    .event-details {
         right: inherit;
         top: 107px;
     }
-    #right-part-classes {
-        width: 100%;
-        margin: 0 32px 0 0;
-    }
-    #classes-arrow-left,
-    #classes-arrow-right {
+    #calendar-arrow-left,
+    #calendar-arrow-right {
         background-image: url(http://localhost:8080/assets/elements/red-arrow.svg);
         height: 18px;
         width: 11px;
@@ -346,25 +336,21 @@
         background-repeat: no-repeat;
         background-position: center;
     }
-    #classes-arrow-right {
+    #calendar-arrow-right {
         transform: rotate(180deg);
     }
-    #left-part-classes {
-        margin: calc(2rem - 0.7rem/2) 0 0 0;
-    }
-    #legend-container {
+    #calendar-top {
         align-self: center;
         margin: 0;
         height: 2rem;
         width: 100%;
         justify-content: space-between;
     }
-    #legend-container span,
+    #calendar-top>span,
     .day {
         display: none;
-        max-width: none;
     }
-    #legend-mobile {
+    #mobile-day-name {
         display: flex;
     }
     .day-mobile-active {

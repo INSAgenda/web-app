@@ -141,8 +141,6 @@ impl Component for App {
                         agenda_parser::event::EventKind::Tp(kind) => format!("TP: {}", kind),
                         agenda_parser::event::EventKind::Other(kind) => kind.to_string(),
                     };
-
-                    let class = match event.
                     
                     events.push(html! {
                         <div style=format!("background-color: #98fb98; position: absolute; top: {}px; height: {}px;", px_offset, px_height) class="event">
@@ -185,36 +183,34 @@ impl Component for App {
                 <h2 class="page-title">{"Mon emploi du temps"}</h2>
                 <div class="divider-bar"></div>
             </section>
-            <section id="calendar">
-            <div id="classes">
-                <div id="classes-content">
-                    <div id="left-part-classes">
-                        <span>{"08:00"}</span>
-                        <span>{"09:45"}</span>
-                        <span>{"11:30"}</span>
-                        <span>{"13:15"}</span>
-                        <span>{"15:00"}</span>
-                        <span>{"16:45"}</span>
-                        <span>{"18:30"}</span>
+            <main>
+            <div id="calendar">
+                <div id="calendar-hours">
+                    <span>{"08:00"}</span>
+                    <span>{"09:45"}</span>
+                    <span>{"11:30"}</span>
+                    <span>{"13:15"}</span>
+                    <span>{"15:00"}</span>
+                    <span>{"16:45"}</span>
+                    <span>{"18:30"}</span>
+                </div>
+                <div id="calendar-main-part">
+                    <div id="calendar-top">
+                        <a id="calendar-arrow-left"></a>
+                        <a id="mobile-day-name">{"Lundi 3 janvier"}</a>
+                        <a id="calendar-arrow-right"></a>
+                        { day_names }
                     </div>
-                    <div id="right-part-classes">
-                        <div id="legend-container">
-                            <a id="classes-arrow-left"></a>
-                            <a id="legend-mobile">{"Lundi 3 janvier"}</a>
-                            <a id="classes-arrow-right"></a>
-                            { day_names }
+                    <div id="day-container">
+                        <div id="line-container">
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
+                            <div class="line"></div>
                         </div>
-                        <div id="day-container">
-                            <div id="line-container">
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line"></div>
-                            </div>
-                            { days }
-                        </div>
+                        { days }
                     </div>
                 </div>
             </div>
@@ -299,7 +295,7 @@ impl Component for App {
                     </div>
                 </div>
             </div>
-        </section>
+        </main>
             </>
         }
     }
