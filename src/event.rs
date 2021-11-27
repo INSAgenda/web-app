@@ -82,9 +82,8 @@ impl Component for EventComp {
 
     fn view(&self) -> Html {
         let sec_offset = self.event.start_unixtime - (self.day_start + 8 * 3600);
-        let px_offset = 106.95 / (6300.0) * sec_offset as f64;
-        let px_height =
-            106.95 / (6300.0) * (self.event.end_unixtime - self.event.start_unixtime) as f64;
+        let percent_offset = 100.0 / (44100.0) * sec_offset as f64;
+        let percent_height = 100.0 / (44100.0) * (self.event.end_unixtime - self.event.start_unixtime) as f64;
 
         let name = match &self.event.kind {
             agenda_parser::event::EventKind::Td(kind) => format!("TD: {}", kind),
@@ -94,7 +93,7 @@ impl Component for EventComp {
         };
 
         html! {
-            <div style=format!("background-color: #98fb98; position: absolute; top: {}px; height: {}px;", px_offset, px_height) class="event" onclick=self.link.callback(|_| EventCompMsg::ToggleDetails)>
+            <div style=format!("background-color: #98fb98; position: absolute; top: {}%; height: {}%;", percent_offset, percent_height) class="event" onclick=self.link.callback(|_| EventCompMsg::ToggleDetails)>
                 <span class="name">{ name }</span>
                 <span class="teacher">{ self.event.teachers.join(", ") }</span>
                 <span>{"Dumont Durville - B - Rj - 11"}</span>
