@@ -1,0 +1,377 @@
+/* Section calendar */
+
+#calendar {
+    display: flex;
+    justify-content: space-around;
+}
+
+
+/* Section in calendar */
+
+#classes,
+#option {
+    box-shadow: 0px 0px 7px #00000029;
+    border-radius: 15px;
+    background-color: var(--calendar-color);
+    min-height: 80vh;
+}
+
+
+/* Section option */
+
+#option {
+    width: 18%;
+}
+
+
+/* Classes */
+
+#classes-content {
+    margin: 36px 32px 25px 32px;
+    display: flex;
+}
+
+#classes {
+    width: 80%;
+}
+
+#left-part-classes {
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0 0 0;
+}
+
+#left-part-classes span {
+    max-width: 70px;
+    height: 14.28%;
+    font-size: .7rem;
+    color: var(--calendar-text);
+}
+
+#input-date {
+    margin: 0 auto;
+    width: 100%;
+}
+
+
+/* Lines */
+
+#line-container {
+    position: absolute;
+    width: 99%;
+    margin: 0 5px;
+    display: flex;
+    flex-direction: column;
+}
+
+.line {
+    height: 2px;
+    background-image: url(http://localhost:8080/assets/elements/line-border.svg);
+    background-position: bottom;
+    background-size: 17px 2px;
+    ;
+    background-repeat: repeat-x;
+    margin: 105px 0 0 0;
+    z-index: 2;
+}
+
+#right-part-classes {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+#legend-container {
+    display: flex;
+    margin: 0 0 10px 0;
+}
+
+#legend-container span,
+#legend-mobile {
+    max-width: 234px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 0 5px;
+    align-items: center;
+    color: var(--calendar-text);
+}
+
+#legend-mobile {
+    display: none;
+    color: var(--calendar-text);
+    text-decoration: none;
+}
+
+#day-container {
+    display: flex;
+    min-height: 742px;
+    height: 100%;
+    position: relative;
+}
+
+.day {
+    height: 100%;
+    width: 100%;
+    margin: 0 5px;
+    background-color: var(--background);
+    max-width: 234px;
+    width: 19%;
+}
+
+.event {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.8em;
+    cursor: pointer;
+    width: inherit;
+}
+
+.pause {
+    cursor: auto;
+}
+
+
+/* Lesson détails */
+
+.lesson-details {
+    width: 214px;
+    min-height: 346px;
+    position: absolute;
+    background-color: var(--background);
+    top: 0;
+    right: -214px;
+    border-radius: 15px;
+    box-shadow: 0px 3px 6px #00000029;
+    z-index: 4;
+    cursor: auto;
+    text-align-last: start;
+    text-align: start;
+}
+
+.lesson-details-header {
+    height: 36px;
+    background-color: #BFE3BA;
+    border-radius: 15px 15px 0 0;
+    font-size: 1em;
+    font-weight: 500;
+    display: flex;
+    place-content: center;
+    align-items: center;
+}
+
+.lesson-details-content {
+    margin: 9px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.lesson-details-title {
+    font-size: 1.05em;
+    color: var(--title-color);
+}
+
+.lesson-details-results {
+    margin: 5px 0 8px 3px;
+    color: var(--input-text);
+    font-size: 1em;
+}
+
+
+/* Option */
+
+#option-header {
+    width: 100%;
+    height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: end;
+    place-content: flex-end;
+}
+
+#option-header span {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--calendar-text);
+}
+
+.divider-bar-option {
+    background-color: var(--red);
+    height: 3px;
+    width: 48px;
+    border-radius: 3px;
+    margin: 3px 0 0 0;
+}
+
+#option-content {
+    margin: 37px 31px 31px 31px;
+}
+
+.option-name {
+    font-size: 1em;
+    color: var(--calendar-text);
+}
+
+
+/* Calendar */
+
+#small-calendar {
+    max-width: 245px;
+    width: 100%;
+    height: 240px;
+    box-shadow: 0px 3px 6px #00000029;
+    border-radius: 15px;
+    margin: 0 auto;
+    background-color: var(--background);
+}
+
+#calendar-header {
+    width: 100%;
+    height: 34px;
+    background-color: var(--red);
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.calendar-button {
+    background-image: url(http://localhost:8080/assets/elements/calendar-arrow.png.svg);
+    height: 15px;
+    width: 9px;
+    border: none;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    padding: 8px;
+    background-position: center;
+}
+
+#calendar-title {
+    color: white;
+    font-size: 0.8em;
+    width: 40%;
+    text-align: center;
+    user-select: none;
+}
+
+#calendar-after {
+    transform: rotate(180deg);
+}
+
+#calendar-content {
+    margin: 0 7px;
+}
+
+#calendar-days {
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.7em;
+    margin: 2px 0 7px 0;
+    color: var(--title-color);
+    font-weight: 500;
+}
+
+.calendar-case {
+    width: 14px;
+    height: 14px;
+    padding: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    transition: 0.1s background-color;
+    color: var(--calendar-text);
+}
+
+.calendar-case:hover {
+    background-color: rgba(196, 196, 196, 0.57);
+}
+
+.calendar-week {
+    font-size: 0.8em;
+    display: flex;
+    justify-content: space-around;
+    height: 29px;
+    border-bottom: #ADADAD solid 1px;
+    align-items: center;
+}
+
+.calendar-week:last-child {
+    border: none;
+}
+
+
+/* For mobile */
+
+@media screen and (max-width: 1280px) {
+    #calendar {
+        justify-content: center;
+    }
+    #small-calendar {
+        position: absolute;
+        display: flex;
+        top: 1px;
+        left: 1;
+    }
+    #classes {
+        width: 95%;
+    }
+    #classes-content {
+        margin: 20px 10px 25px 10px;
+    }
+    #option {
+        display: none;
+    }
+    .lesson-details {
+        right: inherit;
+        top: 107px;
+    }
+    #right-part-classes {
+        width: 100%;
+        margin: 0 32px 0 0;
+    }
+    #classes-arrow-left,
+    #classes-arrow-right {
+        background-image: url(http://localhost:8080/assets/elements/red-arrow.svg);
+        height: 18px;
+        width: 11px;
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+    #classes-arrow-right {
+        transform: rotate(180deg);
+    }
+    #left-part-classes {
+        margin: calc(2rem - 0.7rem/2) 0 0 0;
+    }
+    #legend-container {
+        align-self: center;
+        margin: 0;
+        height: 2rem;
+        width: 100%;
+        justify-content: space-between;
+    }
+    #legend-container span,
+    .day {
+        display: none;
+        max-width: none;
+    }
+    #legend-mobile {
+        display: flex;
+    }
+    .day-mobile-active {
+        display: flex !important;
+        flex-direction: column;
+    }
+    #line-container {
+        margin: 0;
+    }
+}

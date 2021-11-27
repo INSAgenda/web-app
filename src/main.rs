@@ -21,6 +21,8 @@ enum Msg {
 
 struct App {
     weekstart: i64,
+    api_key: u64,
+    counter: u64,
     events: Vec<Event>,
     fetch_task: Option<FetchTask>,
     link: ComponentLink<Self>,
@@ -32,16 +34,23 @@ impl Component for App {
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let date = chrono::Local::now();
-        let date = date.with_timezone(&chrono::offset::FixedOffset::east(2 * 3600));
+        let date = date.with_timezone(&chrono::offset::FixedOffset::east(1 * 3600));
 
-        let daystart = date.timestamp() - (date.timestamp() + 2 * 3600) % 86400;
+        let daystart = date.timestamp() - (date.timestamp() + 1 * 3600) % 86400;
         let mut weekstart = daystart - (date.weekday().number_from_monday() as i64 - 1) * 86400;
         if date.weekday().number_from_monday() >= 6 {
             weekstart += 7 * 86400;
         }
 
+        let window = web_sys::window().unwrap();
+        let local_storage = window.local_storage().unwrap().unwrap();
+        let api_key = local_storage.get("api_key").unwrap().expect("missing api key").parse().unwrap();
+        let counter = local_storage.get("counter").unwrap().expect("missing counter").parse().unwrap();
+
         let mut app = Self {
             weekstart,
+            api_key,
+            counter,
             fetch_task: None,
             events: Vec::new(),
             link,
@@ -78,9 +87,10 @@ impl Component for App {
 
     fn view(&self) -> Html {
         let mut days = Vec::new();
-        for offset in 0..6 {
+        let mut day_names = Vec::new();
+        for offset in 0..5 {
             let datetime =
-                FixedOffset::east(2 * 3600).timestamp(self.weekstart + offset * 86400, 0);
+                FixedOffset::east(1 * 3600).timestamp(self.weekstart + offset * 86400, 0);
             let day = datetime.day();
             let month = match datetime.month() {
                 1 => "Janvier",
@@ -113,59 +123,202 @@ impl Component for App {
                 if (event.start_unixtime as i64) > datetime.timestamp()
                     && (event.start_unixtime as i64) < datetime.timestamp() + 86400
                 {
-                    let start_time = FixedOffset::east(2 * 3600).timestamp(event.start_unixtime as i64, 0);
-                    let end_time = FixedOffset::east(2 * 3600).timestamp(event.end_unixtime as i64, 0);
+                    let start_time = FixedOffset::east(1 * 3600).timestamp(event.start_unixtime as i64, 0);
+                    let end_time = FixedOffset::east(1 * 3600).timestamp(event.end_unixtime as i64, 0);
                     let start_time_is_common = [(8,0), (9,30), (9,45), (11,15), (11,30), (13,0), (15,0), (16,30), (16,45), (18,15)]
                         .contains(&(start_time.hour(), start_time.minute()));
                     let end_time_is_common = [(8,0), (9,30), (9,45), (11,15), (11,30), (13,0), (15,0), (16,30), (16,45), (18,15)]
                         .contains(&(end_time.hour(), end_time.minute()));
                     let times_are_common = start_time_is_common && end_time_is_common;
+
+                    let sec_offset = event.start_unixtime - (self.weekstart as u64 + offset as u64 * 86400 + 8*3600);
+                    let px_offset = 106.95/(6300.0)*sec_offset as f64;
+                    let px_height = 106.95/(6300.0)*(event.end_unixtime - event.start_unixtime) as f64;
                     
                     events.push(html! {
-                        <div>
-                            {
-                                match times_are_common {
-                                    true => html!(),
-                                    false => html! {<>
-                                        {format!("{}h{} - {}h{}", start_time.hour(), start_time.minute(), end_time.hour(), end_time.minute())}
-                                        <br/> 
-                                    </>},
-                                }
-                            }
-                            {format!("{:?}", event.kind)}
+                        <div style=format!("background-color: #98fb98; position: absolute; top: {}px; height: {}px;", px_offset, px_height) class="event">
+                            <span class="name">{ format!("{:?}", event.kind) }</span>
+                            <span class="teacher">{ format!("{:?}", event.teachers) }</span>
+                            <span>{"Dumont Durville - B - Rj - 11"}</span>
+                            <div class="lesson-details" style="display: none;">
+                                <div class="lesson-details-header">
+                                    <span>{"01h00 - Lundi 3 janvier"}</span>
+                                </div>
+                                <div class="lesson-details-content">
+                                    
+                                </div>
+                            </div>
                         </div>
                     });
                 }
             }
 
-            days.push(html! {
-                <div>
+            day_names.push(html! {
+                <span>
                     { format!("{} {} {}", dayname, day, month) }
+                </span>
+            });
+            days.push(html! {
+                <div class="day day-mobile-active">
                     { events }
                 </div>
             });
         }
 
         html! {
-            <main>
-                <button onclick=self.link.callback(|_| Msg::PreviousWeek)>{"Semaine précédente"}</button>
-                <div id="days">
-                    { days }
+            <>
+            <header>
+                <a id="header-logo" href="../index.html">
+                <img src="http://localhost:8080/assets/elements/webLogo.svg" alt="INSAgenda logo"/>
+                </a>
+            </header>
+            <section class="section-page-title">
+                <h2 class="page-title">{"Mon emploi du temps"}</h2>
+                <div class="divider-bar"></div>
+            </section>
+            <section id="calendar">
+            <div id="classes">
+                <div id="classes-content">
+                    <div id="left-part-classes">
+                        <span>{"08:00"}</span>
+                        <span>{"09:45"}</span>
+                        <span>{"11:30"}</span>
+                        <span>{"13:15"}</span>
+                        <span>{"15:00"}</span>
+                        <span>{"16:45"}</span>
+                        <span>{"18:30"}</span>
+                    </div>
+                    <div id="right-part-classes">
+                        <div id="legend-container">
+                            <a id="classes-arrow-left"></a>
+                            <a id="legend-mobile">{"Lundi 3 janvier"}</a>
+                            <a id="classes-arrow-right"></a>
+                            { day_names }
+                        </div>
+                        <div id="day-container">
+                            <div id="line-container">
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                                <div class="line"></div>
+                            </div>
+                            { days }
+                        </div>
+                    </div>
                 </div>
-                <button onclick=self.link.callback(|_| Msg::NextWeek)>{"Semaine suivante"}</button>
-            </main>
+            </div>
+            <div id="option">
+                <div id="option-header">
+                    <span>{"Options"}</span>
+                    <div class="divider-bar-option"></div>
+                </div>
+                <div id="option-content">
+                    <span class="option-name">{"Calendrier :"}</span>
+                </div>
+                <div id="small-calendar">
+                    <div id="calendar-header">
+                        <button class="calendar-button" id="calendar-before"></button>
+                        <span id="calendar-title">{"Janvier 2022"}</span>
+                        <button class="calendar-button" id="calendar-after"></button>
+                    </div>
+                    <div id="calendar-content">
+                        <div id="calendar-days">
+                            <span>{"Lun"}</span>
+                            <span>{"Mar"}</span>
+                            <span>{"Mer"}</span>
+                            <span>{"Jeu"}</span>
+                            <span>{"Ven"}</span>
+                            <span>{"Sam"}</span>
+                            <span>{"Dim"}</span>
+                        </div>
+                        <div id="week1" class="calendar-week">
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                        </div>
+                        <div id="week2" class="calendar-week">
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                        </div>
+                        <div id="week3" class="calendar-week">
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                        </div>
+                        <div id="week4" class="calendar-week">
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                        </div>
+                        <div id="week5" class="calendar-week">
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                        </div>
+                        <div id="week6" class="calendar-week">
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                            <span class="calendar-case"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+            </>
         }
     }
 }
 
+pub fn gen_code(api_key: u64, counter: u64) -> u64 {
+    let mut key = (api_key + 143 * counter) as u128;
+    for _ in 0..11 {
+        key = key * key + 453;
+        if key <= 0xffff_ffff {
+            key += 0x4242424242424242424242424242;
+        }
+        key &= 0x0000_0000_ffff_ffff_ffff_ffff_0000_0000;
+        key >>= 32;
+    }
+    key as u64
+}
+
 impl App {
     fn new_fetch_task(&mut self, time_range: std::ops::Range<i64>) {
-        let request = Request::get(format!(
-            "http://127.0.0.1:8080/api/schedule/Stpi1/E-1/ALL/{}-{}",
-            time_range.start, time_range.end
-        ))
-        .body(Nothing)
-        .expect("Could not build request.");
+        let request = Request::get(format!("http://127.0.0.1:8080/api/schedule/?start_timestamp=0&end_timestamp={}", u64::MAX))
+            .header("Api-Key", format!("{}-{}-{}", self.api_key, self.counter, gen_code(self.api_key, self.counter)))
+            .body(Nothing)
+            .expect("Could not build request.");
+        self.counter += 1;
+        let window = web_sys::window().unwrap();
+        let local_storage = window.local_storage().unwrap().unwrap();
+        local_storage.set("counter", &self.counter.to_string()).unwrap();
 
         let callback = self
             .link
