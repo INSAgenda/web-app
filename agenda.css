@@ -1,4 +1,21 @@
-/* Section calendar */
+/* Header */
+
+header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: .5rem;
+}
+
+header>a>img {
+    width: 50%;
+}
+
+header>h1 {
+    padding: 0;
+    margin: 0;
+}
+
+/* Main section */
 
 html {
     --background: white;

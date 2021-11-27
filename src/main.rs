@@ -150,14 +150,11 @@ impl Component for App {
         html! {
             <>
             <header>
+                <h1 class="page-title">{"Mon emploi du temps"}</h1>
                 <a id="header-logo" href="../index.html">
                 <img src="http://localhost:8080/assets/elements/webLogo.svg" alt="INSAgenda logo"/>
                 </a>
             </header>
-            <section class="section-page-title">
-                <h2 class="page-title">{"Mon emploi du temps"}</h2>
-                <div class="divider-bar"></div>
-            </section>
             <main>
             <div id="calendar">
                 <div id="calendar-hours">
