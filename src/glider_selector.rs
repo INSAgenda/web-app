@@ -56,7 +56,6 @@ impl Component for GliderSelector {
                 true
             }
             Msg::Select(index) => {
-                log!("select");
                 self.selected = index;
                 true
             }
