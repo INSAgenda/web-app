@@ -19,6 +19,7 @@ header>h1 {
 
 html {
     --background: white;
+    --red: red;
 }
 
 main {
@@ -210,6 +211,10 @@ main {
 
 /* Option */
 
+#option {
+    padding: .8rem;
+}
+
 #option-header {
     width: 100%;
     height: 52px;
@@ -234,15 +239,44 @@ main {
     margin: 3px 0 0 0;
 }
 
-#option-content {
-    margin: 37px 31px 31px 31px;
-}
-
 .option-name {
-    font-size: 1em;
+    font-size: 1rem;
+    margin: 1rem 0 .5rem 0;
     color: var(--calendar-text);
 }
 
+/* Buttons */
+
+.big-red-button, .big-white-button {
+    border-radius: 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+    font-size: 1.1rem;
+}
+
+.big-red-button {
+    line-height: 2rem;
+    height: 2rem;
+    background-color:  var(--red);
+    color: white;
+}
+
+.big-white-button {
+    line-height: calc(2rem - 4px);
+    height: calc(2rem - 4px);
+    border: 2px solid var(--red);
+    color: var(--red);
+}
+
+.big-red-button:hover, .big-white-button:hover {
+    font-size: 1.2rem;
+}
+
+.big-white-button:hover {
+    background-color:  var(--red);
+    color: white;
+}
 
 /* Calendar */
 

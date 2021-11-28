@@ -191,9 +191,7 @@ impl Component for App {
                     <span>{"Options"}</span>
                     <div class="divider-bar-option"></div>
                 </div>
-                <div id="option-content">
-                    <span class="option-name">{"Calendrier :"}</span>
-                </div>
+                <div class="option-name">{"Calendrier :"}</div>
                 <div id="small-calendar">
                     <div id="calendar-header">
                         <button class="calendar-button" id="calendar-before"></button>
@@ -266,6 +264,7 @@ impl Component for App {
                         </div>
                     </div>
                 </div>
+                <div class="option-name big-white-button">{"Paramètres"}</div>    
             </div>
         </main>
             </>
