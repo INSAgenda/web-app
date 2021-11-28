@@ -11,7 +11,7 @@ use yew::{
 mod event;
 mod settings;
 mod agenda;
-use crate::event::EventComp;
+use crate::{event::EventComp, settings::Settings};
 
 #[macro_export]
 macro_rules! log {
@@ -28,6 +28,7 @@ enum Msg {
     FetchFailure(anyhow::Error),
     PreviousWeek,
     NextWeek,
+    OpenSettings,
 }
 
 struct App {
@@ -85,6 +86,10 @@ impl Component for App {
                 log!("Todo");
                 true
             },
+            Msg::OpenSettings => {
+                self.page = Page::Settings;
+                true
+            },
             Msg::PreviousWeek => {
                 self.weekstart -= 7 * 86400;
                 true
@@ -101,9 +106,9 @@ impl Component for App {
     }
 
     fn view(&self) -> Html {
-        match self.page {
+        match &self.page {
             Page::Agenda => self.view_agenda(),
-            Page::Settings => todo!(),
+            Page::Settings => html!( <Settings /> ),
         }
     }
 }

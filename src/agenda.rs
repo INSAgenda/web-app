@@ -178,7 +178,7 @@ impl App {
                         </div>
                     </div>
                 </div>
-                <div class="option-name big-white-button">{"Paramètres"}</div>    
+                <div class="option-name big-white-button" onclick=self.link.callback(|_| crate::Msg::OpenSettings)>{"Paramètres"}</div>    
             </div>
         </main>
             </>
