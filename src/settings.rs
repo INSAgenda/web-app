@@ -69,7 +69,11 @@ impl Component for Settings {
                 </div>
                 <h2>{"Affichage"}</h2>
                 <div class="settings-group">
-                    {"Enregistrer"}
+                    <div class="setting">
+                        <h3>{"Thème"}</h3>
+                        <p>{"Par défault, le thème est celui renseigné par votre navigateur."}</p>
+                        <GliderSelector values=vec!["Automatique", "Sombre", "Clair"] />
+                    </div>
                 </div>
                 <div class="big-red-button small-button" onclick=self.link.callback(move |_| Msg::Confirm)>{"Valider"}</div>
             </main>
