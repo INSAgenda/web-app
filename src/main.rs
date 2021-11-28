@@ -1,5 +1,5 @@
 use agenda_parser::Event;
-use chrono::{offset::FixedOffset, Weekday, Datelike, TimeZone, Timelike};
+use chrono::Datelike;
 use event::EventGlobalData;
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use yew::{
@@ -15,7 +15,7 @@ mod agenda;
 mod glider_selector;
 mod util;
 pub use util::sleep;
-use crate::{event::EventComp, settings::Settings};
+use crate::settings::Settings;
 
 pub enum Page {
     Settings,

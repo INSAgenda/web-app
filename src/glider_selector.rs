@@ -1,6 +1,5 @@
 use yew::prelude::*;
 use std::rc::Rc;
-use crate::log;
 
 pub enum Msg {
     Init,

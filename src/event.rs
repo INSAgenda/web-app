@@ -1,8 +1,6 @@
 use agenda_parser::Event;
-use chrono::{offset::FixedOffset, Datelike, TimeZone, Timelike, Weekday};
 use yew::prelude::*;
 use std::{rc::Rc, cell::Cell};
-use crate::log;
 
 pub struct EventGlobalData {
     opened_event: Cell<Option<Rc<ComponentLink<EventComp>>>>
