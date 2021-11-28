@@ -30,6 +30,7 @@ enum Msg {
     PreviousWeek,
     NextWeek,
     SetPage(Page),
+    SilentSetPage(Page),
 }
 
 struct App {
@@ -68,9 +69,9 @@ impl Component for App {
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
             let state = e.state().as_string();
             match state.as_deref() {
-                Some("settings") => link2.send_message(Msg::SetPage(Page::Settings)),
-                Some("agenda") => link2.send_message(Msg::SetPage(Page::Agenda)),
-                _ if e.state().is_null() => link2.send_message(Msg::SetPage(Page::Agenda)),
+                Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
+                Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
+                _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => log!("Unknown pop state: {:?}", e.state()),
             }
         }) as Box<dyn FnMut(_)>);
@@ -108,6 +109,10 @@ impl Component for App {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#setttings")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda/index.html")).unwrap(),
                 }
+                self.page = page;
+                true
+            },
+            Msg::SilentSetPage(page) => {
                 self.page = page;
                 true
             },
