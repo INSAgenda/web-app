@@ -92,11 +92,13 @@ impl Component for EventComp {
             agenda_parser::event::EventKind::Other(kind) => kind.to_string(),
         };
 
+        let location = self.event.location.map(|location| location.to_string());
+
         html! {
             <div style=format!("background-color: #98fb98; position: absolute; top: {}%; height: {}%;", percent_offset, percent_height) class="event" onclick=self.link.callback(|_| EventCompMsg::ToggleDetails)>
                 <span class="name">{ name }</span>
                 <span class="teacher">{ self.event.teachers.join(", ") }</span>
-                <span>{"Dumont Durville - B - Rj - 11"}</span>
+                {if let Some(l) = location {html! {<span>{l}</span>}} else {html!{}}}
                 <div class="event-details" style=if self.show_details {""} else {"display: none;"}>
                     <div class="event-details-header">
                         <span>{"01h00 - Lundi 3 janvier"}</span>
