@@ -17,12 +17,7 @@ header>h1 {
 
 /* Main section */
 
-html {
-    --background: white;
-    --red: red;
-}
-
-main {
+#calendar-main {
     display: flex;
     justify-content: space-around;
 }
@@ -245,39 +240,6 @@ main {
     color: var(--calendar-text);
 }
 
-/* Buttons */
-
-.big-red-button, .big-white-button {
-    border-radius: 1rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all .2s;
-    font-size: 1.1rem;
-}
-
-.big-red-button {
-    line-height: 2rem;
-    height: 2rem;
-    background-color:  var(--red);
-    color: white;
-}
-
-.big-white-button {
-    line-height: calc(2rem - 4px);
-    height: calc(2rem - 4px);
-    border: 2px solid var(--red);
-    color: var(--red);
-}
-
-.big-red-button:hover, .big-white-button:hover {
-    font-size: 1.2rem;
-}
-
-.big-white-button:hover {
-    background-color:  var(--red);
-    color: white;
-}
-
 /* Calendar */
 
 #small-calendar {
@@ -371,7 +333,7 @@ main {
 /* For mobile */
 
 @media screen and (max-width: 1000px) {
-    main {
+    #calendar-main {
         justify-content: center;
     }
     #small-calendar {

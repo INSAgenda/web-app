@@ -12,12 +12,10 @@ use std::rc::Rc;
 mod event;
 mod settings;
 mod agenda;
+mod glider_selector;
+mod util;
+pub use util::sleep;
 use crate::{event::EventComp, settings::Settings};
-
-#[macro_export]
-macro_rules! log {
-    ($($t:tt)*) => (web_sys::console::log_1(&format_args!($($t)*).to_string().into()))
-}
 
 enum Page {
     Settings,

@@ -69,7 +69,7 @@ impl App {
                 <img src="http://localhost:8080/assets/elements/webLogo.svg" alt="INSAgenda logo"/>
                 </a>
             </header>
-            <main>
+            <main id="calendar-main">
             <div id="calendar">
                 <div id="calendar-hours">
                     <span>{"08:00"}</span>

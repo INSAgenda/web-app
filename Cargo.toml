@@ -22,6 +22,10 @@ features = [
     "Storage",
     "History",
     "PopStateEvent",
+    "Crypto",
+    "Document",
+    "Element",
+    "HtmlCollection",
 ]
 
 [profile.release]
