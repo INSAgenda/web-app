@@ -1,37 +1,44 @@
 use yew::prelude::*;
-use crate::glider_selector::GliderSelector;
+use crate::{glider_selector::GliderSelector, App};
+use std::rc::Rc;
 
 pub enum Msg {
-    AddOne,
+    Confirm,
+}
+
+#[derive(Properties, Clone)]
+pub struct SettingsProp {
+    pub app_link: Rc<ComponentLink<App>>,
 }
 
 pub struct Settings {
     link: ComponentLink<Self>,
-    value: i64,
+    app_link: Rc<ComponentLink<App>>,
 }
 
 impl Component for Settings {
     type Message = Msg;
-    type Properties = ();
+    type Properties = SettingsProp;
 
-    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         Self {
             link,
-            value: 0,
+            app_link: props.app_link,
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::AddOne => {
-                self.value += 1;
-                true
+            Msg::Confirm => {
+                self.app_link.send_message(crate::Msg::SetPage(crate::Page::Agenda));
+                false
             }
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        false
+    fn change(&mut self, props: Self::Properties) -> ShouldRender {
+        self.app_link = props.app_link;
+        true
     }
 
     fn view(&self) -> Html {
@@ -64,7 +71,7 @@ impl Component for Settings {
                 <div class="settings-group">
                     {"Enregistrer"}
                 </div>
-                <div class="big-red-button small-button">{"Valider"}</div>
+                <div class="big-red-button small-button" onclick=self.link.callback(move |_| Msg::Confirm)>{"Valider"}</div>
             </main>
             <footer>
             </footer>

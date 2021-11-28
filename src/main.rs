@@ -17,12 +17,12 @@ mod util;
 pub use util::sleep;
 use crate::{event::EventComp, settings::Settings};
 
-enum Page {
+pub enum Page {
     Settings,
     Agenda,
 }
 
-enum Msg {
+pub enum Msg {
     FetchSuccess(Vec<Event>),
     FetchFailure(anyhow::Error),
     PreviousWeek,
@@ -31,7 +31,7 @@ enum Msg {
     SilentSetPage(Page),
 }
 
-struct App {
+pub struct App {
     weekstart: u64,
     event_global: Rc<EventGlobalData>,
     api_key: u64,
@@ -132,7 +132,7 @@ impl Component for App {
     fn view(&self) -> Html {
         match &self.page {
             Page::Agenda => self.view_agenda(),
-            Page::Settings => html!( <Settings /> ),
+            Page::Settings => html!( <Settings app_link=Rc::clone(&self.link) /> ),
         }
     }
 }

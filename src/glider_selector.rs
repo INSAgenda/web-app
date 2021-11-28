@@ -82,7 +82,7 @@ impl Component for GliderSelector {
         } else {
             let link2 = Rc::clone(&self.link);
             wasm_bindgen_futures::spawn_local(async move {
-                crate::sleep(std::time::Duration::from_millis(100)).await;
+                crate::sleep(std::time::Duration::from_millis(30)).await;
                 link2.send_message(Msg::Init);
             });
 
