@@ -1,12 +1,13 @@
 use agenda_parser::Event;
 use chrono::{offset::FixedOffset, Weekday, Datelike, TimeZone, Timelike};
 use event::EventGlobalData;
-use wasm_bindgen::{JsCast, JsValue};
+use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use yew::{
     prelude::*,
     format::Nothing,
     services::fetch::{FetchService, FetchTask, Request, Response},
 };
+use std::rc::Rc;
 
 mod event;
 mod settings;
@@ -28,18 +29,18 @@ enum Msg {
     FetchFailure(anyhow::Error),
     PreviousWeek,
     NextWeek,
-    OpenSettings,
+    SetPage(Page),
 }
 
 struct App {
     weekstart: u64,
-    event_global: std::rc::Rc<EventGlobalData>,
+    event_global: Rc<EventGlobalData>,
     api_key: u64,
     counter: u64,
     events: Vec<Event>,
     page: Page,
     fetch_task: Option<FetchTask>,
-    link: ComponentLink<Self>,
+    link: Rc<ComponentLink<Self>>,
 }
 
 impl Component for App {
@@ -47,6 +48,8 @@ impl Component for App {
     type Properties = ();
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
+        let link = Rc::new(link);
+
         let date = chrono::Local::now();
         let date = date.with_timezone(&chrono::offset::FixedOffset::east(1 * 3600));
 
@@ -60,6 +63,19 @@ impl Component for App {
         let local_storage = window.local_storage().unwrap().unwrap();
         let api_key = local_storage.get("api_key").unwrap().expect("missing api key").parse().unwrap();
         let counter = local_storage.get("counter").unwrap().expect("missing counter").parse().unwrap();
+
+        let link2 = Rc::clone(&link);
+        let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
+            let state = e.state().as_string();
+            match state.as_deref() {
+                Some("settings") => link2.send_message(Msg::SetPage(Page::Settings)),
+                Some("agenda") => link2.send_message(Msg::SetPage(Page::Agenda)),
+                _ if e.state().is_null() => link2.send_message(Msg::SetPage(Page::Agenda)),
+                _ => log!("Unknown pop state: {:?}", e.state()),
+            }
+        }) as Box<dyn FnMut(_)>);
+        window.add_event_listener_with_callback("popstate", closure.as_ref().unchecked_ref()).unwrap();
+        closure.forget();
 
         let mut app = Self {
             weekstart,
@@ -86,8 +102,13 @@ impl Component for App {
                 log!("Todo");
                 true
             },
-            Msg::OpenSettings => {
-                self.page = Page::Settings;
+            Msg::SetPage(page) => {
+                let history = web_sys::window().unwrap().history().unwrap();                
+                match &page {
+                    Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#setttings")).unwrap(),
+                    Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda/index.html")).unwrap(),
+                }
+                self.page = page;
                 true
             },
             Msg::PreviousWeek => {
