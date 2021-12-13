@@ -32,7 +32,8 @@ pub enum Msg {
 }
 
 pub struct App {
-    weekstart: u64,
+    day_start: u64,
+    week_start_cache: std::cell::Cell<(u64, u64)>,
     event_global: Rc<EventGlobalData>,
     api_key: u64,
     counter: u64,
@@ -52,11 +53,12 @@ impl Component for App {
         let date = chrono::Local::now();
         let date = date.with_timezone(&chrono::offset::FixedOffset::east(1 * 3600));
 
-        let daystart = (date.timestamp() - (date.timestamp() + 1 * 3600) % 86400) as u64;
-        let mut weekstart = daystart - (date.weekday().number_from_monday() as u64 - 1) * 86400;
-        if date.weekday().number_from_monday() >= 6 {
-            weekstart += 7 * 86400;
-        }
+        let mut day_start = (date.timestamp() - (date.timestamp() + 1 * 3600) % 86400) as u64;
+        match date.weekday().number_from_monday() {
+            6 => day_start += 86400,
+            7 => day_start += 2 * 86400,
+            _ => (),
+        };
 
         let window = web_sys::window().unwrap();
         let local_storage = window.local_storage().unwrap().unwrap();
@@ -77,7 +79,8 @@ impl Component for App {
         closure.forget();
 
         let mut app = Self {
-            weekstart,
+            day_start,
+            week_start_cache: std::cell::Cell::new((0, 0)),
             api_key,
             counter,
             fetch_task: None,
@@ -115,11 +118,11 @@ impl Component for App {
                 true
             },
             Msg::PreviousWeek => {
-                self.weekstart -= 7 * 86400;
+                //self.weekstart -= 7 * 86400;
                 true
             }
             Msg::NextWeek => {
-                self.weekstart += 7 * 86400;
+                //self.weekstart += 7 * 86400;
                 true
             }
         }
@@ -151,6 +154,21 @@ pub fn gen_code(api_key: u64, counter: u64) -> u64 {
 }
 
 impl App {
+    fn week_start(&self) -> u64 {
+        let cache = self.week_start_cache.get();
+        if cache.0 == self.day_start {
+            return cache.1;
+        }
+
+        let date = chrono::Local::now();
+        let date = date.with_timezone(&chrono::offset::FixedOffset::east(1 * 3600));
+        let week_start = self.day_start - (date.weekday().number_from_monday() as u64 - 1) * 86400;
+
+        self.week_start_cache.set((self.day_start, week_start));
+        
+        week_start
+    }
+
     fn new_fetch_task(&mut self, time_range: std::ops::Range<i64>) {
         let request = Request::get(format!("http://127.0.0.1:8080/api/schedule/?start_timestamp=0&end_timestamp={}", u64::MAX))
             .header("Api-Key", format!("{}-{}-{}", self.api_key, self.counter, gen_code(self.api_key, self.counter)))

@@ -10,7 +10,7 @@ impl App {
         let mut day_names = Vec::new();
         for offset in 0..5 {
             let datetime =
-                FixedOffset::east(1 * 3600).timestamp((self.weekstart + offset * 86400) as i64, 0);
+                FixedOffset::east(1 * 3600).timestamp((self.week_start() + offset * 86400) as i64, 0);
             let day = datetime.day();
             let month = match datetime.month() {
                 1 => "Janvier",
@@ -44,7 +44,7 @@ impl App {
                     && (event.start_unixtime as i64) < datetime.timestamp() + 86400
                 {
                     events.push(html! {
-                        <EventComp event=event.clone() day_start={self.weekstart+offset*86400} global=self.event_global.clone()></EventComp>
+                        <EventComp event=event.clone() day_start={self.week_start()+offset*86400} global=self.event_global.clone()></EventComp>
                     });
                 }
             }
