@@ -109,9 +109,7 @@ header>h1 {
     height: 2rem;
 }
 
-#calendar-top>span,
-#mobile-day-name {
-    max-width: 234px;
+#calendar-top>span, #mobile-day-name {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -137,7 +135,6 @@ header>h1 {
     width: 100%;
     margin: 0 5px;
     background-color: var(--closer-background);
-    max-width: 234px;
     width: 19%;
 }
 
@@ -349,6 +346,7 @@ header>h1 {
         background-size: 100%;
         background-repeat: no-repeat;
         background-position: center;
+        cursor: pointer;
     }
     #calendar-arrow-right {
         transform: rotate(180deg);
@@ -360,16 +358,16 @@ header>h1 {
         width: 100%;
         justify-content: space-between;
     }
-    #calendar-top>span,
-    .day {
+    #calendar-top>span, .day {
         display: none;
     }
     #mobile-day-name {
         display: flex;
     }
-    .day-mobile-active {
+    .selected-day {
         display: flex !important;
         flex-direction: column;
+        width: calc(100% - 10px);
     }
     #line-container {
         margin: 0;

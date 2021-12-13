@@ -12,6 +12,7 @@ impl App {
             let datetime =
                 FixedOffset::east(1 * 3600).timestamp((self.week_start() + offset * 86400) as i64, 0);
             let day = datetime.day();
+            let is_selected_day = datetime.timestamp() as u64 == self.day_start;
             let month = match datetime.month() {
                 1 => "Janvier",
                 2 => "Février",
@@ -55,7 +56,7 @@ impl App {
                 </span>
             });
             days.push(html! {
-                <div class="day day-mobile-active">
+                <div class=if is_selected_day {"day selected-day"} else {"day"}>
                     { events }
                 </div>
             });
@@ -80,9 +81,9 @@ impl App {
                 </div>
                 <div id="calendar-main-part">
                     <div id="calendar-top">
-                        <a id="calendar-arrow-left"></a>
+                        <a id="calendar-arrow-left" onclick=self.link.callback(|_| crate::Msg::Previous)></a>
                         <a id="mobile-day-name">{"Lundi 3 janvier"}</a>
-                        <a id="calendar-arrow-right"></a>
+                        <a id="calendar-arrow-right" onclick=self.link.callback(|_| crate::Msg::Next)></a>
                         { day_names }
                     </div>
                     <div id="day-container">

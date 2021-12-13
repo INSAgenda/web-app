@@ -25,8 +25,8 @@ pub enum Page {
 pub enum Msg {
     FetchSuccess(Vec<Event>),
     FetchFailure(anyhow::Error),
-    PreviousWeek,
-    NextWeek,
+    Previous,
+    Next,
     SetPage(Page),
     SilentSetPage(Page),
 }
@@ -117,12 +117,12 @@ impl Component for App {
                 self.page = page;
                 true
             },
-            Msg::PreviousWeek => {
-                //self.weekstart -= 7 * 86400;
+            Msg::Previous => {
+                self.day_start -= 86400;
                 true
             }
-            Msg::NextWeek => {
-                //self.weekstart += 7 * 86400;
+            Msg::Next => {
+                self.day_start += 86400;
                 true
             }
         }
