@@ -4,40 +4,47 @@ use yew::{
     prelude::*,
 };
 
+fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
+    let month = match month {
+        1 => "Janvier",
+        2 => "Février",
+        3 => "Mars",
+        4 => "Avril",
+        5 => "Mai",
+        6 => "Juin",
+        7 => "Juillet",
+        8 => "Août",
+        9 => "Septembre",
+        10 => "Octobre",
+        11 => "Novembre",
+        12 => "Décembre",
+        _ => unreachable!(),
+    };
+
+    let day_name = match day_name {
+        Weekday::Mon => "Lundi",
+        Weekday::Tue => "Mardi",
+        Weekday::Wed => "Mercredi",
+        Weekday::Thu => "Jeudi",
+        Weekday::Fri => "Vendredi",
+        Weekday::Sat => "Samedi",
+        Weekday::Sun => "Dimanche",
+    };
+
+    format!("{} {} {}", day_name, day, month)
+}
+
 impl App {
     pub fn view_agenda(&self) -> Html {
+        let selected_day_datetime = FixedOffset::east(1 * 3600).timestamp(self.day_start as i64, 0);
+        let selected_day = format_day(selected_day_datetime.weekday(), selected_day_datetime.day(), selected_day_datetime.month());
+
         let mut days = Vec::new();
         let mut day_names = Vec::new();
         for offset in 0..5 {
             let datetime =
                 FixedOffset::east(1 * 3600).timestamp((self.week_start() + offset * 86400) as i64, 0);
-            let day = datetime.day();
             let is_selected_day = datetime.timestamp() as u64 == self.day_start;
-            let month = match datetime.month() {
-                1 => "Janvier",
-                2 => "Février",
-                3 => "Mars",
-                4 => "Avril",
-                5 => "Mai",
-                6 => "Juin",
-                7 => "Juillet",
-                8 => "Août",
-                9 => "Septembre",
-                10 => "Octobre",
-                11 => "Novembre",
-                12 => "Décembre",
-                _ => unreachable!(),
-            };
-
-            let dayname = match datetime.weekday() {
-                Weekday::Mon => "Lundi",
-                Weekday::Tue => "Mardi",
-                Weekday::Wed => "Mercredi",
-                Weekday::Thu => "Jeudi",
-                Weekday::Fri => "Vendredi",
-                Weekday::Sat => "Samedi",
-                Weekday::Sun => "Dimanche",
-            };
 
             let mut events = Vec::new();
             for event in &self.events {
@@ -52,7 +59,7 @@ impl App {
 
             day_names.push(html! {
                 <span>
-                    { format!("{} {} {}", dayname, day, month) }
+                    { format_day(datetime.weekday(), datetime.day(), datetime.month()) }
                 </span>
             });
             days.push(html! {
@@ -82,7 +89,7 @@ impl App {
                 <div id="calendar-main-part">
                     <div id="calendar-top">
                         <a id="calendar-arrow-left" onclick=self.link.callback(|_| crate::Msg::Previous)></a>
-                        <a id="mobile-day-name">{"Lundi 3 janvier"}</a>
+                        <a id="mobile-day-name">{selected_day}</a>
                         <a id="calendar-arrow-right" onclick=self.link.callback(|_| crate::Msg::Next)></a>
                         { day_names }
                     </div>
