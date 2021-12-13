@@ -1,5 +1,5 @@
 use agenda_parser::Event;
-use chrono::Datelike;
+use chrono::{Datelike, TimeZone};
 use event::EventGlobalData;
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use yew::{
@@ -33,7 +33,6 @@ pub enum Msg {
 
 pub struct App {
     day_start: u64,
-    week_start_cache: std::cell::Cell<(u64, u64)>,
     event_global: Rc<EventGlobalData>,
     api_key: u64,
     counter: u64,
@@ -80,7 +79,6 @@ impl Component for App {
 
         let mut app = Self {
             day_start,
-            week_start_cache: std::cell::Cell::new((0, 0)),
             api_key,
             counter,
             fetch_task: None,
@@ -155,16 +153,8 @@ pub fn gen_code(api_key: u64, counter: u64) -> u64 {
 
 impl App {
     fn week_start(&self) -> u64 {
-        let cache = self.week_start_cache.get();
-        if cache.0 == self.day_start {
-            return cache.1;
-        }
-
-        let date = chrono::Local::now();
-        let date = date.with_timezone(&chrono::offset::FixedOffset::east(1 * 3600));
-        let week_start = self.day_start - (date.weekday().number_from_monday() as u64 - 1) * 86400;
-
-        self.week_start_cache.set((self.day_start, week_start));
+        let datetime = chrono::offset::FixedOffset::east(1 * 3600).timestamp(self.day_start as i64, 0);
+        let week_start = self.day_start - (datetime.weekday().number_from_monday() as u64 - 1) * 86400;
         
         week_start
     }
