@@ -65,9 +65,7 @@ impl App {
             <>
             <header>
                 <h1 class="page-title">{"Mon emploi du temps"}</h1>
-                <a id="header-logo" href="../index.html">
-                <img src="http://localhost:8080/assets/elements/webLogo.svg" alt="INSAgenda logo"/>
-                </a>
+                <div id="header-logo"><img src="../assets/logo/logo.svg"/></div>
             </header>
             <main id="calendar-main">
             <div id="calendar">
