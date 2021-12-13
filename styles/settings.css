@@ -9,7 +9,7 @@
 }
 
 .settings-group {
-	background-color: white;
+	background-color: var(--closer-background);
 	width: calc(100% - 2rem);
 	padding: .7rem 1rem;
 	margin: 0 0 1.5rem 0;
@@ -17,7 +17,7 @@
     border-radius: .5rem;
 }
 
-.setting>h3, .setting>.big-white-button {
+.setting>h3, .setting>.white-button {
 	margin: 0;
 }
 

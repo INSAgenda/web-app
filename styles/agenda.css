@@ -136,13 +136,14 @@ header>h1 {
     height: 100%;
     width: 100%;
     margin: 0 5px;
-    background-color: var(--background);
+    background-color: var(--closer-background);
     max-width: 234px;
     width: 19%;
 }
 
 .event {
     display: flex;
+    color: black;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -151,11 +152,6 @@ header>h1 {
     cursor: pointer;
     width: inherit;
 }
-
-.pause {
-    cursor: auto;
-}
-
 
 /* Event details */
 
@@ -203,7 +199,6 @@ header>h1 {
     font-size: 1em;
 }
 
-
 /* Option */
 
 #option {
@@ -232,12 +227,6 @@ header>h1 {
     width: 48px;
     border-radius: 3px;
     margin: 3px 0 0 0;
-}
-
-.option-name {
-    font-size: 1rem;
-    margin: 1rem 0 .5rem 0;
-    color: var(--calendar-text);
 }
 
 /* Calendar */

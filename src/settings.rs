@@ -52,14 +52,16 @@ impl Component for Settings {
                     <div class="setting">
                         <h3>{"Mot de passe"}</h3>
                         <p>{"Votre mot de passe a été changé pour la dernière fois le 12/11/2021 à 12:49."}</p>
-                        <div class="big-white-button small-button">{"Modifier"}</div>
+                        <div class="white-button small-button">{"Modifier"}</div>
                     </div>
+                    <br/>
                     <br/>
                     <div class="setting">
                         <h3>{"Adresse mail"}</h3>
                         <p>{"Votre adresse actuelle est foobar@insa-rouen.fr."}</p>
-                        <div class="big-white-button small-button">{"Modifier"}</div>
+                        <div class="white-button small-button">{"Modifier"}</div>
                     </div>
+                    <br/>
                     <br/>
                     <div class="setting">
                         <h3>{"Changer le type d'authentification"}</h3>
@@ -75,7 +77,7 @@ impl Component for Settings {
                         <GliderSelector values=vec!["Automatique", "Sombre", "Clair"] />
                     </div>
                 </div>
-                <div class="big-red-button small-button" onclick=self.link.callback(move |_| Msg::Confirm)>{"Valider"}</div>
+                <div class="red-button" onclick=self.link.callback(move |_| Msg::Confirm)>{"Valider"}</div>
             </main>
             <footer>
             </footer>
