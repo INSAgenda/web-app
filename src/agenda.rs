@@ -1,5 +1,5 @@
 use chrono::{offset::FixedOffset, Weekday, Datelike, TimeZone};
-use crate::{event::EventComp, App};
+use crate::{event::EventComp, App, calendar::Calendar};
 use yew::{
     prelude::*,
 };
@@ -112,78 +112,7 @@ impl App {
                     <div class="divider-bar-option"></div>
                 </div>
                 <div class="option-name">{"Calendrier :"}</div>
-                <div id="small-calendar">
-                    <div id="calendar-header">
-                        <button class="calendar-button" id="calendar-before"></button>
-                        <span id="calendar-title">{"Janvier 2022"}</span>
-                        <button class="calendar-button" id="calendar-after"></button>
-                    </div>
-                    <div id="calendar-content">
-                        <div id="calendar-days">
-                            <span>{"Lun"}</span>
-                            <span>{"Mar"}</span>
-                            <span>{"Mer"}</span>
-                            <span>{"Jeu"}</span>
-                            <span>{"Ven"}</span>
-                            <span>{"Sam"}</span>
-                            <span>{"Dim"}</span>
-                        </div>
-                        <div id="week1" class="calendar-week">
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                        </div>
-                        <div id="week2" class="calendar-week">
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                        </div>
-                        <div id="week3" class="calendar-week">
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                        </div>
-                        <div id="week4" class="calendar-week">
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                        </div>
-                        <div id="week5" class="calendar-week">
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                        </div>
-                        <div id="week6" class="calendar-week">
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                            <span class="calendar-case"></span>
-                        </div>
-                    </div>
-                </div>
+                <Calendar/>
                 <br/>
                 <div class="white-button" onclick=self.link.callback(|_| crate::Msg::SetPage(crate::Page::Settings))>{"Paramètres"}</div>    
             </div>

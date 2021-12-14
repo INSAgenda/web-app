@@ -229,92 +229,83 @@ header>h1 {
 /* Calendar */
 
 #small-calendar {
-    max-width: 245px;
-    width: 100%;
-    height: 240px;
+    border-radius: 1rem;
     box-shadow: 0px 3px 6px #00000029;
-    border-radius: 15px;
-    margin: 0 auto;
-    background-color: var(--background);
+    background-color: var(--closer-background);
 }
 
 #calendar-header {
     width: 100%;
-    height: 34px;
+    height: 2rem;
     background-color: var(--red);
-    border-radius: 15px 15px 0 0;
+    border-radius: 1rem 1rem 0 0;
     display: flex;
     align-items: center;
     justify-content: space-around;
 }
 
-.calendar-button {
+.calendar-arrow {
     background-image: url(http://localhost:8080/assets/elements/calendar-arrow.png.svg);
-    height: 15px;
-    width: 9px;
     border: none;
     background-color: transparent;
     background-repeat: no-repeat;
     cursor: pointer;
-    padding: 8px;
+    padding: .5rem;
     background-position: center;
 }
 
 #calendar-title {
     color: white;
-    font-size: 0.8em;
+    font-size: 0.8rem;
     width: 40%;
     text-align: center;
     user-select: none;
 }
 
-#calendar-after {
+#calendar-right-arrow {
     transform: rotate(180deg);
 }
 
 #calendar-content {
-    margin: 0 7px;
+    margin: 0 .4rem;
 }
 
 #calendar-days {
     display: flex;
     justify-content: space-around;
-    font-size: 0.7em;
+    font-size: 0.7rem;
     margin: 2px 0 7px 0;
     color: var(--title-color);
     font-weight: 500;
 }
 
 .calendar-case {
-    width: 14px;
-    height: 14px;
-    padding: 5px;
+    width: calc(100%/7);
+    padding: .2rem;
+    height: 1rem;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    text-align: center;
     border-radius: 15px;
     transition: 0.1s background-color;
-    color: var(--calendar-text);
+    color: var(--text);
 }
 
 .calendar-case:hover {
-    background-color: rgba(196, 196, 196, 0.57);
+    background-color: #3f3f3f;
 }
 
 .calendar-week {
-    font-size: 0.8em;
+    font-size: 0.8rem;
     display: flex;
     justify-content: space-around;
-    height: 29px;
-    border-bottom: #ADADAD solid 1px;
+    height: 2rem;
+    border-bottom: #888888 solid 1px;
     align-items: center;
 }
 
 .calendar-week:last-child {
     border: none;
 }
-
 
 /* For mobile */
 

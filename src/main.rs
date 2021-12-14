@@ -14,6 +14,7 @@ mod settings;
 mod agenda;
 mod glider_selector;
 mod util;
+mod calendar;
 pub use util::sleep;
 use crate::settings::Settings;
 
