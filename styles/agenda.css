@@ -296,6 +296,11 @@ header>h1 {
     background-color: #3f3f3f;
 }
 
+#selected-calendar-case {
+    background-color: var(--red);
+    color: white;
+}
+
 .calendar-week {
     font-size: 0.8rem;
     display: flex;

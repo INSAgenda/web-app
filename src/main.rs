@@ -1,5 +1,5 @@
 use agenda_parser::Event;
-use chrono::{Datelike, TimeZone, NaiveDate, DateTime, FixedOffset};
+use chrono::{Datelike, TimeZone, FixedOffset, NaiveTime};
 use event::EventGlobalData;
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use yew::{
@@ -52,7 +52,7 @@ impl Component for App {
         let link = Rc::new(link);
 
         let date = chrono::Local::now();
-        let date = date.with_timezone(&chrono::offset::FixedOffset::east(1 * 3600));
+        let date = date.with_timezone(&FixedOffset::east(1 * 3600));
 
         let mut day_start = (date.timestamp() - (date.timestamp() + 1 * 3600) % 86400) as u64;
         match date.weekday().number_from_monday() {
@@ -126,8 +126,8 @@ impl Component for App {
                 true
             }
             Msg::Goto {day, month, year} => {
-                let naive_date = NaiveDate::from_ymd(year, month, day);
-                self.day_start = DateTime::<FixedOffset>::from_utc(naive_date.and_hms(0, 0, 0), FixedOffset::east(1 * 3600)).timestamp() as u64;
+                let datetime = FixedOffset::east(1 * 3600).ymd(year, month, day).and_time(NaiveTime::from_hms(0, 0, 0)).unwrap();
+                self.day_start = datetime.timestamp() as u64;
                 true
             }
         }

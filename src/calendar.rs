@@ -9,6 +9,7 @@ pub struct CalendarProps {
 pub enum Msg {
     NextMonth,
     PreviousMonth,
+    Goto { day: u32, month: u32, year: i32 },
 }
 
 pub struct Calendar {
@@ -56,6 +57,13 @@ impl Component for Calendar {
                 }
                 true
             },
+            Msg::Goto { day, month, year } => {
+                self.selected_day = day;
+                self.selected_month = month;
+                self.selected_year = year;
+                self.app_link.send_message(crate::Msg::Goto {day,month,year});
+                true
+            },
         }
     }
 
@@ -93,7 +101,7 @@ impl Component for Calendar {
             let month = self.selected_month;
             let year = self.selected_year;
             calendar_cases.push(html! {
-                <span class="calendar-case" onclick=self.app_link.callback(move |_| crate::Msg::Goto {day,month,year})>{day.to_string()}</span>
+                <span class="calendar-case" id=if day==self.selected_day {Some("selected-calendar-case")} else {None} onclick=self.link.callback(move |_| Msg::Goto {day,month,year})>{day.to_string()}</span>
             });
         }
 
