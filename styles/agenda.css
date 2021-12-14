@@ -256,10 +256,12 @@ header>h1 {
 
 #calendar-title {
     color: white;
+    min-width: 60%;
     font-size: 0.8rem;
-    width: 40%;
     text-align: center;
     user-select: none;
+    overflow: visible;
+    white-space: nowrap;
 }
 
 #calendar-right-arrow {
