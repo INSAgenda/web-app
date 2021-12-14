@@ -1,6 +1,10 @@
 use yew::prelude::*;
 use chrono::{Datelike, FixedOffset, Local, NaiveDate};
-use crate::log;
+
+#[derive(Clone, Properties)]
+pub struct CalendarProps {
+    pub link: std::rc::Rc<ComponentLink<crate::App>>,
+}
 
 pub enum Msg {
     NextMonth,
@@ -12,13 +16,14 @@ pub struct Calendar {
     selected_month: u32,
     selected_year: i32,
     link: ComponentLink<Self>,
+    app_link: std::rc::Rc<ComponentLink<crate::App>>,
 }
 
 impl Component for Calendar {
     type Message = Msg;
-    type Properties = ();
+    type Properties = CalendarProps;
 
-    fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let now = Local::now();
         let now = now.with_timezone(&FixedOffset::east(1 * 3600));
 
@@ -26,7 +31,8 @@ impl Component for Calendar {
             selected_day: now.day(),
             selected_month: now.month(),
             selected_year: now.year(),
-            link
+            link,
+            app_link: props.link,
         }
     }
 
@@ -84,8 +90,10 @@ impl Component for Calendar {
         }
 
         for day in 1..=last_day.day() {
+            let month = self.selected_month;
+            let year = self.selected_year;
             calendar_cases.push(html! {
-                <span class="calendar-case">{day.to_string()}</span>
+                <span class="calendar-case" onclick=self.app_link.callback(move |_| crate::Msg::Goto {day,month,year})>{day.to_string()}</span>
             });
         }
 

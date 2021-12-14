@@ -79,7 +79,7 @@ impl Component for EventComp {
     }
 
     fn view(&self) -> Html {
-        let sec_offset = self.event.start_unixtime - (self.day_start + 8 * 3600);
+        let sec_offset = self.event.start_unixtime.saturating_sub(self.day_start + 8 * 3600);
         let percent_offset = 100.0 / (44100.0) * sec_offset as f64;
         let percent_height = 100.0 / (44100.0) * (self.event.end_unixtime - self.event.start_unixtime) as f64;
 

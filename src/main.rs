@@ -1,5 +1,5 @@
 use agenda_parser::Event;
-use chrono::{Datelike, TimeZone};
+use chrono::{Datelike, TimeZone, NaiveDate, DateTime, FixedOffset};
 use event::EventGlobalData;
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use yew::{
@@ -28,6 +28,7 @@ pub enum Msg {
     FetchFailure(anyhow::Error),
     Previous,
     Next,
+    Goto {day: u32, month: u32, year: i32},
     SetPage(Page),
     SilentSetPage(Page),
 }
@@ -122,6 +123,11 @@ impl Component for App {
             }
             Msg::Next => {
                 self.day_start += 86400;
+                true
+            }
+            Msg::Goto {day, month, year} => {
+                let naive_date = NaiveDate::from_ymd(year, month, day);
+                self.day_start = DateTime::<FixedOffset>::from_utc(naive_date.and_hms(0, 0, 0), FixedOffset::east(1 * 3600)).timestamp() as u64;
                 true
             }
         }

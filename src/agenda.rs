@@ -112,7 +112,7 @@ impl App {
                     <div class="divider-bar-option"></div>
                 </div>
                 <div class="option-name">{"Calendrier :"}</div>
-                <Calendar/>
+                <Calendar link=std::rc::Rc::clone(&self.link)/>
                 <br/>
                 <div class="white-button" onclick=self.link.callback(|_| crate::Msg::SetPage(crate::Page::Settings))>{"Paramètres"}</div>    
             </div>
