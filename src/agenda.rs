@@ -44,8 +44,7 @@ impl App {
         for offset in 0..5 {
             let datetime =
                 FixedOffset::east(1 * 3600).timestamp((self.week_start() + offset * 86400) as i64, 0);
-            let is_selected_day = datetime.timestamp() as u64 == self.day_start;
-
+                
             let mut events = Vec::new();
             for event in &self.events {
                 if (event.start_unixtime as i64) > datetime.timestamp()
@@ -63,7 +62,7 @@ impl App {
                 </span>
             });
             days.push(html! {
-                <div class=if is_selected_day {"day selected-day"} else {"day"}>
+                <div class="day">
                     { events }
                 </div>
             });

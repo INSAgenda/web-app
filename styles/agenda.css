@@ -317,31 +317,20 @@ header>h1 {
 /* For mobile */
 
 @media screen and (max-width: 1000px) {
-    #calendar-main {
-        justify-content: center;
-    }
-
-    #small-calendar {
-        position: absolute;
-        display: flex;
-        top: 1px;
-        left: 1;
-    }
-
     #calendar {
         width: 95%;
     }
 
-    #option, #calendar-top>span, .day {
+    #option {
         display: none;
     }
 
     .event-details {
         right: inherit;
-        top: 107px;
+        top: 107px; /* TODO: Change that shit */
     }
 
-    #calendar-arrow-left, #calendar-arrow-right {
+    /*#calendar-arrow-left, #calendar-arrow-right {
         background-image: url(http://localhost:8080/assets/elements/red-arrow.svg);
         height: 18px;
         width: 11px;
@@ -357,15 +346,5 @@ header>h1 {
         height: 2rem;
         width: 100%;
         justify-content: space-between;
-    }
-
-    #mobile-day-name {
-        display: flex;
-    }
-
-    .selected-day {
-        display: flex !important;
-        flex-direction: column;
-        width: 99%;
-    }
+    }*/
 }
