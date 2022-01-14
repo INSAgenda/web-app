@@ -167,7 +167,7 @@ impl App {
     }
 
     fn new_fetch_task(&mut self, time_range: std::ops::Range<i64>) {
-        let request = Request::get(format!("http://127.0.0.1:8080/api/schedule/?start_timestamp=0&end_timestamp={}", u64::MAX))
+        let request = Request::get(format!("http://127.0.0.1:8080/api/schedule?start_timestamp=0&end_timestamp={}", u64::MAX))
             .header("Api-Key", format!("{}-{}-{}", self.api_key, self.counter, gen_code(self.api_key, self.counter)))
             .body(Nothing)
             .expect("Could not build request.");
