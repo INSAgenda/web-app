@@ -3,7 +3,7 @@
 header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: .5rem;
+    height: 4vh;
 }
 
 header>a>img {
@@ -20,6 +20,8 @@ header>h1 {
 #calendar-main {
     display: flex;
     justify-content: space-around;
+    height: 94vh;
+    margin: 1vh 0;
 }
 
 
