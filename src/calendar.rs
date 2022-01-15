@@ -1,5 +1,8 @@
+use wasm_bindgen::{prelude::*, JsCast};
 use yew::prelude::*;
 use chrono::{Datelike, FixedOffset, Local, NaiveDate};
+use std::{rc::Rc, cell::Cell};
+use crate::log;
 
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
@@ -9,6 +12,7 @@ pub struct CalendarProps {
 pub enum Msg {
     NextMonth,
     PreviousMonth,
+    Update,
     Goto { day: u32, month: u32, year: i32 },
 }
 
@@ -16,8 +20,9 @@ pub struct Calendar {
     selected_day: u32,
     selected_month: u32,
     selected_year: i32,
-    link: ComponentLink<Self>,
-    app_link: std::rc::Rc<ComponentLink<crate::App>>,
+    mobile_slider: Rc<Cell<Option<usize>>>,
+    link: Rc<ComponentLink<Self>>,
+    app_link: Rc<ComponentLink<crate::App>>,
 }
 
 impl Component for Calendar {
@@ -27,11 +32,32 @@ impl Component for Calendar {
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
         let now = Local::now();
         let now = now.with_timezone(&FixedOffset::east(1 * 3600));
+        let mobile_slider = Rc::new(Cell::new(None));
+        let link = Rc::new(link);
+        
+        let link2 = Rc::clone(&link);
+        let window = web_sys::window().unwrap();
+        let mobile_slider2 = Rc::clone(&mobile_slider);
+        let resize_closure = Closure::wrap(Box::new(move |_: web_sys::Event| {
+            let width = web_sys::window().unwrap().inner_width().unwrap().as_f64().unwrap() as usize;
+            if width <= 1000 && mobile_slider2.get().is_none() {
+                mobile_slider2.set(Some(0));
+                link2.send_message(Msg::Update);
+            } else if width > 1000 && mobile_slider2.get().is_some() {
+                mobile_slider2.set(None);
+                link2.send_message(Msg::Update);
+            }
+        }) as Box<dyn FnMut(_)>);
+        window.add_event_listener_with_callback("resize", resize_closure.as_ref().unchecked_ref()).unwrap();
+        resize_closure.forget();
+
+        log!("added2");
 
         Calendar {
             selected_day: now.day(),
             selected_month: now.month(),
             selected_year: now.year(),
+            mobile_slider,
             link,
             app_link: props.link,
         }
@@ -64,6 +90,7 @@ impl Component for Calendar {
                 self.app_link.send_message(crate::Msg::Goto {day,month,year});
                 true
             },
+            Msg::Update => true,
         }
     }
 

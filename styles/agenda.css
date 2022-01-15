@@ -327,7 +327,11 @@ header>h1 {
 
     .event-details {
         right: inherit;
-        top: 107px; /* TODO: Change that shit */
+        top: 5rem;
+    }
+
+    #day-container {
+        width: 500%;
     }
 
     /*#calendar-arrow-left, #calendar-arrow-right {
