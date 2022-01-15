@@ -133,8 +133,6 @@ impl SliderManager {
         let end_animation2 = Rc::clone(&end_animation);
         let touch_end = Closure::wrap(Box::new(move |event: web_sys::TouchEvent| {
             if slider2.borrow().can_move() {
-                let mouse_x = event.touches().get(0).unwrap().client_x() as i32;
-                last_pos2.set(mouse_x);
                 let window = web_sys::window().unwrap();
                 window.request_animation_frame((*end_animation2).as_ref().unchecked_ref()).unwrap();
             }
