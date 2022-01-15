@@ -7,7 +7,7 @@ use yew::{
     format::Nothing,
     services::fetch::{FetchService, FetchTask, Request, Response},
 };
-use std::rc::Rc;
+use std::{rc::Rc, cell::RefCell};
 
 mod event;
 mod settings;
@@ -15,6 +15,7 @@ mod agenda;
 mod glider_selector;
 mod util;
 mod calendar;
+mod slider;
 pub use util::sleep;
 use crate::settings::Settings;
 
@@ -40,6 +41,7 @@ pub struct App {
     counter: u64,
     events: Vec<Event>,
     page: Page,
+    slider_manager: Rc<RefCell<slider::SliderManager>>,
     fetch_task: Option<FetchTask>,
     link: Rc<ComponentLink<Self>>,
 }
@@ -86,7 +88,8 @@ impl Component for App {
             fetch_task: None,
             events: Vec::new(),
             page: Page::Agenda,
-            event_global: std::rc::Rc::new(EventGlobalData::default()),
+            slider_manager: slider::SliderManager::init(),
+            event_global: Rc::new(EventGlobalData::default()),
             link,
         };
         app.new_fetch_task(0..i64::MAX);

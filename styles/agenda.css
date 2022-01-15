@@ -332,6 +332,13 @@ header>h1 {
 
     #day-container {
         width: 500%;
+        transition: transform 0.3s ease-out;
+        transform: translateX(0);
+        will-change: transform;
+    }
+
+    #calendar-main-part {
+        overflow: hidden;
     }
 
     /*#calendar-arrow-left, #calendar-arrow-right {

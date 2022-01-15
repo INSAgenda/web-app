@@ -26,6 +26,11 @@ features = [
     "Document",
     "Element",
     "HtmlCollection",
+    "MouseEvent",
+    "TouchEvent",
+    "TouchList",
+    "Touch",
+    "CssStyleDeclaration",
 ]
 
 [profile.release]
