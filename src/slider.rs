@@ -154,7 +154,12 @@ impl SliderManager {
     pub fn disable(&mut self) {
         self.enabled = false;
         self.start_pos = None;
-        // todo remove css
+
+        let window = web_sys::window().unwrap();
+        let document = window.document().unwrap();
+        if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
+            day_container.style().set_property("transform", "translateX(0px)").unwrap();
+        }
     }
 
     fn touch_start(&mut self, mouse_x: i32) {
