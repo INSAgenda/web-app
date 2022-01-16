@@ -1,4 +1,3 @@
-use crate::log;
 use wasm_bindgen::{prelude::*, JsCast};
 use std::{rc::Rc, cell::{Cell, RefCell}};
 
@@ -129,9 +128,8 @@ impl SliderManager {
         mouse_end.forget();
 
         let slider2 = Rc::clone(&slider);
-        let last_pos2 = Rc::clone(&last_pos);
         let end_animation2 = Rc::clone(&end_animation);
-        let touch_end = Closure::wrap(Box::new(move |event: web_sys::TouchEvent| {
+        let touch_end = Closure::wrap(Box::new(move |_: web_sys::TouchEvent| {
             if slider2.borrow().can_move() {
                 let window = web_sys::window().unwrap();
                 window.request_animation_frame((*end_animation2).as_ref().unchecked_ref()).unwrap();

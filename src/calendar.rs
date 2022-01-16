@@ -1,8 +1,6 @@
-use wasm_bindgen::{prelude::*, JsCast};
 use yew::prelude::*;
 use chrono::{Datelike, FixedOffset, Local, NaiveDate};
-use std::{rc::Rc, cell::Cell};
-use crate::log;
+use std::rc::Rc;
 
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
