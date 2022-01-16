@@ -89,20 +89,30 @@ impl Component for App {
         closure.forget();
 
         // Update events
-        let counter2 = Rc::clone(&counter);
-        let link2 = Rc::clone(&link);
-        wasm_bindgen_futures::spawn_local(async move {
-            match api::load_events(api_key, counter2).await {
-                Ok(events) => link2.send_message(Msg::FetchSuccess(events)),
-                Err(e) => link2.send_message(Msg::FetchFailure(e)),
+        let mut skip_event_loading = false;
+        let mut events = Vec::new();
+        if let Some((last_updated, cached_events)) = api::load_cache() {
+            if last_updated > date.timestamp() - 3600*5 && !cached_events.is_empty() {
+                skip_event_loading = true;
             }
-        });
+            events = cached_events;
+        }
+        if !skip_event_loading {
+            let counter2 = Rc::clone(&counter);
+            let link2 = Rc::clone(&link);
+            wasm_bindgen_futures::spawn_local(async move {
+                match api::load_events(api_key, counter2).await {
+                    Ok(events) => link2.send_message(Msg::FetchSuccess(events)),
+                    Err(e) => link2.send_message(Msg::FetchFailure(e)),
+                }
+            });
+        }
 
         Self {
             day_start,
             api_key,
             counter,
-            events: Vec::new(),
+            events,
             page: Page::Agenda,
             slider_manager: slider::SliderManager::init(),
             event_global: Rc::new(EventGlobalData::default()),
