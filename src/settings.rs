@@ -76,6 +76,13 @@ impl Component for Settings {
                         <p>{"Par défault, le thème est celui renseigné par votre navigateur."}</p>
                         <GliderSelector values=vec!["Automatique", "Sombre", "Clair"] />
                     </div>
+                    <br/>
+                    <br/>
+                    <div class="setting">
+                        <h3>{"Nom des bâtiments"}</h3>
+                        <p>{"L'affichage court correspond à seulement les deux premières lettres du nom (ex: Ma plutôt que Magellan)."}</p>
+                        <GliderSelector values=vec!["Normal", "Court"] />
+                    </div>
                 </div>
                 <div class="red-button" onclick=self.link.callback(move |_| Msg::Confirm)>{"Valider"}</div>
             </main>
