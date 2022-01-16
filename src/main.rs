@@ -13,6 +13,7 @@ mod util;
 mod calendar;
 mod slider;
 mod api;
+mod crash_handler;
 use api::*;
 pub use util::sleep;
 use crate::settings::Settings;
@@ -168,6 +169,6 @@ impl App {
 }
 
 fn main() {
-    console_error_panic_hook::set_once();
+    crash_handler::init();
     yew::start_app::<App>();
 }
