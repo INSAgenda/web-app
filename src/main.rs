@@ -16,6 +16,8 @@ mod glider_selector;
 mod util;
 mod calendar;
 mod slider;
+mod api;
+use api::*;
 pub use util::sleep;
 use crate::settings::Settings;
 
@@ -26,7 +28,7 @@ pub enum Page {
 
 pub enum Msg {
     FetchSuccess(Vec<Event>),
-    FetchFailure(anyhow::Error),
+    FetchFailure(ApiError),
     Previous,
     Next,
     Goto {day: u32, month: u32, year: i32},
@@ -38,7 +40,7 @@ pub struct App {
     day_start: u64,
     event_global: Rc<EventGlobalData>,
     api_key: u64,
-    counter: u64,
+    counter: Rc<std::sync::atomic::AtomicU64>,
     events: Vec<Event>,
     page: Page,
     slider_manager: Rc<RefCell<slider::SliderManager>>,
@@ -66,7 +68,8 @@ impl Component for App {
         let window = web_sys::window().unwrap();
         let local_storage = window.local_storage().unwrap().unwrap();
         let api_key = local_storage.get("api_key").unwrap().expect("missing api key").parse().unwrap();
-        let counter = local_storage.get("counter").unwrap().expect("missing counter").parse().unwrap();
+        let counter: u64 = local_storage.get("counter").unwrap().expect("missing counter").parse().unwrap();
+        let counter = Rc::new(std::sync::atomic::AtomicU64::new(counter));
 
         let link2 = Rc::clone(&link);
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
@@ -81,7 +84,17 @@ impl Component for App {
         window.add_event_listener_with_callback("popstate", closure.as_ref().unchecked_ref()).unwrap();
         closure.forget();
 
-        let mut app = Self {
+        // Update events
+        let counter2 = Rc::clone(&counter);
+        let link2 = Rc::clone(&link);
+        wasm_bindgen_futures::spawn_local(async move {
+            match api::load_events(api_key, counter2).await {
+                Ok(events) => link2.send_message(Msg::FetchSuccess(events)),
+                Err(e) => link2.send_message(Msg::FetchFailure(e)),
+            }
+        });
+
+        Self {
             day_start,
             api_key,
             counter,
@@ -91,10 +104,7 @@ impl Component for App {
             slider_manager: slider::SliderManager::init(),
             event_global: Rc::new(EventGlobalData::default()),
             link,
-        };
-        app.new_fetch_task(0..i64::MAX);
-
-        app
+        }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
@@ -148,68 +158,10 @@ impl Component for App {
     }
 }
 
-pub fn gen_code(api_key: u64, counter: u64) -> u64 {
-    let mut key = (api_key + 143 * counter) as u128;
-    for _ in 0..11 {
-        key = key * key + 453;
-        if key <= 0xffff_ffff {
-            key += 0x4242424242424242424242424242;
-        }
-        key &= 0x0000_0000_ffff_ffff_ffff_ffff_0000_0000;
-        key >>= 32;
-    }
-    key as u64
-}
-
 impl App {
     fn week_start(&self) -> u64 {
         let datetime = chrono::offset::FixedOffset::east(1 * 3600).timestamp(self.day_start as i64, 0);
-        let week_start = self.day_start - (datetime.weekday().number_from_monday() as u64 - 1) * 86400;
-        
-        week_start
-    }
-
-    fn new_fetch_task(&mut self, time_range: std::ops::Range<i64>) {
-        let request = Request::get(format!("http://127.0.0.1:8080/api/schedule?start_timestamp=0&end_timestamp={}", u64::MAX))
-            .header("Api-Key", format!("{}-{}-{}", self.api_key, self.counter, gen_code(self.api_key, self.counter)))
-            .body(Nothing)
-            .expect("Could not build request.");
-        self.counter += 1;
-        let window = web_sys::window().unwrap();
-        let local_storage = window.local_storage().unwrap().unwrap();
-        local_storage.set("counter", &self.counter.to_string()).unwrap();
-
-        let callback = self
-            .link
-            .callback(|response: Response<Result<String, anyhow::Error>>| {
-                if response.status() != 200 {
-                    return Msg::FetchFailure(anyhow::Error::msg(format!(
-                        "Failed request. {:?}",
-                        response.into_body()
-                    )));
-                }
-
-                let body = match response.into_body() {
-                    Ok(body) => body,
-                    Err(e) => {
-                        return Msg::FetchFailure(anyhow::Error::msg(format!(
-                            "Cannot read response body. {:?}",
-                            e
-                        )));
-                    }
-                };
-
-                match serde_json::from_str(&body) {
-                    Ok(results) => Msg::FetchSuccess(results),
-                    Err(e) => Msg::FetchFailure(anyhow::Error::msg(format!(
-                        "Cannot deserialize response. {:?}",
-                        e
-                    ))),
-                }
-            });
-
-        let task = FetchService::fetch(request, callback).expect("failed to start request");
-        self.fetch_task = Some(task);
+        self.day_start - (datetime.weekday().number_from_monday() as u64 - 1) * 86400
     }
 }
 
