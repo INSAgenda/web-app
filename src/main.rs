@@ -2,11 +2,7 @@ use agenda_parser::Event;
 use chrono::{Datelike, TimeZone, FixedOffset, NaiveTime};
 use event::EventGlobalData;
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
-use yew::{
-    prelude::*,
-    format::Nothing,
-    services::fetch::{FetchService, FetchTask, Request, Response},
-};
+use yew::prelude::*;
 use std::{rc::Rc, cell::RefCell};
 
 mod event;
@@ -44,7 +40,6 @@ pub struct App {
     events: Vec<Event>,
     page: Page,
     slider_manager: Rc<RefCell<slider::SliderManager>>,
-    fetch_task: Option<FetchTask>,
     link: Rc<ComponentLink<Self>>,
 }
 
@@ -98,7 +93,6 @@ impl Component for App {
             day_start,
             api_key,
             counter,
-            fetch_task: None,
             events: Vec::new(),
             page: Page::Agenda,
             slider_manager: slider::SliderManager::init(),
