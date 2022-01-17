@@ -49,8 +49,9 @@ impl Component for App {
     type Properties = ();
 
     fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let link = Rc::new(link);
+        crash_handler::init();
 
+        let link = Rc::new(link);
         let date = chrono::Local::now();
         let date = date.with_timezone(&FixedOffset::east(1 * 3600));
 
@@ -179,6 +180,5 @@ impl App {
 }
 
 fn main() {
-    crash_handler::init();
     yew::start_app::<App>();
 }
