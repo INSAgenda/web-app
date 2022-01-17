@@ -135,7 +135,7 @@ impl Component for App {
                 let history = web_sys::window().unwrap().history().unwrap();                
                 match &page {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#setttings")).unwrap(),
-                    Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda/index.html")).unwrap(),
+                    Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
                 }
                 self.page = page;
                 true
