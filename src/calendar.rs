@@ -47,6 +47,11 @@ impl Component for Calendar {
                 } else {
                     self.selected_month += 1;
                 }
+                let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
+                if self.selected_day > last_day.day() {
+                    self.selected_day = last_day.day();
+                }
+
                 true
             },
             Msg::PreviousMonth => {
@@ -56,6 +61,11 @@ impl Component for Calendar {
                 } else {
                     self.selected_month -= 1;
                 }
+                let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
+                if self.selected_day > last_day.day() {
+                    self.selected_day = last_day.day();
+                }
+
                 true
             },
             Msg::Goto { day, month, year } => {
