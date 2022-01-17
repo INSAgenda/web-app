@@ -1,6 +1,7 @@
 use agenda_parser::Event;
 use yew::prelude::*;
 use std::{rc::Rc, cell::Cell};
+use chrono::{FixedOffset, TimeZone};
 
 pub struct EventGlobalData {
     opened_event: Cell<Option<Rc<ComponentLink<EventComp>>>>
@@ -92,17 +93,37 @@ impl Component for EventComp {
 
         let location = self.event.location.map(|location| location.to_string());
 
+        let start = chrono::offset::FixedOffset::east(1 * 3600).timestamp(self.event.start_unixtime as i64, 0);
+        let end = chrono::offset::FixedOffset::east(1 * 3600).timestamp(self.event.end_unixtime as i64, 0);
+        let duration = (self.event.end_unixtime - self.event.start_unixtime) / 60;
+        let groups = self.event.groups.iter().map(|g| format!("{:?}", g)).collect::<Vec<_>>().join(", ");
+
         html! {
             <div style=format!("background-color: #98fb98; position: absolute; top: {}%; height: {}%;", percent_offset, percent_height) class="event" onclick=self.link.callback(|_| EventCompMsg::ToggleDetails)>
-                <span class="name">{ name }</span>
+                <span class="name">{ &name }</span>
                 <span class="teacher">{ self.event.teachers.join(", ") }</span>
                 {if let Some(l) = location {html! {<span>{l}</span>}} else {html!{}}}
                 <div class="event-details" style=if self.show_details {""} else {"display: none;"}>
                     <div class="event-details-header">
-                        <span>{"01h00 - Lundi 3 janvier"}</span>
+                        <span>{ name }</span>
                     </div>
                     <div class="event-details-content">
-                        {"ALLO"}
+                        <div>
+                            <span class="bold">{"Début : "}</span>
+                            {start.time().format("%Hh%M")}
+                        </div>
+                        <div>
+                            <span class="bold">{"Fin : "}</span>
+                            {end.time().format("%Hh%M")}
+                        </div>
+                        <div>
+                            <span class="bold">{"Durée : "}</span>
+                            {duration}{"min"}
+                        </div>
+                        <div>
+                            <span class="bold">{ if self.event.groups.len() > 1 {{"Groupes : "}} else {{"Groupe : "}} }</span>
+                            {groups}
+                        </div>
                     </div>
                 </div>
             </div>
