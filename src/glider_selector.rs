@@ -1,29 +1,26 @@
 use yew::prelude::*;
-use std::rc::Rc;
 
 pub enum Msg {
     Init,
     Select(usize),
 }
 
-#[derive(Properties, Clone)]
-pub struct GliderSelectorProp {
+#[derive(Properties, PartialEq, Clone)]
+pub struct GliderSelectorProps {
     pub values: Vec<&'static str>,
 }
 
 pub struct GliderSelector {
-    values: Vec<&'static str>,
     sizes: Vec<u32>,
     selected: usize,
     id: String,
-    link: Rc<ComponentLink<Self>>,
 }
 
 impl Component for GliderSelector {
     type Message = Msg;
-    type Properties = GliderSelectorProp;
+    type Properties = GliderSelectorProps;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         let mut id = String::from("glider-selector-");
         let crypto = web_sys::window().unwrap().crypto().unwrap();
         let mut random_bytes = [0; 20];
@@ -33,21 +30,19 @@ impl Component for GliderSelector {
         }
 
         GliderSelector {
-            values: props.values,
             id,
             sizes: Vec::new(),
             selected: 0,
-            link: Rc::new(link),
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Init => {
                 let this = web_sys::window().unwrap().document().unwrap().get_element_by_id(&self.id).unwrap();
                 let children = this.children();
                 self.sizes.clear();
-                for i in 1..=self.values.len() {
+                for i in 1..=ctx.props().values.len() {
                     let child = children.item(i as u32).unwrap();
                     let width = child.client_width();
                     self.sizes.push(width as u32);
@@ -61,13 +56,8 @@ impl Component for GliderSelector {
         }
     }
 
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.values = props.values;
-        true
-    }
-
-    fn view(&self) -> Html {
-        let glider_selected = if self.sizes.len() == self.values.len() {
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let glider_selected = if self.sizes.len() == ctx.props().values.len() {
             let mut offset = 0;
             for i in 0..self.selected {
                 offset += self.sizes[i];
@@ -75,10 +65,10 @@ impl Component for GliderSelector {
             let width = self.sizes[self.selected];
 
             html! {
-                <div id="glider-selected" style=format!("left: {}px; width: calc({}px - 2rem);", offset, width)></div>
+                <div id="glider-selected" style={format!("left: {}px; width: calc({}px - 2rem);", offset, width)}></div>
             }
         } else {
-            let link2 = Rc::clone(&self.link);
+            let link2 = ctx.link().clone();
             wasm_bindgen_futures::spawn_local(async move {
                 crate::sleep(std::time::Duration::from_millis(30)).await;
                 link2.send_message(Msg::Init);
@@ -90,14 +80,14 @@ impl Component for GliderSelector {
         };
 
         html! {
-            <div class="glider-selector" id=self.id.clone()>
+            <div class="glider-selector" id={self.id.clone()}>
                 {glider_selected}
                 {
-                    self.values.iter().enumerate().map(|(i, v)|
+                    ctx.props().values.iter().enumerate().map(|(i, v)|
                         if i == self.selected {
                             html! { <div style="color: white;">{v}</div> }
                         } else {
-                            html! { <div onclick=self.link.callback(move |_| Msg::Select(i))>{v}</div> }
+                            html! { <div onclick={ctx.link().callback(move |_| Msg::Select(i))}>{v}</div> }
                         }
                     ).collect::<Html>()
                 }

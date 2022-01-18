@@ -1,8 +1,6 @@
 use chrono::{offset::FixedOffset, Weekday, Datelike, TimeZone};
 use crate::{event::EventComp, App, calendar::Calendar};
-use yew::{
-    prelude::*,
-};
+use yew::prelude::*;
 
 fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
     let month = match month {
@@ -35,15 +33,14 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
 }
 
 impl App {
-    pub fn view_agenda(&self) -> Html {
+    pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
         let selected_day_datetime = FixedOffset::east(1 * 3600).timestamp(self.day_start as i64, 0);
         let selected_day = format_day(selected_day_datetime.weekday(), selected_day_datetime.day(), selected_day_datetime.month());
 
         let mut days = Vec::new();
         let mut day_names = Vec::new();
         for offset in 0..5 {
-            let datetime =
-                FixedOffset::east(1 * 3600).timestamp((self.week_start() + offset * 86400) as i64, 0);
+            let datetime = FixedOffset::east(1 * 3600).timestamp((self.week_start() + offset * 86400) as i64, 0);
                 
             let mut events = Vec::new();
             for event in &self.events {
@@ -51,7 +48,7 @@ impl App {
                     && (event.start_unixtime as i64) < datetime.timestamp() + 86400
                 {
                     events.push(html! {
-                        <EventComp event=event.clone() day_start={self.week_start()+offset*86400} global=self.event_global.clone()></EventComp>
+                        <EventComp event={event.clone()} day_start={self.week_start()+offset*86400} global={self.event_global.clone()}></EventComp>
                     });
                 }
             }
@@ -87,9 +84,9 @@ impl App {
                 </div>
                 <div id="calendar-main-part">
                     <div id="calendar-top">
-                        <a id="calendar-arrow-left" onclick=self.link.callback(|_| crate::Msg::Previous)></a>
+                        <a id="calendar-arrow-left" onclick={ctx.link().callback(|_| crate::Msg::Previous)}></a>
                         <a id="mobile-day-name">{selected_day}</a>
-                        <a id="calendar-arrow-right" onclick=self.link.callback(|_| crate::Msg::Next)></a>
+                        <a id="calendar-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
                         { day_names }
                     </div>
                     <div id="day-container">
@@ -111,9 +108,9 @@ impl App {
                     <div class="divider-bar-option"></div>
                 </div>
                 <div class="option-name">{"Calendrier :"}</div>
-                <Calendar link=std::rc::Rc::clone(&self.link)/>
+                <Calendar app_link={ctx.link().clone()}/>
                 <br/>
-                <div class="white-button" onclick=self.link.callback(|_| crate::Msg::SetPage(crate::Page::Settings))>{"Paramètres"}</div>    
+                <div class="white-button" onclick={ctx.link().callback(|_| crate::Msg::SetPage(crate::Page::Settings))}>{"Paramètres"}</div>    
             </div>
         </main>
             </>

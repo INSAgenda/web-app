@@ -1,10 +1,13 @@
 use yew::prelude::*;
 use chrono::{Datelike, FixedOffset, Local, NaiveDate};
-use std::rc::Rc;
 
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
-    pub link: std::rc::Rc<ComponentLink<crate::App>>,
+    pub app_link: yew::html::Scope<crate::App>,
+}
+
+impl PartialEq for CalendarProps {
+    fn eq(&self, _other: &Self) -> bool { true }
 }
 
 pub enum Msg {
@@ -16,29 +19,25 @@ pub enum Msg {
 pub struct Calendar {
     selected_day: u32,
     selected_month: u32,
-    selected_year: i32,
-    link: ComponentLink<Self>,
-    app_link: Rc<ComponentLink<crate::App>>,
+    selected_year: i32
 }
 
 impl Component for Calendar {
     type Message = Msg;
     type Properties = CalendarProps;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         let now = Local::now();
         let now = now.with_timezone(&FixedOffset::east(1 * 3600));
 
         Calendar {
             selected_day: now.day(),
             selected_month: now.month(),
-            selected_year: now.year(),
-            link,
-            app_link: props.link,
+            selected_year: now.year()
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::NextMonth => {
                 if self.selected_month == 12 {
@@ -72,15 +71,13 @@ impl Component for Calendar {
                 self.selected_day = day;
                 self.selected_month = month;
                 self.selected_year = year;
-                self.app_link.send_message(crate::Msg::Goto {day,month,year});
+                ctx.props().app_link.send_message(crate::Msg::Goto {day,month,year});
                 true
             },
         }
     }
 
-    fn change(&mut self, _: Self::Properties) -> ShouldRender { false }
-
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         let mut date = NaiveDate::from_ymd(self.selected_year, self.selected_month, self.selected_day);
         let first_day = NaiveDate::from_ymd(self.selected_year, self.selected_month, 1);
         let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
@@ -104,7 +101,7 @@ impl Component for Calendar {
         let mut calendar_cases = Vec::new();
         for _ in 0..first_day.weekday().number_from_monday() - 1 {
             calendar_cases.push(html! {
-                <span class="calendar-case" onclick=self.link.callback(|_| Msg::PreviousMonth)></span>
+                <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::PreviousMonth)}></span>
             });
         }
 
@@ -112,20 +109,20 @@ impl Component for Calendar {
             let month = self.selected_month;
             let year = self.selected_year;
             calendar_cases.push(html! {
-                <span class="calendar-case" id=if day==self.selected_day {Some("selected-calendar-case")} else {None} onclick=self.link.callback(move |_| Msg::Goto {day,month,year})>{day.to_string()}</span>
+                <span class="calendar-case" id={if day==self.selected_day {Some("selected-calendar-case")} else {None}} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
             });
         }
 
         while calendar_cases.len() % 7 != 0 {
             calendar_cases.push(html! {
-                <span class="calendar-case" onclick=self.link.callback(|_| Msg::NextMonth)></span>
+                <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::NextMonth)}></span>
             });
         }
 
         let mut weeks = Vec::new();
         for week in 1..=calendar_cases.len()/7 {
             weeks.push(html! {
-                <div id=format!("week{}", week) class="calendar-week">
+                <div id={format!("week{}", week)} class="calendar-week">
                     { calendar_cases.drain(0..7).collect::<Vec<_>>() }
                 </div>
             })
@@ -134,9 +131,9 @@ impl Component for Calendar {
         html! {
             <div id="small-calendar">
                 <div id="calendar-header">
-                    <button class="calendar-arrow" onclick=self.link.callback(|_| Msg::PreviousMonth)></button>
+                    <button class="calendar-arrow" onclick={ctx.link().callback(|_| Msg::PreviousMonth)}></button>
                     <span id="calendar-title">{display_month}</span>
-                    <button class="calendar-arrow" onclick=self.link.callback(|_| Msg::NextMonth) id="calendar-right-arrow"></button>
+                    <button class="calendar-arrow" onclick={ctx.link().callback(|_| Msg::NextMonth)} id="calendar-right-arrow"></button>
                 </div>
                 <div id="calendar-content">
                     <div id="calendar-days">

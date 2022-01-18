@@ -1,47 +1,39 @@
 use yew::prelude::*;
 use crate::{glider_selector::GliderSelector, App};
-use std::rc::Rc;
 
 pub enum Msg {
     Confirm,
 }
 
 #[derive(Properties, Clone)]
-pub struct SettingsProp {
-    pub app_link: Rc<ComponentLink<App>>,
+pub struct SettingsProps {
+    pub app_link: yew::html::Scope<App>,
 }
 
-pub struct Settings {
-    link: ComponentLink<Self>,
-    app_link: Rc<ComponentLink<App>>,
+impl PartialEq for SettingsProps {
+    fn eq(&self, _other: &Self) -> bool { true }
 }
+
+pub struct Settings {}
 
 impl Component for Settings {
     type Message = Msg;
-    type Properties = SettingsProp;
+    type Properties = SettingsProps;
 
-    fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        Self {
-            link,
-            app_link: props.app_link,
-        }
+    fn create(_ctx: &Context<Self>) -> Self {
+        Self {}
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Confirm => {
-                self.app_link.send_message(crate::Msg::SetPage(crate::Page::Agenda));
+                ctx.props().app_link.send_message(crate::Msg::SetPage(crate::Page::Agenda));
                 false
             }
         }
     }
 
-    fn change(&mut self, props: Self::Properties) -> ShouldRender {
-        self.app_link = props.app_link;
-        true
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         html! {<>
             <header>
                 <h1>{"Paramètres"}</h1>
@@ -66,7 +58,7 @@ impl Component for Settings {
                     <div class="setting">
                         <h3>{"Changer le type d'authentification"}</h3>
                         <p>{"L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email."}</p>
-                        <GliderSelector values=vec!["Email", "Mot de passe", "Email + Mot de passe"] />
+                        <GliderSelector values={vec!["Email", "Mot de passe", "Email + Mot de passe"]} />
                     </div>
                 </div>
                 <h2>{"Affichage"}</h2>
@@ -74,17 +66,17 @@ impl Component for Settings {
                     <div class="setting">
                         <h3>{"Thème"}</h3>
                         <p>{"Par défault, le thème est celui renseigné par votre navigateur."}</p>
-                        <GliderSelector values=vec!["Automatique", "Sombre", "Clair"] />
+                        <GliderSelector values={vec!["Automatique", "Sombre", "Clair"]} />
                     </div>
                     <br/>
                     <br/>
                     <div class="setting">
                         <h3>{"Nom des bâtiments"}</h3>
                         <p>{"L'affichage court correspond à seulement les deux premières lettres du nom (ex: Ma plutôt que Magellan)."}</p>
-                        <GliderSelector values=vec!["Normal", "Court"] />
+                        <GliderSelector values={vec!["Normal", "Court"]} />
                     </div>
                 </div>
-                <div class="red-button" onclick=self.link.callback(move |_| Msg::Confirm)>{"Valider"}</div>
+                <div class="red-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{"Valider"}</div>
             </main>
             <footer>
             </footer>

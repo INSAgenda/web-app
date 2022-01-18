@@ -41,17 +41,15 @@ pub struct App {
     events: Vec<Event>,
     page: Page,
     slider_manager: Rc<RefCell<slider::SliderManager>>,
-    link: Rc<ComponentLink<Self>>,
 }
 
 impl Component for App {
     type Message = Msg;
     type Properties = ();
 
-    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         crash_handler::init();
 
-        let link = Rc::new(link);
         let date = chrono::Local::now();
         let date = date.with_timezone(&FixedOffset::east(1 * 3600));
 
@@ -76,7 +74,7 @@ impl Component for App {
         };
         let counter = Rc::new(std::sync::atomic::AtomicU64::new(counter));
 
-        let link2 = Rc::clone(&link);
+        let link2 = ctx.link().clone();
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
             let state = e.state().as_string();
             match state.as_deref() {
@@ -100,7 +98,7 @@ impl Component for App {
         }
         if !skip_event_loading {
             let counter2 = Rc::clone(&counter);
-            let link2 = Rc::clone(&link);
+            let link2 = ctx.link().clone();
             wasm_bindgen_futures::spawn_local(async move {
                 match api::load_events(api_key, counter2).await {
                     Ok(events) => link2.send_message(Msg::FetchSuccess(events)),
@@ -117,11 +115,10 @@ impl Component for App {
             page: Page::Agenda,
             slider_manager: slider::SliderManager::init(),
             event_global: Rc::new(EventGlobalData::default()),
-            link,
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::FetchSuccess(events) => {
                 self.events = events;
@@ -160,14 +157,10 @@ impl Component for App {
         }
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
-        false
-    }
-
-    fn view(&self) -> Html {
+    fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
-            Page::Agenda => self.view_agenda(),
-            Page::Settings => html!( <Settings app_link=Rc::clone(&self.link) /> ),
+            Page::Agenda => self.view_agenda(ctx),
+            Page::Settings => html!( <Settings app_link={ ctx.link().clone() } /> ),
         }
     }
 }

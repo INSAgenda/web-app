@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
-yew = "0.18"
+yew = "0.19"
 wasm-bindgen = {version="0.2", features=["serde-serialize"]}
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
