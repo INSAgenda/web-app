@@ -8,6 +8,9 @@ pub enum Msg {
 #[derive(Properties, PartialEq, Clone)]
 pub struct GliderSelectorProps {
     pub values: Vec<&'static str>,
+    pub selected: usize,
+    #[prop_or_default]
+    pub on_change: Option<Callback<usize>>,
 }
 
 pub struct GliderSelector {
@@ -20,7 +23,7 @@ impl Component for GliderSelector {
     type Message = Msg;
     type Properties = GliderSelectorProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         let mut id = String::from("glider-selector-");
         let crypto = web_sys::window().unwrap().crypto().unwrap();
         let mut random_bytes = [0; 20];
@@ -32,7 +35,7 @@ impl Component for GliderSelector {
         GliderSelector {
             id,
             sizes: Vec::new(),
-            selected: 0,
+            selected: ctx.props().selected,
         }
     }
 
@@ -87,7 +90,15 @@ impl Component for GliderSelector {
                         if i == self.selected {
                             html! { <div style="color: white;">{v}</div> }
                         } else {
-                            html! { <div onclick={ctx.link().callback(move |_| Msg::Select(i))}>{v}</div> }
+                            html! { <div onclick={
+                                let on_change = ctx.props().on_change.clone();
+                                ctx.link().callback(move |_| {
+                                    if let Some(on_change) = &on_change {
+                                        on_change.emit(i);
+                                    }
+                                    Msg::Select(i)
+                                })
+                            }>{v}</div> }
                         }
                     ).collect::<Html>()
                 }

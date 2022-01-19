@@ -1,7 +1,8 @@
-use agenda_parser::{Event, event::EventKind};
+use agenda_parser::{Event, event::EventKind, location::Building};
 use yew::prelude::*;
 use std::{rc::Rc, cell::Cell};
 use chrono::{FixedOffset, TimeZone};
+use crate::settings::{SETTINGS, BuildingNaming};
 
 pub struct EventGlobalData {
     opened_event: Cell<Option<yew::html::Scope<EventComp>>>
@@ -81,7 +82,20 @@ impl Component for EventComp {
             EventKind::Other(kind) => kind.to_string(),
         };
 
-        let location = ctx.props().event.location.map(|location| location.to_string());
+        let location = ctx.props().event.location.map(|location| {
+            let building =  match SETTINGS.building_naming() {
+                BuildingNaming::Short => match location.building {
+                    Building::Magellan => "Ma",
+                    Building::DumontDurville => "Du",
+                },
+                BuildingNaming::Long => match location.building {
+                    Building::Magellan => "Magellan",
+                    Building::DumontDurville => "Dumont Durville",
+                },
+            };
+
+            format!("{} - {} - {} - {}", building, location.building_area, location.level, location.room_number)
+        });
 
         let start = FixedOffset::east(1 * 3600).timestamp(ctx.props().event.start_unixtime as i64, 0);
         let end = FixedOffset::east(1 * 3600).timestamp(ctx.props().event.end_unixtime as i64, 0);

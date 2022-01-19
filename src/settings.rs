@@ -1,8 +1,39 @@
 use yew::prelude::*;
 use crate::{glider_selector::GliderSelector, App};
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+lazy_static::lazy_static!{
+    pub static ref SETTINGS: SettingStore = SettingStore {
+        building_naming: AtomicUsize::new(0),
+    };
+}
+
+pub enum BuildingNaming {
+    Short = 0,
+    Long,
+}
+
+pub struct SettingStore {
+    building_naming: AtomicUsize,
+}
+
+impl SettingStore {
+    pub fn building_naming(&self) -> BuildingNaming {
+        match self.building_naming.load(Ordering::Relaxed) {
+            0 => BuildingNaming::Short,
+            1 => BuildingNaming::Long,
+            _ => unreachable!(),
+        }
+    }
+
+    fn set_building_naming(&self, building_naming: usize) {
+        self.building_naming.store(building_naming, Ordering::Relaxed);
+    }
+}
 
 pub enum Msg {
     Confirm,
+    BuildingNamingChange(usize),
 }
 
 #[derive(Properties, Clone)]
@@ -28,6 +59,10 @@ impl Component for Settings {
         match msg {
             Msg::Confirm => {
                 ctx.props().app_link.send_message(crate::Msg::SetPage(crate::Page::Agenda));
+                false
+            }
+            Msg::BuildingNamingChange(v) => {
+                SETTINGS.set_building_naming(v);
                 false
             }
         }
@@ -58,7 +93,7 @@ impl Component for Settings {
                     <div class="setting">
                         <h3>{"Changer le type d'authentification"}</h3>
                         <p>{"L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email."}</p>
-                        <GliderSelector values={vec!["Email", "Mot de passe", "Email + Mot de passe"]} />
+                        <GliderSelector values={vec!["Email", "Mot de passe", "Email + Mot de passe"]} selected=0 />
                     </div>
                 </div>
                 <h2>{"Affichage"}</h2>
@@ -66,14 +101,17 @@ impl Component for Settings {
                     <div class="setting">
                         <h3>{"Thème"}</h3>
                         <p>{"Par défault, le thème est celui renseigné par votre navigateur."}</p>
-                        <GliderSelector values={vec!["Automatique", "Sombre", "Clair"]} />
+                        <GliderSelector values={vec!["Automatique", "Sombre", "Clair"]} selected=0 />
                     </div>
                     <br/>
                     <br/>
                     <div class="setting">
                         <h3>{"Nom des bâtiments"}</h3>
                         <p>{"L'affichage court correspond à seulement les deux premières lettres du nom (ex: Ma plutôt que Magellan)."}</p>
-                        <GliderSelector values={vec!["Normal", "Court"]} />
+                        <GliderSelector
+                            values={vec!["Court", "Long"]}
+                            on_change={ctx.link().callback(Msg::BuildingNamingChange)}
+                            selected={SETTINGS.building_naming() as usize} />
                     </div>
                 </div>
                 <div class="red-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{"Valider"}</div>
