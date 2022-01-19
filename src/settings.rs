@@ -93,7 +93,9 @@ impl Component for Settings {
                     <div class="setting">
                         <h3>{"Changer le type d'authentification"}</h3>
                         <p>{"L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email."}</p>
-                        <GliderSelector values={vec!["Email", "Mot de passe", "Email + Mot de passe"]} selected=0 />
+                        <GliderSelector
+                            values = { vec!["Email", "Mot de passe", "Email + Mot de passe"] }
+                            selected = 0 />
                     </div>
                 </div>
                 <h2>{"Affichage"}</h2>
@@ -101,7 +103,9 @@ impl Component for Settings {
                     <div class="setting">
                         <h3>{"Thème"}</h3>
                         <p>{"Par défault, le thème est celui renseigné par votre navigateur."}</p>
-                        <GliderSelector values={vec!["Automatique", "Sombre", "Clair"]} selected=0 />
+                        <GliderSelector
+                            values = { vec!["Automatique", "Sombre", "Clair"] }
+                            selected = 0 />
                     </div>
                     <br/>
                     <br/>
@@ -109,9 +113,9 @@ impl Component for Settings {
                         <h3>{"Nom des bâtiments"}</h3>
                         <p>{"L'affichage court correspond à seulement les deux premières lettres du nom (ex: Ma plutôt que Magellan)."}</p>
                         <GliderSelector
-                            values={vec!["Court", "Long"]}
-                            on_change={ctx.link().callback(Msg::BuildingNamingChange)}
-                            selected={SETTINGS.building_naming() as usize} />
+                            values = { vec!["Court", "Long"] }
+                            on_change = { ctx.link().callback(Msg::BuildingNamingChange) }
+                            selected = { SETTINGS.building_naming() as usize } />
                     </div>
                 </div>
                 <div class="red-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{"Valider"}</div>
