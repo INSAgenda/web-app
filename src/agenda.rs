@@ -1,4 +1,5 @@
-use chrono::{offset::FixedOffset, Weekday, Datelike, TimeZone};
+use chrono::{Weekday, Datelike, TimeZone};
+use chrono_tz::Europe::Paris;
 use crate::{event::EventComp, App, calendar::Calendar};
 use yew::prelude::*;
 
@@ -34,13 +35,13 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
 
 impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
-        let selected_day_datetime = FixedOffset::east(1 * 3600).timestamp(self.day_start as i64, 0);
+        let selected_day_datetime = Paris.timestamp(self.day_start as i64, 0);
         let selected_day = format_day(selected_day_datetime.weekday(), selected_day_datetime.day(), selected_day_datetime.month());
 
         let mut days = Vec::new();
         let mut day_names = Vec::new();
         for offset in 0..5 {
-            let datetime = FixedOffset::east(1 * 3600).timestamp((self.week_start() + offset * 86400) as i64, 0);
+            let datetime = Paris.timestamp((self.week_start() + offset * 86400) as i64, 0);
                 
             let mut events = Vec::new();
             for event in &self.events {

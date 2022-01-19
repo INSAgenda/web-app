@@ -1,7 +1,8 @@
 use agenda_parser::{Event, event::EventKind, location::Building};
 use yew::prelude::*;
 use std::{rc::Rc, cell::Cell};
-use chrono::{FixedOffset, TimeZone};
+use chrono::TimeZone;
+use chrono_tz::Europe::Paris;
 use crate::settings::{SETTINGS, BuildingNaming};
 
 pub struct EventGlobalData {
@@ -42,7 +43,7 @@ impl Component for EventComp {
     type Message = EventCompMsg;
     type Properties = EventCompProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         EventComp {
             show_details: false,
         }
@@ -97,8 +98,8 @@ impl Component for EventComp {
             format!("{} - {} - {} - {}", building, location.building_area, location.level, location.room_number)
         });
 
-        let start = FixedOffset::east(1 * 3600).timestamp(ctx.props().event.start_unixtime as i64, 0);
-        let end = FixedOffset::east(1 * 3600).timestamp(ctx.props().event.end_unixtime as i64, 0);
+        let start = Paris.timestamp(ctx.props().event.start_unixtime as i64, 0);
+        let end = Paris.timestamp(ctx.props().event.end_unixtime as i64, 0);
         let duration = (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) / 60;
         let groups = ctx.props().event.groups.iter().map(|g| format!("{:?}", g)).collect::<Vec<_>>().join(", ");
 

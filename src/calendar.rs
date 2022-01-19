@@ -1,5 +1,6 @@
 use yew::prelude::*;
-use chrono::{Datelike, FixedOffset, Local, NaiveDate};
+use chrono::{Datelike, Local, NaiveDate};
+use chrono_tz::Europe::Paris;
 
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
@@ -28,7 +29,7 @@ impl Component for Calendar {
 
     fn create(_ctx: &Context<Self>) -> Self {
         let now = Local::now();
-        let now = now.with_timezone(&FixedOffset::east(1 * 3600));
+        let now = now.with_timezone(&Paris);
 
         Calendar {
             selected_day: now.day(),
@@ -78,7 +79,6 @@ impl Component for Calendar {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let mut date = NaiveDate::from_ymd(self.selected_year, self.selected_month, self.selected_day);
         let first_day = NaiveDate::from_ymd(self.selected_year, self.selected_month, 1);
         let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
 

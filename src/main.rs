@@ -1,9 +1,10 @@
 use agenda_parser::Event;
-use chrono::{Datelike, TimeZone, FixedOffset, NaiveTime};
+use chrono::{Datelike, TimeZone, NaiveTime};
 use event::EventGlobalData;
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use yew::prelude::*;
 use std::{rc::Rc, cell::RefCell};
+use chrono_tz::Europe::Paris;
 
 mod event;
 mod settings;
@@ -51,7 +52,7 @@ impl Component for App {
         crash_handler::init();
 
         let date = chrono::Local::now();
-        let date = date.with_timezone(&FixedOffset::east(1 * 3600));
+        let date = date.with_timezone(&Paris);
 
         let mut day_start = (date.timestamp() - (date.timestamp() + 1 * 3600) % 86400) as u64;
         match date.weekday().number_from_monday() {
@@ -150,7 +151,7 @@ impl Component for App {
                 true
             }
             Msg::Goto {day, month, year} => {
-                let datetime = FixedOffset::east(1 * 3600).ymd(year, month, day).and_time(NaiveTime::from_hms(0, 0, 0)).unwrap();
+                let datetime = Paris.ymd(year, month, day).and_time(NaiveTime::from_hms(0, 0, 0)).unwrap();
                 self.day_start = datetime.timestamp() as u64;
                 true
             }
@@ -167,7 +168,7 @@ impl Component for App {
 
 impl App {
     fn week_start(&self) -> u64 {
-        let datetime = chrono::offset::FixedOffset::east(1 * 3600).timestamp(self.day_start as i64, 0);
+        let datetime = Paris.timestamp(self.day_start as i64, 0);
         self.day_start - (datetime.weekday().number_from_monday() as u64 - 1) * 86400
     }
 }
