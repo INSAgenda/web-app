@@ -95,7 +95,6 @@ header>h1 {
     background-position: bottom;
     background-size: 17px 2px;
     background-repeat: repeat-x;
-    z-index: 2;
 }
 
 #calendar-main-part {
