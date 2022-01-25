@@ -18,37 +18,39 @@ header>h1 {
 
 /* Main section */
 
+body {
+    background-color: var(--dp00);
+}
+
 #calendar-main {
     display: flex;
     justify-content: space-around;
-    height: 94vh;
+    height: calc(96vh - 1rem);
+    padding: .5rem;
     min-height: 30rem;
-    margin: 1vh 0;
 }
-
 
 /* Section in calendar */
 
 #calendar, #option {
-    box-shadow: 0px 0px 7px #00000029;
-    border-radius: 15px;
-    background-color: var(--calendar-color);
+    /*box-shadow: 0px 0px 7px #00000029;*/
     min-height: 80vh;
+    padding: .75rem;
+    margin: .5rem;
+    border-radius: .5rem;
+    background-color: var(--dp01);
 }
-
 
 /* Section option */
 
 #option {
-    width: 18%;
+    width: min-content;
 }
-
 
 /* Calendar */
 
 #calendar {
-    width: 80%;
-    padding: .5rem 1rem 1rem 1rem;
+    flex-grow: 1;
     display: flex;
 }
 
@@ -133,7 +135,7 @@ header>h1 {
     height: 100%;
     width: 19%;
     margin: 0 .5%;
-    background-color: var(--closer-background);
+    background-color: var(--dp02);
 }
 
 .event {
@@ -158,7 +160,7 @@ header>h1 {
     width: 214px;
     min-height: 346px;
     position: absolute;
-    background-color: var(--background);
+    background-color: var(--dp06);
     top: 0;
     right: -214px;
     border-radius: 1rem;
@@ -226,7 +228,7 @@ header>h1 {
 }
 
 .divider-bar-option {
-    background-color: var(--red);
+    background-color: var(--dp24);
     height: 3px;
     width: 48px;
     border-radius: 3px;
@@ -239,7 +241,7 @@ header>h1 {
     width: min-content;
     border-radius: 1rem;
     box-shadow: 0px 3px 6px #00000029;
-    background-color: var(--closer-background);
+    background-color: var(--dp02);
 }
 
 #calendar-header {
@@ -301,7 +303,7 @@ header>h1 {
 }
 
 .calendar-case:hover {
-    background-color: #3f3f3f;
+    background-color: var(--dp24);
 }
 
 #selected-calendar-case {
@@ -316,7 +318,7 @@ header>h1 {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border-bottom: #888888 solid 1px;
+    border-bottom: #555 solid 1px;
 }
 
 .calendar-week:last-child {
