@@ -236,6 +236,7 @@ header>h1 {
 /* Calendar */
 
 #small-calendar {
+    width: min-content;
     border-radius: 1rem;
     box-shadow: 0px 3px 6px #00000029;
     background-color: var(--closer-background);
@@ -289,9 +290,9 @@ header>h1 {
 }
 
 .calendar-case {
-    width: calc(100%/7);
-    padding: .2rem;
+    width: 1rem;
     height: 1rem;
+    padding: .2rem;
     cursor: pointer;
     text-align: center;
     border-radius: 15px;
@@ -309,12 +310,13 @@ header>h1 {
 }
 
 .calendar-week {
+    width: 14rem;
+    height: 2rem;
     font-size: 0.8rem;
     display: flex;
     justify-content: space-around;
-    height: 2rem;
-    border-bottom: #888888 solid 1px;
     align-items: center;
+    border-bottom: #888888 solid 1px;
 }
 
 .calendar-week:last-child {
