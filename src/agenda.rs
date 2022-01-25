@@ -55,7 +55,7 @@ impl App {
             }
 
             day_names.push(html! {
-                <span>
+                <span id={if datetime == selected_day_datetime {"selected-day"} else {""}}>
                     { format_day(datetime.weekday(), datetime.day(), datetime.month()) }
                 </span>
             });
@@ -86,9 +86,8 @@ impl App {
                 <div id="calendar-main-part">
                     <div id="calendar-top">
                         <a id="calendar-arrow-left" onclick={ctx.link().callback(|_| crate::Msg::Previous)}></a>
-                        <a id="mobile-day-name">{selected_day}</a>
-                        <a id="calendar-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
                         { day_names }
+                        <a id="calendar-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
                     </div>
                     <div id="day-container">
                         <div id="line-container">

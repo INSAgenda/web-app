@@ -110,19 +110,13 @@ body {
     height: 2rem;
 }
 
-#calendar-top>span, #mobile-day-name {
+#calendar-top>span {
     width: 100%;
     display: flex;
     justify-content: center;
     margin: 0 5px;
     align-items: center;
     color: var(--calendar-text);
-}
-
-#mobile-day-name {
-    display: none;
-    color: var(--calendar-text);
-    text-decoration: none;
 }
 
 #day-container {
@@ -352,7 +346,7 @@ body {
         overflow: hidden;
     }
 
-    /*#calendar-arrow-left, #calendar-arrow-right {
+    #calendar-arrow-left, #calendar-arrow-right {
         background-image: url(http://localhost:8080/assets/elements/red-arrow.svg);
         height: 18px;
         width: 11px;
@@ -363,10 +357,17 @@ body {
     }
 
     #calendar-top {
-        align-self: center;
-        margin: 0;
-        height: 2rem;
         width: 100%;
+        align-self: center;
         justify-content: space-between;
-    }*/
+    }
+
+    #calendar-top>span {
+        display: none;
+    }
+
+    #calendar-top>#selected-day {
+        display: inline;
+        text-align: center;
+    }
 }

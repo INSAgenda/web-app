@@ -145,6 +145,7 @@ impl SliderManager {
     pub fn enable(&mut self) {
         self.enabled = true;
         self.start_pos = None;
+        self.update_displayed_day_name();
     }
 
     pub fn disable(&mut self) {
@@ -155,6 +156,21 @@ impl SliderManager {
         let document = window.document().unwrap();
         if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
             day_container.style().set_property("transform", "translateX(0px)").unwrap();
+        }
+    }
+
+    fn update_displayed_day_name(&self) {
+        let day_names = match web_sys::window().unwrap().document().unwrap().get_element_by_id("calendar-top") {
+            Some(day_names) => day_names.children(),
+            None => return,
+        };
+
+        for i in 1..day_names.length() - 1 {
+            let day_name = day_names.item(i).unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+            match i - 1 == self.selected_index {
+                true => day_name.set_attribute("id", "selected-day").unwrap(),
+                false => day_name.set_attribute("id", "").unwrap(),
+            }
         }
     }
 
@@ -208,5 +224,6 @@ impl SliderManager {
 
         day_container.style().set_property("transform", &format!("translateX(calc(-20% * {}))", self.selected_index)).unwrap();
         self.start_pos = None;
+        self.update_displayed_day_name();
     }
 }
