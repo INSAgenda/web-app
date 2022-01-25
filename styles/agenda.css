@@ -170,7 +170,8 @@ header>h1 {
 }
 
 .event-details-header {
-    height: 2rem;
+    min-height: 1.4rem;
+    padding: .3rem .5rem;
     background-color: #98fb98;
     border-radius: 1rem 1rem 0 0;
     font-weight: 500;
