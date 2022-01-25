@@ -33,7 +33,7 @@ body {
 /* Section in calendar */
 
 #calendar, #option {
-    /*box-shadow: 0px 0px 7px #00000029;*/
+    box-shadow: 0px 0px 15px #00000029;
     min-height: 80vh;
     padding: .75rem;
     margin: .5rem;
