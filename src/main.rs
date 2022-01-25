@@ -35,7 +35,7 @@ pub enum Msg {
 }
 
 pub struct App {
-    day_start: u64,
+    selected_day: (u32, u32, i32),
     event_global: Rc<EventGlobalData>,
     api_key: u64,
     counter: Rc<std::sync::atomic::AtomicU64>,
@@ -51,11 +51,11 @@ impl Component for App {
     fn create(ctx: &Context<Self>) -> Self {
         crash_handler::init();
 
-        let date = chrono::Local::now();
-        let date = date.with_timezone(&Paris);
+        let now = chrono::Local::now();
+        let now = now.with_timezone(&Paris);
 
-        let mut day_start = (date.timestamp() - (date.timestamp() + 1 * 3600) % 86400) as u64;
-        match date.weekday().number_from_monday() {
+        let mut day_start = (now.timestamp() - (now.timestamp() + 1 * 3600) % 86400) as u64;
+        match now.weekday().number_from_monday() {
             6 => day_start += 86400,
             7 => day_start += 2 * 86400,
             _ => (),
@@ -92,7 +92,7 @@ impl Component for App {
         let mut skip_event_loading = false;
         let mut events = Vec::new();
         if let Some((last_updated, cached_events)) = api::load_cache() {
-            if last_updated > date.timestamp() - 3600*5 && !cached_events.is_empty() {
+            if last_updated > now.timestamp() - 3600*5 && !cached_events.is_empty() {
                 skip_event_loading = true;
             }
             events = cached_events;
@@ -109,7 +109,7 @@ impl Component for App {
         }
 
         Self {
-            day_start,
+            selected_day: (now.day(), now.month(), now.year()),
             api_key,
             counter,
             events,
@@ -143,16 +143,15 @@ impl Component for App {
                 true
             },
             Msg::Previous => {
-                self.day_start -= 86400;
+                todo!();
                 true
             }
             Msg::Next => {
-                self.day_start += 86400;
+                todo!();
                 true
             }
             Msg::Goto {day, month, year} => {
-                let datetime = Paris.ymd(year, month, day).and_time(NaiveTime::from_hms(0, 0, 0)).unwrap();
-                self.day_start = datetime.timestamp() as u64;
+                self.selected_day = (day, month, year);
                 true
             }
         }
@@ -163,13 +162,6 @@ impl Component for App {
             Page::Agenda => self.view_agenda(ctx),
             Page::Settings => html!( <Settings app_link={ ctx.link().clone() } /> ),
         }
-    }
-}
-
-impl App {
-    fn week_start(&self) -> u64 {
-        let datetime = Paris.timestamp(self.day_start as i64, 0);
-        self.day_start - (datetime.weekday().number_from_monday() as u64 - 1) * 86400
     }
 }
 

@@ -35,28 +35,31 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
 
 impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
-        let selected_day_datetime = Paris.timestamp(self.day_start as i64, 0);
-        let selected_day = format_day(selected_day_datetime.weekday(), selected_day_datetime.day(), selected_day_datetime.month());
+        let selected_day_dt = Paris.ymd(self.selected_day.2, self.selected_day.1, self.selected_day.0);
+
+        // Go on the first day of the week
+        let mut current_day = selected_day_dt;
+        for _ in 0..selected_day_dt.weekday().num_days_from_monday() {
+            current_day = current_day.pred();
+        }
 
         let mut days = Vec::new();
         let mut day_names = Vec::new();
-        for offset in 0..5 {
-            let datetime = Paris.timestamp((self.week_start() + offset * 86400) as i64, 0);
-                
+        for _ in 0..5 {
             let mut events = Vec::new();
             for event in &self.events {
-                if (event.start_unixtime as i64) > datetime.timestamp()
-                    && (event.start_unixtime as i64) < datetime.timestamp() + 86400
+                if (event.start_unixtime as i64) > current_day.and_hms(0,0,0).timestamp()
+                    && (event.start_unixtime as i64) < current_day.and_hms(23,59,59).timestamp()
                 {
                     events.push(html! {
-                        <EventComp event={event.clone()} day_start={self.week_start()+offset*86400} global={self.event_global.clone()}></EventComp>
+                        <EventComp event={event.clone()} day_start={current_day.and_hms(0,0,0).timestamp() as u64} global={self.event_global.clone()}></EventComp>
                     });
                 }
             }
 
             day_names.push(html! {
-                <span id={if datetime == selected_day_datetime {"selected-day"} else {""}}>
-                    { format_day(datetime.weekday(), datetime.day(), datetime.month()) }
+                <span id={if current_day == selected_day_dt {"selected-day"} else {""}}>
+                    { format_day(current_day.weekday(), current_day.day(), current_day.month()) }
                 </span>
             });
             days.push(html! {
@@ -64,6 +67,8 @@ impl App {
                     { events }
                 </div>
             });
+
+            current_day = current_day.succ();
         }
 
         html! {
