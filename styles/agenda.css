@@ -228,7 +228,7 @@ body {
 }
 
 .divider-bar-option {
-    background-color: var(--dp24);
+    background-color: var(--red);
     height: 3px;
     width: 48px;
     border-radius: 3px;
