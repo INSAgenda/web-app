@@ -1,5 +1,4 @@
-use chrono::{Weekday, Datelike, TimeZone};
-use chrono_tz::Europe::Paris;
+use chrono::{Weekday, Datelike};
 use crate::{event::EventComp, App, calendar::Calendar};
 use yew::prelude::*;
 
@@ -35,11 +34,9 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
 
 impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
-        let selected_day_dt = Paris.ymd(self.selected_day.2, self.selected_day.1, self.selected_day.0);
-
         // Go on the first day of the week
-        let mut current_day = selected_day_dt;
-        for _ in 0..selected_day_dt.weekday().num_days_from_monday() {
+        let mut current_day = self.selected_day;
+        for _ in 0..self.selected_day.weekday().num_days_from_monday() {
             current_day = current_day.pred();
         }
 
@@ -58,7 +55,7 @@ impl App {
             }
 
             day_names.push(html! {
-                <span id={if current_day == selected_day_dt {"selected-day"} else {""}}>
+                <span id={if current_day == self.selected_day {"selected-day"} else {""}}>
                     { format_day(current_day.weekday(), current_day.day(), current_day.month()) }
                 </span>
             });

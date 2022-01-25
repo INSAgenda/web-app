@@ -1,5 +1,5 @@
 use agenda_parser::Event;
-use chrono::{Datelike, TimeZone, NaiveTime};
+use chrono::{Datelike, Date, TimeZone};
 use event::EventGlobalData;
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use yew::prelude::*;
@@ -35,7 +35,7 @@ pub enum Msg {
 }
 
 pub struct App {
-    selected_day: (u32, u32, i32),
+    selected_day: Date<chrono_tz::Tz>,
     event_global: Rc<EventGlobalData>,
     api_key: u64,
     counter: Rc<std::sync::atomic::AtomicU64>,
@@ -109,7 +109,7 @@ impl Component for App {
         }
 
         Self {
-            selected_day: (now.day(), now.month(), now.year()),
+            selected_day: now.date(),
             api_key,
             counter,
             events,
@@ -151,7 +151,7 @@ impl Component for App {
                 true
             }
             Msg::Goto {day, month, year} => {
-                self.selected_day = (day, month, year);
+                self.selected_day = Paris.ymd(year, month, day);
                 true
             }
         }
