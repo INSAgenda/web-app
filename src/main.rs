@@ -143,11 +143,11 @@ impl Component for App {
                 true
             },
             Msg::Previous => {
-                todo!();
+                self.selected_day = self.selected_day.pred();
                 true
             }
             Msg::Next => {
-                todo!();
+                self.selected_day = self.selected_day.succ();
                 true
             }
             Msg::Goto {day, month, year} => {
