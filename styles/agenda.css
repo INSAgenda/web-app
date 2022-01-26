@@ -1,20 +1,3 @@
-/* Header */
-
-header {
-    display: flex;
-    justify-content: space-between;
-    height: 4vh;
-    min-height: calc((30rem / 94) * 4);
-}
-
-header>a>img {
-    width: 50%;
-}
-
-header>h1 {
-    padding: 0;
-    margin: 0;
-}
 
 /* Main section */
 
@@ -142,6 +125,19 @@ body {
     color: black;
     font-size: 0.8rem;
     cursor: pointer;
+}
+.event> .name, .event> .teacher {
+    max-height: 40% !important;
+}
+
+.event> span{
+    max-height: 20%;
+    font-size: auto;
+    word-break: normal;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  
+
 }
 
 #calendar-arrow-right {
