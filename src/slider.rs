@@ -9,15 +9,17 @@ pub struct SliderManager {
     enabled: bool,
     selected_index: u32,
     start_pos: Option<i32>,
+    link: yew::html::Scope<crate::App>,
     day_container: Option<web_sys::HtmlElement>,
 }
 
 impl SliderManager {
-    pub fn init() -> Rc<RefCell<SliderManager>> {
+    pub fn init(link: yew::html::Scope<crate::App>) -> Rc<RefCell<SliderManager>> {
         let slider = Rc::new(RefCell::new(SliderManager {
             enabled: false,
             start_pos: None,
             selected_index: 0,
+            link,
             day_container: None,
         }));
         if width() <= 1000 {
@@ -60,7 +62,7 @@ impl SliderManager {
         let mouse_down = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
             let mut slider = slider2.borrow_mut();
             if slider.enabled {
-                slider.touch_start(event.client_x() as i32);
+                slider.touch_start(event.client_x() as i32, event.client_y() as i32);
             }
         }) as Box<dyn FnMut(_)>);
         let window = web_sys::window().unwrap();
@@ -72,7 +74,8 @@ impl SliderManager {
             let mut slider = slider2.borrow_mut();
             if slider.enabled {
                 let mouse_x = event.touches().get(0).unwrap().client_x() as i32;
-                slider.touch_start(mouse_x);
+                let mouse_y = event.touches().get(0).unwrap().client_y() as i32;
+                slider.touch_start(mouse_x, mouse_y);
             }
         }) as Box<dyn FnMut(_)>);
         let window = web_sys::window().unwrap();
@@ -174,14 +177,17 @@ impl SliderManager {
         }
     }
 
-    fn touch_start(&mut self, mouse_x: i32) {
+    fn touch_start(&mut self, mouse_x: i32, mouse_y: i32) {
         let window = web_sys::window().unwrap();
         let document = window.document().unwrap();
         self.day_container = document.get_element_by_id("day-container").map(|e| e.dyn_into().unwrap());
-
-        self.start_pos = match self.day_container.is_some() {
-            true => Some(mouse_x),
-            false => None,
+        self.start_pos = None;
+        
+        if let Some(day_container) = &self.day_container {
+            let rect = day_container.get_bounding_client_rect();
+            if rect.y() as i32 <= mouse_y && mouse_y <= rect.y() as i32 + rect.height() as i32 {
+                self.start_pos = Some(mouse_x);
+            }
         }
     }
 
@@ -205,25 +211,49 @@ impl SliderManager {
     }
 
     fn touch_end(&mut self, mouse_x: i32) {
-        let day_container = match self.day_container {
-            Some(ref element) => element,
-            None => return,
-        };
         let start_pos = match self.start_pos {
             Some(start_pos) => start_pos,
             None => return,
         };
-
         let offset = mouse_x - start_pos;
 
-        if offset > 90 && self.selected_index > 0 {
-            self.selected_index -= 1;
-        } else if offset < -90 && self.selected_index < 4 {
-            self.selected_index += 1
+        if offset > 90 {
+            self.swipe_left();
+        } else if offset < -90 {
+            self.swipe_right()
         }
 
-        day_container.style().set_property("transform", &format!("translateX(calc(-20% * {}))", self.selected_index)).unwrap();
         self.start_pos = None;
+    }
+
+    pub fn swipe_left(&mut self) {
+        if self.selected_index > 0 {
+            self.set_selected_index(self.selected_index - 1);
+            self.link.send_message(crate::Msg::SwipePrevious);
+        } else {
+            // TODO
+        }
+    }
+
+    pub fn swipe_right(&mut self) {
+        if self.selected_index < 4 {
+            self.set_selected_index(self.selected_index + 1);
+            self.link.send_message(crate::Msg::SwipeNext);
+        } else {
+            // TODO
+        }
+    }
+
+    pub fn set_selected_index(&mut self, index: u32) {
+        let day_container: web_sys::HtmlElement = match web_sys::window().unwrap().document().unwrap().get_element_by_id("day-container").map(|e| e.dyn_into().unwrap()) {
+            Some(element) => element,
+            None => return,
+        };
+        
+        self.selected_index = index;
+        self.start_pos = None;
+
+        day_container.style().set_property("transform", &format!("translateX(calc(-20% * {}))", self.selected_index)).unwrap();
         self.update_displayed_day_name();
     }
 }

@@ -1,5 +1,5 @@
 use agenda_parser::Event;
-use chrono::{Datelike, Date, TimeZone};
+use chrono::{Datelike, Date, TimeZone, Weekday};
 use event::EventGlobalData;
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use yew::prelude::*;
@@ -28,7 +28,9 @@ pub enum Msg {
     FetchSuccess(Vec<Event>),
     FetchFailure(ApiError),
     Previous,
+    SwipePrevious,
     Next,
+    SwipeNext,
     Goto {day: u32, month: u32, year: i32},
     SetPage(Page),
     SilentSetPage(Page),
@@ -41,7 +43,7 @@ pub struct App {
     counter: Rc<std::sync::atomic::AtomicU64>,
     events: Vec<Event>,
     page: Page,
-    slider_manager: Rc<RefCell<slider::SliderManager>>,
+    slider: Rc<RefCell<slider::SliderManager>>,
 }
 
 impl Component for App {
@@ -114,7 +116,7 @@ impl Component for App {
             counter,
             events,
             page: Page::Agenda,
-            slider_manager: slider::SliderManager::init(),
+            slider: slider::SliderManager::init(ctx.link().clone()),
             event_global: Rc::new(EventGlobalData::default()),
         }
     }
@@ -143,18 +145,40 @@ impl Component for App {
                 true
             },
             Msg::Previous => {
+                if self.selected_day.weekday() == Weekday::Mon {
+                    self.selected_day = self.selected_day.pred().pred().pred();
+                    true
+                } else {
+                    self.slider.borrow_mut().swipe_left(); // This function will send the SwipePrevious message
+                    false
+                }
+            },
+            Msg::SwipePrevious => {
                 self.selected_day = self.selected_day.pred();
-                true
-            }
+                false
+            },
             Msg::Next => {
+                if self.selected_day.weekday() ==  Weekday::Fri {
+                    self.selected_day = self.selected_day.succ().succ().succ();
+                    true
+                } else {
+                    self.slider.borrow_mut().swipe_right(); // This function will send the SwipeNext message
+                    false
+                }
+            },
+            Msg::SwipeNext => {
                 self.selected_day = self.selected_day.succ();
-                true
-            }
+                false
+            },
             Msg::Goto {day, month, year} => {
                 self.selected_day = Paris.ymd(year, month, day);
                 true
             }
         }
+    }
+
+    fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
+        self.slider.borrow_mut().set_selected_index(self.selected_day.weekday().num_days_from_monday());
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {

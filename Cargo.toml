@@ -36,6 +36,7 @@ features = [
     "Request",
     "Headers",
     "Response",
+    "DomRect",
 ]
 
 [profile.release]
