@@ -1,3 +1,10 @@
+/* Header */
+
+header {
+    min-height: 30px;
+    max-height: unset;
+    height: 4rem;
+}
 
 /* Main section */
 
@@ -8,7 +15,7 @@ body {
 #calendar-main {
     display: flex;
     justify-content: space-around;
-    height: calc(96vh - 1rem);
+    height: calc(100vh - 5rem);
     padding: .5rem;
     min-height: 30rem;
 }
