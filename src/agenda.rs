@@ -111,7 +111,6 @@ impl App {
                     <span>{"Options"}</span>
                     <div class="divider-bar-option"></div>
                 </div>
-                <div class="option-name">{"Calendrier :"}</div>
                 <Calendar app_link={ctx.link().clone()}/>
                 <br/>
                 <div class="white-button" onclick={ctx.link().callback(|_| crate::Msg::SetPage(crate::Page::Settings))}>{"Paramètres"}</div>    
