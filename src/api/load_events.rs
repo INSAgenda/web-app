@@ -36,7 +36,10 @@ fn save_cache(last_updated: i64, events: &[Event]) {
 }
 
 pub async fn load_events(api_key: u64, counter: Rc<AtomicU64>) -> Result<Vec<Event>, ApiError> {
+    #[cfg(debug_assertions)]
     let request = Request::new_with_str("http://127.0.0.1:8080/api/schedule?start_timestamp=0&end_timestamp=9999999999999")?;
+    #[cfg(not(debug_assertions))]
+    let request = Request::new_with_str("https://insagenda.fr/api/schedule?start_timestamp=0&end_timestamp=9999999999999")?;
     let counter = counter.fetch_add(1, Relaxed);
     save_counter(counter + 1);
     request.headers().set(
