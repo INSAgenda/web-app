@@ -133,19 +133,6 @@ body {
     font-size: 0.8rem;
     cursor: pointer;
 }
-.event> .name, .event> .teacher {
-    max-height: 40% !important;
-}
-
-.event> span{
-    max-height: 20%;
-    font-size: auto;
-    word-break: normal;
-    text-overflow: ellipsis;
-    overflow: hidden;
-  
-
-}
 
 #calendar-arrow-right {
     transform: rotate(180deg);

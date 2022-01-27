@@ -82,7 +82,7 @@ impl Component for EventComp {
             EventKind::Tp(kind) => format!("TP: {}", kind),
             EventKind::Other(kind) => kind.to_string(),
         };
-
+        
         let location = ctx.props().event.location.map(|location| {
             let building =  match SETTINGS.building_naming() {
                 BuildingNaming::Short => match location.building {
@@ -97,17 +97,21 @@ impl Component for EventComp {
 
             format!("{} - {} - {} - {}", building, location.building_area, location.level, location.room_number)
         });
-
+    
         let start = Paris.timestamp(ctx.props().event.start_unixtime as i64, 0);
         let end = Paris.timestamp(ctx.props().event.end_unixtime as i64, 0);
         let duration = (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) / 60;
         let groups = ctx.props().event.groups.iter().map(|g| format!("{:?}", g)).collect::<Vec<_>>().join(", ");
-
+        
+        // Specify font-size according event height
+        let font_size = percent_height/8.;
+        let font_size = if font_size > 1.2 { 1.2 } else { font_size };
         html! {
+            
             <div style={format!("background-color: #98fb98; position: absolute; top: {}%; height: {}%;", percent_offset, percent_height)} class="event" onclick={ ctx.link().callback(|_| EventCompMsg::ToggleDetails) } >
-                <span class="name">{ &name }</span>
-                <span class="teacher">{ ctx.props().event.teachers.join(", ") }</span>
-                {if let Some(l) = location {html! {<span>{l}</span>}} else {html!{}}}
+                <span class="name" style={format!("font-size: {}em",font_size)}>{ &name }</span>
+                <span class="teacher" style={format!("font-size: {}em",font_size)}>{ ctx.props().event.teachers.join(", ") }</span>
+                {if let Some(l) = location {html! {<span style={format!("font-size: {}em",font_size)} >{l}</span>}} else {html!{}}}
                 <div class="event-details" style={if self.show_details {""} else {"display: none;"}}>
                     <div class="event-details-header">
                         <span>{ name }</span>
