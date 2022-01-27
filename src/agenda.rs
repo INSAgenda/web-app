@@ -89,9 +89,9 @@ impl App {
                 </div>
                 <div id="calendar-main-part">
                     <div id="calendar-top">
-                        <a id="calendar-arrow-left" onclick={ctx.link().callback(|_| crate::Msg::Previous)}></a>
+                        <a id="calendar-arrow-left"><div onclick={ctx.link().callback(|_| crate::Msg::Previous)}></div></a>
                         { day_names }
-                        <a id="calendar-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
+                        <a id="calendar-arrow-right"><div onclick={ctx.link().callback(|_| crate::Msg::Next)}></div></a>
                     </div>
                     <div id="day-container">
                         <div id="line-container">

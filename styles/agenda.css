@@ -346,6 +346,16 @@ body {
         background-position: center;
         cursor: pointer;
     }
+    #calendar-arrow-left > div, #calendar-arrow-right > div {
+        width: 5em;
+        height: 5em;
+        cursor: pointer;
+        z-index: 2;
+        position: absolute;    
+        display: inline-block;     
+        transform: translate(-50%, -50%);
+      }
+     
 
     #calendar-top {
         width: 100%;
