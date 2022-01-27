@@ -245,6 +245,10 @@ impl SliderManager {
     }
 
     pub fn set_selected_index(&mut self, index: u32) {
+        if !self.enabled {
+            return;
+        }
+        
         let day_container: web_sys::HtmlElement = match web_sys::window().unwrap().document().unwrap().get_element_by_id("day-container").map(|e| e.dyn_into().unwrap()) {
             Some(element) => element,
             None => return,
