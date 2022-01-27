@@ -72,7 +72,7 @@ impl App {
             <>
             <header>
                 <a id="header-logo" href="../index.html">
-                <img src="../assets/elements/webLogo.svg" alt="Insagenda logo"/> 
+                <img src="/assets/elements/webLogo.svg" alt="INSAgenda logo"/> 
                 <span id="header-name">{"INSAgenda"}</span>
                 </a>
             </header>
