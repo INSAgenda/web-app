@@ -220,10 +220,10 @@ impl SliderManager {
         if offset > 90 {
             self.swipe_left();
         } else if offset < -90 {
-            self.swipe_right()
+            self.swipe_right();
+        } else {
+            self.set_selected_index(self.selected_index);
         }
-
-        self.start_pos = None;
     }
 
     pub fn swipe_left(&mut self) {
@@ -248,7 +248,7 @@ impl SliderManager {
         if !self.enabled {
             return;
         }
-        
+
         let day_container: web_sys::HtmlElement = match web_sys::window().unwrap().document().unwrap().get_element_by_id("day-container").map(|e| e.dyn_into().unwrap()) {
             Some(element) => element,
             None => return,
