@@ -229,19 +229,19 @@ impl SliderManager {
     pub fn swipe_left(&mut self) {
         if self.selected_index > 0 {
             self.set_selected_index(self.selected_index - 1);
-            self.link.send_message(crate::Msg::SwipePrevious);
         } else {
-            // TODO
+            self.set_selected_index(4);
         }
+        self.link.send_message(crate::Msg::SwipePrevious);
     }
 
     pub fn swipe_right(&mut self) {
         if self.selected_index < 4 {
             self.set_selected_index(self.selected_index + 1);
-            self.link.send_message(crate::Msg::SwipeNext);
         } else {
-            // TODO
+            self.set_selected_index(0);
         }
+        self.link.send_message(crate::Msg::SwipeNext);
     }
 
     pub fn set_selected_index(&mut self, index: u32) {

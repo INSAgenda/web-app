@@ -146,26 +146,38 @@ impl Component for App {
                     self.selected_day = self.selected_day.pred().pred().pred();
                     true
                 } else {
-                    self.slider.borrow_mut().swipe_left(); // This function will send the SwipePrevious message
+                    self.selected_day = self.selected_day.pred();
+                    self.slider.borrow_mut().set_selected_index(self.selected_day.weekday().num_days_from_monday());
                     false
                 }
             },
             Msg::SwipePrevious => {
-                self.selected_day = self.selected_day.pred();
-                false
+                if self.selected_day.weekday() == Weekday::Mon {
+                    self.selected_day = self.selected_day.pred().pred().pred();
+                    true
+                } else {
+                    self.selected_day = self.selected_day.pred();
+                    false
+                }
             },
             Msg::Next => {
                 if self.selected_day.weekday() ==  Weekday::Fri {
                     self.selected_day = self.selected_day.succ().succ().succ();
                     true
                 } else {
-                    self.slider.borrow_mut().swipe_right(); // This function will send the SwipeNext message
+                    self.selected_day = self.selected_day.succ();
+                    self.slider.borrow_mut().set_selected_index(self.selected_day.weekday().num_days_from_monday());
                     false
                 }
             },
             Msg::SwipeNext => {
-                self.selected_day = self.selected_day.succ();
-                false
+                if self.selected_day.weekday() ==  Weekday::Fri {
+                    self.selected_day = self.selected_day.succ().succ().succ();
+                    true
+                } else {
+                    self.selected_day = self.selected_day.succ();
+                    false
+                }
             },
             Msg::Goto {day, month, year} => {
                 self.selected_day = Paris.ymd(year, month, day);
@@ -175,7 +187,7 @@ impl Component for App {
     }
 
     fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
-        self.slider.borrow_mut().set_selected_index(self.selected_day.weekday().num_days_from_monday());
+        let _ = self.slider.try_borrow_mut().map(|mut s| s.set_selected_index(self.selected_day.weekday().num_days_from_monday()));
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
