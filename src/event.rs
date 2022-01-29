@@ -25,12 +25,12 @@ impl PartialEq for EventCompProps {
 pub struct EventComp {
     show_details: bool,
     on_click: Closure<dyn FnMut(web_sys::MouseEvent)>,
-    id: String,
+    ignore_next_event: bool,
+    popup_id: String,
 }
 
 pub enum EventCompMsg {
     ToggleDetails,
-    Noop,
 }
 
 impl Component for EventComp {
@@ -46,19 +46,12 @@ impl Component for EventComp {
         let id2 = id.clone();
         let link = ctx.link().clone();
         let on_click = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-            let event_el = document.get_element_by_id(&id2).unwrap();
-            let popup_el = event_el.query_selector(".event-details").unwrap().unwrap();
-            let rect_event = event_el.get_bounding_client_rect();
-            let rect_popup = popup_el.get_bounding_client_rect();
-            
-            // Check the click was not inside the actual event
-            if (rect_event.y()..rect_event.y()+rect_event.height()).contains(&(event.client_y() as f64))
-                && (rect_event.x()..rect_event.x()+rect_event.width()).contains(&(event.client_x() as f64))
-            { return; }
+            let popup_el = document.get_element_by_id(&id2).unwrap();
+            let rect = popup_el.get_bounding_client_rect();
 
             // Check the click was not inside the popup
-            if (rect_popup.y()..rect_popup.y()+rect_popup.height()).contains(&(event.client_y() as f64))
-                && (rect_popup.x()..rect_popup.x()+rect_popup.width()).contains(&(event.client_x() as f64))
+            if (rect.y()..rect.y()+rect.height()).contains(&(event.client_y() as f64))
+                && (rect.x()..rect.x()+rect.width()).contains(&(event.client_x() as f64))
             { return; }
 
             link.send_message(EventCompMsg::ToggleDetails);
@@ -67,19 +60,25 @@ impl Component for EventComp {
         EventComp {
             show_details: false,
             on_click,
-            id,
+            ignore_next_event: false,
+            popup_id: id,
         }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             EventCompMsg::ToggleDetails if self.show_details => {
-                self.show_details = false;
+                // We sometimes need a mechanism to ignore the next message. When the event listener is added, it instantly fires another ToggleDetails message which would close the popup instantly if not ignored
+                if self.ignore_next_event {
+                    self.ignore_next_event = false;
+                    false
+                } else {
+                    self.show_details = false;
 
-                // Popup is already closed, so we can spare resources by disabling the event listener
-                web_sys::window().unwrap().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-
-                true
+                    // Popup is already closed, so we can spare resources by disabling the event listener
+                    web_sys::window().unwrap().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+                    true
+                }
             },
             EventCompMsg::ToggleDetails => {
                 self.show_details = true;
@@ -87,10 +86,9 @@ impl Component for EventComp {
                 // Popup is now opened so we must be ready to close it
                 web_sys::window().unwrap().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
 
+                self.ignore_next_event = true;
+
                 true
-            },
-            EventCompMsg::Noop => {
-                false
             },
         }
     }
@@ -133,8 +131,8 @@ impl Component for EventComp {
         html! {
             <div
                 style={format!("background-color: #98fb98; position: absolute; top: {}%; height: {}%;", percent_offset, percent_height)}
-                class="event" id={self.id.clone()}
-                onclick={ ctx.link().callback(|_| EventCompMsg::ToggleDetails) } >
+                class="event"
+                onclick={ if !self.show_details { Some(ctx.link().callback(|_| EventCompMsg::ToggleDetails)) } else {None} } >
 
                 <span class="name" style={format!("font-size: {}em",font_size)} >
                     { &name }
@@ -143,7 +141,7 @@ impl Component for EventComp {
                     { ctx.props().event.teachers.join(", ") }
                 </span>
                 {if let Some(l) = &location {html! {<span style={format!("font-size: {}em",font_size)} >{l}</span>}} else {html!{}}}
-                <div class="event-details" style={if self.show_details {""} else {"display: none;"}} onclick={ ctx.link().callback(|_| EventCompMsg::Noop) } >
+                <div class="event-details" id={self.popup_id.clone()} style={if self.show_details {""} else {"display: none;"}} >
                     <div class="event-details-header">
                         <span>{ name }</span>
                     </div>
