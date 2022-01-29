@@ -1,6 +1,5 @@
 use agenda_parser::Event;
 use chrono::{Datelike, Date, TimeZone, Weekday};
-use event::EventGlobalData;
 use wasm_bindgen::{prelude::*, JsCast, JsValue};
 use yew::prelude::*;
 use std::{rc::Rc, cell::RefCell};
@@ -38,7 +37,6 @@ pub enum Msg {
 
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
-    event_global: Rc<EventGlobalData>,
     api_key: u64,
     counter: Rc<std::sync::atomic::AtomicU64>,
     events: Vec<Event>,
@@ -117,7 +115,6 @@ impl Component for App {
             events,
             page: Page::Agenda,
             slider: slider::SliderManager::init(ctx.link().clone()),
-            event_global: Rc::new(EventGlobalData::default()),
         }
     }
 

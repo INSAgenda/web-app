@@ -1,27 +1,19 @@
 use agenda_parser::{Event, event::EventKind, location::Building};
 use yew::prelude::*;
-use std::{rc::Rc, cell::Cell};
+use std::{sync::atomic::{AtomicUsize, Ordering}};
 use chrono::TimeZone;
 use chrono_tz::Europe::Paris;
+use wasm_bindgen::{prelude::*, JsCast};
 use crate::settings::{SETTINGS, BuildingNaming};
 
-pub struct EventGlobalData {
-    opened_event: Cell<Option<yew::html::Scope<EventComp>>>
-}
-
-impl Default for EventGlobalData {
-    fn default() -> Self {
-        EventGlobalData {
-            opened_event: Cell::new(None)
-        }
-    }
+lazy_static::lazy_static!{
+    static ref ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
 }
 
 #[derive(Properties, Clone)]
 pub struct EventCompProps {
     pub event: Event,
     pub day_start: u64,
-    pub global: Rc<EventGlobalData>,
 }
 
 impl PartialEq for EventCompProps {
@@ -32,41 +24,73 @@ impl PartialEq for EventCompProps {
 
 pub struct EventComp {
     show_details: bool,
+    on_click: Closure<dyn FnMut(web_sys::MouseEvent)>,
+    id: String,
 }
 
 pub enum EventCompMsg {
     ToggleDetails,
-    Replaced,
+    Noop,
 }
 
 impl Component for EventComp {
     type Message = EventCompMsg;
     type Properties = EventCompProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
+        let id = format!("event-popup-{}", ID_COUNTER.fetch_add(1, Ordering::Relaxed));
+
+        // Creates a closure called on click that will close the popup if the user clicked outside of it
+        let window = web_sys::window().unwrap();
+        let document = window.document().unwrap();
+        let id2 = id.clone();
+        let link = ctx.link().clone();
+        let on_click = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+            let event_el = document.get_element_by_id(&id2).unwrap();
+            let popup_el = event_el.query_selector(".event-details").unwrap().unwrap();
+            let rect_event = event_el.get_bounding_client_rect();
+            let rect_popup = popup_el.get_bounding_client_rect();
+            
+            // Check the click was not inside the actual event
+            if (rect_event.y()..rect_event.y()+rect_event.height()).contains(&(event.client_y() as f64))
+                && (rect_event.x()..rect_event.x()+rect_event.width()).contains(&(event.client_x() as f64))
+            { return; }
+
+            // Check the click was not inside the popup
+            if (rect_popup.y()..rect_popup.y()+rect_popup.height()).contains(&(event.client_y() as f64))
+                && (rect_popup.x()..rect_popup.x()+rect_popup.width()).contains(&(event.client_x() as f64))
+            { return; }
+
+            link.send_message(EventCompMsg::ToggleDetails);
+        }) as Box<dyn FnMut(_)>);
+
         EventComp {
             show_details: false,
+            on_click,
+            id,
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             EventCompMsg::ToggleDetails if self.show_details => {
                 self.show_details = false;
-                ctx.props().global.opened_event.set(None);
-                true
-            },
-            EventCompMsg::Replaced => {
-                self.show_details = false;
+
+                // Popup is already closed, so we can spare resources by disabling the event listener
+                web_sys::window().unwrap().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+
                 true
             },
             EventCompMsg::ToggleDetails => {
                 self.show_details = true;
-                if let Some(old_link) = ctx.props().global.opened_event.take() {
-                    old_link.send_message(EventCompMsg::Replaced);
-                }
-                ctx.props().global.opened_event.set(Some(ctx.link().clone()));
+
+                // Popup is now opened so we must be ready to close it
+                web_sys::window().unwrap().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+
                 true
+            },
+            EventCompMsg::Noop => {
+                false
             },
         }
     }
@@ -107,12 +131,19 @@ impl Component for EventComp {
         let font_size = percent_height/8.;
         let font_size = if font_size > 1.2 { 1.2 } else { font_size };
         html! {
-            
-            <div style={format!("background-color: #98fb98; position: absolute; top: {}%; height: {}%;", percent_offset, percent_height)} class="event" onclick={ ctx.link().callback(|_| EventCompMsg::ToggleDetails) } >
-                <span class="name" style={format!("font-size: {}em",font_size)}>{ &name }</span>
-                <span class="teacher" style={format!("font-size: {}em",font_size)}>{ ctx.props().event.teachers.join(", ") }</span>
+            <div
+                style={format!("background-color: #98fb98; position: absolute; top: {}%; height: {}%;", percent_offset, percent_height)}
+                class="event" id={self.id.clone()}
+                onclick={ ctx.link().callback(|_| EventCompMsg::ToggleDetails) } >
+
+                <span class="name" style={format!("font-size: {}em",font_size)} >
+                    { &name }
+                </span>
+                <span class="teacher" style={format!("font-size: {}em",font_size)}>
+                    { ctx.props().event.teachers.join(", ") }
+                </span>
                 {if let Some(l) = location {html! {<span style={format!("font-size: {}em",font_size)} >{l}</span>}} else {html!{}}}
-                <div class="event-details" style={if self.show_details {""} else {"display: none;"}}>
+                <div class="event-details" style={if self.show_details {""} else {"display: none;"}} onclick={ ctx.link().callback(|_| EventCompMsg::Noop) } >
                     <div class="event-details-header">
                         <span>{ name }</span>
                     </div>

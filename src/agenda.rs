@@ -49,7 +49,7 @@ impl App {
                     && (event.start_unixtime as i64) < current_day.and_hms(23,59,59).timestamp()
                 {
                     events.push(html! {
-                        <EventComp event={event.clone()} day_start={current_day.and_hms(0,0,0).timestamp() as u64} global={self.event_global.clone()}></EventComp>
+                        <EventComp event={event.clone()} day_start={current_day.and_hms(0,0,0).timestamp() as u64}></EventComp>
                     });
                 }
             }
