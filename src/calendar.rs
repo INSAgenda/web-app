@@ -51,6 +51,11 @@ impl Component for Calendar {
                 if self.selected_day > last_day.day() {
                     self.selected_day = last_day.day();
                 }
+                ctx.props().app_link.send_message(crate::Msg::Goto {
+                    day: self.selected_day,
+                    month: self.selected_month,
+                    year: self.selected_year
+                });
 
                 true
             },
@@ -65,6 +70,11 @@ impl Component for Calendar {
                 if self.selected_day > last_day.day() {
                     self.selected_day = last_day.day();
                 }
+                ctx.props().app_link.send_message(crate::Msg::Goto {
+                    day: self.selected_day,
+                    month: self.selected_month,
+                    year: self.selected_year
+                });
 
                 true
             },
