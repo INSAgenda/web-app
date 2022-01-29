@@ -1,0 +1,26 @@
+/* Glider selector */
+
+.glider-selector {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    width: fit-content;
+    background-color: var(--background);
+    border-radius: 1rem;
+}
+
+.glider-selector>div {
+    padding: .5rem 1rem;
+    border-radius: 1rem;
+    z-index: 2;
+    cursor: pointer;
+    transition: all .5s;
+}
+
+#glider-selected {
+    position: absolute;
+    color: transparent;
+    background-color: var(--red);
+    border-radius: 1rem;
+    height: 1rem;
+}

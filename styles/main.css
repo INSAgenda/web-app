@@ -1,0 +1,111 @@
+/* Header */
+
+header {
+    min-height: 30px;
+    max-height: unset;
+    height: 4rem;
+}
+
+/* Main section */
+
+body {
+    background-color: var(--dp00);
+}
+
+#agenda-main {
+    display: flex;
+    justify-content: space-around;
+    height: calc(100vh - 5rem);
+    padding: .5rem;
+    min-height: 30rem;
+}
+
+#agenda, #option {
+    box-shadow: 0px 0px 15px #00000029;
+    min-height: 80vh;
+    padding: .75rem;
+    margin: .5rem;
+    border-radius: .5rem;
+    background-color: var(--dp01);
+}
+
+/* Option */
+
+#option {
+    padding: .8rem;
+    width: min-content;
+}
+
+#option-header {
+    margin-bottom: 1rem;
+    width: 100%;
+    height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: end;
+    place-content: flex-end;
+}
+
+#option-header span {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--calendar-text);
+}
+
+.divider-bar-option {
+    background-color: var(--red);
+    height: 3px;
+    width: 48px;
+    border-radius: 3px;
+    margin: 3px 0 0 0;
+}
+
+/* For mobile */
+
+@media screen and (max-width: 1000px) {
+    #option {
+        display: none;
+    }
+
+    .event-details {
+        right: inherit;
+        top: 5rem;
+    }
+
+    #day-container {
+        width: 500%;
+        transition: transform 0.3s ease-out;
+        transform: translateX(0);
+        will-change: transform;
+    }
+
+    #agenda-main-part {
+        overflow: hidden;
+    }
+
+    #agenda-arrow-left, #agenda-arrow-right {
+        background-image: url(/assets/elements/red-arrow.svg);
+        height: 18px;
+        width: 11px;
+        background-size: 100%;
+        background-repeat: no-repeat;
+        background-position: center;
+        cursor: pointer;
+    }
+
+    #agenda-top {
+        width: 100%;
+        align-self: center;
+        justify-content: space-between;
+    }
+
+    #agenda-top>span {
+        display: none;
+    }
+
+    #agenda-top>#selected-day {
+        display: inline;
+        text-align: center;
+    }
+}

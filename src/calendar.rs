@@ -139,7 +139,7 @@ impl Component for Calendar {
         }
 
         html! {
-            <div id="small-calendar">
+            <div id="calendar">
                 <div id="calendar-header">
                     <button class="calendar-arrow" onclick={ctx.link().callback(|_| Msg::PreviousMonth)}></button>
                     <span id="calendar-title">{display_month}</span>

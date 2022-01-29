@@ -76,9 +76,9 @@ impl App {
                 <span id="header-name">{"INSAgenda"}</span>
                 </a>
             </header>
-            <main id="calendar-main">
-            <div id="calendar">
-                <div id="calendar-hours">
+            <main id="agenda-main">
+            <div id="agenda">
+                <div id="agenda-hours">
                     <span>{"08:00"}</span>
                     <span>{"09:45"}</span>
                     <span>{"11:30"}</span>
@@ -87,11 +87,11 @@ impl App {
                     <span>{"16:45"}</span>
                     <span>{"18:30"}</span>
                 </div>
-                <div id="calendar-main-part">
-                    <div id="calendar-top">
-                        <a id="calendar-arrow-left" onclick={ctx.link().callback(|_| crate::Msg::Previous)}></a>
+                <div id="agenda-main-part">
+                    <div id="agenda-top">
+                        <a id="agenda-arrow-left" onclick={ctx.link().callback(|_| crate::Msg::Previous)}></a>
                         { day_names }
-                        <a id="calendar-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
+                        <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
                     </div>
                     <div id="day-container">
                         <div id="line-container">
