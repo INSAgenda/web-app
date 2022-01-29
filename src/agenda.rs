@@ -87,22 +87,24 @@ impl App {
                     <span>{"16:45"}</span>
                     <span>{"18:30"}</span>
                 </div>
-                <div id="calendar-main-part">
+                <div>
                     <div id="calendar-top">
                         <a id="calendar-arrow-left"><div onclick={ctx.link().callback(|_| crate::Msg::Previous)}></div></a>
                         { day_names }
                         <a id="calendar-arrow-right"><div onclick={ctx.link().callback(|_| crate::Msg::Next)}></div></a>
                     </div>
-                    <div id="day-container">
-                        <div id="line-container">
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
+                    <div id="calendar-content">
+                        <div id="day-container">
+                            <div id="line-container">
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                            </div>
+                            { days }
                         </div>
-                        { days }
                     </div>
                 </div>
             </div>

@@ -309,6 +309,10 @@ body {
 .calendar-week:last-child {
     border: none;
 }
+#calendar-content{
+    height: 100%;
+    overflow: hidden;
+}
 
 /* For mobile */
 
@@ -333,10 +337,6 @@ body {
         will-change: transform;
     }
 
-    #calendar-main-part {
-        overflow: hidden;
-    }
-
     #calendar-arrow-left, #calendar-arrow-right {
         background-image: url(/assets/elements/red-arrow.svg);
         height: 18px;
@@ -345,14 +345,17 @@ body {
         background-repeat: no-repeat;
         background-position: center;
         cursor: pointer;
+        position: relative;
     }
     #calendar-arrow-left > div, #calendar-arrow-right > div {
-        width: 5em;
-        height: 5em;
+        width: 4em;
+        height: 4em;
         cursor: pointer;
         z-index: 2;
         position: absolute;    
         display: inline-block;     
+        top: 50%;
+        left: 50%;
         transform: translate(-50%, -50%);
       }
      
