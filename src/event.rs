@@ -142,7 +142,7 @@ impl Component for EventComp {
                 <span class="teacher" style={format!("font-size: {}em",font_size)}>
                     { ctx.props().event.teachers.join(", ") }
                 </span>
-                {if let Some(l) = location {html! {<span style={format!("font-size: {}em",font_size)} >{l}</span>}} else {html!{}}}
+                {if let Some(l) = &location {html! {<span style={format!("font-size: {}em",font_size)} >{l}</span>}} else {html!{}}}
                 <div class="event-details" style={if self.show_details {""} else {"display: none;"}} onclick={ ctx.link().callback(|_| EventCompMsg::Noop) } >
                     <div class="event-details-header">
                         <span>{ name }</span>
@@ -163,6 +163,14 @@ impl Component for EventComp {
                         <div>
                             <span class="bold">{ if ctx.props().event.groups.len() > 1 {{"Groupes : "}} else {{"Groupe : "}} }</span>
                             {groups}
+                        </div>
+                        <div>
+                            <span class="bold">{"Professeur : "}</span>
+                            {ctx.props().event.teachers.join(", ")}
+                        </div>
+                        <div>
+                            <span class="bold">{"Salle : "}</span>
+                            {location.unwrap_or_else(|| "Inconnue".to_string())}
                         </div>
                     </div>
                 </div>
