@@ -30,13 +30,14 @@
 
 .event-details-header {
     min-height: 1.4rem;
-    padding: .3rem .5rem;
     background-color: #98fb98;
     border-radius: 1rem 1rem 0 0;
     font-weight: 500;
     display: flex;
     place-content: center;
     align-items: center;
+    padding: 1rem;
+
 }
 
 .event-details-content {
