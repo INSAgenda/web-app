@@ -163,7 +163,7 @@ impl SliderManager {
     }
 
     fn update_displayed_day_name(&self) {
-        let day_names = match web_sys::window().unwrap().document().unwrap().get_element_by_id("calendar-top") {
+        let day_names = match web_sys::window().unwrap().document().unwrap().get_element_by_id("agenda-top") {
             Some(day_names) => day_names.children(),
             None => return,
         };
