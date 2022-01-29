@@ -63,7 +63,7 @@ impl Component for Settings {
             }
             Msg::BuildingNamingChange(v) => {
                 SETTINGS.set_building_naming(v);
-                false
+                true
             }
         }
     }
@@ -81,41 +81,40 @@ impl Component for Settings {
                         <p>{"Votre mot de passe a été changé pour la dernière fois le 12/11/2021 à 12:49."}</p>
                         <div class="white-button small-button">{"Modifier"}</div>
                     </div>
-                    <br/>
-                    <br/>
                     <div class="setting">
                         <h3>{"Adresse mail"}</h3>
                         <p>{"Votre adresse actuelle est foobar@insa-rouen.fr."}</p>
                         <div class="white-button small-button">{"Modifier"}</div>
                     </div>
-                    <br/>
-                    <br/>
                     <div class="setting">
                         <h3>{"Changer le type d'authentification"}</h3>
-                        <p>{"L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email."}</p>
                         <GliderSelector
                             values = { vec!["Email", "Mot de passe", "Email + Mot de passe"] }
                             selected = 0 />
+                        <p>{"L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email."}</p>
                     </div>
                 </div>
                 <h2>{"Affichage"}</h2>
                 <div class="settings-group">
                     <div class="setting">
                         <h3>{"Thème"}</h3>
-                        <p>{"Par défault, le thème est celui renseigné par votre navigateur."}</p>
                         <GliderSelector
                             values = { vec!["Automatique", "Sombre", "Clair"] }
                             selected = 0 />
+                        <p>{"Par défault, le thème est celui renseigné par votre navigateur."}</p>
                     </div>
-                    <br/>
-                    <br/>
                     <div class="setting">
                         <h3>{"Nom des bâtiments"}</h3>
-                        <p>{"L'affichage court correspond à seulement les deux premières lettres du nom (ex: Ma plutôt que Magellan)."}</p>
                         <GliderSelector
                             values = { vec!["Court", "Long"] }
                             on_change = { ctx.link().callback(Msg::BuildingNamingChange) }
                             selected = { SETTINGS.building_naming() as usize } />
+                        <p>{
+                            match SETTINGS.building_naming() {
+                                BuildingNaming::Short => "Ex: Ma",
+                                BuildingNaming::Long => "Ex: Magellan",
+                            }
+                        }</p>
                     </div>
                 </div>
                 <div class="red-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{"Valider"}</div>

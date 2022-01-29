@@ -1,5 +1,5 @@
 #settings-main {
-    background-color: var(--background);
+    background-color: var(--dp00);
     margin: 0;
     padding: .6rem 25%;
 }
@@ -9,18 +9,37 @@
 }
 
 .settings-group {
-    background-color: var(--closer-background);
-    width: calc(100% - 2rem);
-    padding: .7rem 1rem;
+    background-color: var(--dp01);
+    width: 100%;
     margin: 0 0 1.5rem 0;
     box-shadow: 0px 0px 7px #00000029;
     border-radius: .5rem;
+}
+
+.setting {
+    padding: 1.5rem;
+    border-bottom: 1px solid #ccc;
+}
+
+@media all and (prefers-color-scheme: dark) {
+    .setting {
+        padding: 1.5rem;
+        border-bottom: 1px solid #555;
+    }
+
+    #settings-main {
+        color: white;
+    }
+}
+
+.setting:last-child {
+    border-bottom: none;
 }
 
 .setting>h3, .setting>.white-button {
     margin: 0;
 }
 
-.setting>p {
+.setting>.glider-selector {
     margin: .4rem 0;
 }

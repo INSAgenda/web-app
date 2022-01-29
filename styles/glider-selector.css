@@ -5,8 +5,15 @@
     display: flex;
     flex-direction: row;
     width: fit-content;
-    background-color: var(--background);
     border-radius: 1rem;
+    background-color: var(--dp03);
+    border: 1px solid #ccc;
+}
+
+@media all and (prefers-color-scheme: dark) {
+    .glider-selector {
+        border: 1px solid #555;
+    }
 }
 
 .glider-selector>div {
@@ -22,5 +29,5 @@
     color: transparent;
     background-color: var(--red);
     border-radius: 1rem;
-    height: 1rem;
+    height: calc(1rem + 2px);
 }
