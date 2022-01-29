@@ -1,26 +1,26 @@
 #settings-main {
-	background-color: var(--background);
-	margin: 0;
-	padding: .6rem 25%;
+    background-color: var(--background);
+    margin: 0;
+    padding: .6rem 25%;
 }
 
 #settings-main>h2 {
-	margin: .4rem 0;
+    margin: .4rem 0;
 }
 
 .settings-group {
-	background-color: var(--closer-background);
-	width: calc(100% - 2rem);
-	padding: .7rem 1rem;
-	margin: 0 0 1.5rem 0;
-	box-shadow: 0px 0px 7px #00000029;
+    background-color: var(--closer-background);
+    width: calc(100% - 2rem);
+    padding: .7rem 1rem;
+    margin: 0 0 1.5rem 0;
+    box-shadow: 0px 0px 7px #00000029;
     border-radius: .5rem;
 }
 
 .setting>h3, .setting>.white-button {
-	margin: 0;
+    margin: 0;
 }
 
 .setting>p {
-	margin: .4rem 0;
+    margin: .4rem 0;
 }
