@@ -70,7 +70,7 @@
         transform: translateY(-50%);
         position: fixed;
         height: 80%;
-        width: 15%;
+        width: 20%;
         max-width: 32em;
     }
     .event-details-content{
