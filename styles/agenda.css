@@ -309,9 +309,13 @@ body {
 .calendar-week:last-child {
     border: none;
 }
-#calendar-content{
+#calendar-body{
     height: 100%;
     overflow: hidden;
+}
+
+#agenda{
+    width: 100%;
 }
 
 /* For mobile */
