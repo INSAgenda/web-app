@@ -72,11 +72,6 @@ body {
         display: none;
     }
 
-    .event-details {
-        right: inherit;
-        top: 5rem;
-    }
-
     #day-container {
         width: 500%;
         transition: transform 0.3s ease-out;
