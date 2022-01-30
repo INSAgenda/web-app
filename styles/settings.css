@@ -19,7 +19,7 @@
 .setting-form-button {
     background-color: var(--dp03);
     border: 1px solid #ccc;
-    padding: .5rem 1rem;
+    padding: calc(.5rem - 2px) 3rem;
     width: min-content;
     border-radius: 1rem;
 }
@@ -29,7 +29,9 @@
 }
 
 :root[data-theme="dark"] .setting-form-button {
-    border: 1px solid #555;
+    border: 2px solid var(--red);
+    font-weight: bold;
+    color: var(--red);
 }
 
 .setting {
