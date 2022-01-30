@@ -16,6 +16,22 @@
     border-radius: .5rem;
 }
 
+.setting-form-button {
+    background-color: var(--dp03);
+    border: 1px solid #ccc;
+    padding: .5rem 1rem;
+    width: min-content;
+    border-radius: 1rem;
+}
+
+.setting-form-button:last-child {
+    margin-bottom: 0;
+}
+
+:root[data-theme="dark"] .setting-form-button {
+    border: 1px solid #555;
+}
+
 .setting {
     padding: 1.5rem;
     border-bottom: 1px solid #ccc;
@@ -34,6 +50,6 @@
     margin: 0;
 }
 
-.setting>.glider-selector {
+.setting>.glider-selector, .setting>.setting-form-button {
     margin: .4rem 0;
 }

@@ -78,13 +78,11 @@ impl Component for Settings {
                 <div class="settings-group">
                     <div class="setting">
                         <h3>{"Mot de passe"}</h3>
-                        <p>{"Votre mot de passe a été changé pour la dernière fois le 12/11/2021 à 12:49."}</p>
-                        <div class="white-button small-button">{"Modifier"}</div>
+                        <div class="setting-form-button">{"Modifier"}</div>
                     </div>
                     <div class="setting">
                         <h3>{"Adresse mail"}</h3>
-                        <p>{"Votre adresse actuelle est foobar@insa-rouen.fr."}</p>
-                        <div class="white-button small-button">{"Modifier"}</div>
+                        <div class="setting-form-button">{"Modifier"}</div>
                     </div>
                     <div class="setting">
                         <h3>{"Changer le type d'authentification"}</h3>
