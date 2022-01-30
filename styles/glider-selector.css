@@ -10,10 +10,8 @@
     border: 1px solid #ccc;
 }
 
-@media all and (prefers-color-scheme: dark) {
-    .glider-selector {
-        border: 1px solid #555;
-    }
+:root[data-theme="dark"] .glider-selector {
+    border: 1px solid #555;
 }
 
 .glider-selector>div {

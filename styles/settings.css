@@ -21,19 +21,13 @@
     border-bottom: 1px solid #ccc;
 }
 
-@media all and (prefers-color-scheme: dark) {
-    .setting {
-        padding: 1.5rem;
-        border-bottom: 1px solid #555;
-    }
-
-    #settings-main {
-        color: white;
-    }
+:root[data-theme="dark"] .setting {
+    padding: 1.5rem;
+    border-bottom: 1px solid #555;
 }
 
 .setting:last-child {
-    border-bottom: none;
+    border-bottom: none !important;
 }
 
 .setting>h3, .setting>.white-button {

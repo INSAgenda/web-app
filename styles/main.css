@@ -12,6 +12,10 @@ body {
     background-color: var(--dp00);
 }
 
+:root[data-theme="dark"] {
+    color: white;
+}
+
 #agenda-main {
     display: flex;
     justify-content: space-around;
