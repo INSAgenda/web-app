@@ -34,6 +34,7 @@ impl SettingStore {
 pub enum Msg {
     Confirm,
     BuildingNamingChange(usize),
+    ThemeChange(usize),
 }
 
 #[derive(Properties, Clone)]
@@ -64,6 +65,23 @@ impl Component for Settings {
             Msg::BuildingNamingChange(v) => {
                 SETTINGS.set_building_naming(v);
                 true
+            }
+            Msg::ThemeChange(v) => {
+                let theme = match v {
+                    0 => "light",
+                    1 => "dark",
+                    _ => unreachable!(),
+                };
+
+                let window = web_sys::window().unwrap();
+                let document = window.document().unwrap();
+                let html = document.first_element_child().unwrap();
+                html.set_attribute("data-theme", theme).unwrap();
+
+                let storage = window.local_storage().unwrap().unwrap();
+                storage.set_item("setting-theme", theme).unwrap();
+
+                false
             }
         }
     }
@@ -99,8 +117,9 @@ impl Component for Settings {
                     <div class="setting">
                         <h3>{"Thème"}</h3>
                         <GliderSelector
-                            values = { vec!["Automatique", "Sombre", "Clair"] }
-                            selected = 0 />
+                            values = { vec!["Clair", "Sombre"] }
+                            on_change = { ctx.link().callback(Msg::ThemeChange) }
+                            selected = 0 /> // todo change selected
                         <p>{"Par défault, le thème est celui renseigné par votre navigateur."}</p>
                     </div>
                     <div class="setting">
