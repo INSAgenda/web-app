@@ -52,8 +52,30 @@
 
 /* Arrows */
 
+#agenda-arrow-left, #agenda-arrow-right {
+    display: none;
+}
+
 #agenda-arrow-right {
     transform: rotate(180deg);
+}
+
+@media screen and (max-width: 1000px) {
+    #agenda-arrow-left, #agenda-arrow-right {
+        display: initial;
+        cursor: pointer;
+        width: 4rem;
+        height: 4rem;
+        flex-shrink: 0;
+        position: relative;
+        bottom: 1.5rem;
+    }
+    
+    #agenda-arrow-left>div, #agenda-arrow-right>div {
+        background: url(/assets/elements/red-arrow.svg) center no-repeat;
+        width: 100%;
+        height: 100%;
+    }
 }
 
 /* Top */
@@ -73,6 +95,12 @@
 }
 
 /* Days */
+
+#day-container-scope {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
 
 #day-container {
     display: flex;
