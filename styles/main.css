@@ -79,20 +79,6 @@ body {
         will-change: transform;
     }
 
-    #agenda-main-part {
-        overflow: hidden;
-    }
-
-    #agenda-arrow-left, #agenda-arrow-right {
-        background-image: url(/assets/elements/red-arrow.svg);
-        height: 18px;
-        width: 11px;
-        background-size: 100%;
-        background-repeat: no-repeat;
-        background-position: center;
-        cursor: pointer;
-    }
-
     #agenda-top {
         width: 100%;
         align-self: center;

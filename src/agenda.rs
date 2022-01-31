@@ -89,20 +89,26 @@ impl App {
                 </div>
                 <div id="agenda-main-part">
                     <div id="agenda-top">
-                        <a id="agenda-arrow-left" onclick={ctx.link().callback(|_| crate::Msg::Previous)}></a>
+                        <a id="agenda-arrow-left" onclick={ctx.link().callback(|_| crate::Msg::Previous)}>
+                            <div></div>
+                        </a>
                         { day_names }
-                        <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
+                        <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}>
+                            <div></div>
+                        </a>
                     </div>
-                    <div id="day-container">
-                        <div id="line-container">
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
+                    <div id="day-container-scope">
+                        <div id="day-container">
+                            <div id="line-container">
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                            </div>
+                            { days }
                         </div>
-                        { days }
                     </div>
                 </div>
             </div>
