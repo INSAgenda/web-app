@@ -34,15 +34,20 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
 
 impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
+        let mobile_view = crate::slider::width() <= 1000;
+
         // Go on the first day of the week
         let mut current_day = self.selected_day;
-        for _ in 0..self.selected_day.weekday().num_days_from_monday() {
-            current_day = current_day.pred();
-        }
+        match mobile_view {
+            true => current_day = current_day.pred(),
+            false => for _ in 0..self.selected_day.weekday().num_days_from_monday() {
+                current_day = current_day.pred();
+            },
+        };
 
         let mut days = Vec::new();
         let mut day_names = Vec::new();
-        for _ in 0..5 {
+        for _ in 0..if mobile_view {3} else {5} {
             let mut events = Vec::new();
             for event in &self.events {
                 if (event.start_unixtime as i64) > current_day.and_hms(0,0,0).timestamp()
@@ -93,7 +98,7 @@ impl App {
                         { day_names }
                         <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
                     </div>
-                    <div id="day-container">
+                    <div id="day-container" style={if mobile_view{Some("transform: translateX(-20%)")} else {None}}>
                         <div id="line-container">
                             <div class="line"><div></div></div>
                             <div class="line"><div></div></div>

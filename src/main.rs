@@ -27,9 +27,7 @@ pub enum Msg {
     FetchSuccess(Vec<Event>),
     FetchFailure(ApiError),
     Previous,
-    SwipePrevious,
     Next,
-    SwipeNext,
     Goto {day: u32, month: u32, year: i32},
     SetPage(Page),
     SilentSetPage(Page),
@@ -53,13 +51,6 @@ impl Component for App {
 
         let now = chrono::Local::now();
         let now = now.with_timezone(&Paris);
-
-        let mut day_start = (now.timestamp() - (now.timestamp() + 1 * 3600) % 86400) as u64;
-        match now.weekday().number_from_monday() {
-            6 => day_start += 86400,
-            7 => day_start += 2 * 86400,
-            _ => (),
-        };
 
         // Extract api key data
         let window = web_sys::window().unwrap();
@@ -144,50 +135,24 @@ impl Component for App {
             Msg::Previous => {
                 if self.selected_day.weekday() == Weekday::Mon {
                     self.selected_day = self.selected_day.pred().pred().pred();
-                    true
                 } else {
                     self.selected_day = self.selected_day.pred();
-                    self.slider.borrow_mut().set_selected_index(self.selected_day.weekday().num_days_from_monday());
-                    false
                 }
-            },
-            Msg::SwipePrevious => {
-                if self.selected_day.weekday() == Weekday::Mon {
-                    self.selected_day = self.selected_day.pred().pred().pred();
-                    true
-                } else {
-                    self.selected_day = self.selected_day.pred();
-                    false
-                }
+                true
             },
             Msg::Next => {
                 if self.selected_day.weekday() ==  Weekday::Fri {
                     self.selected_day = self.selected_day.succ().succ().succ();
-                    true
                 } else {
                     self.selected_day = self.selected_day.succ();
-                    self.slider.borrow_mut().set_selected_index(self.selected_day.weekday().num_days_from_monday());
-                    false
                 }
-            },
-            Msg::SwipeNext => {
-                if self.selected_day.weekday() ==  Weekday::Fri {
-                    self.selected_day = self.selected_day.succ().succ().succ();
-                    true
-                } else {
-                    self.selected_day = self.selected_day.succ();
-                    false
-                }
+                true
             },
             Msg::Goto {day, month, year} => {
                 self.selected_day = Paris.ymd(year, month, day);
                 true
             }
         }
-    }
-
-    fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
-        let _ = self.slider.try_borrow_mut().map(|mut s| s.set_selected_index(self.selected_day.weekday().num_days_from_monday()));
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {

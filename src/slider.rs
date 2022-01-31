@@ -1,26 +1,71 @@
 use wasm_bindgen::{prelude::*, JsCast};
 use std::{rc::Rc, cell::{Cell, RefCell}};
+use crate::log;
 
-fn width() -> usize {
+pub fn width() -> usize {
     web_sys::window().unwrap().inner_width().unwrap().as_f64().unwrap() as usize
 }
 
 pub struct SliderManager {
     enabled: bool,
-    selected_index: u32,
     start_pos: Option<i32>,
     link: yew::html::Scope<crate::App>,
     day_container: Option<web_sys::HtmlElement>,
+    swift_next_callback: Closure<dyn FnMut()>,
+    swift_prev_callback: Closure<dyn FnMut()>,
 }
 
 impl SliderManager {
     pub fn init(link: yew::html::Scope<crate::App>) -> Rc<RefCell<SliderManager>> {
+        // Create callbacks
+
+        let document = web_sys::window().unwrap().document().unwrap();
+        let restore_transition_callback = Closure::wrap(Box::new(move || {
+            if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
+                day_container.style().remove_property("transition").unwrap();
+            }
+        }) as Box<dyn FnMut()>);
+
+        let window = web_sys::window().unwrap();
+        let document = window.document().unwrap();
+        let link2 = link.clone();
+        let swift_next_callback = Closure::wrap(Box::new(move || {
+            if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
+                day_container.style().set_property("transition", "transform 0s").unwrap();
+                day_container.style().set_property("transform", "translateX(-20%)").unwrap();
+                link2.send_message(crate::Msg::Next);
+                window.set_timeout_with_callback(restore_transition_callback.as_ref().unchecked_ref()).unwrap();
+            }
+        }) as Box<dyn FnMut()>);
+
+        let document = web_sys::window().unwrap().document().unwrap();
+        let restore_transition_callback = Closure::wrap(Box::new(move || {
+            if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
+                day_container.style().remove_property("transition").unwrap();
+            }
+        }) as Box<dyn FnMut()>);
+
+        let window = web_sys::window().unwrap();
+        let document = window.document().unwrap();
+        let link2 = link.clone();
+        let swift_prev_callback = Closure::wrap(Box::new(move || {
+            if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
+                day_container.style().set_property("transition", "transform 0s").unwrap();
+                day_container.style().set_property("transform", "translateX(-20%)").unwrap();
+                link2.send_message(crate::Msg::Previous);
+                window.set_timeout_with_callback(restore_transition_callback.as_ref().unchecked_ref()).unwrap();
+            }
+        }) as Box<dyn FnMut()>);
+
+        // Create slider
+
         let slider = Rc::new(RefCell::new(SliderManager {
             enabled: false,
             start_pos: None,
-            selected_index: 0,
             link,
             day_container: None,
+            swift_next_callback,
+            swift_prev_callback,
         }));
         if width() <= 1000 {
             slider.borrow_mut().enable();
@@ -148,7 +193,6 @@ impl SliderManager {
     pub fn enable(&mut self) {
         self.enabled = true;
         self.start_pos = None;
-        self.update_displayed_day_name();
     }
 
     pub fn disable(&mut self) {
@@ -159,21 +203,6 @@ impl SliderManager {
         let document = window.document().unwrap();
         if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
             day_container.style().set_property("transform", "translateX(0px)").unwrap();
-        }
-    }
-
-    fn update_displayed_day_name(&self) {
-        let day_names = match web_sys::window().unwrap().document().unwrap().get_element_by_id("agenda-top") {
-            Some(day_names) => day_names.children(),
-            None => return,
-        };
-
-        for i in 1..day_names.length() - 1 {
-            let day_name = day_names.item(i).unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
-            match i - 1 == self.selected_index {
-                true => day_name.set_attribute("id", "selected-day").unwrap(),
-                false => day_name.set_attribute("id", "").unwrap(),
-            }
         }
     }
 
@@ -207,57 +236,28 @@ impl SliderManager {
 
         let offset = mouse_x - start_pos;
 
-        day_container.style().set_property("transform", &format!("translateX(calc(-20% * {} + {}px))", self.selected_index, offset)).unwrap();
+        day_container.style().set_property("transform", &format!("translateX(calc(-20% + {}px))", offset)).unwrap();
     }
 
     fn touch_end(&mut self, mouse_x: i32) {
-        let start_pos = match self.start_pos {
+        let start_pos = match self.start_pos.take() {
             Some(start_pos) => start_pos,
             None => return,
         };
-        let offset = mouse_x - start_pos;
-
-        if offset > 90 {
-            self.swipe_left();
-        } else if offset < -90 {
-            self.swipe_right();
-        } else {
-            self.set_selected_index(self.selected_index);
-        }
-    }
-
-    pub fn swipe_left(&mut self) {
-        if self.selected_index > 0 {
-            self.set_selected_index(self.selected_index - 1);
-        } else {
-            self.set_selected_index(4);
-        }
-        self.link.send_message(crate::Msg::SwipePrevious);
-    }
-
-    pub fn swipe_right(&mut self) {
-        if self.selected_index < 4 {
-            self.set_selected_index(self.selected_index + 1);
-        } else {
-            self.set_selected_index(0);
-        }
-        self.link.send_message(crate::Msg::SwipeNext);
-    }
-
-    pub fn set_selected_index(&mut self, index: u32) {
-        if !self.enabled {
-            return;
-        }
-
-        let day_container: web_sys::HtmlElement = match web_sys::window().unwrap().document().unwrap().get_element_by_id("day-container").map(|e| e.dyn_into().unwrap()) {
-            Some(element) => element,
+        let day_container = match self.day_container {
+            Some(ref element) => element,
             None => return,
         };
-        
-        self.selected_index = index;
-        self.start_pos = None;
 
-        day_container.style().set_property("transform", &format!("translateX(calc(-20% * {}))", self.selected_index)).unwrap();
-        self.update_displayed_day_name();
+        let offset = mouse_x - start_pos;
+        
+        let window = web_sys::window().unwrap();
+        if offset > 90 {
+            day_container.style().set_property("transform", "translateX(0%)").unwrap();
+            window.set_timeout_with_callback_and_timeout_and_arguments_0(self.swift_prev_callback.as_ref().unchecked_ref(), 300).unwrap();
+        } else if offset < -90 {
+            day_container.style().set_property("transform", "translateX(-40%)").unwrap();
+            window.set_timeout_with_callback_and_timeout_and_arguments_0(self.swift_next_callback.as_ref().unchecked_ref(), 300).unwrap();
+        }
     }
 }
