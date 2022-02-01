@@ -6,7 +6,6 @@
     text-align: center;
     width: inherit;
     color: black;
-    font-size: 0.8rem;
     cursor: pointer;
 }
 
@@ -14,7 +13,7 @@
 
 .event-details {
     width: 214px;
-    min-height: 346px;
+    font-size: 1rem;
     position: absolute;
     background-color: var(--dp06);
     top: 0;
@@ -60,8 +59,49 @@
     margin: 5px 0 8px 3px;
     color: var(--input-text);
     font-size: 1em;
-    
 }
+
+/* Interactive parts */
+
+.bottom-buttons {
+    margin-top: 2rem;
+    min-height: 1rem;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.bottom-buttons>div {
+    cursor: pointer;
+    margin-bottom: 2px;
+    border-bottom: 1px solid transparent;
+}
+
+.bottom-buttons>div>img {
+    margin-left: .4rem;
+    height: 1rem;
+    filter: invert(1);
+    vertical-align: text-bottom;
+}
+
+.bottom-buttons>div:hover {
+    color: var(--red);
+    border-bottom: 1px solid var(--red);
+}
+
+.color-editor-popup>div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.bottom-buttons>div:hover>img {
+    filter: invert(43%) sepia(23%) saturate(2808%) hue-rotate(328deg) brightness(83%) contrast(103%);
+}
+
+/* Mobile view */
 
 @media screen and (max-width: 1000px) {
     .event-details {

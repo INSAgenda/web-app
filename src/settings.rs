@@ -3,8 +3,18 @@ use crate::{glider_selector::GliderSelector, App};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 lazy_static::lazy_static!{
-    pub static ref SETTINGS: SettingStore = SettingStore {
-        building_naming: AtomicUsize::new(0),
+    pub static ref SETTINGS: SettingStore = {
+        let window = web_sys::window().unwrap();
+        let local_storage = window.local_storage().unwrap().unwrap();
+        let theme = match local_storage.get_item("setting-theme").unwrap() {
+            Some(theme) if theme == "dark" => 0,
+            _ => 1,
+        };
+
+        SettingStore {
+            building_naming: AtomicUsize::new(0),
+            theme: AtomicUsize::new(theme),
+        }
     };
 }
 
@@ -13,8 +23,14 @@ pub enum BuildingNaming {
     Long,
 }
 
+pub enum Theme {
+    Dark = 0,
+    Light,
+}
+
 pub struct SettingStore {
     building_naming: AtomicUsize,
+    theme: AtomicUsize,
 }
 
 impl SettingStore {
@@ -28,6 +44,18 @@ impl SettingStore {
 
     fn set_building_naming(&self, building_naming: usize) {
         self.building_naming.store(building_naming, Ordering::Relaxed);
+    }
+
+    pub fn theme(&self) -> Theme {
+        match self.theme.load(Ordering::Relaxed) {
+            0 => Theme::Dark,
+            1 => Theme::Light,
+            _ => unreachable!(),
+        }
+    }
+
+    fn set_theme(&self, theme: usize) {
+        self.theme.store(theme, Ordering::Relaxed);
     }
 }
 
@@ -67,9 +95,11 @@ impl Component for Settings {
                 true
             }
             Msg::ThemeChange(v) => {
+                SETTINGS.set_theme(v);
+
                 let theme = match v {
-                    0 => "light",
-                    1 => "dark",
+                    0 => "dark",
+                    1 => "light",
                     _ => unreachable!(),
                 };
 
@@ -81,7 +111,7 @@ impl Component for Settings {
                 let storage = window.local_storage().unwrap().unwrap();
                 storage.set_item("setting-theme", theme).unwrap();
 
-                false
+                true
             }
         }
     }
@@ -117,9 +147,9 @@ impl Component for Settings {
                     <div class="setting">
                         <h3>{"Thème"}</h3>
                         <GliderSelector
-                            values = { vec!["Clair", "Sombre"] }
+                            values = { vec!["Sombre", "Clair"] }
                             on_change = { ctx.link().callback(Msg::ThemeChange) }
-                            selected = 0 /> // todo change selected
+                            selected = { SETTINGS.theme() as usize } />
                         <p>{"Par défault, le thème est celui renseigné par votre navigateur."}</p>
                     </div>
                     <div class="setting">

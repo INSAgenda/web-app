@@ -1,10 +1,10 @@
 use agenda_parser::{Event, event::EventKind, location::Building};
 use yew::prelude::*;
-use std::{sync::atomic::{AtomicUsize, Ordering}};
+use std::{sync::{atomic::{AtomicUsize, AtomicBool, Ordering}, Arc}};
 use chrono::TimeZone;
 use chrono_tz::Europe::Paris;
 use wasm_bindgen::{prelude::*, JsCast};
-use crate::settings::{SETTINGS, BuildingNaming};
+use crate::{settings::{SETTINGS, BuildingNaming}, colors::*};
 
 lazy_static::lazy_static!{
     static ref ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
@@ -14,16 +14,22 @@ lazy_static::lazy_static!{
 pub struct EventCompProps {
     pub event: Event,
     pub day_start: u64,
+    pub app_link: yew::html::Scope<crate::App>,
 }
 
 impl PartialEq for EventCompProps {
     fn eq(&self, other: &Self) -> bool {
-        self.event.start_unixtime == other.event.start_unixtime && self.event.end_unixtime == other.event.end_unixtime // TODO: add other fields
+        !COLORS_CHANGED.load(Ordering::Relaxed) && self.event.start_unixtime == other.event.start_unixtime && self.event.end_unixtime == other.event.end_unixtime // TODO: add other fields
     }
 }
 
+pub enum PopupPage {
+    General,
+    Colors,
+}
+
 pub struct EventComp {
-    show_details: bool,
+    popup: Option<PopupPage>,
     on_click: Closure<dyn FnMut(web_sys::MouseEvent)>,
     ignore_next_event: bool,
     popup_id: String,
@@ -31,6 +37,8 @@ pub struct EventComp {
 
 pub enum EventCompMsg {
     ToggleDetails,
+    SetPage(PopupPage),
+    SaveColors,
 }
 
 impl Component for EventComp {
@@ -58,22 +66,22 @@ impl Component for EventComp {
         }) as Box<dyn FnMut(_)>);
 
         EventComp {
-            show_details: false,
+            popup: None,
             on_click,
             ignore_next_event: false,
             popup_id: id,
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            EventCompMsg::ToggleDetails if self.show_details => {
+            EventCompMsg::ToggleDetails if self.popup.is_some() => {
                 // We sometimes need a mechanism to ignore the next message. When the event listener is added, it instantly fires another ToggleDetails message which would close the popup instantly if not ignored
                 if self.ignore_next_event {
                     self.ignore_next_event = false;
                     false
                 } else {
-                    self.show_details = false;
+                    self.popup = None;
 
                     // Popup is already closed, so we can spare resources by disabling the event listener
                     web_sys::window().unwrap().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
@@ -81,7 +89,7 @@ impl Component for EventComp {
                 }
             },
             EventCompMsg::ToggleDetails => {
-                self.show_details = true;
+                self.popup = Some(PopupPage::General);
 
                 // Popup is now opened so we must be ready to close it
                 web_sys::window().unwrap().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
@@ -89,6 +97,42 @@ impl Component for EventComp {
                 self.ignore_next_event = true;
 
                 true
+            },
+            EventCompMsg::SetPage(page) => {
+                self.popup = Some(page);
+                
+                // We need this because instantly after this message will fire the click event but the popup content will already have changed and the click could be detected outside the popup
+                self.ignore_next_event = true;
+
+                true
+            },
+            EventCompMsg::SaveColors => {
+                self.popup = Some(PopupPage::General);
+
+                let document = web_sys::window().unwrap().document().unwrap();
+                let background_color = match document.query_selector(&format!("#{} #background-color-input", self.popup_id)).unwrap() {
+                    Some(el) => el.dyn_into::<web_sys::HtmlInputElement>().unwrap().value(),
+                    None => return false,
+                };
+                let text_color = match document.query_selector(&format!("#{} #text-color-input", self.popup_id)).unwrap() {
+                    Some(el) => el.dyn_into::<web_sys::HtmlInputElement>().unwrap().value(),
+                    None => return false,
+                };
+
+                let kind = match &ctx.props().event.kind {
+                    EventKind::Td(kind) => kind,
+                    EventKind::Cm(kind) => kind,
+                    EventKind::Tp(kind) => kind,
+                    EventKind::Other(kind) => kind,
+                };
+                COLORS.set(kind, background_color, text_color);
+
+                // We need to set this so that other events know that they have to refresh
+                COLORS_CHANGED.store(true, Ordering::Relaxed);
+
+                ctx.props().app_link.send_message(crate::Msg::Refresh);
+
+                false
             },
         }
     }
@@ -98,12 +142,13 @@ impl Component for EventComp {
         let percent_offset = 100.0 / (44100.0) * sec_offset as f64;
         let percent_height = 100.0 / (44100.0) * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;
 
-        let name = match &ctx.props().event.kind {
-            EventKind::Td(kind) => format!("TD: {}", kind),
-            EventKind::Cm(kind) => format!("CM: {}", kind),
-            EventKind::Tp(kind) => format!("TP: {}", kind),
-            EventKind::Other(kind) => kind.to_string(),
+        let (name, kind) = match &ctx.props().event.kind {
+            EventKind::Td(kind) => (format!("TD: {}", kind), kind),
+            EventKind::Cm(kind) => (format!("CM: {}", kind), kind),
+            EventKind::Tp(kind) => (format!("TP: {}", kind), kind),
+            EventKind::Other(kind) => (kind.to_string(), kind),
         };
+        let (bg_color, text_color) = COLORS.get(kind);
         
         let location = ctx.props().event.location.map(|location| {
             let building =  match SETTINGS.building_naming() {
@@ -127,50 +172,84 @@ impl Component for EventComp {
         
         // Specify font-size according event height
         let font_size = percent_height/8.;
-        let font_size = if font_size > 1.2 { 1.2 } else { font_size };
+        let font_size = if font_size > 1. { 1. } else { font_size };
         html! {
             <div
-                style={format!("background-color: #98fb98; position: absolute; top: {}%; height: {}%;", percent_offset, percent_height)}
+                style={format!("background-color: {}; color: {}; position: absolute; top: {}%; height: {}%; font-size: {}rem;", bg_color, text_color, percent_offset, percent_height, font_size)}
                 class="event"
-                onclick={ if !self.show_details { Some(ctx.link().callback(|_| EventCompMsg::ToggleDetails)) } else {None} } >
+                onclick={ if self.popup.is_none() { Some(ctx.link().callback(|_| EventCompMsg::ToggleDetails)) } else {None} } >
 
-                <span class="name" style={format!("font-size: {}em",font_size)} >
+                <span class="name" >
                     { &name }
                 </span>
-                <span class="teacher" style={format!("font-size: {}em",font_size)}>
+                <span class="teacher">
                     { ctx.props().event.teachers.join(", ") }
                 </span>
-                {if let Some(l) = &location {html! {<span style={format!("font-size: {}em",font_size)} >{l}</span>}} else {html!{}}}
-                <div class="event-details" id={self.popup_id.clone()} style={if self.show_details {""} else {"display: none;"}} >
+                {if let Some(l) = &location {html! {<span>{l}</span>}} else {html!{}}}
+                <div class="event-details" id={self.popup_id.clone()} style={if self.popup.is_some() {""} else {"display: none;"}} >
                     <div class="event-details-header">
                         <span>{ name }</span>
                     </div>
-                    <div class="event-details-content">
-                        <div>
-                            <span class="bold">{"Début : "}</span>
-                            {start.time().format("%Hh%M")}
-                        </div>
-                        <div>
-                            <span class="bold">{"Fin : "}</span>
-                            {end.time().format("%Hh%M")}
-                        </div>
-                        <div>
-                            <span class="bold">{"Durée : "}</span>
-                            {duration}{"min"}
-                        </div>
-                        <div>
-                            <span class="bold">{ if ctx.props().event.groups.len() > 1 {{"Groupes : "}} else {{"Groupe : "}} }</span>
-                            {groups}
-                        </div>
-                        <div>
-                            <span class="bold">{"Professeur : "}</span>
-                            {ctx.props().event.teachers.join(", ")}
-                        </div>
-                        <div>
-                            <span class="bold">{"Salle : "}</span>
-                            {location.unwrap_or_else(|| "Inconnue".to_string())}
-                        </div>
-                    </div>
+                    { 
+                        match self.popup {
+                            Some(PopupPage::General) | None => html!{
+                                <div class="event-details-content">
+                                    <div>
+                                        <span class="bold">{"Début : "}</span>
+                                        {start.time().format("%Hh%M")}
+                                    </div>
+                                    <div>
+                                        <span class="bold">{"Fin : "}</span>
+                                        {end.time().format("%Hh%M")}
+                                    </div>
+                                    <div>
+                                        <span class="bold">{"Durée : "}</span>
+                                        {duration}{"min"}
+                                    </div>
+                                    <div>
+                                        <span class="bold">{ if ctx.props().event.groups.len() > 1 {{"Groupes : "}} else {{"Groupe : "}} }</span>
+                                        {groups}
+                                    </div>
+                                    <div>
+                                        <span class="bold">{"Professeur : "}</span>
+                                        {ctx.props().event.teachers.join(", ")}
+                                    </div>
+                                    <div>
+                                        <span class="bold">{"Salle : "}</span>
+                                        {location.unwrap_or_else(|| "Inconnue".to_string())}
+                                    </div>
+                                    <div class="bottom-buttons">
+                                        <div onclick={ctx.link().callback(|_| EventCompMsg::SetPage(PopupPage::Colors))}>
+                                            {"Changer les couleurs"}
+                                            <img src="/agenda/images/edit-2.svg"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            },
+                            Some(PopupPage::Colors) => html!{
+                                <div class="event-details-content color-editor-popup">
+                                    <div>
+                                        <span>{"Fond"}</span>
+                                        <input type="color" id="background-color-input" value={bg_color} />
+                                    </div>
+                                    <div>
+                                        <span>{"Texte"}</span>
+                                        <input type="color" id="text-color-input" value={text_color} />
+                                    </div>
+                                    <div class="bottom-buttons">
+                                        <div onclick={ctx.link().callback(|_| EventCompMsg::SetPage(PopupPage::General))}>
+                                            {"Annuler"}
+                                            <img src="/agenda/images/x.svg"/>
+                                        </div>
+                                        <div onclick={ctx.link().callback(|_| EventCompMsg::SaveColors)}>
+                                            {"Sauvegarder"}
+                                            <img src="/agenda/images/save.svg"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
                 </div>
             </div>
         }
