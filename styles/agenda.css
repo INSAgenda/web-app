@@ -117,7 +117,7 @@
 }
 
 #settings-button{
-    background-image: url('../assets/images/settings.svg');
+    background-image: url('images/settings.svg');
     background-size: 100%;
     background-color: transparent;
     margin-right: 2em;
