@@ -15,11 +15,11 @@ impl Colors {
         let window = web_sys::window().unwrap();
         let local_storage = window.local_storage().unwrap().unwrap();
         let light = match local_storage.get_item("light-colors").unwrap() {
-            Some(json) => serde_json::from_str(&json).unwrap(), // TODO remove
+            Some(json) => serde_json::from_str(&json).unwrap_or_default(),
             None => HashMap::new(),
         };
         let dark = match local_storage.get_item("dark-colors").unwrap() {
-            Some(json) => serde_json::from_str(&json).unwrap(), // TODO remove
+            Some(json) => serde_json::from_str(&json).unwrap_or_default(),
             None => HashMap::new(),
         };
 
