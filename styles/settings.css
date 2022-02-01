@@ -44,7 +44,7 @@
 .back-button{
     border: none;
     cursor: pointer;
-    background-image: url('/agenda/assets/elements/arrow.svg');
+    background-image: url('../assets/elements/arrow.svg');
     background-size: 30%;
     background-repeat: no-repeat;
     background-position: center;
