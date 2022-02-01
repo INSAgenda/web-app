@@ -137,7 +137,7 @@ impl Component for Settings {
                         }</p>
                     </div>
                 </div>
-                <div class="red-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{"Valider"}</div>
+                <div class="red-button form-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{"Valider"}</div>
             </main>
             <footer>
             </footer>

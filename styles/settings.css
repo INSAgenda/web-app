@@ -60,3 +60,9 @@
     filter: invert(0);
 }
 
+@media screen and (max-width: 800px){
+    #settings-main {
+        padding: .6rem 5%;
+    }
+
+}
