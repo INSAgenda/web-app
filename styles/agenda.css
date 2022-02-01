@@ -72,7 +72,8 @@
     }
     
     #agenda-arrow-left>div, #agenda-arrow-right>div {
-        background: url(/assets/elements/red-arrow.svg) center no-repeat;
+        background: url(/assets/elements/arrow.svg) center no-repeat;
+        filter: invert(43%) sepia(23%) saturate(2808%) hue-rotate(328deg) brightness(83%) contrast(103%); 
         width: 100%;
         height: 100%;
     }
@@ -114,3 +115,19 @@
     margin: 0 .5%;
     background-color: var(--dp02);
 }
+
+#settings-button{
+    background-image: url('images/settings.svg');
+    background-size: 100%;
+    background-color: transparent;
+    margin-right: 2rem;
+    width: 3rem;
+    height: 3rem;
+    border: none;
+    cursor: pointer;
+}
+:root[data-theme="dark"] #settings-button{
+    filter: invert(1);
+}
+
+

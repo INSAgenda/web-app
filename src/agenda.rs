@@ -73,8 +73,9 @@ impl App {
             <header>
                 <a id="header-logo" href="../index.html">
                 <img src="/assets/elements/webLogo.svg" alt="INSAgenda logo"/> 
-                <span id="header-name">{"INSAgenda"}</span>
+                <h1 id="header-name">{"INSAgenda"}</h1>
                 </a>
+                <button id="settings-button" onclick={ctx.link().callback(|_| crate::Msg::SetPage(crate::Page::Settings))}/>
             </header>
             <main id="agenda-main">
             <div id="agenda">
@@ -119,7 +120,6 @@ impl App {
                 </div>
                 <Calendar app_link={ctx.link().clone()}/>
                 <br/>
-                <div class="white-button" onclick={ctx.link().callback(|_| crate::Msg::SetPage(crate::Page::Settings))}>{"Paramètres"}</div>    
             </div>
         </main>
             </>
