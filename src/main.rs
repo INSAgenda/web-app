@@ -14,6 +14,7 @@ mod calendar;
 mod slider;
 mod api;
 mod crash_handler;
+mod colors;
 use api::*;
 pub use util::sleep;
 use crate::settings::Settings;
@@ -33,6 +34,7 @@ pub enum Msg {
     Goto {day: u32, month: u32, year: i32},
     SetPage(Page),
     SilentSetPage(Page),
+    Refresh,
 }
 
 pub struct App {
@@ -183,11 +185,13 @@ impl Component for App {
                 self.selected_day = Paris.ymd(year, month, day);
                 true
             }
+            Msg::Refresh => true,
         }
     }
 
     fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
         let _ = self.slider.try_borrow_mut().map(|mut s| s.set_selected_index(self.selected_day.weekday().num_days_from_monday()));
+        crate::colors::COLORS_CHANGED.store(false, std::sync::atomic::Ordering::Relaxed);
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
