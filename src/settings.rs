@@ -85,10 +85,11 @@ impl Component for Settings {
             }
         }
     }
-
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {<>
-            <header>
+            <header class="pseudo-page-header">
+            
+                <button class="back-button" onclick={ctx.props().app_link.callback(|_| crate::Msg::SetPage(crate::Page::Agenda))} />
                 <h1>{"Paramètres"}</h1>
             </header>
             <main id="settings-main">

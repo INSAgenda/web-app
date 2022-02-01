@@ -1,3 +1,6 @@
+.pseudo-page-header{
+    justify-content: initial !important;
+}
 #settings-main {
     background-color: var(--dp00);
     margin: 0;
@@ -37,3 +40,23 @@
 .setting>.glider-selector {
     margin: .4rem 0;
 }
+
+.back-button{
+    border: none;
+    cursor: pointer;
+    background-image: url('../assets/elements/arrow.svg');
+    background-size: 30%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    display: inline;
+    height: 4em;
+    width: 4em;
+    filter: invert(1);
+
+}
+
+:root[data-theme="dark"] .back-button{
+    filter: invert(0);
+}
+

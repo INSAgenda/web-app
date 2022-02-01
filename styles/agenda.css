@@ -114,3 +114,19 @@
     margin: 0 .5%;
     background-color: var(--dp02);
 }
+
+#settings-button{
+    background-image: url('../assets/images/settings.svg');
+    background-size: 100%;
+    background-color: transparent;
+    margin-right: 2em;
+    width: 3em;
+    height: 3em;
+    border: none;
+    cursor: pointer;
+}
+:root[data-theme="dark"] #settings-button{
+    filter: invert(1);
+}
+
+
