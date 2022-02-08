@@ -64,7 +64,9 @@ body {
     border-radius: 3px;
     margin: 3px 0 0 0;
 }
-
+#selected-day{
+    color: var(--red) !important;
+}
 /* For mobile */
 
 @media screen and (max-width: 1000px) {
@@ -77,20 +79,6 @@ body {
         transition: transform 0.3s ease-out;
         transform: translateX(0);
         will-change: transform;
-    }
-
-    #agenda-main-part {
-        overflow: hidden;
-    }
-
-    #agenda-arrow-left, #agenda-arrow-right {
-        background-image: url(/assets/elements/red-arrow.svg);
-        height: 18px;
-        width: 11px;
-        background-size: 100%;
-        background-repeat: no-repeat;
-        background-position: center;
-        cursor: pointer;
     }
 
     #agenda-top {

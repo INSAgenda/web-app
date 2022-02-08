@@ -54,7 +54,7 @@ impl App {
                     && (event.start_unixtime as i64) < current_day.and_hms(23,59,59).timestamp()
                 {
                     events.push(html! {
-                        <EventComp event={event.clone()} day_start={current_day.and_hms(0,0,0).timestamp() as u64}></EventComp>
+                        <EventComp event={event.clone()} day_start={current_day.and_hms(0,0,0).timestamp() as u64} app_link={ctx.link().clone()}></EventComp>
                     });
                 }
             }
@@ -78,8 +78,9 @@ impl App {
             <header>
                 <a id="header-logo" href="../index.html">
                 <img src="/assets/elements/webLogo.svg" alt="INSAgenda logo"/> 
-                <span id="header-name">{"INSAgenda"}</span>
+                <h1 id="header-name">{"INSAgenda"}</h1>
                 </a>
+                <button id="settings-button" onclick={ctx.link().callback(|_| crate::Msg::SetPage(crate::Page::Settings))}/>
             </header>
             <main id="agenda-main">
             <div id="agenda">
@@ -94,20 +95,26 @@ impl App {
                 </div>
                 <div id="agenda-main-part">
                     <div id="agenda-top">
-                        <a id="agenda-arrow-left" onclick={ctx.link().callback(|_| crate::Msg::Previous)}></a>
+                        <a id="agenda-arrow-left" onclick={ctx.link().callback(|_| crate::Msg::Previous)}>
+                            <div></div>
+                        </a>
                         { day_names }
-                        <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
+                        <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}>
+                            <div></div>
+                        </a>
                     </div>
-                    <div id="day-container" style={if mobile_view {Some(format!("transform: translateX(-{}%)", 20 * (self.selected_day.num_days_from_ce() - 730000)))} else {None}}>
-                        <div id="line-container">
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
-                            <div class="line"><div></div></div>
+                    <div id="day-container-scope">
+                        <div id="day-container" style={if mobile_view {Some(format!("transform: translateX(-{}%)", 20 * (self.selected_day.num_days_from_ce() - 730000)))} else {None}}>
+                            <div id="line-container">
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                                <div class="line"><div></div></div>
+                            </div>
+                            { days }
                         </div>
-                        { days }
                     </div>
                 </div>
             </div>
@@ -118,7 +125,6 @@ impl App {
                 </div>
                 <Calendar app_link={ctx.link().clone()}/>
                 <br/>
-                <div class="white-button" onclick={ctx.link().callback(|_| crate::Msg::SetPage(crate::Page::Settings))}>{"Paramètres"}</div>    
             </div>
         </main>
             </>
