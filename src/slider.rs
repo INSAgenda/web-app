@@ -179,6 +179,19 @@ impl SliderManager {
         }
     }
 
+    fn get_cached_day_container(&mut self) -> web_sys::HtmlElement {
+        match &self.day_container {
+            Some(day_container) => day_container.clone(),
+            None => {
+                let window = web_sys::window().unwrap();
+                let document = window.document().unwrap();
+                let day_container = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()).expect("No day container");
+                self.day_container = Some(day_container.clone());
+                day_container
+            }
+        }
+    }
+
     fn touch_start(&mut self, mouse_x: i32, mouse_y: i32) {
         let window = web_sys::window().unwrap();
         let document = window.document().unwrap();
@@ -198,10 +211,7 @@ impl SliderManager {
     }
 
     fn touch_move(&mut self, mouse_x: i32) {
-        let day_container = match self.day_container {
-            Some(ref element) => element,
-            None => return,
-        };
+        let day_container = self.get_cached_day_container();
         let start_pos = match self.start_pos {
             Some(start_pos) => start_pos,
             None => return,
@@ -217,10 +227,7 @@ impl SliderManager {
             Some(start_pos) => start_pos,
             None => return,
         };
-        let day_container = match self.day_container {
-            Some(ref element) => element,
-            None => return,
-        };
+        let day_container = self.get_cached_day_container();
 
         let offset = mouse_x - start_pos;
         let window = web_sys::window().unwrap();
@@ -237,8 +244,7 @@ impl SliderManager {
 
     pub fn set_offset(&mut self, offset: i32) {
         self.days_offset.set(offset);
-        if let Some(day_container) = &self.day_container {
-            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
-        }
+        let day_container = self.get_cached_day_container();
+        day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
     }
 }

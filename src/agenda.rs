@@ -98,7 +98,7 @@ impl App {
                         { day_names }
                         <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
                     </div>
-                    <div id="day-container" >
+                    <div id="day-container" style={if mobile_view {Some(format!("transform: translateX(-{}%)", 20 * (self.selected_day.num_days_from_ce() - 730000)))} else {None}}>
                         <div id="line-container">
                             <div class="line"><div></div></div>
                             <div class="line"><div></div></div>
