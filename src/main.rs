@@ -18,6 +18,7 @@ use api::*;
 pub use util::sleep;
 use crate::settings::Settings;
 
+#[derive(PartialEq)]
 pub enum Page {
     Settings,
     Agenda,
@@ -138,6 +139,7 @@ impl Component for App {
                 } else {
                     self.selected_day = self.selected_day.pred();
                 }
+                self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
                 true
             },
             Msg::Next => {
@@ -146,6 +148,7 @@ impl Component for App {
                 } else {
                     self.selected_day = self.selected_day.succ();
                 }
+                self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
                 true
             },
             Msg::Goto {day, month, year} => {

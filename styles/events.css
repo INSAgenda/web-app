@@ -71,17 +71,21 @@
         position: fixed;
         height: 80%;
         width: 20%;
-        max-width: 32em;
+        max-width: 32rem;
     }
+
+    .event {
+        width: 100%;
+    }
+
     .event-details-content{
-        font-size: 1.6em;
+        font-size: 1.6rem;
     }
 
     .event-details-header{
         height: 8%;
-        font-size: 1.6em;
+        font-size: 1.6rem;
         font-weight: bold;
         padding: 1rem;
-
     }
 }

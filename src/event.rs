@@ -130,7 +130,7 @@ impl Component for EventComp {
         let font_size = if font_size > 1.2 { 1.2 } else { font_size };
         html! {
             <div
-                style={format!("background-color: #98fb98; position: absolute; top: {}%; height: {}%; width: 100%;", percent_offset, percent_height)}
+                style={format!("background-color: #98fb98; position: absolute; top: {}%; height: {}%;", percent_offset, percent_height)}
                 class="event"
                 onclick={ if !self.show_details { Some(ctx.link().callback(|_| EventCompMsg::ToggleDetails)) } else {None} } >
 

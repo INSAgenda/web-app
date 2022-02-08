@@ -1,6 +1,5 @@
 use wasm_bindgen::{prelude::*, JsCast};
 use std::{rc::Rc, cell::{Cell, RefCell}};
-use crate::log;
 
 pub fn width() -> usize {
     web_sys::window().unwrap().inner_width().unwrap().as_f64().unwrap() as usize
@@ -9,9 +8,8 @@ pub fn width() -> usize {
 pub struct SliderManager {
     enabled: bool,
     start_pos: Option<i32>,
-    link: yew::html::Scope<crate::App>,
     day_container: Option<web_sys::HtmlElement>,
-    days_offset: Rc<Cell<isize>>,
+    days_offset: Rc<Cell<i32>>,
     swift_next_callback: Closure<dyn FnMut()>,
     swift_prev_callback: Closure<dyn FnMut()>,
 }
@@ -27,7 +25,7 @@ impl SliderManager {
             link2.send_message(crate::Msg::Next);
         }) as Box<dyn FnMut()>);
 
-        let link2 = link.clone();
+        let link2 = link;
         let swift_prev_callback = Closure::wrap(Box::new(move || {
             link2.send_message(crate::Msg::Previous);
         }) as Box<dyn FnMut()>);
@@ -37,7 +35,6 @@ impl SliderManager {
         let slider = Rc::new(RefCell::new(SliderManager {
             enabled: false,
             start_pos: None,
-            link,
             day_container: None,
             days_offset,
             swift_next_callback,
@@ -226,16 +223,22 @@ impl SliderManager {
         };
 
         let offset = mouse_x - start_pos;
-        
         let window = web_sys::window().unwrap();
         if offset > 90 {
-            self.days_offset.set(self.days_offset.get() + 20);
-            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
-            window.set_timeout_with_callback_and_timeout_and_arguments_0(self.swift_prev_callback.as_ref().unchecked_ref(), 300).unwrap();
+            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get() + 20)).unwrap();
+            window.set_timeout_with_callback(self.swift_prev_callback.as_ref().unchecked_ref()).unwrap();
         } else if offset < -90 {
-            self.days_offset.set(self.days_offset.get() - 20);
+            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get() - 20)).unwrap();
+            window.set_timeout_with_callback(self.swift_next_callback.as_ref().unchecked_ref()).unwrap();
+        } else {
             day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
-            window.set_timeout_with_callback_and_timeout_and_arguments_0(self.swift_next_callback.as_ref().unchecked_ref(), 300).unwrap();
+        }
+    }
+
+    pub fn set_offset(&mut self, offset: i32) {
+        self.days_offset.set(offset);
+        if let Some(day_container) = &self.day_container {
+            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
         }
     }
 }
