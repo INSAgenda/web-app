@@ -1,26 +1,44 @@
 use wasm_bindgen::{prelude::*, JsCast};
 use std::{rc::Rc, cell::{Cell, RefCell}};
 
-fn width() -> usize {
+pub fn width() -> usize {
     web_sys::window().unwrap().inner_width().unwrap().as_f64().unwrap() as usize
 }
 
 pub struct SliderManager {
     enabled: bool,
-    selected_index: u32,
     start_pos: Option<i32>,
-    link: yew::html::Scope<crate::App>,
     day_container: Option<web_sys::HtmlElement>,
+    days_offset: Rc<Cell<i32>>,
+    swift_next_callback: Closure<dyn FnMut()>,
+    swift_prev_callback: Closure<dyn FnMut()>,
 }
 
 impl SliderManager {
     pub fn init(link: yew::html::Scope<crate::App>) -> Rc<RefCell<SliderManager>> {
+        // Create callbacks
+
+        let days_offset = Rc::new(Cell::new(-163880));
+
+        let link2 = link.clone();
+        let swift_next_callback = Closure::wrap(Box::new(move || {
+            link2.send_message(crate::Msg::Next);
+        }) as Box<dyn FnMut()>);
+
+        let link2 = link;
+        let swift_prev_callback = Closure::wrap(Box::new(move || {
+            link2.send_message(crate::Msg::Previous);
+        }) as Box<dyn FnMut()>);
+
+        // Create slider
+
         let slider = Rc::new(RefCell::new(SliderManager {
             enabled: false,
             start_pos: None,
-            selected_index: 0,
-            link,
             day_container: None,
+            days_offset,
+            swift_next_callback,
+            swift_prev_callback,
         }));
         if width() <= 1000 {
             slider.borrow_mut().enable();
@@ -148,7 +166,6 @@ impl SliderManager {
     pub fn enable(&mut self) {
         self.enabled = true;
         self.start_pos = None;
-        self.update_displayed_day_name();
     }
 
     pub fn disable(&mut self) {
@@ -162,17 +179,15 @@ impl SliderManager {
         }
     }
 
-    fn update_displayed_day_name(&self) {
-        let day_names = match web_sys::window().unwrap().document().unwrap().get_element_by_id("agenda-top") {
-            Some(day_names) => day_names.children(),
-            None => return,
-        };
-
-        for i in 1..day_names.length() - 1 {
-            let day_name = day_names.item(i).unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
-            match i - 1 == self.selected_index {
-                true => day_name.set_attribute("id", "selected-day").unwrap(),
-                false => day_name.set_attribute("id", "").unwrap(),
+    fn get_cached_day_container(&mut self) -> web_sys::HtmlElement {
+        match &self.day_container {
+            Some(day_container) => day_container.clone(),
+            None => {
+                let window = web_sys::window().unwrap();
+                let document = window.document().unwrap();
+                let day_container = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()).expect("No day container");
+                self.day_container = Some(day_container.clone());
+                day_container
             }
         }
     }
@@ -196,10 +211,7 @@ impl SliderManager {
     }
 
     fn touch_move(&mut self, mouse_x: i32) {
-        let day_container = match self.day_container {
-            Some(ref element) => element,
-            None => return,
-        };
+        let day_container = self.get_cached_day_container();
         let start_pos = match self.start_pos {
             Some(start_pos) => start_pos,
             None => return,
@@ -207,57 +219,32 @@ impl SliderManager {
 
         let offset = mouse_x - start_pos;
 
-        day_container.style().set_property("transform", &format!("translateX(calc(-20% * {} + {}px))", self.selected_index, offset)).unwrap();
+        day_container.style().set_property("transform", &format!("translateX(calc({}% + {}px))", self.days_offset.get(), offset)).unwrap();
     }
 
     fn touch_end(&mut self, mouse_x: i32) {
-        let start_pos = match self.start_pos {
+        let start_pos = match self.start_pos.take() {
             Some(start_pos) => start_pos,
             None => return,
         };
+        let day_container = self.get_cached_day_container();
+
         let offset = mouse_x - start_pos;
-
+        let window = web_sys::window().unwrap();
         if offset > 90 {
-            self.swipe_left();
+            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get() + 20)).unwrap();
+            window.set_timeout_with_callback(self.swift_prev_callback.as_ref().unchecked_ref()).unwrap();
         } else if offset < -90 {
-            self.swipe_right();
+            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get() - 20)).unwrap();
+            window.set_timeout_with_callback(self.swift_next_callback.as_ref().unchecked_ref()).unwrap();
         } else {
-            self.set_selected_index(self.selected_index);
+            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
         }
     }
 
-    pub fn swipe_left(&mut self) {
-        if self.selected_index > 0 {
-            self.set_selected_index(self.selected_index - 1);
-        } else {
-            self.set_selected_index(4);
-        }
-        self.link.send_message(crate::Msg::SwipePrevious);
-    }
-
-    pub fn swipe_right(&mut self) {
-        if self.selected_index < 4 {
-            self.set_selected_index(self.selected_index + 1);
-        } else {
-            self.set_selected_index(0);
-        }
-        self.link.send_message(crate::Msg::SwipeNext);
-    }
-
-    pub fn set_selected_index(&mut self, index: u32) {
-        if !self.enabled {
-            return;
-        }
-
-        let day_container: web_sys::HtmlElement = match web_sys::window().unwrap().document().unwrap().get_element_by_id("day-container").map(|e| e.dyn_into().unwrap()) {
-            Some(element) => element,
-            None => return,
-        };
-        
-        self.selected_index = index;
-        self.start_pos = None;
-
-        day_container.style().set_property("transform", &format!("translateX(calc(-20% * {}))", self.selected_index)).unwrap();
-        self.update_displayed_day_name();
+    pub fn set_offset(&mut self, offset: i32) {
+        self.days_offset.set(offset);
+        let day_container = self.get_cached_day_container();
+        day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
     }
 }

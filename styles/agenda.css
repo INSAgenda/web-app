@@ -14,11 +14,10 @@
 #agenda-hours {
     display: flex;
     flex-direction: column;
-    margin: calc(2rem - 0.7rem/2) 0 0 0;
+    margin: calc(2rem - 0.7rem/2) 2px 0 0;
 }
 
 #agenda-hours>span {
-    max-width: 70px;
     height: calc((100% - 0.7rem/2) / 44100 * 6300);
     font-size: .7rem;
     color: var(--calendar-text);
@@ -105,8 +104,8 @@
 
 #day-container {
     display: flex;
-    height: 100%;
     position: relative;
+    height: 100%;
 }
 
 .day {
