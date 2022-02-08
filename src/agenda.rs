@@ -39,7 +39,7 @@ impl App {
         // Go on the first day of the week
         let mut current_day = self.selected_day;
         match mobile_view {
-            true => current_day = current_day.pred(),
+            true => current_day = current_day.pred().pred(),
             false => for _ in 0..self.selected_day.weekday().num_days_from_monday() {
                 current_day = current_day.pred();
             },
@@ -47,7 +47,7 @@ impl App {
 
         let mut days = Vec::new();
         let mut day_names = Vec::new();
-        for _ in 0..if mobile_view {3} else {5} {
+        for _ in 0..5 {
             let mut events = Vec::new();
             for event in &self.events {
                 if (event.start_unixtime as i64) > current_day.and_hms(0,0,0).timestamp()
@@ -65,7 +65,7 @@ impl App {
                 </span>
             });
             days.push(html! {
-                <div class="day">
+                <div class="day" style={if mobile_view {Some(format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20))} else {None}}>
                     { events }
                 </div>
             });
@@ -98,7 +98,7 @@ impl App {
                         { day_names }
                         <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}></a>
                     </div>
-                    <div id="day-container" style={if mobile_view{Some("transform: translateX(-20%)")} else {None}}>
+                    <div id="day-container" >
                         <div id="line-container">
                             <div class="line"><div></div></div>
                             <div class="line"><div></div></div>

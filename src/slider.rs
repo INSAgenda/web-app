@@ -11,6 +11,7 @@ pub struct SliderManager {
     start_pos: Option<i32>,
     link: yew::html::Scope<crate::App>,
     day_container: Option<web_sys::HtmlElement>,
+    days_offset: Rc<Cell<isize>>,
     swift_next_callback: Closure<dyn FnMut()>,
     swift_prev_callback: Closure<dyn FnMut()>,
 }
@@ -19,42 +20,16 @@ impl SliderManager {
     pub fn init(link: yew::html::Scope<crate::App>) -> Rc<RefCell<SliderManager>> {
         // Create callbacks
 
-        let document = web_sys::window().unwrap().document().unwrap();
-        let restore_transition_callback = Closure::wrap(Box::new(move || {
-            if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
-                day_container.style().remove_property("transition").unwrap();
-            }
-        }) as Box<dyn FnMut()>);
+        let days_offset = Rc::new(Cell::new(-163880));
 
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
         let link2 = link.clone();
         let swift_next_callback = Closure::wrap(Box::new(move || {
-            if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
-                day_container.style().set_property("transition", "transform 0s").unwrap();
-                day_container.style().set_property("transform", "translateX(-20%)").unwrap();
-                link2.send_message(crate::Msg::Next);
-                window.set_timeout_with_callback(restore_transition_callback.as_ref().unchecked_ref()).unwrap();
-            }
+            link2.send_message(crate::Msg::Next);
         }) as Box<dyn FnMut()>);
 
-        let document = web_sys::window().unwrap().document().unwrap();
-        let restore_transition_callback = Closure::wrap(Box::new(move || {
-            if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
-                day_container.style().remove_property("transition").unwrap();
-            }
-        }) as Box<dyn FnMut()>);
-
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
         let link2 = link.clone();
         let swift_prev_callback = Closure::wrap(Box::new(move || {
-            if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
-                day_container.style().set_property("transition", "transform 0s").unwrap();
-                day_container.style().set_property("transform", "translateX(-20%)").unwrap();
-                link2.send_message(crate::Msg::Previous);
-                window.set_timeout_with_callback(restore_transition_callback.as_ref().unchecked_ref()).unwrap();
-            }
+            link2.send_message(crate::Msg::Previous);
         }) as Box<dyn FnMut()>);
 
         // Create slider
@@ -64,6 +39,7 @@ impl SliderManager {
             start_pos: None,
             link,
             day_container: None,
+            days_offset,
             swift_next_callback,
             swift_prev_callback,
         }));
@@ -236,7 +212,7 @@ impl SliderManager {
 
         let offset = mouse_x - start_pos;
 
-        day_container.style().set_property("transform", &format!("translateX(calc(-20% + {}px))", offset)).unwrap();
+        day_container.style().set_property("transform", &format!("translateX(calc({}% + {}px))", self.days_offset.get(), offset)).unwrap();
     }
 
     fn touch_end(&mut self, mouse_x: i32) {
@@ -253,10 +229,12 @@ impl SliderManager {
         
         let window = web_sys::window().unwrap();
         if offset > 90 {
-            day_container.style().set_property("transform", "translateX(0%)").unwrap();
+            self.days_offset.set(self.days_offset.get() + 20);
+            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
             window.set_timeout_with_callback_and_timeout_and_arguments_0(self.swift_prev_callback.as_ref().unchecked_ref(), 300).unwrap();
         } else if offset < -90 {
-            day_container.style().set_property("transform", "translateX(-40%)").unwrap();
+            self.days_offset.set(self.days_offset.get() - 20);
+            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
             window.set_timeout_with_callback_and_timeout_and_arguments_0(self.swift_next_callback.as_ref().unchecked_ref(), 300).unwrap();
         }
     }

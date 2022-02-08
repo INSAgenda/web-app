@@ -77,12 +77,10 @@
 #day-container {
     display: flex;
     height: 100%;
-    position: relative;
 }
 
 .day {
     height: 100%;
     width: 19%;
-    margin: 0 .5%;
     background-color: var(--dp02);
 }
