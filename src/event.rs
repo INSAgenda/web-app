@@ -1,11 +1,10 @@
 use agenda_parser::{Event, event::EventKind, location::Building};
-use web_sys::HtmlElement;
 use yew::prelude::*;
-use std::{sync::{atomic::{AtomicUsize, AtomicBool, Ordering}, Arc}};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use chrono::TimeZone;
 use chrono_tz::Europe::Paris;
 use wasm_bindgen::{prelude::*, JsCast};
-use crate::{settings::{SETTINGS, BuildingNaming}, colors::*, log};
+use crate::{settings::{SETTINGS, BuildingNaming}, colors::*};
 
 lazy_static::lazy_static!{
     static ref ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
@@ -253,7 +252,7 @@ impl Component for EventComp {
         }
     }
 
-    fn rendered(&mut self, ctx: &Context<Self>, first_render: bool) {
+    fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
         let mut element = if let Some(el) = web_sys::window().unwrap().document().unwrap().get_element_by_id( &self.popup_id){el} else {return};
         let mut count = 0;
         loop{
