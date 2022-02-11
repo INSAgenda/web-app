@@ -1,10 +1,11 @@
 use agenda_parser::{Event, event::EventKind, location::Building};
+use web_sys::HtmlElement;
 use yew::prelude::*;
 use std::{sync::{atomic::{AtomicUsize, AtomicBool, Ordering}, Arc}};
 use chrono::TimeZone;
 use chrono_tz::Europe::Paris;
 use wasm_bindgen::{prelude::*, JsCast};
-use crate::{settings::{SETTINGS, BuildingNaming}, colors::*};
+use crate::{settings::{SETTINGS, BuildingNaming}, colors::*, log};
 
 lazy_static::lazy_static!{
     static ref ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
@@ -170,12 +171,9 @@ impl Component for EventComp {
         let duration = (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) / 60;
         let groups = ctx.props().event.groups.iter().map(|g| format!("{:?}", g)).collect::<Vec<_>>().join(", ");
         
-        // Specify font-size according event height
-        let font_size = percent_height/8.;
-        let font_size = if font_size > 1. { 1. } else { font_size };
         html! {
             <div
-                style={format!("background-color: {}; color: {}; position: absolute; top: {}%; height: {}%; font-size: {}rem;", bg_color, text_color, percent_offset, percent_height, font_size)}
+                style={format!("background-color: {}; color: {}; position: absolute; top: {}%; height: {}%;", bg_color, text_color, percent_offset, percent_height)}
                 class="event"
                 onclick={ if self.popup.is_none() { Some(ctx.link().callback(|_| EventCompMsg::ToggleDetails)) } else {None} } >
 
@@ -254,4 +252,19 @@ impl Component for EventComp {
             </div>
         }
     }
+
+    fn rendered(&mut self, ctx: &Context<Self>, first_render: bool) {
+        let mut element = if let Some(el) = web_sys::window().unwrap().document().unwrap().get_element_by_id( &self.popup_id){el} else {return};
+        let mut count = 0;
+        loop{
+            element = if let Some(el) = element.previous_element_sibling(){el} else {break};
+            count += element.inner_html().len();
+        }
+        let parent = element.parent_element().unwrap();
+        let cur_style = parent.get_attribute("style").unwrap();
+        let size = 6.0 * ((parent.client_width().pow(2) as f64 + parent.client_height().pow(2) as f64).sqrt()/count as f64);
+
+        parent.set_attribute("style", &format!("{} font-size: min({}px, 1rem);", cur_style, size)).unwrap();
+    }
+    
 }
