@@ -220,7 +220,7 @@ impl SliderManager {
         let offset = mouse_x - start_pos;
 
         let document = web_sys::window().unwrap().document().unwrap();
-        if let Some(element) = document.query_selector("selected-day>3").unwrap().map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
+        if let Some(element) = document.query_selector("#selected-day>3").unwrap().map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
             element.set_inner_text(&format!("translateX(calc({}% + {}px)) {}", self.days_offset.get(), offset, element.get_bounding_client_rect().x()));
         }
 
