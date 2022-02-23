@@ -89,6 +89,7 @@ impl SliderManager {
 
         let slider2 = Rc::clone(&slider);
         let touch_start = Closure::wrap(Box::new(move |event: web_sys::TouchEvent| {
+            event.prevent_default();
             let mut slider = slider2.borrow_mut();
             if slider.enabled {
                 let mouse_x = event.touches().get(0).unwrap().client_x() as i32;
@@ -120,6 +121,7 @@ impl SliderManager {
         let last_pos2 = Rc::clone(&last_pos);
         let move_animation2 = Rc::clone(&move_animation);
         let touch_move = Closure::wrap(Box::new(move |event: web_sys::TouchEvent| {
+            event.prevent_default();
             if slider2.borrow().can_move() {
                 let mouse_x = event.touches().get(0).unwrap().client_x() as i32;
                 last_pos2.set(mouse_x);
@@ -150,7 +152,8 @@ impl SliderManager {
 
         let slider2 = Rc::clone(&slider);
         let end_animation2 = Rc::clone(&end_animation);
-        let touch_end = Closure::wrap(Box::new(move |_: web_sys::TouchEvent| {
+        let touch_end = Closure::wrap(Box::new(move |event: web_sys::TouchEvent| {
+            event.prevent_default();
             if slider2.borrow().can_move() {
                 let window = web_sys::window().unwrap();
                 window.request_animation_frame((*end_animation2).as_ref().unchecked_ref()).unwrap();
