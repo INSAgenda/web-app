@@ -221,7 +221,7 @@ impl SliderManager {
 
         let document = web_sys::window().unwrap().document().unwrap();
         if let Some(element) = document.get_element_by_id("selected-day").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
-            element.set_inner_text(&format!("translateX(calc({}% + {}px)) {}", self.days_offset.get(), offset, day_container.offset_width()));
+            element.set_inner_text(&format!("translateX(calc({}% + {}px)) {}", self.days_offset.get(), offset, day_container.get_bounding_client_rect().x()));
         }
 
         day_container.style().set_property("transform", &format!("translateX(calc({}% + {}px))", self.days_offset.get(), offset)).unwrap();
