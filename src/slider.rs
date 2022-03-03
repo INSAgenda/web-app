@@ -219,7 +219,9 @@ impl SliderManager {
 
         let offset = mouse_x - start_pos;
 
-        day_container.style().set_property("transform", &format!("translateX(calc({}% + {}px))", self.days_offset.get(), offset)).unwrap();
+        day_container.style().remove_property("transform").unwrap();
+        day_container.style().set_property("position", "relative").unwrap();
+        day_container.style().set_property("right", &format!("calc({}% + {}px)", self.days_offset.get().abs()*5, -offset)).unwrap();
     }
 
     fn touch_end(&mut self, mouse_x: i32) {
@@ -232,19 +234,19 @@ impl SliderManager {
         let offset = mouse_x - start_pos;
         let window = web_sys::window().unwrap();
         if offset > 90 {
-            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get() + 20)).unwrap();
+            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
             window.set_timeout_with_callback(self.swift_prev_callback.as_ref().unchecked_ref()).unwrap();
         } else if offset < -90 {
-            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get() - 20)).unwrap();
+            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
             window.set_timeout_with_callback(self.swift_next_callback.as_ref().unchecked_ref()).unwrap();
         } else {
-            day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
+            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
         }
     }
 
     pub fn set_offset(&mut self, offset: i32) {
         self.days_offset.set(offset);
         let day_container = self.get_cached_day_container();
-        day_container.style().set_property("transform", &format!("translateX({}%)", self.days_offset.get())).unwrap();
+        day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
     }
 }
