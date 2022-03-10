@@ -5,6 +5,7 @@ use yew::prelude::*;
 use std::{rc::Rc, cell::RefCell};
 use chrono_tz::Europe::Paris;
 
+mod alert;
 mod event;
 mod settings;
 mod agenda;
@@ -174,5 +175,8 @@ impl Component for App {
 }
 
 fn main() {
-    yew::start_app::<App>();
+    let window = web_sys::window().unwrap();
+    let document = window.document().unwrap();
+    let element = document.get_element_by_id("render").unwrap();
+    yew::start_app_in_element::<App>(element);
 }
