@@ -174,7 +174,7 @@ impl Component for EventComp {
         // Specify font-size according event height
         let font_size = percent_height/8.;
         let font_size = if font_size > 1. { 1. } else { font_size };
-        let style = String::new() + if self.popup.is_some() {""} else {"display: none;"} + if ctx.props().day_of_week > 3 { "left" } else { "right" } + ": -214px;";
+        let style = String::new() + if self.popup.is_some() {""} else {"display: none;"} + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;";
         html! {
             <div
                 style={format!("background-color: {}; color: {}; position: absolute; top: {}%; height: {}%; font-size: {}rem;", bg_color, text_color, percent_offset, percent_height, font_size)}
