@@ -187,7 +187,7 @@ impl Component for EventComp {
                 </span>
                 {if let Some(l) = &location {html! {<span>{l}</span>}} else {html!{}}}
                 <div class="event-details" id={self.popup_id.clone()} style={if self.popup.is_some() {""} else {"display: none;"}} >
-                    <div class="event-details-header">
+                    <div class="event-details-header" style={format!("background-color: {}; color: {};",bg_color, text_color)}>
                         <span>{ name }</span>
                     </div>
                     { 
