@@ -15,10 +15,10 @@ pub struct SliderManager {
 }
 
 impl SliderManager {
-    pub fn init(link: yew::html::Scope<crate::App>) -> Rc<RefCell<SliderManager>> {
+    pub fn init(link: yew::html::Scope<crate::App>, day_offset: i32) -> Rc<RefCell<SliderManager>> {
         // Create callbacks
 
-        let days_offset = Rc::new(Cell::new(-163880));
+        let days_offset = Rc::new(Cell::new(day_offset));
 
         let link2 = link.clone();
         let swift_next_callback = Closure::wrap(Box::new(move || {

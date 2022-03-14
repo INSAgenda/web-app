@@ -108,7 +108,7 @@ impl Component for App {
             counter,
             events,
             page: Page::Agenda,
-            slider: slider::SliderManager::init(ctx.link().clone()),
+            slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
         }
     }
 
