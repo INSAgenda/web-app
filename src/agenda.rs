@@ -47,14 +47,14 @@ impl App {
 
         let mut days = Vec::new();
         let mut day_names = Vec::new();
-        for _ in 0..5 {
+        for d in 0..5 {
             let mut events = Vec::new();
             for event in &self.events {
                 if (event.start_unixtime as i64) > current_day.and_hms(0,0,0).timestamp()
                     && (event.start_unixtime as i64) < current_day.and_hms(23,59,59).timestamp()
                 {
                     events.push(html! {
-                        <EventComp event={event.clone()} day_start={current_day.and_hms(0,0,0).timestamp() as u64} app_link={ctx.link().clone()}></EventComp>
+                        <EventComp day_of_week={d} event={event.clone()} day_start={current_day.and_hms(0,0,0).timestamp() as u64} app_link={ctx.link().clone()}></EventComp>
                     });
                 }
             }

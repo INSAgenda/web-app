@@ -1,0 +1,30 @@
+#errors{
+    position: absolute;
+    bottom: 1rem;
+    right: 50%;
+    transform: translateX(50%);
+}
+
+.alert{
+    background: linear-gradient(180deg, #FF0B0B 0%, #D81111 100%);
+    font-family: Arial, Helvetica, sans-serif;
+    color: #fff;
+    max-height: 9rem;
+    padding: .5rem 1.8rem .5rem .5rem;
+    margin: 1rem;
+    border-radius: .3rem;
+    cursor: pointer;
+    text-align: center;
+    position: relative;
+}
+.alert:hover{
+    background: linear-gradient(180deg, #fc3939 0%, #d83e3e 100%);
+}
+.alert::after{
+    content: '+';
+    position: absolute;
+    top: 50%;
+    right: 0.9rem;
+    font-size: 1.5rem;
+    transform: rotate(45deg) translate(-50%, -50%);
+}

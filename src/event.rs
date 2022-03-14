@@ -15,6 +15,7 @@ pub struct EventCompProps {
     pub event: Event,
     pub day_start: u64,
     pub app_link: yew::html::Scope<crate::App>,
+    pub day_of_week: u8,
 }
 
 impl PartialEq for EventCompProps {
@@ -173,6 +174,7 @@ impl Component for EventComp {
         // Specify font-size according event height
         let font_size = percent_height/8.;
         let font_size = if font_size > 1. { 1. } else { font_size };
+        let style = String::new() + if self.popup.is_some() {""} else {"display: none;"} + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;";
         html! {
             <div
                 style={format!("background-color: {}; color: {}; position: absolute; top: {}%; height: {}%; font-size: {}rem;", bg_color, text_color, percent_offset, percent_height, font_size)}
@@ -186,8 +188,8 @@ impl Component for EventComp {
                     { ctx.props().event.teachers.join(", ") }
                 </span>
                 {if let Some(l) = &location {html! {<span>{l}</span>}} else {html!{}}}
-                <div class="event-details" id={self.popup_id.clone()} style={if self.popup.is_some() {""} else {"display: none;"}} >
-                    <div class="event-details-header">
+                <div class="event-details" id={self.popup_id.clone()} style={style} >
+                    <div class="event-details-header" style={format!("background-color: {}; color: {};",bg_color, text_color)}>
                         <span>{ name }</span>
                     </div>
                     { 
