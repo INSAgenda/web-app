@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{glider_selector::GliderSelector, App, api::logout};
+use crate::{glider_selector::GliderSelector, App, api::logout, alert};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 lazy_static::lazy_static!{
@@ -118,7 +118,7 @@ impl Component for Settings {
                 wasm_bindgen_futures::spawn_local(async move {
                     match logout().await{
                         Ok(_) => (),
-                        Err(_e) => println!("Error logging out"),
+                        Err(_e) => alert::alert("Impossible de se déconnecter !"),
                     }
                 });
                 let window = web_sys::window().unwrap();
