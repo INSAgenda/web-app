@@ -128,7 +128,7 @@ impl Component for Settings {
                     <div class="setting">
                         <h3>{"Mot de passe"}</h3>
                         <p>{"Votre mot de passe a été changé pour la dernière fois le 12/11/2021 à 12:49."}</p>
-                        <div class="white-button small-button">{"Modifier"}</div>
+                        <div class="white-button small-button" onclick={ctx.props().app_link.callback(|_| crate::Msg::SetPage(crate::Page::ChangePassword))}>{"Modifier"}</div>
                     </div>
                     <div class="setting">
                         <h3>{"Adresse mail"}</h3>
