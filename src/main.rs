@@ -9,7 +9,6 @@ mod alert;
 mod event;
 mod settings;
 mod agenda;
-mod change_password;
 mod glider_selector;
 mod util;
 mod calendar;
@@ -25,7 +24,6 @@ use crate::settings::Settings;
 pub enum Page {
     Settings,
     Agenda,
-    ChangePassword,
 }
 
 pub enum Msg {
@@ -78,7 +76,6 @@ impl Component for App {
             match state.as_deref() {
                 Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
                 Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
-                Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => log!("Unknown pop state: {:?}", e.state()),
             }
@@ -131,7 +128,6 @@ impl Component for App {
                 match &page {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#setttings")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
-                    Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Nouveau mot de passe", Some("/change-password")).unwrap(),
                 }
                 self.page = page;
                 true
@@ -174,7 +170,6 @@ impl Component for App {
         match &self.page {
             Page::Agenda => self.view_agenda(ctx),
             Page::Settings => html!( <Settings app_link={ ctx.link().clone() } /> ),
-            Page::ChangePassword => self.view_change_password(ctx),
         }
     }
 }

@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct KnownApiError {
-    kind: String, origin: String, message_en: String, message_fr: String
+    kind: String, origin: String, pub message_en: String, pub message_fr: String
 }
 
 pub enum ApiError {
