@@ -6,8 +6,6 @@ use wasm_bindgen::JsValue;
 use wasm_bindgen_futures::JsFuture;
 use web_sys::{RequestInit, Request};
 
-use crate::log;
-
 pub fn gen_code(api_key: u64, counter: u64) -> u64 {
     let mut key = (api_key + 143 * counter) as u128;
     for _ in 0..11 {
@@ -34,7 +32,6 @@ pub fn save_counter(counter: u64) {
 /// 
 pub(crate) async fn post_api_request(endpoint: &str, request_init: RequestInit, headers: Vec<(&str, &str)>) -> Result<JsValue, JsValue>{
     let mut request_init = request_init;
-    log!("POST {}", endpoint);
     let window = web_sys::window().unwrap();
     let local_storage = window.local_storage().unwrap().unwrap();
 
