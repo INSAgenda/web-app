@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{glider_selector::GliderSelector, App};
+use crate::{glider_selector::GliderSelector, App, api::logout, alert};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 lazy_static::lazy_static!{
@@ -63,6 +63,7 @@ pub enum Msg {
     Confirm,
     BuildingNamingChange(usize),
     ThemeChange(usize),
+    LogOut,
 }
 
 #[derive(Properties, Clone)]
@@ -113,6 +114,17 @@ impl Component for Settings {
 
                 true
             }
+            Msg::LogOut => {
+                wasm_bindgen_futures::spawn_local(async move {
+                    match logout().await{
+                        Ok(_) => (),
+                        Err(_e) => alert::alert("Impossible de se déconnecter !"),
+                    }
+                });
+                let window = web_sys::window().unwrap();
+                window.location().replace("/login").unwrap();
+                false
+            }
         }
     }
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -135,13 +147,14 @@ impl Component for Settings {
                         <p>{"Votre adresse actuelle est foobar@insa-rouen.fr."}</p>
                         <div class="white-button small-button">{"Modifier"}</div>
                     </div>
-                    <div class="setting">
+                    /*  
+                        <div class="setting">
                         <h3>{"Changer le type d'authentification"}</h3>
                         <GliderSelector
                             values = { vec!["Email", "Mot de passe", "Email + Mot de passe"] }
                             selected = 0 />
                         <p>{"L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email."}</p>
-                    </div>
+                    </div>*/
                 </div>
                 <h2>{"Affichage"}</h2>
                 <div class="settings-group">
@@ -167,7 +180,9 @@ impl Component for Settings {
                         }</p>
                     </div>
                 </div>
+                <div class="white-button small-button" onclick={ctx.link().callback(move |_| Msg::LogOut)}>{"Se déconnecter"}</div>
                 <div class="red-button form-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{"Valider"}</div>
+
             </main>
             <footer>
             </footer>

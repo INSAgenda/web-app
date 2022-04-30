@@ -1,6 +1,6 @@
 use agenda_parser::{Event, event::EventKind, location::Building};
 use yew::prelude::*;
-use std::{sync::{atomic::{AtomicUsize, AtomicBool, Ordering}, Arc}};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use chrono::TimeZone;
 use chrono_tz::Europe::Paris;
 use wasm_bindgen::{prelude::*, JsCast};

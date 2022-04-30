@@ -1,7 +1,12 @@
 mod load_events;
 pub use load_events::*;
+mod logout;
+pub use logout::*;
 mod error;
 pub use error::*;
+use wasm_bindgen::JsCast;
+use wasm_bindgen_futures::JsFuture;
+use web_sys::{Request, Response};
 
 fn gen_code(api_key: u64, counter: u64) -> u64 {
     let mut key = (api_key + 143 * counter) as u128;
