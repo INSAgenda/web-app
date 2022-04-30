@@ -64,7 +64,7 @@ pub fn t(s: &'static str) -> &'static str {
         "Texte" => "Text",
         "Annuler" => "Cancel",
         "Sauvegarder" => "Save",
-        
+
         
         // In settings.rs
         "Paramètres" => "Parameters",
@@ -88,6 +88,7 @@ pub fn t(s: &'static str) -> &'static str {
         "Court" => "Short",
         "Long" => "Long",
         "Valider" => "Save",
+        "Se déconnecter" => "Log out",
         s => {
             log!("Untranslated string: {}", s);
             s
