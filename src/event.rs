@@ -44,8 +44,7 @@ impl Component for EventComp {
         let id = format!("event-popup-{}", ID_COUNTER.fetch_add(1, Ordering::Relaxed));
 
         // Creates a closure called on click that will close the popup if the user clicked outside of it
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
+        let document = window().document().unwrap();
         let id2 = id.clone();
         let link = ctx.link().clone();
         let on_click = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
@@ -79,7 +78,7 @@ impl Component for EventComp {
                     self.popup = None;
 
                     // Popup is already closed, so we can spare resources by disabling the event listener
-                    web_sys::window().unwrap().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+                    window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
                     true
                 }
             },
@@ -87,7 +86,7 @@ impl Component for EventComp {
                 self.popup = Some(PopupPage::General);
 
                 // Popup is now opened so we must be ready to close it
-                web_sys::window().unwrap().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+                window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
 
                 self.ignore_next_event = true;
 
@@ -104,7 +103,7 @@ impl Component for EventComp {
             EventCompMsg::SaveColors => {
                 self.popup = Some(PopupPage::General);
 
-                let document = window().unwrap().document().unwrap();
+                let document = window().document().unwrap();
                 let background_color = match document.query_selector(&format!("#{} #background-color-input", self.popup_id)).unwrap() {
                     Some(el) => el.dyn_into::<HtmlInputElement>().unwrap().value(),
                     None => return false,

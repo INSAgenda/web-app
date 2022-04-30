@@ -25,7 +25,7 @@ impl Component for GliderSelector {
 
     fn create(ctx: &Context<Self>) -> Self {
         let mut id = String::from("glider-selector-");
-        let crypto = web_sys::window().unwrap().crypto().unwrap();
+        let crypto = window().crypto().unwrap();
         let mut random_bytes = [0; 20];
         crypto.get_random_values_with_u8_array(&mut random_bytes).unwrap();
         for byte in random_bytes {
@@ -42,7 +42,7 @@ impl Component for GliderSelector {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Init => {
-                let this = web_sys::window().unwrap().document().unwrap().get_element_by_id(&self.id).unwrap();
+                let this = window().document().unwrap().get_element_by_id(&self.id).unwrap();
                 let children = this.children();
                 self.sizes.clear();
                 for i in 1..=ctx.props().values.len() {

@@ -16,3 +16,11 @@ pub async fn sleep(duration: std::time::Duration) {
     .await
     .unwrap();
 }
+
+pub fn window() -> web_sys::Window {
+    // We use unsafe in order to call unwrap_unchecked. This simplifies the code and reduces the program size.
+    // We know the unwrap will never fail because in the context of a website, window is always defined.
+    unsafe {
+        web_sys::window().unwrap_unchecked()
+    }
+}

@@ -2,8 +2,7 @@ use crate::prelude::*;
 
 lazy_static::lazy_static!{
     pub static ref SETTINGS: SettingStore = {
-        let window = web_sys::window().unwrap();
-        let local_storage = window.local_storage().unwrap().unwrap();
+        let local_storage = window().local_storage().unwrap().unwrap();
         let theme = match local_storage.get_item("setting-theme").unwrap() {
             Some(theme) if theme == "dark" => 0,
             _ => 1,
@@ -101,7 +100,7 @@ impl Component for SettingsPage {
                     _ => unreachable!(),
                 };
 
-                let window = web_sys::window().unwrap();
+                let window = window();
                 let document = window.document().unwrap();
                 let html = document.first_element_child().unwrap();
                 html.set_attribute("data-theme", theme).unwrap();

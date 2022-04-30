@@ -85,11 +85,11 @@ const CRASH_PAGE: &str = r#"
 "#;
 
 use js_sys::{Reflect::get, Function};
-use wasm_bindgen::{JsCast, prelude::*};
+use crate::prelude::*;
 
 pub fn init() {
     std::panic::set_hook(Box::new(|info| {
-        let window = web_sys::window().unwrap();
+        let window = window();
         let document = window.document().unwrap().document_element().unwrap();
 
         let mut payload: Option<String> = info.payload().downcast_ref().map(|v: &String| v.to_owned());

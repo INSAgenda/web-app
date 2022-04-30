@@ -48,7 +48,7 @@ impl Component for App {
 
         let now = chrono::Local::now();
         let now = now.with_timezone(&Paris);
-        let window = window().unwrap();
+        let window = window();
 
         let link2 = ctx.link().clone();
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
@@ -101,7 +101,7 @@ impl Component for App {
                 true
             },
             Msg::SetPage(page) => {
-                let history = web_sys::window().unwrap().history().unwrap();                
+                let history = window().history().unwrap();                
                 match &page {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#setttings")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
@@ -154,7 +154,7 @@ impl Component for App {
 }
 
 fn main() {
-    let window = web_sys::window().unwrap();
+    let window = web_sys::window().expect("Please run the program in a browser context");
     let document = window.document().unwrap();
     let element = document.get_element_by_id("render").unwrap();
     yew::start_app_in_element::<App>(element);

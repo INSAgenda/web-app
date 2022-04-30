@@ -2,8 +2,7 @@ use super::*;
 use crate::prelude::*;
 
 pub fn load_cache() -> Option<(i64, Vec<Event>)> {
-    let window = web_sys::window().unwrap();
-    let local_storage = window.local_storage().unwrap().unwrap();
+    let local_storage = window().local_storage().unwrap().unwrap();
 
     let last_updated = match local_storage.get("last_updated").map(|v| v.map(|v| v.parse())) {
         Ok(Some(Ok(last_updated))) => last_updated,
@@ -24,8 +23,7 @@ pub fn load_cache() -> Option<(i64, Vec<Event>)> {
 }
 
 fn save_cache(last_updated: i64, events: &[Event]) {
-    let window = web_sys::window().unwrap();
-    let local_storage = window.local_storage().unwrap().unwrap();
+    let local_storage = window().local_storage().unwrap().unwrap();
 
     let _ = local_storage.set("last_updated", &last_updated.to_string());
     let _ = local_storage.set("cached_events", &serde_json::to_string(&events).unwrap());
@@ -44,8 +42,7 @@ pub async fn load_events() -> Result<Vec<Event>, ApiError> {
         &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
     )?;
 
-    let window = window().unwrap();
-    let resp = JsFuture::from(window.fetch_with_request(&request)).await?;
+    let resp = JsFuture::from(window().fetch_with_request(&request)).await?;
     let resp: web_sys::Response = resp.dyn_into()?;
     let json = JsFuture::from(resp.json()?).await?;
 

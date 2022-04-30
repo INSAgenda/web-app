@@ -1,4 +1,5 @@
 use std::{collections::HashMap, sync::{Mutex, atomic::AtomicBool}};
+use crate::prelude::*;
 
 lazy_static::lazy_static!{
     pub static ref COLORS: Colors = Colors::restore();
@@ -12,8 +13,7 @@ pub struct Colors {
 
 impl Colors {
     fn restore() -> Colors {
-        let window = web_sys::window().unwrap();
-        let local_storage = window.local_storage().unwrap().unwrap();
+        let local_storage = window().local_storage().unwrap().unwrap();
         let light = match local_storage.get_item("light-colors").unwrap() {
             Some(json) => serde_json::from_str(&json).unwrap_or_default(),
             None => HashMap::new(),
@@ -48,8 +48,7 @@ impl Colors {
     }
 
     fn save(&self) {
-        let window = web_sys::window().unwrap();
-        let local_storage = window.local_storage().unwrap().unwrap();
+        let local_storage = window().local_storage().unwrap().unwrap();
         local_storage.set_item("light-colors", &serde_json::to_string(&self.light).unwrap()).unwrap();
         local_storage.set_item("dark-colors", &serde_json::to_string(&self.dark).unwrap()).unwrap();
     }
