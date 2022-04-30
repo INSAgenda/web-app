@@ -20,7 +20,7 @@ fn gen_code(api_key: u64, counter: u64) -> u64 {
 
 fn get_login_info() -> (u64, u64) {
     let local_storage = window().local_storage().unwrap().unwrap();
-    let (api_key, counter) = match (local_storage.get("api-key").unwrap(), local_storage.get("counter").unwrap()) {
+    let (api_key, counter) = match (local_storage.get("api_key").unwrap(), local_storage.get("counter").unwrap()) {
         (Some(api_key), Some(counter)) => (api_key.parse().expect("Invalid login data"), counter.parse().expect("Invalid login data")),
         _ => {
             window().location().replace("/login").unwrap();
