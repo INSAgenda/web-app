@@ -40,7 +40,6 @@ features = [
     "DomRect",
     "Navigator",
     "ServiceWorkerContainer",
-    "RegistrationOptions",
 ]
 
 [profile.release]

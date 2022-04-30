@@ -162,9 +162,7 @@ fn stop_bots(window: &web_sys::Window) {
 
 /// Install service worker for offline access
 fn install_sw(window: &web_sys::Window) {
-    let mut options = web_sys::RegistrationOptions::new();
-    options.scope("/agenda");
-    let future = JsFuture::from(window.navigator().service_worker().register_with_options("/sw.js", &options));
+    let future = JsFuture::from(window.navigator().service_worker().register("/sw.js"));
     spawn_local(async move {
         match future.await {
             Ok(_) => log!("Service worker doing well"),
