@@ -34,8 +34,6 @@ pub enum Msg {
 
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
-    api_key: u64,
-    counter: Rc<std::sync::atomic::AtomicU64>,
     events: Vec<Event>,
     page: Page,
     slider: Rc<RefCell<slider::SliderManager>>,
@@ -50,20 +48,7 @@ impl Component for App {
 
         let now = chrono::Local::now();
         let now = now.with_timezone(&Paris);
-
-        // Extract api key data
-        let window = web_sys::window().unwrap();
-        let local_storage = window.local_storage().unwrap().unwrap();
-        let api_key = local_storage.get("api_key").map(|v| v.map(|v| v.parse()));
-        let counter = local_storage.get("counter").map(|v| v.map(|v| v.parse()));
-        let (api_key, counter) = match (api_key, counter) {
-            (Ok(Some(Ok(api_key))), Ok(Some(Ok(counter)))) => (api_key, counter),
-            _ => {
-                window.location().replace("/login").unwrap();
-                std::process::exit(0);
-            },
-        };
-        let counter = Rc::new(std::sync::atomic::AtomicU64::new(counter));
+        let window = window().unwrap();
 
         let link2 = ctx.link().clone();
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
@@ -88,10 +73,9 @@ impl Component for App {
             events = cached_events;
         }
         if !skip_event_loading {
-            let counter2 = Rc::clone(&counter);
             let link2 = ctx.link().clone();
             wasm_bindgen_futures::spawn_local(async move {
-                match api::load_events(api_key, counter2).await {
+                match api::load_events().await {
                     Ok(events) => link2.send_message(Msg::FetchSuccess(events)),
                     Err(e) => link2.send_message(Msg::FetchFailure(e)),
                 }
@@ -100,8 +84,6 @@ impl Component for App {
 
         Self {
             selected_day: now.date(),
-            api_key,
-            counter,
             events,
             page: Page::Agenda,
             slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),

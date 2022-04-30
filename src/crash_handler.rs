@@ -112,8 +112,8 @@ pub fn init() {
         let encoded_message = encoded_message.as_string().unwrap();
         let html = CRASH_PAGE.replace("[ENCODED MESSAGE]", &encoded_message);
 
-        message = message.replace("<", "&lt;");
-        message = message.replace(">", "&gt;");
+        message = message.replace('<', "&lt;");
+        message = message.replace('>', "&gt;");
 
         let html = html.replace("[MESSAGE]", &message);
         document.set_inner_html(&html);

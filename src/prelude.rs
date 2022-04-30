@@ -5,5 +5,6 @@ pub use std::{rc::Rc, cell::{Cell, RefCell}, sync::atomic::{AtomicUsize, Orderin
 pub use chrono_tz::Europe::Paris;
 pub use chrono::{Datelike, Date, TimeZone, Weekday, NaiveDate, Local};
 pub use crate::{util::*, api::*, glider_selector::*, alert::*, event::*, calendar::*, settings::*, colors::*, App, Msg as AppMsg, Page};
-pub use web_sys::{HtmlElement, HtmlInputElement, window};
+pub use web_sys::{HtmlElement, HtmlInputElement, RequestInit, Request, window};
 pub use wasm_bindgen_futures::{JsFuture, spawn_local};
+pub use lazy_static::lazy_static;

@@ -2,11 +2,10 @@ mod load_events;
 pub use load_events::*;
 mod error;
 pub use error::*;
-use wasm_bindgen::JsValue;
-use wasm_bindgen_futures::JsFuture;
-use web_sys::{RequestInit, Request};
 
-pub fn gen_code(api_key: u64, counter: u64) -> u64 {
+use crate::prelude::*;
+
+fn gen_code(api_key: u64, counter: u64) -> u64 {
     let mut key = (api_key + 143 * counter) as u128;
     for _ in 0..11 {
         key = key * key + 453;
@@ -19,10 +18,18 @@ pub fn gen_code(api_key: u64, counter: u64) -> u64 {
     key as u64
 }
 
-pub fn save_counter(counter: u64) {
-    let window = web_sys::window().unwrap();
-    let local_storage = window.local_storage().unwrap().unwrap();
-    local_storage.set("counter", &counter.to_string()).unwrap();
+fn get_login_info() -> (u64, u64) {
+    let local_storage = window().unwrap().local_storage().unwrap().unwrap();
+    let (api_key, counter) = match (local_storage.get("api-key").unwrap(), local_storage.get("counter").unwrap()) {
+        (Some(api_key), Some(counter)) => (api_key.parse().expect("Invalid login data"), counter.parse().expect("Invalid login data")),
+        _ => {
+            window().unwrap().location().replace("/login").unwrap();
+            std::process::exit(0);
+        }
+    };
+    local_storage.set("counter", &format!("{}", counter + 1)).unwrap();
+
+    (api_key, counter)
 }
 
 /// Send a POST request to the API and update the counter
@@ -30,20 +37,8 @@ pub fn save_counter(counter: u64) {
 /// debug: http://127.0.0.1/api/{endpoint}
 /// release: https://insagenda.fr/api/{endpoint}
 /// 
-pub(crate) async fn post_api_request(endpoint: &str, request_init: RequestInit, headers: Vec<(&str, &str)>) -> Result<JsValue, JsValue>{
-    let mut request_init = request_init;
-    let window = web_sys::window().unwrap();
-    let local_storage = window.local_storage().unwrap().unwrap();
-
-    let api_key = local_storage.get("api_key").map(|v| v.map(|v| v.parse()));
-    let counter = local_storage.get("counter").map(|v| v.map(|v| v.parse()));
-    let (api_key, counter) = match (api_key, counter) {
-        (Ok(Some(Ok(api_key))), Ok(Some(Ok(counter)))) => (api_key, counter),
-        _ => {
-            window.location().replace("/login").unwrap();
-            std::process::exit(0);
-        },
-    };
+pub(crate) async fn post_api_request(endpoint: &str, mut request_init: RequestInit, headers: Vec<(&str, &str)>) -> Result<JsValue, JsValue> {
+    let (api_key, counter) = get_login_info();
     
     request_init.method("POST");
 
@@ -59,8 +54,7 @@ pub(crate) async fn post_api_request(endpoint: &str, request_init: RequestInit, 
     for (header, value) in headers {
         request.headers().set(header, value)?;
     }
-    let resp = JsFuture::from(window.fetch_with_request(&request)).await;
-    save_counter(counter + 1);
-    resp 
+    let resp = JsFuture::from(window().unwrap().fetch_with_request(&request)).await;
 
+    resp
 }

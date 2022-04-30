@@ -1,9 +1,5 @@
-use super::{gen_code, save_counter, error::*};
-use agenda_parser::Event;
-use std::{sync::atomic::{AtomicU64, Ordering::Relaxed}, rc::Rc};
-use wasm_bindgen::JsCast;
-use wasm_bindgen_futures::JsFuture;
-use web_sys::{Request, Response};
+use super::*;
+use crate::prelude::*;
 
 pub fn load_cache() -> Option<(i64, Vec<Event>)> {
     let window = web_sys::window().unwrap();
@@ -35,21 +31,22 @@ fn save_cache(last_updated: i64, events: &[Event]) {
     let _ = local_storage.set("cached_events", &serde_json::to_string(&events).unwrap());
 }
 
-pub async fn load_events(api_key: u64, counter: Rc<AtomicU64>) -> Result<Vec<Event>, ApiError> {
+pub async fn load_events() -> Result<Vec<Event>, ApiError> {
+    let (api_key, counter) = get_login_info();
+
     #[cfg(debug_assertions)]
     let request = Request::new_with_str("http://127.0.0.1:8080/api/schedule?start_timestamp=0&end_timestamp=9999999999999")?;
     #[cfg(not(debug_assertions))]
     let request = Request::new_with_str("https://insagenda.fr/api/schedule?start_timestamp=0&end_timestamp=9999999999999")?;
-    let counter = counter.fetch_add(1, Relaxed);
-    save_counter(counter + 1);
+
     request.headers().set(
         "Api-Key",
         &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
     )?;
 
-    let window = web_sys::window().unwrap();
+    let window = window().unwrap();
     let resp = JsFuture::from(window.fetch_with_request(&request)).await?;
-    let resp: Response = resp.dyn_into()?;
+    let resp: web_sys::Response = resp.dyn_into()?;
     let json = JsFuture::from(resp.json()?).await?;
 
     if resp.status() == 400 {
