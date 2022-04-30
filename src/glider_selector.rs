@@ -1,4 +1,4 @@
-use yew::prelude::*;
+use crate::prelude::*;
 
 pub enum Msg {
     Init,

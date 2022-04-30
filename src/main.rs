@@ -1,10 +1,3 @@
-use agenda_parser::Event;
-use chrono::{Datelike, Date, TimeZone, Weekday};
-use wasm_bindgen::{prelude::*, JsCast, JsValue};
-use yew::prelude::*;
-use std::{rc::Rc, cell::RefCell};
-use chrono_tz::Europe::Paris;
-
 mod alert;
 mod event;
 mod settings;
@@ -17,9 +10,9 @@ mod api;
 mod crash_handler;
 mod colors;
 mod change_password;
-use api::*;
-pub use util::sleep;
-use crate::{settings::SettingsPage, change_password::ChangePasswordPage};
+mod prelude;
+
+use crate::{prelude::*, settings::SettingsPage, change_password::ChangePasswordPage};
 
 #[derive(PartialEq)]
 pub enum Page {

@@ -1,10 +1,4 @@
-use agenda_parser::{Event, event::EventKind, location::Building};
-use yew::prelude::*;
-use std::{sync::{atomic::{AtomicUsize, AtomicBool, Ordering}, Arc}};
-use chrono::TimeZone;
-use chrono_tz::Europe::Paris;
-use wasm_bindgen::{prelude::*, JsCast};
-use crate::{settings::{SETTINGS, BuildingNaming}, colors::*};
+use crate::prelude::*;
 
 lazy_static::lazy_static!{
     static ref ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
@@ -110,13 +104,13 @@ impl Component for EventComp {
             EventCompMsg::SaveColors => {
                 self.popup = Some(PopupPage::General);
 
-                let document = web_sys::window().unwrap().document().unwrap();
+                let document = window().unwrap().document().unwrap();
                 let background_color = match document.query_selector(&format!("#{} #background-color-input", self.popup_id)).unwrap() {
-                    Some(el) => el.dyn_into::<web_sys::HtmlInputElement>().unwrap().value(),
+                    Some(el) => el.dyn_into::<HtmlInputElement>().unwrap().value(),
                     None => return false,
                 };
                 let text_color = match document.query_selector(&format!("#{} #text-color-input", self.popup_id)).unwrap() {
-                    Some(el) => el.dyn_into::<web_sys::HtmlInputElement>().unwrap().value(),
+                    Some(el) => el.dyn_into::<HtmlInputElement>().unwrap().value(),
                     None => return false,
                 };
 

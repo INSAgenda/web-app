@@ -1,6 +1,4 @@
-use chrono::{Weekday, Datelike};
-use crate::{event::EventComp, App, calendar::Calendar};
-use yew::prelude::*;
+use crate::prelude::*;
 
 fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
     let month = match month {
@@ -80,7 +78,7 @@ impl App {
                 <img src="/assets/elements/webLogo.svg" alt="INSAgenda logo"/> 
                 <h1 id="header-name">{"INSAgenda"}</h1>
                 </a>
-                <button id="settings-button" onclick={ctx.link().callback(|_| crate::Msg::SetPage(crate::Page::Settings))}/>
+                <button id="settings-button" onclick={ctx.link().callback(|_| AppMsg::SetPage(Page::Settings))}/>
             </header>
             <main id="agenda-main">
             <div id="agenda">
@@ -95,11 +93,11 @@ impl App {
                 </div>
                 <div id="agenda-main-part">
                     <div id="agenda-top">
-                        <a id="agenda-arrow-left" onclick={ctx.link().callback(|_| crate::Msg::Previous)}>
+                        <a id="agenda-arrow-left" onclick={ctx.link().callback(|_| AppMsg::Previous)}>
                             <div></div>
                         </a>
                         { day_names }
-                        <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| crate::Msg::Next)}>
+                        <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| AppMsg::Next)}>
                             <div></div>
                         </a>
                     </div>

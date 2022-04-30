@@ -1,8 +1,4 @@
-use yew::prelude::*;
-use wasm_bindgen::{JsValue, JsCast};
-use wasm_bindgen_futures::JsFuture;
-use web_sys::{HtmlInputElement, Response};
-use crate::{api::{post_api_request, KnownApiError}, alert::alert};
+use crate::prelude::*;
 
 pub enum Msg {
     SendNewPassword,
@@ -20,8 +16,7 @@ pub struct ChangePasswordPage {
 
 impl Component for ChangePasswordPage {
     type Message = Msg;
-
-    type Properties = crate::settings::SettingsProps;
+    type Properties = SettingsProps;
 
     fn create(_ctx: &Context<Self>) -> Self {
         Self {
@@ -85,13 +80,13 @@ impl Component for ChangePasswordPage {
                 
                 let app_link = ctx.props().app_link.clone();
                 let link = ctx.link().clone();
-                wasm_bindgen_futures::spawn_local(async move   {
+                spawn_local(async move   {
                     match post_api_request("account", init, vec![("Content-Type", "application/json")]).await{
                         Ok(response) => {
-                            let response: Response = response.dyn_into().unwrap();
+                            let response: web_sys::Response = response.dyn_into().unwrap();
                             match response.status() {
                                 200 => {
-                                    app_link.send_message(crate::Msg::SetPage(crate::Page::Agenda));
+                                    app_link.send_message(AppMsg::SetPage(Page::Agenda));
                                     link.send_message(Msg::SetMessage(None));
                                 },
                                 400 => {
@@ -128,7 +123,7 @@ impl Component for ChangePasswordPage {
                     <img src="/assets/elements/webLogo.svg" alt="INSAgenda logo"/> 
                     <h1 id="header-name">{"INSAgenda"}</h1>
                 </a>
-                <button id="settings-button" onclick={move |_| app_link.send_message(crate::Msg::SetPage(crate::Page::Settings))}/>
+                <button id="settings-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::Settings))}/>
             </header>
             <section class="section-page-title">
                 <h2 class="page-title">{"Changer le mot de passe"}</h2>

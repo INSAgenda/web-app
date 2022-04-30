@@ -1,8 +1,8 @@
-use wasm_bindgen::{prelude::*, JsCast};
+use crate::prelude::*;
 
 /// Display an alert message to the user
 pub fn alert(message: &str){
-    let window = web_sys::window().unwrap();
+    let window = window().unwrap();
     let document = window.document().unwrap();
     let error_container = document.get_element_by_id("errors").unwrap();
     let alert = document.create_element("div").unwrap();
@@ -12,7 +12,7 @@ pub fn alert(message: &str){
     error_container.append_child(&alert).unwrap();
     
     let on_click = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-        let src  =  event.target().unwrap().dyn_into::<web_sys::HtmlElement>().unwrap();
+        let src  =  event.target().unwrap().dyn_into::<HtmlElement>().unwrap();
         if src.class_name() == "alert" {
             src.remove();
         }

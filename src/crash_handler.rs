@@ -76,7 +76,7 @@ const CRASH_PAGE: &str = r#"
   <pre>[MESSAGE]</pre>
   <br/>
   <div>
-    <a href="mailto:mubelotix@gmail.com?subject=INSAgenda%20crash%20report&body=[ENCODED MESSAGE]">Rapporter</a>
+    <a href="mailto:support@insagenda.fr?subject=INSAgenda%20crash%20report&body=[ENCODED MESSAGE]">Rapporter</a>
     <a href="">Recharger la page</a>
   </div>
   <div style="height: 10rem;"></div>
