@@ -22,7 +22,7 @@ pub(crate) async fn logout()-> Result<(), ApiError> {
     local_storage.delete("cached_events").unwrap();
 
     let resp = JsFuture::from(window.fetch_with_request(&request)).await?;
-    let resp: Response = resp.dyn_into()?;
+    let resp: web_sys::Response = resp.dyn_into()?;
     let json = JsFuture::from(resp.json()?).await?;
     
     if resp.status() != 200 {
