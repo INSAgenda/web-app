@@ -16,13 +16,15 @@ mod slider;
 mod api;
 mod crash_handler;
 mod colors;
+mod change_password;
 use api::*;
 pub use util::sleep;
-use crate::settings::Settings;
+use crate::{settings::SettingsPage, change_password::ChangePasswordPage};
 
 #[derive(PartialEq)]
 pub enum Page {
     Settings,
+    ChangePassword,
     Agenda,
 }
 
@@ -128,6 +130,7 @@ impl Component for App {
                 match &page {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#setttings")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
+                    Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change_password"), "Change password", Some("#change_password")).unwrap(),
                 }
                 self.page = page;
                 true
@@ -169,7 +172,8 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
             Page::Agenda => self.view_agenda(ctx),
-            Page::Settings => html!( <Settings app_link={ ctx.link().clone() } /> ),
+            Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } /> ),
+            Page::ChangePassword => html!( <ChangePasswordPage app_link={ ctx.link().clone() } /> ),
         }
     }
 }
