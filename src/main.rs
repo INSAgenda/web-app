@@ -153,8 +153,30 @@ impl Component for App {
     }
 }
 
+/// Prevent webdrivers from accessing the page
+fn stop_bots(window: &web_sys::Window) {
+    if js_sys::Reflect::get(&window.navigator(), &"webdriver".to_string().into()).unwrap().as_bool().unwrap_or(false) {
+        panic!("Your browser failed load this page");
+    }
+}
+
+/// Install service worker for offline access
+fn install_sw(window: &web_sys::Window) {
+    let mut options = web_sys::RegistrationOptions::new();
+    options.scope("/agenda");
+    let future = JsFuture::from(window.navigator().service_worker().register_with_options("/sw.js", &options));
+    spawn_local(async move {
+        match future.await {
+            Ok(_) => log!("Service worker doing well"),
+            Err(e) => alert(format!("Failed to register service worker: {:?}", e)),
+        }
+    })
+}
+
 fn main() {
     let window = web_sys::window().expect("Please run the program in a browser context");
+    stop_bots(&window);
+    install_sw(&window);
     let document = window.document().unwrap();
     let element = document.get_element_by_id("render").unwrap();
     yew::start_app_in_element::<App>(element);

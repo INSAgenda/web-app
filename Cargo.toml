@@ -38,6 +38,9 @@ features = [
     "Headers",
     "Response",
     "DomRect",
+    "Navigator",
+    "ServiceWorkerContainer",
+    "RegistrationOptions",
 ]
 
 [profile.release]
