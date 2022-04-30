@@ -156,7 +156,7 @@ impl Component for App {
 fn main() {
     let window = web_sys::window().expect("Please run the program in a browser context");
     // Prevent webdrivers to access the page
-    if js_sys::Reflect::get(&window.navigator(), "webdriver".into()).unwrap().as_bool().unwrap_or(false) {
+    if js_sys::Reflect::get(&window.navigator(), &"webdriver".to_string().into()).unwrap().as_bool().unwrap_or(false) {
         panic!("Your browser failed load this page");
     }
     let document = window.document().unwrap();
