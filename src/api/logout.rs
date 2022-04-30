@@ -4,15 +4,8 @@ pub(crate) async fn logout()-> Result<(), ApiError>{
     let window = window().unwrap();
     let local_storage = window.local_storage().unwrap().unwrap();
 
-    let api_key = local_storage.get("api_key").map(|v| v.map(|v| v.parse()));
-    let counter = local_storage.get("counter").map(|v| v.map(|v| v.parse()));
-    let (api_key, counter) = match (api_key, counter) {
-        (Ok(Some(Ok(api_key))), Ok(Some(Ok(counter)))) => (api_key, counter),
-        _ => {
-            window.location().replace("/login").unwrap();
-            std::process::exit(0);
-        },
-    };
+    let (api_key, counter) = get_login_info();
+    
     let mut init = web_sys::RequestInit::new();
     init.method("POST");
     #[cfg(debug_assertions)]
