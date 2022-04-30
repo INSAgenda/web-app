@@ -5,13 +5,43 @@ lazy_static::lazy_static!{
         let local_storage = window().local_storage().unwrap().unwrap();
         let theme = match local_storage.get_item("setting-theme").unwrap() {
             Some(theme) if theme == "dark" => 0,
-            _ => 1,
+            Some(theme) if theme == "light" => 1,
+            Some(theme) => {alert(format!("Invalid theme {theme}")); 0},
+            None => 0,
+        };
+        let building_naming = match local_storage.get_item("setting-building-naming").unwrap() {
+            Some(building_naming) if building_naming == "short" => 0,
+            Some(building_naming) if building_naming == "long" => 1,
+            Some(building_naming) => {alert(format!("Invalid building naming {building_naming}")); 0},
+            None => 0,
+        };
+        let lang = match local_storage.get_item("setting-lang").unwrap() {
+            Some(lang) if lang == "french" => 0,
+            Some(lang) if lang == "english" => 1,
+            Some(lang) => {alert(format!("Invalid language {lang}")); 0},
+            None => {
+                let languages = window().navigator().languages();
+                let mut lang = None;
+                for language in languages.iter() {
+                    if let Some(language) = language.as_string() {
+                        if language == "fr" || language.starts_with("fr-") {
+                            lang = Some(0);
+                            break;
+                        } else if language == "en" || language.starts_with("en-") {
+                            lang = Some(1);
+                            break;
+                        }
+                    }
+                }
+
+                lang.unwrap_or(0)
+            },
         };
 
         SettingStore {
-            building_naming: AtomicUsize::new(0),
+            building_naming: AtomicUsize::new(building_naming),
             theme: AtomicUsize::new(theme),
-            lang: AtomicUsize::new(0),
+            lang: AtomicUsize::new(lang),
         }
     };
 }
@@ -49,6 +79,15 @@ impl SettingStore {
 
     fn set_building_naming(&self, building_naming: usize) {
         self.building_naming.store(building_naming, Ordering::Relaxed);
+
+        let building_naming = match building_naming {
+            0 => "short",
+            1 => "long",
+            _ => unreachable!(),
+        };
+
+        let storage = window().local_storage().unwrap().unwrap();
+        storage.set_item("setting-building-naming", building_naming).unwrap();
     }
 
     pub fn theme(&self) -> Theme {
@@ -61,6 +100,15 @@ impl SettingStore {
 
     fn set_theme(&self, theme: usize) {
         self.theme.store(theme, Ordering::Relaxed);
+
+        let theme = match theme {
+            0 => "dark",
+            1 => "light",
+            _ => unreachable!(),
+        };
+
+        let storage = window().local_storage().unwrap().unwrap();
+        storage.set_item("setting-theme", theme).unwrap();
     }
 
     pub fn lang(&self) -> Lang {
@@ -73,6 +121,15 @@ impl SettingStore {
 
     fn set_lang(&self, lang: usize) {
         self.lang.store(lang, Ordering::Relaxed);
+
+        let lang = match lang {
+            0 => "french",
+            1 => "english",
+            _ => unreachable!(),
+        };
+
+        let storage = window().local_storage().unwrap().unwrap();
+        storage.set_item("setting-lang", lang).unwrap();
     }
 }
 
