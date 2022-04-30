@@ -76,7 +76,7 @@ const CRASH_PAGE: &str = r#"
   <pre>[MESSAGE]</pre>
   <br/>
   <div>
-    <a href="mailto:mubelotix@gmail.com?subject=INSAgenda%20crash%20report&body=[ENCODED MESSAGE]">Rapporter</a>
+    <a href="mailto:support@insagenda.fr?subject=INSAgenda%20crash%20report&body=[ENCODED MESSAGE]">Rapporter</a>
     <a href="">Recharger la page</a>
   </div>
   <div style="height: 10rem;"></div>
@@ -85,11 +85,11 @@ const CRASH_PAGE: &str = r#"
 "#;
 
 use js_sys::{Reflect::get, Function};
-use wasm_bindgen::{JsCast, prelude::*};
+use crate::prelude::*;
 
 pub fn init() {
     std::panic::set_hook(Box::new(|info| {
-        let window = web_sys::window().unwrap();
+        let window = window();
         let document = window.document().unwrap().document_element().unwrap();
 
         let mut payload: Option<String> = info.payload().downcast_ref().map(|v: &String| v.to_owned());
@@ -112,8 +112,8 @@ pub fn init() {
         let encoded_message = encoded_message.as_string().unwrap();
         let html = CRASH_PAGE.replace("[ENCODED MESSAGE]", &encoded_message);
 
-        message = message.replace("<", "&lt;");
-        message = message.replace(">", "&gt;");
+        message = message.replace('<', "&lt;");
+        message = message.replace('>', "&gt;");
 
         let html = html.replace("[MESSAGE]", &message);
         document.set_inner_html(&html);

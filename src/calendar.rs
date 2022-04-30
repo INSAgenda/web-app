@@ -1,10 +1,8 @@
-use yew::prelude::*;
-use chrono::{Datelike, Local, NaiveDate};
-use chrono_tz::Europe::Paris;
+use crate::prelude::*;
 
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
-    pub app_link: yew::html::Scope<crate::App>,
+    pub app_link: Scope<App>,
 }
 
 impl PartialEq for CalendarProps {
@@ -51,7 +49,7 @@ impl Component for Calendar {
                 if self.selected_day > last_day.day() {
                     self.selected_day = last_day.day();
                 }
-                ctx.props().app_link.send_message(crate::Msg::Goto {
+                ctx.props().app_link.send_message(AppMsg::Goto {
                     day: self.selected_day,
                     month: self.selected_month,
                     year: self.selected_year
@@ -70,7 +68,7 @@ impl Component for Calendar {
                 if self.selected_day > last_day.day() {
                     self.selected_day = last_day.day();
                 }
-                ctx.props().app_link.send_message(crate::Msg::Goto {
+                ctx.props().app_link.send_message(AppMsg::Goto {
                     day: self.selected_day,
                     month: self.selected_month,
                     year: self.selected_year
@@ -82,7 +80,7 @@ impl Component for Calendar {
                 self.selected_day = day;
                 self.selected_month = month;
                 self.selected_year = year;
-                ctx.props().app_link.send_message(crate::Msg::Goto {day,month,year});
+                ctx.props().app_link.send_message(AppMsg::Goto {day,month,year});
                 true
             },
         }

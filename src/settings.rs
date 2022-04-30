@@ -1,11 +1,8 @@
-use yew::prelude::*;
-use crate::{glider_selector::GliderSelector, App, api::logout, alert};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use crate::prelude::*;
 
 lazy_static::lazy_static!{
     pub static ref SETTINGS: SettingStore = {
-        let window = web_sys::window().unwrap();
-        let local_storage = window.local_storage().unwrap().unwrap();
+        let local_storage = window().local_storage().unwrap().unwrap();
         let theme = match local_storage.get_item("setting-theme").unwrap() {
             Some(theme) if theme == "dark" => 0,
             _ => 1,
@@ -68,7 +65,7 @@ pub enum Msg {
 
 #[derive(Properties, Clone)]
 pub struct SettingsProps {
-    pub app_link: yew::html::Scope<App>,
+    pub app_link: Scope<App>,
 }
 
 impl PartialEq for SettingsProps {
@@ -88,7 +85,7 @@ impl Component for SettingsPage {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Confirm => {
-                ctx.props().app_link.send_message(crate::Msg::SetPage(crate::Page::Agenda));
+                ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                 false
             }
             Msg::BuildingNamingChange(v) => {
@@ -104,7 +101,7 @@ impl Component for SettingsPage {
                     _ => unreachable!(),
                 };
 
-                let window = web_sys::window().unwrap();
+                let window = window();
                 let document = window.document().unwrap();
                 let html = document.first_element_child().unwrap();
                 html.set_attribute("data-theme", theme).unwrap();
@@ -118,11 +115,10 @@ impl Component for SettingsPage {
                 wasm_bindgen_futures::spawn_local(async move {
                     match logout().await{
                         Ok(_) => (),
-                        Err(_e) => alert::alert("Impossible de se déconnecter !"),
+                        Err(_e) => alert("Impossible de se déconnecter !"),
                     }
                 });
-                let window = web_sys::window().unwrap();
-                window.location().replace("/login").unwrap();
+                window().location().replace("/login").unwrap();
                 false
             }
         }
@@ -133,7 +129,7 @@ impl Component for SettingsPage {
         html! {
             <>
             <header class="pseudo-page-header">
-                <button class="back-button" onclick={ctx.props().app_link.callback(|_| crate::Msg::SetPage(crate::Page::Agenda))} />
+                <button class="back-button" onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda))} />
                 <h1>{"Paramètres"}</h1>
             </header>
             <main id="settings-main">
@@ -142,7 +138,7 @@ impl Component for SettingsPage {
                     <div class="setting">
                         <h3>{"Mot de passe"}</h3>
                         <p>{"Votre mot de passe a été changé pour la dernière fois le 12/11/2021 à 12:49."}</p>
-                        <div class="white-button small-button" onclick={move |_| app_link.send_message(crate::Msg::SetPage(crate::Page::ChangePassword))}>{"Modifier"}</div>
+                        <div class="white-button small-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{"Modifier"}</div>
                     </div>
                     <div class="setting">
                         <h3>{"Adresse mail"}</h3>

@@ -11,6 +11,15 @@ pub enum ApiError {
     Unknown(JsValue),
 }
 
+impl std::fmt::Display for ApiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ApiError::Known(KnownApiError { kind, origin, message_en, message_fr }) => write!(f, "{message_fr} ({kind} in {origin})"),
+            ApiError::Unknown(e) => write!(f, "{:?}", e),
+        }
+    }
+}
+
 impl From<JsValue> for ApiError {
     fn from(value: JsValue) -> Self {
         ApiError::Unknown(value)

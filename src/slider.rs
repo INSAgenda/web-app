@@ -1,33 +1,32 @@
-use wasm_bindgen::{prelude::*, JsCast};
-use std::{rc::Rc, cell::{Cell, RefCell}};
+use crate::prelude::*;
 
 pub fn width() -> usize {
-    web_sys::window().unwrap().inner_width().unwrap().as_f64().unwrap() as usize
+    window().inner_width().unwrap().as_f64().unwrap() as usize
 }
 
 pub struct SliderManager {
     enabled: bool,
     start_pos: Option<i32>,
-    day_container: Option<web_sys::HtmlElement>,
+    day_container: Option<HtmlElement>,
     days_offset: Rc<Cell<i32>>,
     swift_next_callback: Closure<dyn FnMut()>,
     swift_prev_callback: Closure<dyn FnMut()>,
 }
 
 impl SliderManager {
-    pub fn init(link: yew::html::Scope<crate::App>, day_offset: i32) -> Rc<RefCell<SliderManager>> {
+    pub fn init(link: Scope<App>, day_offset: i32) -> Rc<RefCell<SliderManager>> {
         // Create callbacks
 
         let days_offset = Rc::new(Cell::new(day_offset));
 
         let link2 = link.clone();
         let swift_next_callback = Closure::wrap(Box::new(move || {
-            link2.send_message(crate::Msg::Next);
+            link2.send_message(AppMsg::Next);
         }) as Box<dyn FnMut()>);
 
         let link2 = link;
         let swift_prev_callback = Closure::wrap(Box::new(move || {
-            link2.send_message(crate::Msg::Previous);
+            link2.send_message(AppMsg::Previous);
         }) as Box<dyn FnMut()>);
 
         // Create slider
@@ -58,8 +57,8 @@ impl SliderManager {
                 _ => (),
             }
         }) as Box<dyn FnMut(_)>);
-        let window = web_sys::window().unwrap();
-        window.add_event_listener_with_callback("resize", resize.as_ref().unchecked_ref()).unwrap();
+        let w = window();
+        w.add_event_listener_with_callback("resize", resize.as_ref().unchecked_ref()).unwrap();
         resize.forget();
 
         let slider2 = Rc::clone(&slider);
@@ -83,8 +82,7 @@ impl SliderManager {
                 slider.touch_start(event.client_x() as i32, event.client_y() as i32);
             }
         }) as Box<dyn FnMut(_)>);
-        let window = web_sys::window().unwrap();
-        window.add_event_listener_with_callback("mousedown", mouse_down.as_ref().unchecked_ref()).unwrap();
+        w.add_event_listener_with_callback("mousedown", mouse_down.as_ref().unchecked_ref()).unwrap();
         mouse_down.forget();
 
         let slider2 = Rc::clone(&slider);
@@ -96,8 +94,7 @@ impl SliderManager {
                 slider.touch_start(mouse_x, mouse_y);
             }
         }) as Box<dyn FnMut(_)>);
-        let window = web_sys::window().unwrap();
-        window.add_event_listener_with_callback("touchstart", touch_start.as_ref().unchecked_ref()).unwrap();
+        w.add_event_listener_with_callback("touchstart", touch_start.as_ref().unchecked_ref()).unwrap();
         touch_start.forget();
 
         // Move
@@ -108,12 +105,10 @@ impl SliderManager {
         let mouse_move = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
             if slider2.borrow().can_move() {
                 last_pos2.set(event.client_x() as i32);
-                let window = web_sys::window().unwrap();
-                window.request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
+                window().request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
             }
         }) as Box<dyn FnMut(_)>);
-        let window = web_sys::window().unwrap();
-        window.add_event_listener_with_callback("mousemove", mouse_move.as_ref().unchecked_ref()).unwrap();
+        w.add_event_listener_with_callback("mousemove", mouse_move.as_ref().unchecked_ref()).unwrap();
         mouse_move.forget();
 
         let slider2 = Rc::clone(&slider);
@@ -123,12 +118,10 @@ impl SliderManager {
             if slider2.borrow().can_move() {
                 let mouse_x = event.touches().get(0).unwrap().client_x() as i32;
                 last_pos2.set(mouse_x);
-                let window = web_sys::window().unwrap();
-                window.request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
+                window().request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
             }
         }) as Box<dyn FnMut(_)>);
-        let window = web_sys::window().unwrap();
-        window.add_event_listener_with_callback("touchmove", touch_move.as_ref().unchecked_ref()).unwrap();
+        w.add_event_listener_with_callback("touchmove", touch_move.as_ref().unchecked_ref()).unwrap();
         touch_move.forget();
 
         // End
@@ -139,25 +132,21 @@ impl SliderManager {
         let mouse_end = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
             if slider2.borrow().can_move() {
                 last_pos2.set(event.client_x() as i32);
-                let window = web_sys::window().unwrap();
-                window.request_animation_frame((*end_animation2).as_ref().unchecked_ref()).unwrap();
+                window().request_animation_frame((*end_animation2).as_ref().unchecked_ref()).unwrap();
             }
         }) as Box<dyn FnMut(_)>);
-        let window = web_sys::window().unwrap();
-        window.add_event_listener_with_callback("mouseup", mouse_end.as_ref().unchecked_ref()).unwrap();
-        window.add_event_listener_with_callback("mouseleave", mouse_end.as_ref().unchecked_ref()).unwrap();
+        w.add_event_listener_with_callback("mouseup", mouse_end.as_ref().unchecked_ref()).unwrap();
+        w.add_event_listener_with_callback("mouseleave", mouse_end.as_ref().unchecked_ref()).unwrap();
         mouse_end.forget();
 
         let slider2 = Rc::clone(&slider);
         let end_animation2 = Rc::clone(&end_animation);
         let touch_end = Closure::wrap(Box::new(move |_: web_sys::TouchEvent| {
             if slider2.borrow().can_move() {
-                let window = web_sys::window().unwrap();
-                window.request_animation_frame((*end_animation2).as_ref().unchecked_ref()).unwrap();
+                window().request_animation_frame((*end_animation2).as_ref().unchecked_ref()).unwrap();
             }
         }) as Box<dyn FnMut(_)>);
-        let window = web_sys::window().unwrap();
-        window.add_event_listener_with_callback("touchend", touch_end.as_ref().unchecked_ref()).unwrap();
+        w.add_event_listener_with_callback("touchend", touch_end.as_ref().unchecked_ref()).unwrap();
         touch_end.forget();
     
         slider
@@ -172,20 +161,18 @@ impl SliderManager {
         self.enabled = false;
         self.start_pos = None;
 
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
-        if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()) {
+        let document = window().document().unwrap();
+        if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()) {
             day_container.style().set_property("transform", "translateX(0px)").unwrap();
         }
     }
 
-    fn get_cached_day_container(&mut self) -> web_sys::HtmlElement {
+    fn get_cached_day_container(&mut self) -> HtmlElement {
         match &self.day_container {
             Some(day_container) => day_container.clone(),
             None => {
-                let window = web_sys::window().unwrap();
-                let document = window.document().unwrap();
-                let day_container = document.get_element_by_id("day-container").map(|e| e.dyn_into::<web_sys::HtmlElement>().unwrap()).expect("No day container");
+                let document = window().document().unwrap();
+                let day_container = document.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()).expect("No day container");
                 self.day_container = Some(day_container.clone());
                 day_container
             }
@@ -193,8 +180,7 @@ impl SliderManager {
     }
 
     fn touch_start(&mut self, mouse_x: i32, mouse_y: i32) {
-        let window = web_sys::window().unwrap();
-        let document = window.document().unwrap();
+        let document = window().document().unwrap();
         self.day_container = document.get_element_by_id("day-container").map(|e| e.dyn_into().unwrap());
         self.start_pos = None;
         
@@ -232,13 +218,12 @@ impl SliderManager {
         let day_container = self.get_cached_day_container();
 
         let offset = mouse_x - start_pos;
-        let window = web_sys::window().unwrap();
         if offset > 90 {
             day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
-            window.set_timeout_with_callback(self.swift_prev_callback.as_ref().unchecked_ref()).unwrap();
+            window().set_timeout_with_callback(self.swift_prev_callback.as_ref().unchecked_ref()).unwrap();
         } else if offset < -90 {
             day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
-            window.set_timeout_with_callback(self.swift_next_callback.as_ref().unchecked_ref()).unwrap();
+            window().set_timeout_with_callback(self.swift_next_callback.as_ref().unchecked_ref()).unwrap();
         } else {
             day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
         }
