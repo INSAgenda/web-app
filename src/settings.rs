@@ -20,8 +20,21 @@ lazy_static::lazy_static!{
             Some(lang) if lang == "english" => 1,
             Some(lang) => {alert(format!("Invalid language {lang}")); 0},
             None => {
-                // todo detect preferred
-                0
+                let languages = window().navigator().languages();
+                let mut lang = None;
+                for language in languages.iter() {
+                    if let Some(language) = language.as_string() {
+                        if language == "fr" || language.starts_with("fr-") {
+                            lang = Some(0);
+                            break;
+                        } else if language == "en" || language.starts_with("en-") {
+                            lang = Some(1);
+                            break;
+                        }
+                    }
+                }
+
+                lang.unwrap_or(0)
             },
         };
 

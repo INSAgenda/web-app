@@ -38,6 +38,7 @@ features = [
     "Headers",
     "Response",
     "DomRect",
+    "Navigator",
 ]
 
 [profile.release]
