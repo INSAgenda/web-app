@@ -86,6 +86,7 @@ impl Component for App {
         let page = match window().location().hash() {
             Ok(hash) if hash == "#settings" => Page::Settings,
             Ok(hash) if hash == "#change-password" => Page::ChangePassword,
+            Ok(hash) if hash.is_empty() => Page::Agenda,
             Ok(hash) => {
                 alert(format!("Page {hash} not found"));
                 Page::Agenda
