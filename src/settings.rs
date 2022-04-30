@@ -1,7 +1,6 @@
 use yew::prelude::*;
 use crate::{glider_selector::GliderSelector, App, api::logout, alert};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use crate::glider_selector::GliderSelector;
 
 lazy_static::lazy_static!{
     pub static ref SETTINGS: SettingStore = {
