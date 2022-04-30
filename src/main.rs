@@ -48,7 +48,6 @@ impl Component for App {
 
         let now = chrono::Local::now();
         let now = now.with_timezone(&Paris);
-        let window = window();
 
         let link2 = ctx.link().clone();
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
@@ -60,7 +59,7 @@ impl Component for App {
                 _ => log!("Unknown pop state: {:?}", e.state()),
             }
         }) as Box<dyn FnMut(_)>);
-        window.add_event_listener_with_callback("popstate", closure.as_ref().unchecked_ref()).unwrap();
+        window().add_event_listener_with_callback("popstate", closure.as_ref().unchecked_ref()).unwrap();
         closure.forget();
 
         // Update events
@@ -96,12 +95,12 @@ impl Component for App {
                 self.events = events;
                 true
             }
-            Msg::FetchFailure(_) => {
-                log!("Todo");
-                true
+            Msg::FetchFailure(api_error) => {
+                alert(format!("Failed to load events: {}", api_error));
+                false
             },
             Msg::SetPage(page) => {
-                let history = window().history().unwrap();                
+                let history = window().history().expect("Failed to access history");                
                 match &page {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#setttings")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
