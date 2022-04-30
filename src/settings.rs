@@ -6,8 +6,8 @@ lazy_static::lazy_static!{
         let theme = match local_storage.get_item("setting-theme").unwrap() {
             Some(theme) if theme == "dark" => 0,
             Some(theme) if theme == "light" => 1,
-            Some(theme) => {alert(format!("Invalid theme {theme}")); 1},
-            None => 1,
+            Some(theme) => {alert(format!("Invalid theme {theme}")); 0},
+            None => 0,
         };
         let building_naming = match local_storage.get_item("setting-building-naming").unwrap() {
             Some(building_naming) if building_naming == "short" => 0,
