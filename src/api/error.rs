@@ -1,4 +1,4 @@
-use wasm_bindgen::JsValue;
+use crate::prelude::*;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -14,7 +14,10 @@ pub enum ApiError {
 impl std::fmt::Display for ApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            ApiError::Known(KnownApiError { kind, origin, message_en, message_fr }) => write!(f, "{message_fr} ({kind} in {origin})"),
+            ApiError::Known(KnownApiError { kind, origin, message_en, message_fr }) => match SETTINGS.lang() {
+                Lang::French => write!(f, "{message_fr} ({kind} in {origin})"),
+                Lang::English => write!(f, "{message_en} ({kind} in {origin})"),
+            },
             ApiError::Unknown(e) => write!(f, "{:?}", e),
         }
     }
