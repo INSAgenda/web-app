@@ -80,7 +80,7 @@ impl Component for ChangePasswordPage {
                     &format!(r#"{{
                         "password": "{}",
                         "new_password": "{}"
-                        }}"#, password, new_password)),
+                        }}"#, password.replace('"', "\\\""), new_password.replace('"', "\\\""))),
                     ));
                 
                 let app_link = ctx.props().app_link.clone();
