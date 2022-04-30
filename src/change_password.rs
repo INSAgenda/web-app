@@ -99,9 +99,6 @@ impl Component for ChangePasswordPage {
                                     let error: KnownApiError = json.into_serde().expect("JSON parsing issue");
                                     link.send_message(Msg::SetMessage(Some(error.message_fr)) );
                                 }
-                                500..=599 => {
-                                    alert("Une erreur interne est survenue. Veuillez contacter le support: support@insagenda.fr");
-                                }
                                 _ => {
                                     alert("Une erreur inconnue est survenue. Veuillez contacter le support: support@insagenda.fr");
                                 }
