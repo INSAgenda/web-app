@@ -82,10 +82,21 @@ impl Component for App {
             });
         }
 
+        // Detect page
+        let page = match window().location().hash() {
+            Ok(hash) if hash == "#settings" => Page::Settings,
+            Ok(hash) if hash == "#change-password" => Page::ChangePassword,
+            Ok(hash) => {
+                alert(format!("Page {hash} not found"));
+                Page::Agenda
+            },
+            _ => Page::Agenda,
+        };
+
         Self {
             selected_day: now.date(),
             events,
-            page: Page::Agenda,
+            page,
             slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
         }
     }
