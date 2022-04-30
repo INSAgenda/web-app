@@ -11,6 +11,7 @@ lazy_static::lazy_static!{
         SettingStore {
             building_naming: AtomicUsize::new(0),
             theme: AtomicUsize::new(theme),
+            lang: AtomicUsize::new(0),
         }
     };
 }
@@ -25,9 +26,16 @@ pub enum Theme {
     Light,
 }
 
+#[derive(PartialEq, Clone, Copy)]
+pub enum Lang {
+    French = 0,
+    English,
+}
+
 pub struct SettingStore {
     building_naming: AtomicUsize,
     theme: AtomicUsize,
+    lang: AtomicUsize,
 }
 
 impl SettingStore {
@@ -54,12 +62,25 @@ impl SettingStore {
     fn set_theme(&self, theme: usize) {
         self.theme.store(theme, Ordering::Relaxed);
     }
+
+    pub fn lang(&self) -> Lang {
+        match self.lang.load(Ordering::Relaxed) {
+            0 => Lang::French,
+            1 => Lang::English,
+            _ => unreachable!(),
+        }
+    }
+
+    fn set_lang(&self, lang: usize) {
+        self.lang.store(lang, Ordering::Relaxed);
+    }
 }
 
 pub enum Msg {
     Confirm,
     BuildingNamingChange(usize),
     ThemeChange(usize),
+    LanguageChange(usize),
 }
 
 #[derive(Properties, Clone)]
@@ -110,6 +131,10 @@ impl Component for SettingsPage {
 
                 true
             }
+            Msg::LanguageChange(v) => {
+                SETTINGS.set_lang(v);
+                true
+            }
         }
     }
 
@@ -119,43 +144,56 @@ impl Component for SettingsPage {
             <>
             <header class="pseudo-page-header">
                 <button class="back-button" onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda))} />
-                <h1>{"Paramètres"}</h1>
+                <h1>{t("Paramètres")}</h1>
             </header>
             <main id="settings-main">
-                <h2>{"Paramètres du compte"}</h2>
+                <h2>{t("Paramètres du compte")}</h2>
                 <div class="settings-group">
                     <div class="setting">
-                        <h3>{"Mot de passe"}</h3>
-                        <p>{"Votre mot de passe a été changé pour la dernière fois le 12/11/2021 à 12:49."}</p>
-                        <div class="white-button small-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{"Modifier"}</div>
+                        <h3>{t("Mot de passe")}</h3>
+                        <p>{t("Votre mot de passe a été changé pour la dernière fois le 12/11/2021 à 12:49.")}</p>
+                        <div class="white-button small-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
                     </div>
                     <div class="setting">
-                        <h3>{"Adresse mail"}</h3>
-                        <p>{"Votre adresse actuelle est foobar@insa-rouen.fr."}</p>
-                        <div class="white-button small-button">{"Modifier"}</div>
+                        <h3>{t("Adresse mail")}</h3>
+                        <p>{t("Votre adresse actuelle est foobar@insa-rouen.fr.")}</p>
+                        <div class="white-button small-button">{t("Modifier")}</div>
                     </div>
                     <div class="setting">
-                        <h3>{"Changer le type d'authentification"}</h3>
+                        <h3>{t("Changer le type d'authentification")}</h3>
                         <GliderSelector
-                            values = { vec!["Email", "Mot de passe", "Email + Mot de passe"] }
+                            values = { vec![t("Email"), t("Mot de passe"), t("Email + Mot de passe")] }
                             selected = 0 />
-                        <p>{"L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email."}</p>
+                        <p>{t("L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email.")}</p>
                     </div>
                 </div>
                 <h2>{"Affichage"}</h2>
                 <div class="settings-group">
                     <div class="setting">
-                        <h3>{"Thème"}</h3>
+                        <h3>{t("Thème")}</h3>
                         <GliderSelector
-                            values = { vec!["Sombre", "Clair"] }
+                            values = { vec![t("Sombre"), t("Clair")] }
                             on_change = { ctx.link().callback(Msg::ThemeChange) }
                             selected = { SETTINGS.theme() as usize } />
-                        <p>{"Par défault, le thème est celui renseigné par votre navigateur."}</p>
+                        <p>{t("Par défault, le thème est celui renseigné par votre navigateur.")}</p>
                     </div>
                     <div class="setting">
-                        <h3>{"Nom des bâtiments"}</h3>
+                        <h3>{t("Langue")}</h3>
                         <GliderSelector
-                            values = { vec!["Court", "Long"] }
+                            values = { vec!["Français", "English"] }
+                            on_change = { ctx.link().callback(Msg::LanguageChange) }
+                            selected = { SETTINGS.lang() as usize } />
+                        <p>{
+                            match SETTINGS.lang() {
+                                Lang::French => "Pour afficher l'interface dans langue de Molière.",
+                                Lang::English => "To display the interface in Shakespeare's language.",
+                            }
+                        }</p>
+                    </div>
+                    <div class="setting">
+                        <h3>{t("Nom des bâtiments")}</h3>
+                        <GliderSelector
+                            values = { vec![t("Court"), t("Long")] }
                             on_change = { ctx.link().callback(Msg::BuildingNamingChange) }
                             selected = { SETTINGS.building_naming() as usize } />
                         <p>{
@@ -166,7 +204,7 @@ impl Component for SettingsPage {
                         }</p>
                     </div>
                 </div>
-                <div class="red-button form-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{"Valider"}</div>
+                <div class="red-button form-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
             </main>
             <footer>
             </footer>
