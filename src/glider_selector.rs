@@ -14,6 +14,7 @@ pub struct GliderSelectorProps {
 }
 
 pub struct GliderSelector {
+    old_values: Vec<&'static str>,
     sizes: Vec<u32>,
     selected: usize,
     id: String,
@@ -33,6 +34,7 @@ impl Component for GliderSelector {
         }
 
         GliderSelector {
+            old_values: Vec::new(),
             id,
             sizes: Vec::new(),
             selected: ctx.props().selected,
@@ -50,6 +52,7 @@ impl Component for GliderSelector {
                     let width = child.client_width();
                     self.sizes.push(width as u32);
                 }
+                self.old_values = ctx.props().values.clone();
                 true
             }
             Msg::Select(index) => {
@@ -57,6 +60,13 @@ impl Component for GliderSelector {
                 true
             }
         }
+    }
+
+    fn changed(&mut self, ctx: &Context<Self>) -> bool {
+        if self.old_values != ctx.props().values {
+            self.sizes.clear();
+        }
+        true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {

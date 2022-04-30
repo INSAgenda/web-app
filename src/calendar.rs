@@ -90,7 +90,7 @@ impl Component for Calendar {
         let first_day = NaiveDate::from_ymd(self.selected_year, self.selected_month, 1);
         let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
 
-        let display_month = format!("{} {}", match self.selected_month {
+        let display_month = format!("{} {}", t(match self.selected_month {
             1 => "Janvier",
             2 => "Février",
             3 => "Mars",
@@ -104,7 +104,7 @@ impl Component for Calendar {
             11 => "Novembre",
             12 => "Décembre",
             _ => unreachable!(),
-        }, self.selected_year);
+        }), self.selected_year);
 
         let mut calendar_cases = Vec::new();
         for _ in 0..first_day.weekday().number_from_monday() - 1 {
@@ -145,13 +145,13 @@ impl Component for Calendar {
                 </div>
                 <div id="calendar-content">
                     <div id="calendar-days">
-                        <span>{"Lun"}</span>
-                        <span>{"Mar"}</span>
-                        <span>{"Mer"}</span>
-                        <span>{"Jeu"}</span>
-                        <span>{"Ven"}</span>
-                        <span>{"Sam"}</span>
-                        <span>{"Dim"}</span>
+                        <span>{t("Lun")}</span>
+                        <span>{t("Mar")}</span>
+                        <span>{t("Mer")}</span>
+                        <span>{t("Jeu")}</span>
+                        <span>{t("Ven")}</span>
+                        <span>{t("Sam")}</span>
+                        <span>{t("Dim")}</span>
                     </div>
                     { weeks }
                 </div>

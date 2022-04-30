@@ -51,19 +51,19 @@ impl Component for ChangePasswordPage {
 
                 // Check if all inputs are filled
                 if password.is_empty() || new_password.is_empty() || confirm_password.is_empty() {
-                    ctx.link().send_message(Msg::SetMessage(Some("Tous les champs doivent être remplis.".to_string())));
+                    ctx.link().send_message(Msg::SetMessage(Some(t("Tous les champs doivent être remplis.").to_string())));
                     return true;
                 }
 
                 // Check if passwords match
                 if new_password != confirm_password {
-                    ctx.link().send_message(Msg::SetMessage(Some("Les mots de passe ne correspondent pas.".to_string())));
+                    ctx.link().send_message(Msg::SetMessage(Some(t("Les mots de passe ne correspondent pas.").to_string())));
                     return true;
                 }
                 
                 // Check if new password is same as old password
                 if new_password == password {
-                    ctx.link().send_message(Msg::SetMessage(Some("Le nouveau mot de passe doit être différent du mot de passe actuel.".to_string())));
+                    ctx.link().send_message(Msg::SetMessage(Some(t("Le nouveau mot de passe doit être différent du mot de passe actuel.").to_string())));
                     return true;
                 }
 
@@ -88,20 +88,20 @@ impl Component for ChangePasswordPage {
                                 200 => {
                                     app_link.send_message(AppMsg::SetPage(Page::Agenda));
                                     link.send_message(Msg::SetMessage(None));
-                                },
+                                }
                                 400 => {
                                     let json = JsFuture::from(response.json().unwrap()).await.map_err(|e| e).unwrap();
                                     let error: KnownApiError = json.into_serde().expect("JSON parsing issue");
                                     link.send_message(Msg::SetMessage(Some(error.message_fr)) );
                                 }
                                 _ => {
-                                    alert("Une erreur inconnue est survenue. Veuillez contacter le support: support@insagenda.fr");
+                                    alert(t("Une erreur inconnue est survenue. Veuillez contacter le support: support@insagenda.fr"));
                                 }
                             }
                                 
                         }
                         Err(_) => {
-                            alert("Impossible de contacter le serveur, une erreur est survenue. Veuillez contacter le support: support@insagenda.fr")
+                            alert(t("Impossible de se connecter au le serveur. Veuillez contacter le support: support@insagenda.fr"));
                         }
                     }
                     link.send_message(Msg::SetLoading(false));       
@@ -123,23 +123,23 @@ impl Component for ChangePasswordPage {
                 <button id="settings-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::Settings))}/>
             </header>
             <section class="section-page-title">
-                <h2 class="page-title">{"Changer le mot de passe"}</h2>
+                <h2 class="page-title">{t("Changement de mot de passe")}</h2>
                 <div class="divider-bar"></div>
             </section>
             <main class="centred" id="auth">
-                <h3 class="login-title">{"Changer son mot de passse"}</h3>
+                <h3 class="login-title">{t("Changer son mot de passse")}</h3>
                 <form class="centred">
                     <div class="labeled-input">
                         <input type="password" placeholder="Password" id="password-input1" autocomplete="password" ref={self.password.clone()} />
-                        <label for="password-input1">{"Mot de passe actuel"}</label>
+                        <label for="password-input1">{t("Mot de passe actuel")}</label>
                     </div>
                     <div class="labeled-input">
                         <input type="password" placeholder="New password" id="password-input2" autocomplete="new-password" ref={self.new_password.clone()}/>
-                        <label for="password-input2">{"Nouuveau mot de passe"}</label>
+                        <label for="password-input2">{t("Nouveau mot de passe")}</label>
                     </div>
                     <div class="labeled-input">
                         <input type="password" placeholder="Password (confirmation)" id="password-input3" autocomplete="new-password" ref={self.confirm_password.clone()} />
-                        <label for="password-input3">{"Mot de passe (confirmation)"}</label>
+                        <label for="password-input3">{t("Nouveau mot de passe (confirmation)")}</label>
                     </div>
                     if self.is_loading{
                         <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
@@ -149,7 +149,7 @@ impl Component for ChangePasswordPage {
                                 {self.message.clone().unwrap()}
                             </span>
                         }
-                        <input type="button" class="red-button form-button" id="submit-button" value="Confirmer" onclick={ctx.link().callback(|_| Msg::SendNewPassword) }/>
+                        <input type="button" class="red-button form-button" id="submit-button" value={t("Confirmer")} onclick={ctx.link().callback(|_| Msg::SendNewPassword) }/>
                     }
 
                 </form>   

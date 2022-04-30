@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
-    let month = match month {
+    let month = t(match month {
         1 => "Janvier",
         2 => "Février",
         3 => "Mars",
@@ -15,9 +15,9 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
         11 => "Novembre",
         12 => "Décembre",
         _ => unreachable!(),
-    };
+    });
 
-    let day_name = match day_name {
+    let day_name = t(match day_name {
         Weekday::Mon => "Lundi",
         Weekday::Tue => "Mardi",
         Weekday::Wed => "Mercredi",
@@ -25,7 +25,7 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
         Weekday::Fri => "Vendredi",
         Weekday::Sat => "Samedi",
         Weekday::Sun => "Dimanche",
-    };
+    });
 
     format!("{} {} {}", day_name, day, month)
 }
@@ -118,7 +118,7 @@ impl App {
             </div>
             <div id="option">
                 <div id="option-header">
-                    <span>{"Options"}</span>
+                    <span>{t("Options")}</span>
                     <div class="divider-bar-option"></div>
                 </div>
                 <Calendar app_link={ctx.link().clone()}/>

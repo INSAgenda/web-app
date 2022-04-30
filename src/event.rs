@@ -190,32 +190,32 @@ impl Component for EventComp {
                             Some(PopupPage::General) | None => html!{
                                 <div class="event-details-content">
                                     <div>
-                                        <span class="bold">{"Début : "}</span>
+                                        <span class="bold">{t("Début : ")}</span>
                                         {start.time().format("%Hh%M")}
                                     </div>
                                     <div>
-                                        <span class="bold">{"Fin : "}</span>
+                                        <span class="bold">{t("Fin : ")}</span>
                                         {end.time().format("%Hh%M")}
                                     </div>
                                     <div>
-                                        <span class="bold">{"Durée : "}</span>
+                                        <span class="bold">{t("Durée : ")}</span>
                                         {duration}{"min"}
                                     </div>
                                     <div>
-                                        <span class="bold">{ if ctx.props().event.groups.len() > 1 {{"Groupes : "}} else {{"Groupe : "}} }</span>
+                                        <span class="bold">{ if ctx.props().event.groups.len() > 1 {t("Groupes : ")} else {t("Groupe : ")} }</span>
                                         {groups}
                                     </div>
                                     <div>
-                                        <span class="bold">{"Professeur : "}</span>
+                                        <span class="bold">{t("Professeur : ")}</span>
                                         {ctx.props().event.teachers.join(", ")}
                                     </div>
                                     <div>
-                                        <span class="bold">{"Salle : "}</span>
-                                        {location.unwrap_or_else(|| "Inconnue".to_string())}
+                                        <span class="bold">{t("Salle : ")}</span>
+                                        {location.unwrap_or_else(|| t("Inconnue").to_string())}
                                     </div>
                                     <div class="bottom-buttons">
                                         <div onclick={ctx.link().callback(|_| EventCompMsg::SetPage(PopupPage::Colors))}>
-                                            {"Changer les couleurs"}
+                                            {t("Changer les couleurs")}
                                             <img src="/agenda/images/edit-2.svg"/>
                                         </div>
                                     </div>
@@ -224,20 +224,20 @@ impl Component for EventComp {
                             Some(PopupPage::Colors) => html!{
                                 <div class="event-details-content color-editor-popup">
                                     <div>
-                                        <span>{"Fond"}</span>
+                                        <span>{t("Fond")}</span>
                                         <input type="color" id="background-color-input" value={bg_color} />
                                     </div>
                                     <div>
-                                        <span>{"Texte"}</span>
+                                        <span>{t("Texte")}</span>
                                         <input type="color" id="text-color-input" value={text_color} />
                                     </div>
                                     <div class="bottom-buttons">
                                         <div onclick={ctx.link().callback(|_| EventCompMsg::SetPage(PopupPage::General))}>
-                                            {"Annuler"}
+                                            {t("Annuler")}
                                             <img src="/agenda/images/x.svg"/>
                                         </div>
                                         <div onclick={ctx.link().callback(|_| EventCompMsg::SaveColors)}>
-                                            {"Sauvegarder"}
+                                            {t("Sauvegarder")}
                                             <img src="/agenda/images/save.svg"/>
                                         </div>
                                     </div>

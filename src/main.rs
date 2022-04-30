@@ -11,6 +11,7 @@ mod crash_handler;
 mod colors;
 mod change_password;
 mod prelude;
+mod translation;
 
 use crate::{prelude::*, settings::SettingsPage, change_password::ChangePasswordPage};
 
