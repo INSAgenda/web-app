@@ -1,6 +1,8 @@
 use super::*;
 
 pub(crate) async fn logout()-> Result<(), ApiError> {
+    let window = window();
+    let local_storage = window.local_storage().unwrap().unwrap();
     let (api_key, counter) = get_login_info();
     
     let mut init = web_sys::RequestInit::new();
@@ -19,7 +21,7 @@ pub(crate) async fn logout()-> Result<(), ApiError> {
     local_storage.delete("last_updated").unwrap();
     local_storage.delete("cached_events").unwrap();
 
-    let resp = JsFuture::from(window().fetch_with_request(&request)).await?;
+    let resp = JsFuture::from(window.fetch_with_request(&request)).await?;
     let resp: Response = resp.dyn_into()?;
     let json = JsFuture::from(resp.json()?).await?;
     
