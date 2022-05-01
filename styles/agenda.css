@@ -20,7 +20,7 @@
 #agenda-hours>span {
     height: calc((100% - 0.7rem/2) / 44100 * 6300);
     font-size: .7rem;
-    color: var(--calendar-text);
+    color: var(--text);
 }
 
 /* Lines */
@@ -96,7 +96,7 @@
     margin: 0 5px;
     text-align: center;
     align-items: center;
-    color: var(--calendar-text);
+    color: var(--text);
 }
 
 /* Days */
@@ -117,7 +117,7 @@
     height: 100%;
     width: 19%;
     margin: 0 .5%;
-    background-color: var(--dp02);
+    background-color: var(--day);
 }
 
 #settings-button{
