@@ -23,8 +23,10 @@ pub enum Page {
 }
 
 pub enum Msg {
-    FetchSuccess(Vec<Event>),
-    FetchFailure(ApiError),
+    ScheduleSuccess(Vec<Event>),
+    UserInfoSuccess(UserInfo),
+    ScheduleFailure(ApiError),
+    UserInfoFailure(ApiError),
     Previous,
     Next,
     Goto {day: u32, month: u32, year: i32},
@@ -33,10 +35,22 @@ pub enum Msg {
     Refresh,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct UserInfo {
+    /// The count of api keys
+    pub api_key_count: u64,
+    /// Last password modification timestamp.
+    /// Can be `None` if the user has no password or if the user has never changed his password since the addition of the tracking feature.
+    pub last_password_mod: Option<i64>,
+    /// The email associated with its verification state
+    pub email: (String, bool),
+}
+
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
     events: Vec<Event>,
     page: Page,
+    user_info: Rc<Option<UserInfo>>,
     slider: Rc<RefCell<slider::SliderManager>>,
 }
 
@@ -65,20 +79,39 @@ impl Component for App {
         closure.forget();
 
         // Update events
-        let mut skip_event_loading = false;
+        let mut skip_user_info_loading = false;
         let mut events = Vec::new();
-        if let Some((last_updated, cached_events)) = api::load_cache() {
+        if let Some((last_updated, cached_events)) = api::load_cached_events() {
             if last_updated > now.timestamp() - 3600*5 && !cached_events.is_empty() {
-                skip_event_loading = true;
+                skip_user_info_loading = true;
             }
             events = cached_events;
         }
-        if !skip_event_loading {
+        if !skip_user_info_loading {
             let link2 = ctx.link().clone();
             wasm_bindgen_futures::spawn_local(async move {
                 match api::load_events().await {
-                    Ok(events) => link2.send_message(Msg::FetchSuccess(events)),
-                    Err(e) => link2.send_message(Msg::FetchFailure(e)),
+                    Ok(events) => link2.send_message(Msg::ScheduleSuccess(events)),
+                    Err(e) => link2.send_message(Msg::ScheduleFailure(e)),
+                }
+            });
+        }
+
+        // Update user info
+        let mut skip_user_info_loading = false;
+        let mut user_info = None;
+        if let Some((last_updated, cached_user_info)) = api::load_cached_user_info() {
+            if last_updated > now.timestamp() - 60*5 {
+                skip_user_info_loading = true;
+            }
+            user_info = Some(cached_user_info);
+        }
+        if !skip_user_info_loading {
+            let link2 = ctx.link().clone();
+            wasm_bindgen_futures::spawn_local(async move {
+                match api::load_user_info().await {
+                    Ok(events) => link2.send_message(Msg::UserInfoSuccess(events)),
+                    Err(e) => link2.send_message(Msg::UserInfoFailure(e)),
                 }
             });
         }
@@ -99,18 +132,27 @@ impl Component for App {
             selected_day: now.date(),
             events,
             page,
+            user_info: Rc::new(user_info),
             slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
         }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::FetchSuccess(events) => {
+            Msg::ScheduleSuccess(events) => {
                 self.events = events;
                 true
             }
-            Msg::FetchFailure(api_error) => {
+            Msg::UserInfoSuccess(user_info) => {
+                self.user_info = Rc::new(Some(user_info));
+                false
+            }
+            Msg::ScheduleFailure(api_error) => {
                 alert(format!("Failed to load events: {}", api_error));
+                false
+            },
+            Msg::UserInfoFailure(api_error) => {
+                alert(format!("Failed to load user info: {}", api_error));
                 false
             },
             Msg::SetPage(page) => {
@@ -160,8 +202,8 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
             Page::Agenda => self.view_agenda(ctx),
-            Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } /> ),
-            Page::ChangePassword => html!( <ChangePasswordPage app_link={ ctx.link().clone() } /> ),
+            Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
+            Page::ChangePassword => html!( <ChangePasswordPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
         }
     }
 }

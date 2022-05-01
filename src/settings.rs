@@ -144,6 +144,7 @@ pub enum Msg {
 #[derive(Properties, Clone)]
 pub struct SettingsProps {
     pub app_link: Scope<App>,
+    pub user_info: Rc<Option<UserInfo>>,
 }
 
 impl PartialEq for SettingsProps {
@@ -207,6 +208,38 @@ impl Component for SettingsPage {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
+        // Compute variable messages
+        let mut verified_msg = String::new();
+        let mut email = String::from(t("[inconnue]"));
+        let mut last_password_mod_str = String::from(t("[indisponible]"));
+        if let Some(user_info) = ctx.props().user_info.as_ref() {
+            if !user_info.email.1 {
+                verified_msg = String::from(t(" Elle n'a pas encore été vérifiée."));
+            }
+            email = user_info.email.0.to_owned();
+            if let Some(last_password_mod) = user_info.last_password_mod {
+                let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+                let diff = now - last_password_mod;
+                let words = [["seconds", "minutes", "heures", "jours", "semaines", "mois", "années"], ["seconds ago", "minutes ago", "hours ago", "days ago", "weeks ago", "months ago", "years ago"]];
+                let i = if SETTINGS.lang() == Lang::French { 0 } else { 1 };
+                last_password_mod_str = if diff < 60 {
+                    format!("{} {}", diff, words[i][0])
+                } else if diff < 3600 {
+                    format!("{} {}", diff / 60, words[i][1])
+                } else if diff < 86400 {
+                    format!("{} {}", diff / 3600, words[i][2])
+                } else if diff < 7*86400 {
+                    format!("{} {}", diff / 86400, words[i][3])
+                } else if diff < 30*86400 {
+                    format!("{} {}", diff / 7*86400, words[i][4])
+                } else if diff < 365*86400 {
+                    format!("{} {}", diff / 30*86400, words[i][5])
+                } else {
+                    format!("{} {}", diff / 365*86400, words[i][6])
+                };
+            }
+        }
+
         let app_link = ctx.props().app_link.clone();
         html! {
             <>
@@ -219,12 +252,12 @@ impl Component for SettingsPage {
                 <div class="settings-group">
                     <div class="setting">
                         <h3>{t("Mot de passe")}</h3>
-                        <p>{t("Votre mot de passe a été changé pour la dernière fois le 12/11/2021 à 12:49.")}</p>
+                        <p>{format!("{} {}.", t("Votre mot de passe a été changé il y a"), last_password_mod_str)}</p>
                         <div class="white-button small-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
                     </div>
                     <div class="setting">
                         <h3>{t("Adresse mail")}</h3>
-                        <p>{t("Votre adresse actuelle est foobar@insa-rouen.fr.")}</p>
+                        <p>{format!("{} {email}.{verified_msg}", t("Votre adresse actuelle est"))}</p>
                         <div class="white-button small-button">{t("Modifier")}</div>
                     </div>
                     <div class="setting">
@@ -235,7 +268,7 @@ impl Component for SettingsPage {
                         <p>{t("L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email.")}</p>
                     </div>
                 </div>
-                <h2>{"Affichage"}</h2>
+                <h2>{t("Affichage")}</h2>
                 <div class="settings-group">
                     <div class="setting">
                         <h3>{t("Thème")}</h3>

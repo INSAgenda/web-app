@@ -67,13 +67,16 @@ pub fn t(s: &'static str) -> &'static str {
 
         
         // In settings.rs
+        "[indisponible]" => "[unavailable]",
+        "[inconnue]" => "[unknown]",
         "Paramètres" => "Parameters",
         "Paramètres du compte" => "Account parameters",
         "Mot de passe" => "Password",
-        "Votre mot de passe a été changé pour la dernière fois le 12/11/2021 à 12:49." => "Your password was changed for the last time on 12/11/2021 at 12:49.",
+        "Votre mot de passe a été changé il y a" => "Your password was changed ",
         "Modifier" => "Modify",
         "Adresse mail" => "Email address",
-        "Votre adresse actuelle est foobar@insa-rouen.fr." => "Your current email address is foobar@insa-rouen.fr.",
+        "Votre adresse actuelle est" => "Your current email address is",
+        " Elle n'a pas encore été vérifiée." => " It has not been verified yet.",
         "Changer le type d'authentification" => "Change authentication type",
         "Email" => "Email",
         "Email + Mot de passe" => "Email + Password",
