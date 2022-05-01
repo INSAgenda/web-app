@@ -56,8 +56,9 @@ impl Component for App {
             match state.as_deref() {
                 Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
                 Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
+                Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
-                _ => log!("Unknown pop state: {:?}", e.state()),
+                _ => alert(format!("Unknown pop state: {:?}", e.state())),
             }
         }) as Box<dyn FnMut(_)>);
         window().add_event_listener_with_callback("popstate", closure.as_ref().unchecked_ref()).unwrap();
@@ -115,9 +116,9 @@ impl Component for App {
             Msg::SetPage(page) => {
                 let history = window().history().expect("Failed to access history");                
                 match &page {
-                    Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#setttings")).unwrap(),
+                    Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#settings")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
-                    Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change_password"), "Change password", Some("#change_password")).unwrap(),
+                    Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("#change-password")).unwrap(),
                 }
                 self.page = page;
                 true
