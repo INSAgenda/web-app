@@ -75,7 +75,7 @@ impl App {
             <>
             <header>
                 <a id="header-logo" href="../index.html">
-                <img src="/assets/elements/webLogo.svg" alt="INSAgenda logo"/> 
+                <img src="/assets/logo/logo.svg" alt="INSAgenda logo"/> 
                 <h1 id="header-name">{"INSAgenda"}</h1>
                 </a>
                 <button id="settings-button" onclick={ctx.link().callback(|_| AppMsg::SetPage(Page::Settings))}/>

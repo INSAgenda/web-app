@@ -52,12 +52,11 @@
     display: inline;
     height: 4rem;
     width: 4rem;
-    filter: invert(1);
 
 }
 
 :root[data-theme="dark"] .back-button{
-    filter: invert(0);
+    filter: invert(1);
 }
 
 @media screen and (max-width: 800px){
