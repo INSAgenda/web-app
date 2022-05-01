@@ -1,7 +1,7 @@
 use super::*;
 use crate::prelude::*;
 
-pub fn load_cache() -> Option<(i64, Vec<Event>)> {
+pub fn load_cached_events() -> Option<(i64, Vec<Event>)> {
     let local_storage = window().local_storage().unwrap().unwrap();
 
     let last_updated = match local_storage.get("last_updated").map(|v| v.map(|v| v.parse())) {

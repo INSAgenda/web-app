@@ -2,6 +2,8 @@ mod load_events;
 pub use load_events::*;
 mod logout;
 pub use logout::*;
+mod user_info;
+pub use user_info::*;
 mod error;
 pub use error::*;
 
