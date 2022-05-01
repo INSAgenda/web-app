@@ -79,15 +79,15 @@ impl Component for App {
         closure.forget();
 
         // Update events
-        let mut skip_user_info_loading = false;
+        let mut skip_event_loading = false;
         let mut events = Vec::new();
         if let Some((last_updated, cached_events)) = api::load_cached_events() {
             if last_updated > now.timestamp() - 3600*5 && !cached_events.is_empty() {
-                skip_user_info_loading = true;
+                skip_event_loading = true;
             }
             events = cached_events;
         }
-        if !skip_user_info_loading {
+        if !skip_event_loading {
             let link2 = ctx.link().clone();
             wasm_bindgen_futures::spawn_local(async move {
                 match api::load_events().await {
