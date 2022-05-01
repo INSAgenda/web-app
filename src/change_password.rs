@@ -117,7 +117,7 @@ impl Component for ChangePasswordPage {
             <>
             <header>
                 <a id="header-logo" href="../index.html">
-                    <img src="/assets/elements/webLogo.svg" alt="INSAgenda logo"/> 
+                    <img src="/assets/logo/logo.svg" alt="INSAgenda logo"/> 
                     <h1 id="header-name">{"INSAgenda"}</h1>
                 </a>
                 <button id="settings-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::Settings))}/>
@@ -149,7 +149,7 @@ impl Component for ChangePasswordPage {
                                 {self.message.clone().unwrap()}
                             </span>
                         }
-                        <input type="button" class="red-button form-button" id="submit-button" value={t("Confirmer")} onclick={ctx.link().callback(|_| Msg::SendNewPassword) }/>
+                        <input type="button" class="classic-button form-button" id="submit-button" value={t("Confirmer")} onclick={ctx.link().callback(|_| Msg::SendNewPassword) }/>
                     }
 
                 </form>   

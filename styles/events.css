@@ -86,8 +86,8 @@
 }
 
 .bottom-buttons>div:hover {
-    color: var(--red);
-    border-bottom: 1px solid var(--red);
+    color: var(--primary);
+    border-bottom: 1px solid var(--primary);
 }
 
 .color-editor-popup>div {

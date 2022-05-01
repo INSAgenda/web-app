@@ -305,8 +305,8 @@ impl Component for SettingsPage {
                         }</p>
                     </div>
                 </div>
-                <div class="white-button small-button" onclick={ctx.link().callback(move |_| Msg::LogOut)}>{t("Se déconnecter")}</div>
-                <div class="red-button form-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
+                <div class="second-button small-button" onclick={ctx.link().callback(move |_| Msg::LogOut)}>{t("Se déconnecter")}</div>
+                <div class="classic-button form-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
 
             </main>
             <footer>
