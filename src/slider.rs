@@ -24,7 +24,7 @@ impl SliderManager {
             link2.send_message(AppMsg::Next);
         }) as Box<dyn FnMut()>);
 
-        let link2 = link;
+        let link2 = link.clone();
         let swift_prev_callback = Closure::wrap(Box::new(move || {
             link2.send_message(AppMsg::Previous);
         }) as Box<dyn FnMut()>);
@@ -45,13 +45,16 @@ impl SliderManager {
         let last_pos = Rc::new(Cell::new(0));
     
         let slider2 = Rc::clone(&slider);
+        let link2 = link;
         let resize = Closure::wrap(Box::new(move |_: web_sys::Event| {
             let mut slider = slider2.borrow_mut();
             match slider.enabled {
                 true if width() > 1000 => {
+                    link2.send_message(AppMsg::Refresh);
                     slider.disable();
                 }
                 false if width() <= 1000 => {
+                    link2.send_message(AppMsg::Refresh);
                     slider.enable();
                 },
                 _ => (),
