@@ -6,13 +6,9 @@
     flex-direction: row;
     width: fit-content;
     border-radius: 1rem;
-    background-color: var(--dp03);
-    border: 1px solid #ccc;
+    background-color: var(--closer-background);
 }
 
-:root[data-theme="dark"] .glider-selector {
-    border: 1px solid #555;
-}
 
 .glider-selector>div {
     padding: .5rem 1rem;
@@ -25,7 +21,7 @@
 #glider-selected {
     position: absolute;
     color: transparent;
-    background-color: var(--red);
+    background-color: var(--primary);
     border-radius: 1rem;
     height: calc(1rem + 2px);
 }

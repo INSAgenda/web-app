@@ -220,12 +220,12 @@ impl Component for SettingsPage {
                     <div class="setting">
                         <h3>{t("Mot de passe")}</h3>
                         <p>{t("Votre mot de passe a été changé pour la dernière fois le 12/11/2021 à 12:49.")}</p>
-                        <div class="white-button small-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
+                        <div class="second-button small-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
                     </div>
                     <div class="setting">
                         <h3>{t("Adresse mail")}</h3>
                         <p>{t("Votre adresse actuelle est foobar@insa-rouen.fr.")}</p>
-                        <div class="white-button small-button">{t("Modifier")}</div>
+                        <div class="second-button small-button">{t("Modifier")}</div>
                     </div>
                     <div class="setting">
                         <h3>{t("Changer le type d'authentification")}</h3>
@@ -272,8 +272,8 @@ impl Component for SettingsPage {
                         }</p>
                     </div>
                 </div>
-                <div class="white-button small-button" onclick={ctx.link().callback(move |_| Msg::LogOut)}>{t("Se déconnecter")}</div>
-                <div class="red-button form-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
+                <div class="second-button small-button" onclick={ctx.link().callback(move |_| Msg::LogOut)}>{t("Se déconnecter")}</div>
+                <div class="classic-button form-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
 
             </main>
             <footer>

@@ -9,11 +9,11 @@ header {
 /* Main section */
 
 body {
-    background-color: var(--dp00);
+    background-color: var(--background);
 }
 
-:root[data-theme="dark"] {
-    color: white;
+:root {
+    color: var(--text);
 }
 
 #agenda-main {
@@ -30,7 +30,7 @@ body {
     padding: .75rem;
     margin: .5rem;
     border-radius: .5rem;
-    background-color: var(--dp01);
+    background-color: var(--bacground);
 }
 
 /* Option */
@@ -54,18 +54,18 @@ body {
 #option-header span {
     font-size: 16px;
     font-weight: bold;
-    color: var(--calendar-text);
+    color: var(--text);
 }
 
 .divider-bar-option {
-    background-color: var(--red);
+    background-color: var(--primary);
     height: 3px;
     width: 48px;
     border-radius: 3px;
     margin: 3px 0 0 0;
 }
 #selected-day{
-    color: var(--red) !important;
+    color: var(--primary) !important;
 }
 /* For mobile */
 
