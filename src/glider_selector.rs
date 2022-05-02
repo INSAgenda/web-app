@@ -98,7 +98,7 @@ impl Component for GliderSelector {
                 {
                     ctx.props().values.iter().enumerate().map(|(i, v)|
                         if i == self.selected {
-                            html! { <div style="color: white;">{v}</div> }
+                            html! { <div style="color: var(--background);">{v}</div> }
                         } else {
                             html! { <div onclick={
                                 let on_change = ctx.props().on_change.clone();
