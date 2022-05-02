@@ -96,7 +96,6 @@ pub fn t(s: &'static str) -> &'static str {
         "Long" => "Long",
         "Système" => "System",
         "Valider" => "Save",
-        "Annuler" => "Cancel",
         "Se déconnecter" => "Log out",
         "Changer de mot de passse" => "Change password",
         s => {
