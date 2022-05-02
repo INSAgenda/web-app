@@ -69,7 +69,8 @@ pub fn t(s: &'static str) -> &'static str {
         // In settings.rs
         "[indisponible]" => "[unavailable]",
         "[inconnue]" => "[unknown]",
-        "Paramètres" => "Parameters",
+        "Paramètres" => "Settings",
+        "Général" => "General",
         "Paramètres du compte" => "Account parameters",
         "Mot de passe" => "Password",
         "Votre mot de passe a été changé il y a" => "Your password was changed ",
@@ -77,11 +78,14 @@ pub fn t(s: &'static str) -> &'static str {
         "Adresse mail" => "Email address",
         "Votre adresse actuelle est" => "Your current email address is",
         " Elle n'a pas encore été vérifiée." => " It has not been verified yet.",
+        "Changer de classe" => "Email address",
+        "Vous êtes actuellement en STPI1 dans le groupe B.1 section 2." => "You are currently in STPI1 in the group B.1 section 2.",
         "Changer le type d'authentification" => "Change authentication type",
+        "Vérifier mon adresse Email" => "Verify my email address",
+        "Votre adresse email n’est pas confirmée, veuillez la confirmer." => "Your email address is not confirmed, please confirm it.",
         "Email" => "Email",
-        "Email + Mot de passe" => "Email + Password",
-        "L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email." => "Authentication by email consists in entering a unique code which will be sent to you by email.",
         "Affichage" => "Appearance",
+        "Changer / Vérifier" => "Edit / Verify",
         "Thème" => "Theme",
         "Sombre" => "Dark",
         "Clair" => "Light",
@@ -90,8 +94,11 @@ pub fn t(s: &'static str) -> &'static str {
         "Nom des bâtiments" => "Building names",
         "Court" => "Short",
         "Long" => "Long",
+        "Système" => "System",
         "Valider" => "Save",
+        "Annuler" => "Cancel",
         "Se déconnecter" => "Log out",
+        "Changer de mot de passse" => "Change password",
         s => {
             log!("Untranslated string: {}", s);
             s
