@@ -26,11 +26,11 @@ body {
 
 #agenda, #option {
     box-shadow: 0px 0px 15px #00000029;
-    min-height: 80vh;
+    min-height: 44rem;
     padding: .75rem;
     margin: .5rem;
     border-radius: .5rem;
-    background-color: var(--bacground);
+    background-color: var(--closer-background);
 }
 
 /* Option */
@@ -63,9 +63,6 @@ body {
     width: 48px;
     border-radius: 3px;
     margin: 3px 0 0 0;
-}
-#selected-day{
-    color: var(--primary) !important;
 }
 /* For mobile */
 

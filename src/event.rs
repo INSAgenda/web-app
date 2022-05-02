@@ -164,13 +164,11 @@ impl Component for EventComp {
         let duration = (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) / 60;
         let groups = ctx.props().event.groups.iter().map(|g| format!("{:?}", g)).collect::<Vec<_>>().join(", ");
         
-        // Specify font-size according event height
-        let font_size = percent_height/8.;
-        let font_size = if font_size > 1. { 1. } else { font_size };
+
         let style = String::new() + if self.popup.is_some() {""} else {"display: none;"} + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;";
         html! {
             <div
-                style={format!("background-color: {}; color: {}; position: absolute; top: {}%; height: {}%; font-size: {}rem;", bg_color, text_color, percent_offset, percent_height, font_size)}
+                style={format!("background-color: {}80; border-left: 0.3rem solid {};  position: absolute; top: {}%; height: {}%;", bg_color, bg_color, percent_offset, percent_height)}
                 class="event"
                 onclick={ if self.popup.is_none() { Some(ctx.link().callback(|_| EventCompMsg::ToggleDetails)) } else {None} } >
 
@@ -180,7 +178,7 @@ impl Component for EventComp {
                 <span class="teacher">
                     { ctx.props().event.teachers.join(", ") }
                 </span>
-                {if let Some(l) = &location {html! {<span>{l}</span>}} else {html!{}}}
+                {if let Some(l) = &location {html! {<span class="location" >{l}</span>}} else {html!{}}}
                 <div class="event-details" id={self.popup_id.clone()} style={style} >
                     <div class="event-details-header" style={format!("background-color: {}; color: {};",bg_color, text_color)}>
                         <span>{ name }</span>

@@ -47,18 +47,20 @@ impl App {
         let mut day_names = Vec::new();
         for d in 0..5 {
             let mut events = Vec::new();
+            let mut last_start_unixtime: Vec<u64> = vec![];
             for event in &self.events {
                 if (event.start_unixtime as i64) > current_day.and_hms(0,0,0).timestamp()
-                    && (event.start_unixtime as i64) < current_day.and_hms(23,59,59).timestamp()
+                    && (event.start_unixtime as i64) < current_day.and_hms(23,59,59).timestamp() && !last_start_unixtime.contains(&event.start_unixtime) 
                 {
                     events.push(html! {
                         <EventComp day_of_week={d} event={event.clone()} day_start={current_day.and_hms(0,0,0).timestamp() as u64} app_link={ctx.link().clone()}></EventComp>
                     });
                 }
+                last_start_unixtime.push( event.start_unixtime);
             }
 
             day_names.push(html! {
-                <span id={if current_day == self.selected_day {"selected-day"} else {""}}>
+                <span>
                     { format_day(current_day.weekday(), current_day.day(), current_day.month()) }
                 </span>
             });
@@ -103,14 +105,7 @@ impl App {
                     </div>
                     <div id="day-container-scope">
                         <div id="day-container" style={if mobile_view {Some(format!("position: relative; right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000)))} else {None}}>
-                            <div id="line-container">
-                                <div class="line"><div></div></div>
-                                <div class="line"><div></div></div>
-                                <div class="line"><div></div></div>
-                                <div class="line"><div></div></div>
-                                <div class="line"><div></div></div>
-                                <div class="line"><div></div></div>
-                            </div>
+    
                             { days }
                         </div>
                     </div>
