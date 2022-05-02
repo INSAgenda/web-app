@@ -40,6 +40,9 @@
     font-size: 1.6rem;
 }
 
+#settings-container h4 {
+    font-size: 1.2rem;
+}
 #settings-main section{
     width: 50%;
     padding-left: 5%;
@@ -74,7 +77,7 @@
 }
 
 .setting > p{
-    min-height: 2rem;
+    height: 2rem;
 }
 
 :root[data-theme="dark"] .setting {
@@ -83,7 +86,7 @@
 
 
 .setting .glider-selector {
-    margin: 31px 0 0 0;
+    margin: 31px 0 10px 0;
 }
 
 #settings-main > .form-button, #settings-main > .second-button{
