@@ -11,6 +11,8 @@
 
 .logout-button > img{
     margin-left: 1.2rem;
+    height: 2rem;
+    width: 2rem;
 }
 
 :root[data-theme="dark"] .logout-button img{
