@@ -255,7 +255,7 @@ impl Component for SettingsPage {
             <>
             <header>
                 <a id="header-logo"  href="/agenda">
-                    <img src="/assets/logo/logo.svg" alt="Insagenda logo"/> 
+                    <img height="35" width="35" src="/assets/logo/logo.svg" alt="Insagenda logo"/> 
                     <h1 id="header-name">{"INSAgenda"}</h1>
                 </a>
                 <div class="logout-button" onclick={ctx.link().callback(move |_| Msg::LogOut)}>
