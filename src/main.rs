@@ -23,7 +23,7 @@ pub enum Page {
 }
 
 pub enum Msg {
-    ScheduleSuccess(Vec<Event>),
+    ScheduleSuccess(Vec<RawEvent>),
     UserInfoSuccess(UserInfo),
     ScheduleFailure(ApiError),
     UserInfoFailure(ApiError),
@@ -48,7 +48,7 @@ pub struct UserInfo {
 
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
-    events: Vec<Event>,
+    events: Vec<RawEvent>,
     page: Page,
     user_info: Rc<Option<UserInfo>>,
     slider: Rc<RefCell<slider::SliderManager>>,

@@ -6,7 +6,7 @@ lazy_static::lazy_static!{
 
 #[derive(Properties, Clone)]
 pub struct EventCompProps {
-    pub event: Event,
+    pub event: RawEvent,
     pub day_start: u64,
     pub app_link: yew::html::Scope<crate::App>,
     pub day_of_week: u8,
