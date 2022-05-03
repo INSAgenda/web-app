@@ -1,7 +1,7 @@
 use super::*;
 use crate::prelude::*;
 
-pub fn load_cached_events() -> Option<(i64, Vec<Event>)> {
+pub fn load_cached_events() -> Option<(i64, Vec<RawEvent>)> {
     let local_storage = window().local_storage().unwrap().unwrap();
 
     let last_updated = match local_storage.get("last_updated").map(|v| v.map(|v| v.parse())) {
@@ -14,7 +14,7 @@ pub fn load_cached_events() -> Option<(i64, Vec<Event>)> {
         _ => return None,
     };
 
-    let cached_events = match serde_json::from_str::<Vec<Event>>(&cached_events_str) {
+    let cached_events = match serde_json::from_str::<Vec<RawEvent>>(&cached_events_str) {
         Ok(cached_events) => cached_events,
         _ => return None,
     };
@@ -22,20 +22,20 @@ pub fn load_cached_events() -> Option<(i64, Vec<Event>)> {
     Some((last_updated, cached_events))
 }
 
-fn save_cache(last_updated: i64, events: &[Event]) {
+fn save_cache(last_updated: i64, events: &[RawEvent]) {
     let local_storage = window().local_storage().unwrap().unwrap();
 
     let _ = local_storage.set("last_updated", &last_updated.to_string());
     let _ = local_storage.set("cached_events", &serde_json::to_string(&events).unwrap());
 }
 
-pub async fn load_events() -> Result<Vec<Event>, ApiError> {
+pub async fn load_events() -> Result<Vec<RawEvent>, ApiError> {
     let (api_key, counter) = get_login_info();
 
     #[cfg(debug_assertions)]
-    let request = Request::new_with_str("http://127.0.0.1:8080/api/schedule?start_timestamp=0&end_timestamp=9999999999999")?;
+    let request = Request::new_with_str("http://127.0.0.1:8080/api/schedule")?;
     #[cfg(not(debug_assertions))]
-    let request = Request::new_with_str("https://insagenda.fr/api/schedule?start_timestamp=0&end_timestamp=9999999999999")?;
+    let request = Request::new_with_str("https://insagenda.fr/api/schedule")?;
 
     request.headers().set(
         "Api-Key",
@@ -51,7 +51,7 @@ pub async fn load_events() -> Result<Vec<Event>, ApiError> {
         return Err(error.into());
     }
 
-    let events: Vec<Event> = json.into_serde().expect("JSON parsing issue");
+    let events: Vec<RawEvent> = json.into_serde().expect("JSON parsing issue");
 
     let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
     save_cache(now, &events);
