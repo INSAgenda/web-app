@@ -5,7 +5,7 @@ pub fn width() -> usize {
 }
 
 pub struct SliderManager {
-    enabled: bool,
+    pub enabled: bool,
     start_pos: Option<i32>,
     day_container: Option<HtmlElement>,
     days_offset: Rc<Cell<i32>>,

@@ -1,3 +1,4 @@
+
 use crate::prelude::*;
 
 lazy_static::lazy_static!{
@@ -18,21 +19,17 @@ impl PartialEq for EventCompProps {
     }
 }
 
-pub enum PopupPage {
-    General,
-    Colors,
-}
+
 
 pub struct EventComp {
-    popup: Option<PopupPage>,
+    popup_displayed: bool,
     on_click: Closure<dyn FnMut(web_sys::MouseEvent)>,
     ignore_next_event: bool,
     popup_id: String,
 }
 
 pub enum EventCompMsg {
-    ToggleDetails,
-    SetPage(PopupPage),
+    ShowPopup(bool),
     SaveColors,
 }
 
@@ -55,12 +52,12 @@ impl Component for EventComp {
             if (rect.y()..rect.y()+rect.height()).contains(&(event.client_y() as f64))
                 && (rect.x()..rect.x()+rect.width()).contains(&(event.client_x() as f64))
             { return; }
+            link.send_message(EventCompMsg::ShowPopup(false));
 
-            link.send_message(EventCompMsg::ToggleDetails);
         }) as Box<dyn FnMut(_)>);
 
         EventComp {
-            popup: None,
+            popup_displayed: false,
             on_click,
             ignore_next_event: false,
             popup_id: id,
@@ -69,49 +66,32 @@ impl Component for EventComp {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            EventCompMsg::ToggleDetails if self.popup.is_some() => {
-                // We sometimes need a mechanism to ignore the next message. When the event listener is added, it instantly fires another ToggleDetails message which would close the popup instantly if not ignored
-                if self.ignore_next_event {
+
+            EventCompMsg::ShowPopup(state) => {
+                if self.ignore_next_event{
                     self.ignore_next_event = false;
-                    false
-                } else {
-                    self.popup = None;
-
-                    // Popup is already closed, so we can spare resources by disabling the event listener
-                    window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-                    true
+                    return false;
                 }
-            },
-            EventCompMsg::ToggleDetails => {
-                self.popup = Some(PopupPage::General);
 
-                // Popup is now opened so we must be ready to close it
-                window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-
-                self.ignore_next_event = true;
-
-                true
-            },
-            EventCompMsg::SetPage(page) => {
-                self.popup = Some(page);
-                
-                // We need this because instantly after this message will fire the click event but the popup content will already have changed and the click could be detected outside the popup
-                self.ignore_next_event = true;
-
+                self.popup_displayed = state;
+                if self.popup_displayed {
+                    self.ignore_next_event = true;
+                    window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+                    ctx.props().app_link.send_message(AppMsg::SliderState(false));
+                    
+                } else {
+                    window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+                    ctx.props().app_link.send_message(AppMsg::SliderState(true));
+                }
                 true
             },
             EventCompMsg::SaveColors => {
-                self.popup = Some(PopupPage::General);
-
                 let document = window().document().unwrap();
                 let background_color = match document.query_selector(&format!("#{} #background-color-input", self.popup_id)).unwrap() {
                     Some(el) => el.dyn_into::<HtmlInputElement>().unwrap().value(),
                     None => return false,
                 };
-                let text_color = match document.query_selector(&format!("#{} #text-color-input", self.popup_id)).unwrap() {
-                    Some(el) => el.dyn_into::<HtmlInputElement>().unwrap().value(),
-                    None => return false,
-                };
+                let text_color = String::new();
 
                 let kind = match &ctx.props().event.kind {
                     EventKind::Td(kind) => kind,
@@ -142,7 +122,7 @@ impl Component for EventComp {
             EventKind::Tp(kind) => (format!("TP: {}", kind), kind),
             EventKind::Other(kind) => (kind.to_string(), kind),
         };
-        let (bg_color, text_color) = COLORS.get(kind);
+        let (bg_color, _) = COLORS.get(kind);
         
         let location = ctx.props().event.location.map(|location| {
             let building =  match SETTINGS.building_naming() {
@@ -161,16 +141,12 @@ impl Component for EventComp {
     
         let start = Paris.timestamp(ctx.props().event.start_unixtime as i64, 0);
         let end = Paris.timestamp(ctx.props().event.end_unixtime as i64, 0);
-        let duration = (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) / 60;
-        let groups = ctx.props().event.groups.iter().map(|g| format!("{:?}", g)).collect::<Vec<_>>().join(", ");
-        
-
-        let style = String::new() + if self.popup.is_some() {""} else {"display: none;"} + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;";
+        let class = String::new() + if self.popup_displayed {""} else {"hide"};
         html! {
             <div
-                style={format!("background-color: {}80; border-left: 0.3rem solid {};  position: absolute; top: {}%; height: {}%;", bg_color, bg_color, percent_offset, percent_height)}
+                style={format!("background-color: {}80; border-left: 0.3rem solid {};  position: absolute; top: {}%; height: {}%;", bg_color.clone(), bg_color.clone(), percent_offset, percent_height)}
                 class="event"
-                onclick={ if self.popup.is_none() { Some(ctx.link().callback(|_| EventCompMsg::ToggleDetails)) } else {None} } >
+                onclick={ Some(ctx.link().callback(|_| EventCompMsg::ShowPopup(true))) }  >
 
                 <span class="name" >
                     { &name }
@@ -179,70 +155,37 @@ impl Component for EventComp {
                     { ctx.props().event.teachers.join(", ") }
                 </span>
                 {if let Some(l) = &location {html! {<span class="location" >{l}</span>}} else {html!{}}}
-                <div class="event-details" id={self.popup_id.clone()} style={style} >
-                    <div class="event-details-header" style={format!("background-color: {}; color: {};",bg_color, text_color)}>
-                        <span>{ name }</span>
-                    </div>
-                    { 
-                        match self.popup {
-                            Some(PopupPage::General) | None => html!{
-                                <div class="event-details-content">
-                                    <div>
-                                        <span class="bold">{t("Début : ")}</span>
-                                        {start.time().format("%Hh%M")}
-                                    </div>
-                                    <div>
-                                        <span class="bold">{t("Fin : ")}</span>
-                                        {end.time().format("%Hh%M")}
-                                    </div>
-                                    <div>
-                                        <span class="bold">{t("Durée : ")}</span>
-                                        {duration}{"min"}
-                                    </div>
-                                    <div>
-                                        <span class="bold">{ if ctx.props().event.groups.len() > 1 {t("Groupes : ")} else {t("Groupe : ")} }</span>
-                                        {groups}
-                                    </div>
-                                    <div>
-                                        <span class="bold">{t("Professeur : ")}</span>
-                                        {ctx.props().event.teachers.join(", ")}
-                                    </div>
-                                    <div>
-                                        <span class="bold">{t("Salle : ")}</span>
-                                        {location.unwrap_or_else(|| t("Inconnue").to_string())}
-                                    </div>
-                                    <div class="bottom-buttons">
-                                        <div onclick={ctx.link().callback(|_| EventCompMsg::SetPage(PopupPage::Colors))}>
-                                            {t("Changer les couleurs")}
-                                            <img src="/agenda/images/edit-2.svg"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            },
-                            Some(PopupPage::Colors) => html!{
-                                <div class="event-details-content color-editor-popup">
-                                    <div>
-                                        <span>{t("Fond")}</span>
-                                        <input type="color" id="background-color-input" value={bg_color} />
-                                    </div>
-                                    <div>
-                                        <span>{t("Texte")}</span>
-                                        <input type="color" id="text-color-input" value={text_color} />
-                                    </div>
-                                    <div class="bottom-buttons">
-                                        <div onclick={ctx.link().callback(|_| EventCompMsg::SetPage(PopupPage::General))}>
-                                            {t("Annuler")}
-                                            <img src="/agenda/images/x.svg"/>
-                                        </div>
-                                        <div onclick={ctx.link().callback(|_| EventCompMsg::SaveColors)}>
-                                            {t("Sauvegarder")}
-                                            <img src="/agenda/images/save.svg"/>
-                                        </div>
-                                    </div>
-                                </div>
+                <div class={format!("event-details {}", class)} id={self.popup_id.clone()} style={String::new() + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;"} >
+                        <h3>{ name }</h3>
+                        <div style={format!("background-color: {};", bg_color.clone())} class="divider-bar-option"></div>                   
+                        <div  class="event-details-content">
+
+                            <div class="info-block">
+                                <h4>{t("Horaires")}</h4>
+                                <span>{format!("{} - {}",
+                                 start.time().format("%Hh%M"), end.time().format("%Hh%M"))}</span>
+                            </div>
+                            if location.is_some() {
+                            <div class="info-block">
+                                <h4>{t("Emplacement")}</h4>
+                                <span>{location.unwrap_or_else(|| t("Inconnu").to_string())}</span>
+                            </div>
                             }
-                        }
-                    }
+
+                            if !ctx.props().event.teachers.is_empty() {
+                            <div class="info-block">
+                                <h4>{t("Enseignant")}</h4>
+                                <span>{ctx.props().event.teachers.join(", ")}</span>
+                            </div>
+                            }
+                            <div class="info-block">
+                                <h4>{t("Couleur")}</h4>
+                                <input type="color" id="background-color-input" value={bg_color.clone()} onchange={ctx.link().callback(|_| EventCompMsg::SaveColors)}  />
+
+                                <span class="color-preview" style={format!("background: {}80;", bg_color)}>{t("Fond")}</span>
+                            </div>
+                      
+                        </div>
                 </div>
             </div>
         }
