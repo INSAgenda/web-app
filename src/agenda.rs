@@ -49,7 +49,7 @@ impl App {
             let mut events = Vec::new();
             for event in &self.events {
                 if (event.start_unixtime as i64) > current_day.and_hms(0,0,0).timestamp()
-                    && (event.start_unixtime as i64) < current_day.and_hms(23,59,59).timestamp() 
+                    && (event.start_unixtime as i64) < current_day.and_hms(23,59,59).timestamp()
                 {
                     events.push(html! {
                         <EventComp day_of_week={d} event={event.clone()} day_start={current_day.and_hms(0,0,0).timestamp() as u64} app_link={ctx.link().clone()}></EventComp>
@@ -58,7 +58,7 @@ impl App {
             }
 
             day_names.push(html! {
-                <span>
+                <span id={if current_day == self.selected_day {"selected-day"} else {""}}>
                     { format_day(current_day.weekday(), current_day.day(), current_day.month()) }
                 </span>
             });
