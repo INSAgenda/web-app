@@ -1,5 +1,5 @@
 
-use crate::prelude::*;
+use crate::{prelude::*, slider::width};
 
 lazy_static::lazy_static!{
     static ref ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
@@ -77,12 +77,16 @@ impl Component for EventComp {
                 if self.popup_displayed {
                     self.ignore_next_event = true;
                     window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-                    ctx.props().app_link.send_message(AppMsg::SliderState(false));
+                    if width() <= 1000 {
+                        ctx.props().app_link.send_message(AppMsg::SliderState(false));
+                    }
                     
                 } else {
                     window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-                    ctx.props().app_link.send_message(AppMsg::SliderState(true));
-                }
+                    if width() <= 1000 {
+                        ctx.props().app_link.send_message(AppMsg::SliderState(true));
+                    }
+                                    }
                 true
             },
             EventCompMsg::SaveColors => {
