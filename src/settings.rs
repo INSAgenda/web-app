@@ -190,10 +190,10 @@ impl Component for SettingsPage {
                 let storage = window.local_storage().unwrap().unwrap();
 
                 if theme == "system" {
-                    html.remove_attribute("data-theme").unwrap();
-                    storage.remove_item("setting-theme").unwrap();
+                    storage.set_item("auto-theme", "true").unwrap();
 
                 } else {
+                    storage.set_item("auto-theme", "false").unwrap();
                     html.set_attribute("data-theme", theme).unwrap();
                     storage.set_item("setting-theme", theme).unwrap();
                 }
