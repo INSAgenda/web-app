@@ -34,7 +34,6 @@ impl Colors {
             crate::settings::Theme::Light => self.light.lock().unwrap(),
             crate::settings::Theme::Dark => self.dark.lock().unwrap(),
             crate::settings::Theme::System => self.dark.lock().unwrap(), // Remove themes colors kits
-
         };
         inner.get(course).map(|(v,w)| (v.to_string(),w.to_string())).unwrap_or_else(|| (String::from("#98fb98"), String::from("black")))
     }
