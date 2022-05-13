@@ -191,7 +191,6 @@ impl Component for SettingsPage {
 
                 if theme == "system" {
                     storage.set_item("auto-theme", "true").unwrap();
-
                 } else {
                     storage.set_item("auto-theme", "false").unwrap();
                     html.set_attribute("data-theme", theme).unwrap();
