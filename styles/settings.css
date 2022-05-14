@@ -59,11 +59,11 @@
     justify-content: space-around;
 }
 
-.setting .classic-button{
+.setting .primary-button{
     max-width: 15rem;
 }
 
-#settings-main > .classic-button, #settings-main > .second-button{
+#settings-main > .primary-button, #settings-main > .secondary-button{
     max-width: 20rem;
 }
 
@@ -84,7 +84,7 @@
     margin: 31px 0 10px 0;
 }
 
-#settings-main > .form-button, #settings-main > .second-button{
+#settings-main > .form-button, #settings-main > .secondary-button{
     margin: 1.2rem auto;
 }
 

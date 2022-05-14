@@ -271,17 +271,17 @@ impl Component for SettingsPage {
                             <div class="setting">
                                 <h4>{t("Changer de mot de passse")}</h4>
                                 <p>{format!("{} {}.", t("Votre mot de passe a été changé il y a"), last_password_mod_str)}</p>
-                                <div class="classic-button form-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
+                                <div class="primary-button form-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
                             </div>
                             <div class="setting">
                                 <h4>{t("Changer de classe")}</h4>
                                 <p>{t("Vous êtes actuellement en STPI1 dans le groupe B.1 section 2.")}</p>
-                                <div class="classic-button form-button">{t("Modifier")}</div>
+                                <div class="primary-button form-button">{t("Modifier")}</div>
                             </div>
                             <div class="setting">
-                                <h3>{t("Adresse mail")}</h3>
+                                <h4>{t("Adresse mail")}</h4>
                                 <p>{format!("{} {email}.{verified_msg}", t("Votre adresse actuelle est"))}</p>
-                                <div class="classic-button form-button">{t("Changer / Vérifier")}</div>
+                                <div class="primary-button form-button">{t("Changer / Vérifier")}</div>
                             </div>
                         </div>
                     </section>
@@ -326,8 +326,8 @@ impl Component for SettingsPage {
                         </div>
                     </section>
                 </div>
-                <div class="second-button " onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda))}>{t("Annuler")}</div>
-                <div class="classic-button form-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
+                <div class="secondary-button " onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda))}>{t("Annuler")}</div>
+                <div class="primary-button form-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
             </main>
             </>
         }

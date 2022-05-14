@@ -7,16 +7,14 @@
     width: fit-content;
     border-radius: 2rem;
     background-color: var(--closer-background);
-    max-height: 47px;
-    height: 3vw;
-    min-height: 38px;
+    height: 2.5rem;
 }
 
 
 .glider-selector>div {
     padding: 0 1rem;
     margin: auto;
-    border-radius: 2rem;
+    border-radius: 1.25rem;
     z-index: 2;
     cursor: pointer;
     transition: all .5s;
@@ -26,8 +24,6 @@
     position: absolute;
     color: transparent;
     background-color: var(--primary);
-    border-radius: 2rem;
-    max-height: 47px;
-    height: 3vw;
-    min-height: 38px;
+    border-radius: 1.25rem;
+    height: 2.5rem;
 }
