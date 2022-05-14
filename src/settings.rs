@@ -220,6 +220,8 @@ impl Component for SettingsPage {
         // Compute variable messages
         let mut verified_msg = String::new();
         let mut email = String::from(t("[inconnue]"));
+        let mut promotion = String::from(t("[inconnue]"));
+        let mut class = String::from(t("[inconnue]"));
         let mut last_password_mod_str = String::from(t("[indisponible]"));
         if let Some(user_info) = ctx.props().user_info.as_ref() {
             if !user_info.email.1 {
@@ -247,6 +249,8 @@ impl Component for SettingsPage {
                     format!("{} {}", diff / 365*86400, words[i][6])
                 };
             }
+            promotion = user_info.group_desc.promotion.to_string();
+            class = format!("{}{}", user_info.group_desc.class, user_info.group_desc.class_half);
         }
 
         let app_link = ctx.props().app_link.clone();
@@ -275,7 +279,7 @@ impl Component for SettingsPage {
                             </div>
                             <div class="setting">
                                 <h4>{t("Changer de classe")}</h4>
-                                <p>{t("Vous êtes actuellement en STPI1 dans le groupe B.1 section 2.")}</p>
+                                <p>{format!("{} {} {} {}.", t("Vous êtes actuellement en"), promotion, t("dans le groupe"), class)}</p>
                                 <div class="primary-button">{t("Modifier")}</div>
                             </div>
                             <div class="setting">

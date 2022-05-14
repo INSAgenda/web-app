@@ -44,6 +44,7 @@ pub struct UserInfo {
     pub last_password_mod: Option<i64>,
     /// The email associated with its verification state
     pub email: (String, bool),
+    pub group_desc: GroupDescriptor,
 }
 
 pub struct App {
