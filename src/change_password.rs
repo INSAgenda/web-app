@@ -149,7 +149,7 @@ impl Component for ChangePasswordPage {
                                 {self.message.clone().unwrap()}
                             </span>
                         }
-                        <input type="button" class="primary-button form-button" id="submit-button" value={t("Confirmer")} onclick={ctx.link().callback(|_| Msg::SendNewPassword) }/>
+                        <input type="button" class="primary-button" id="submit-button" value={t("Confirmer")} onclick={ctx.link().callback(|_| Msg::SendNewPassword) }/>
                     }
 
                 </form>   

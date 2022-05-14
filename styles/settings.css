@@ -84,7 +84,7 @@
     margin: 31px 0 10px 0;
 }
 
-#settings-main > .form-button, #settings-main > .secondary-button{
+#settings-main > .primary-button, #settings-main > .secondary-button{
     margin: 1.2rem auto;
 }
 
