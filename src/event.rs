@@ -146,6 +146,8 @@ impl Component for EventComp {
         let start = Paris.timestamp(ctx.props().event.start_unixtime as i64, 0);
         let end = Paris.timestamp(ctx.props().event.end_unixtime as i64, 0);
         let class = String::new() + if self.popup_displayed {""} else {"hide"};
+
+        let mobile = width() <= 1000;
         html! {
             <div
                 style={format!("background-color: {}80; border-left: 0.3rem solid {};  position: absolute; top: {}%; height: {}%;", bg_color.clone(), bg_color.clone(), percent_offset, percent_height)}
@@ -158,7 +160,7 @@ impl Component for EventComp {
                     { ctx.props().event.teachers.join(", ") }
                 </span>
                 {if let Some(l) = &location {html! {<span class="location" >{l}</span>}} else {html!{}}}
-                <div class={format!("event-details {}", class)} id={self.popup_id.clone()} style={String::new() + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;"} >
+                <div class={format!("event-details {}", class)} id={self.popup_id.clone()} style={String::new() + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;" + if percent_offset > 50. && !mobile {"transform: translateY(-50%);"}  else {""}}  >
                         <h3>{ name }</h3>
                         <div style={format!("background-color: {};", bg_color.clone())} class="divider-bar-option"></div>                   
                         <div  class="event-details-content">
