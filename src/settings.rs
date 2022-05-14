@@ -229,7 +229,7 @@ impl Component for SettingsPage {
             if let Some(last_password_mod) = user_info.last_password_mod {
                 let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
                 let diff = now - last_password_mod;
-                let words = [["seconds", "minutes", "heures", "jours", "semaines", "mois", "années"], ["seconds ago", "minutes ago", "hours ago", "days ago", "weeks ago", "months ago", "years ago"]];
+                let words = [["secondes", "minutes", "heures", "jours", "semaines", "mois", "années"], ["seconds ago", "minutes ago", "hours ago", "days ago", "weeks ago", "months ago", "years ago"]];
                 let i = if SETTINGS.lang() == Lang::French { 0 } else { 1 };
                 last_password_mod_str = if diff < 60 {
                     format!("{} {}", diff, words[i][0])
