@@ -1,4 +1,3 @@
-
 use crate::{prelude::*, slider::width};
 
 lazy_static::lazy_static!{

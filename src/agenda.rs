@@ -103,7 +103,6 @@ impl App {
                     </div>
                     <div id="day-container-scope">
                         <div id="day-container" style={if mobile_view {Some(format!("position: relative; right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000)))} else {None}}>
-    
                             { days }
                         </div>
                     </div>
