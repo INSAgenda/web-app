@@ -121,7 +121,6 @@ impl SliderManager {
                 let mouse_x = event.touches().get(0).unwrap().client_x() as i32;
                 last_pos2.set(mouse_x);
                 window().request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
-                log!("move");
             }
         }) as Box<dyn FnMut(_)>);
         w.add_event_listener_with_callback("touchmove", touch_move.as_ref().unchecked_ref()).unwrap();
