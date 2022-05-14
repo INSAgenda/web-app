@@ -18,8 +18,6 @@ impl PartialEq for EventCompProps {
     }
 }
 
-
-
 pub struct EventComp {
     popup_displayed: bool,
     on_click: Closure<dyn FnMut(web_sys::MouseEvent)>,
@@ -95,7 +93,6 @@ impl Component for EventComp {
                     Some(el) => el.dyn_into::<HtmlInputElement>().unwrap().value(),
                     None => return false,
                 };
-                let text_color = String::new();
 
                 let kind = match &ctx.props().event.kind {
                     EventKind::Td(kind) => kind,
@@ -103,7 +100,7 @@ impl Component for EventComp {
                     EventKind::Tp(kind) => kind,
                     EventKind::Other(kind) => kind,
                 };
-                COLORS.set(kind, background_color, text_color);
+                COLORS.set(kind, background_color,  String::new()); // TODO: remove text's colors
 
                 // We need to set this so that other events know that they have to refresh
                 COLORS_CHANGED.store(true, Ordering::Relaxed);
