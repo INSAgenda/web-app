@@ -24,7 +24,7 @@ impl PartialEq for EventCompProps {
 pub struct EventComp {
     popup_displayed: bool,
     on_click: Closure<dyn FnMut(web_sys::MouseEvent)>,
-    ignore_next_event: bool,
+    last_click_timestamp: u32,
     popup_id: String,
 }
 
@@ -59,7 +59,7 @@ impl Component for EventComp {
         EventComp {
             popup_displayed: false,
             on_click,
-            ignore_next_event: false,
+            last_click_timestamp: 0,
             popup_id: id,
         }
     }
@@ -68,25 +68,28 @@ impl Component for EventComp {
         match msg {
 
             EventCompMsg::ShowPopup(state) => {
-                if self.ignore_next_event{
-                    self.ignore_next_event = false;
+                // Get now timestamp
+                let now = chrono::Utc::now().timestamp_millis() as u32;
+                log!("{} < {}", self.last_click_timestamp, now);
+                if self.last_click_timestamp + 100 > now {
+                    self.last_click_timestamp = now;
+                    log!("ignored: {}", state);
                     return false;
                 }
+                self.last_click_timestamp = now;
+                log!("Show popup: {}", state);
 
                 self.popup_displayed = state;
                 if self.popup_displayed {
-                    self.ignore_next_event = true;
                     window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-                    if width() <= 1000 {
-                        ctx.props().app_link.send_message(AppMsg::SliderState(false));
-                    }
                     
                 } else {
                     window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-                    if width() <= 1000 {
-                        ctx.props().app_link.send_message(AppMsg::SliderState(true));
-                    }
-                                    }
+                }
+                if width() <= 1000 {
+                    ctx.props().app_link.send_message(AppMsg::SliderState(!self.popup_displayed));
+                }
+
                 true
             },
             EventCompMsg::SaveColors => {
@@ -151,16 +154,29 @@ impl Component for EventComp {
         html! {
             <div
                 style={format!("background-color: {}80; border-left: 0.3rem solid {};  position: absolute; top: {}%; height: {}%;", bg_color.clone(), bg_color.clone(), percent_offset, percent_height)}
-                class="event"
-                onclick={ Some(ctx.link().callback(|_| EventCompMsg::ShowPopup(true))) }  >
-                <span class="name" >
-                    { &name }
-                </span>
-                <span class="teacher">
-                    { ctx.props().event.teachers.join(", ") }
-                </span>
-                {if let Some(l) = &location {html! {<span class="location" >{l}</span>}} else {html!{}}}
+                class="event" >
+                <div class="event-container"  onclick={ if !self.popup_displayed{ Some(ctx.link().callback(|_| EventCompMsg::ShowPopup(true)))}else{ None } } >
+                    <span class="name" >
+                        { &name }
+                    </span>
+                    <span class="teacher">
+                        { ctx.props().event.teachers.join(", ") }
+                    </span>
+                    {if let Some(l) = &location {html! {<span class="location" >{l}</span>}} else {html!{}}}
+                </div>
                 <div class={format!("event-details {}", class)} id={self.popup_id.clone()} style={String::new() + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;" + if percent_offset > 50. && !mobile {"transform: translateY(-50%);"}  else {""}}  >
+                        if mobile{
+                        <div class="close-arrow" onclick={ Some(ctx.link().callback(|_| EventCompMsg::ShowPopup(false))) } >
+                            <svg width="110" height="28" viewBox="0 0 110 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M55.5 28C55.5 28 19.6743 2 0.5 0H55.5V28Z" fill="var(--day)"/>
+                                <path d="M55 28C55 28 90.8257 2 110 0H55V28Z" fill="var(--day)"/>
+                                <g clip-path="url(#clip0_211_6147)">
+                                    <path d="M55 18.0015C55.4045 18.0017 55.8051 17.9605 56.1787 17.8802C56.5524 17.7999 56.8918 17.6822 57.1774 17.5337L76.0974 7.72639C76.6752 7.42608 76.9993 7.0191 76.9982 6.59497C76.9971 6.17084 76.6709 5.7643 76.0915 5.4648C75.5121 5.16529 74.7268 4.99736 73.9084 4.99793C73.0901 4.9985 72.3057 5.16752 71.7278 5.46783L54.9883 14.1436L38.2487 5.46783C37.6708 5.16833 36.887 5.00007 36.0698 5.00007C35.2525 5.00007 34.4688 5.16833 33.8909 5.46783C33.313 5.76734 32.9883 6.17355 32.9883 6.59711C32.9883 7.02067 33.313 7.42689 33.8909 7.72639L52.8108 17.5322C53.0976 17.6817 53.4388 17.8001 53.8146 17.8807C54.1904 17.9612 54.5933 18.0023 55 18.0015Z" fill="var(--text)"/>
+                                </g>
+                            </svg>
+                        </div>
+                        }
+                       
                         <h3>{ name }</h3>
                         <div style={format!("background-color: {};", bg_color.clone())} class="divider-bar-option"></div>                   
                         <div  class="event-details-content">
