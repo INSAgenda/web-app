@@ -254,6 +254,7 @@ impl Component for SettingsPage {
         }
 
         let app_link = ctx.props().app_link.clone();
+        let app_link2 = ctx.props().app_link.clone();
         html! {
             <>
             <header>
@@ -285,7 +286,7 @@ impl Component for SettingsPage {
                             <div class="setting">
                                 <h4>{t("Adresse mail")}</h4>
                                 <p>{format!("{} {email}.{verified_msg}", t("Votre adresse actuelle est"))}</p>
-                                <div class="primary-button">{t("Changer / Vérifier")}</div>
+                                <div class="primary-button" onclick={move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangeEmail))}>{t("Changer / Vérifier")}</div>
                             </div>
                         </div>
                     </section>

@@ -9,16 +9,17 @@ mod slider;
 mod api;
 mod crash_handler;
 mod colors;
-mod change_password;
+mod change_data;
 mod prelude;
 mod translation;
 
-use crate::{prelude::*, settings::SettingsPage, change_password::ChangePasswordPage};
+use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 #[derive(PartialEq)]
 pub enum Page {
     Settings,
     ChangePassword,
+    ChangeEmail,
     Agenda,
 }
 
@@ -72,6 +73,7 @@ impl Component for App {
                 Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
                 Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
+                Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
             }
@@ -121,6 +123,7 @@ impl Component for App {
         let page = match window().location().hash() {
             Ok(hash) if hash == "#settings" => Page::Settings,
             Ok(hash) if hash == "#change-password" => Page::ChangePassword,
+            Ok(hash) if hash == "#change-email" => Page::ChangeEmail,
             Ok(hash) if hash.is_empty() => Page::Agenda,
             Ok(hash) => {
                 alert(format!("Page {hash} not found"));
@@ -162,6 +165,7 @@ impl Component for App {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#settings")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
                     Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("#change-password")).unwrap(),
+                    Page::ChangeEmail => history.push_state_with_url(&JsValue::from_str("change-email"), "Change email", Some("#change-email")).unwrap(),
                 }
                 self.page = page;
                 true
@@ -204,7 +208,8 @@ impl Component for App {
         match &self.page {
             Page::Agenda => self.view_agenda(ctx),
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangePassword => html!( <ChangePasswordPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
+            Page::ChangePassword => html!( <ChangeDataPage kind="new_password" app_link={ ctx.link().clone() } /> ),
+            Page::ChangeEmail => html!( <ChangeDataPage kind="email" app_link={ ctx.link().clone() } /> ),
         }
     }
 }
