@@ -1,11 +1,24 @@
 use crate::prelude::*;
 
+/// Do the translation french to english if the user's language is english.
 pub fn t(s: &'static str) -> &'static str {
     if SETTINGS.lang() == Lang::French {
         return s;
     }
+    te(s)
     
+    
+}
+
+/// Do the translation french to english
+pub fn te(s: &'static str) -> &'static str {
     match s {
+        // In main.rs
+        "introuvable" => "not found",
+        "Impossible de charger les cours : " => "Failed to load events: ",
+        "Impossible de charger les informations utilisateur :" => "Failed to load user info:",
+        "Impossible de charger l'historique" => "Failed to access history",
+        
         // In agenda.rs
         "Janvier" => "January",
         "Février" => "February",
@@ -85,7 +98,6 @@ pub fn t(s: &'static str) -> &'static str {
         "Vérifier mon adresse Email" => "Verify my email address",
         "Email" => "Email",
         "Affichage" => "Appearance",
-        "Changer / Vérifier" => "Edit / Verify",
         "Thème" => "Theme",
         "Sombre" => "Dark",
         "Clair" => "Light",
@@ -98,6 +110,12 @@ pub fn t(s: &'static str) -> &'static str {
         "Valider" => "Save",
         "Se déconnecter" => "Log out",
         "Changer de mot de passse" => "Change password",
+        "Changement d'email" => "Change email.",
+        
+        // Url
+        "modifier-email" => "edit-email",
+        "parametres" => "settings",
+        "changer-mot-de-passe" => "change-password",
         s => {
             log!("Untranslated string: {}", s);
             s
