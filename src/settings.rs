@@ -286,7 +286,7 @@ impl Component for SettingsPage {
                             <div class="setting">
                                 <h4>{t("Adresse mail")}</h4>
                                 <p>{format!("{} {email}.{verified_msg}", t("Votre adresse actuelle est"))}</p>
-                                <div class="primary-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::EditEmail))} >{t("Modifier")}</div>
+                                <div class="primary-button">{t("Modifier")}</div>
                             </div>
                         </div>
                     </section>
