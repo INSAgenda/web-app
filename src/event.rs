@@ -151,7 +151,6 @@ impl Component for EventComp {
                 style={format!("background-color: {}80; border-left: 0.3rem solid {};  position: absolute; top: {}%; height: {}%;", bg_color.clone(), bg_color.clone(), percent_offset, percent_height)}
                 class="event"
                 onclick={ Some(ctx.link().callback(|_| EventCompMsg::ShowPopup(true))) }  >
-
                 <span class="name" >
                     { &name }
                 </span>
@@ -163,7 +162,6 @@ impl Component for EventComp {
                         <h3>{ name }</h3>
                         <div style={format!("background-color: {};", bg_color.clone())} class="divider-bar-option"></div>                   
                         <div  class="event-details-content">
-
                             <div class="info-block">
                                 <h4>{t("Horaires")}</h4>
                                 <span>{format!("{} - {}",
@@ -182,16 +180,17 @@ impl Component for EventComp {
                                 <span>{ctx.props().event.teachers.join(", ")}</span>
                             </div>
                             }
+                            </div>
+
                             <div class="info-block">
                                 <h4>{t("Couleur")}</h4>
                                 <input type="color" id="background-color-input" value={bg_color.clone()} onchange={ctx.link().callback(|_| EventCompMsg::SaveColors)}  />
 
-                                <span class="color-preview" style={format!("background: {}80;", bg_color)}>{t("Fond")}</span>
+                                <span style={format!("background: {}80;", bg_color)}>{t("Fond")}</span>
                             </div>
                       
                         </div>
                 </div>
-            </div>
         }
     }
 }
