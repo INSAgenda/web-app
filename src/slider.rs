@@ -163,8 +163,8 @@ impl SliderManager {
         self.enabled = false;
         self.start_pos = None;
 
-        let document = window().document().unwrap();
-        if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()) {
+        let doc = window().doc();
+        if let Some(day_container) = doc.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()) {
             day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
         }
     }
@@ -173,8 +173,8 @@ impl SliderManager {
         match &self.day_container {
             Some(day_container) => day_container.clone(),
             None => {
-                let document = window().document().unwrap();
-                let day_container = document.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()).expect("No day container");
+                let doc = window().doc();
+                let day_container = doc.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()).expect("No day container");
                 self.day_container = Some(day_container.clone());
                 day_container
             }
@@ -182,8 +182,8 @@ impl SliderManager {
     }
 
     fn touch_start(&mut self, mouse_x: i32, mouse_y: i32) {
-        let document = window().document().unwrap();
-        self.day_container = document.get_element_by_id("day-container").map(|e| e.dyn_into().unwrap());
+        let doc = window().doc();
+        self.day_container = doc.get_element_by_id("day-container").map(|e| e.dyn_into().unwrap());
         self.start_pos = None;
         self.has_moved = false;
         if let Some(day_container) = &self.day_container {

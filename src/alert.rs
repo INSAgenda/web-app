@@ -2,9 +2,9 @@ use crate::prelude::*;
 
 /// Display an alert message to the user
 pub fn alert(message: impl AsRef<str>) {
-    let document = window().document().unwrap();
-    let error_container = document.get_element_by_id("errors").unwrap();
-    let alert = document.create_element("div").unwrap();
+    let doc = window().doc();
+    let error_container = doc.get_element_by_id("errors").unwrap();
+    let alert = doc.create_element("div").unwrap();
     alert.set_inner_html(message.as_ref());
     alert.set_class_name("alert");
     

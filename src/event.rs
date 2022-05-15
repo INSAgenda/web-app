@@ -38,11 +38,11 @@ impl Component for EventComp {
         let id = format!("event-popup-{}", ID_COUNTER.fetch_add(1, Ordering::Relaxed));
 
         // Creates a closure called on click that will close the popup if the user clicked outside of it
-        let document = window().document().unwrap();
+        let doc = window().doc();
         let id2 = id.clone();
         let link = ctx.link().clone();
         let on_click = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-            let popup_el = document.get_element_by_id(&id2).unwrap();
+            let popup_el = doc.get_element_by_id(&id2).unwrap();
             let rect = popup_el.get_bounding_client_rect();
 
             // Check the click was not inside the popup
@@ -86,8 +86,10 @@ impl Component for EventComp {
                 true
             },
             EventCompMsg::SaveColors => {
-                let document = window().document().unwrap();
-                let background_color = match document.query_selector(&format!("#{} #background-color-input", self.popup_id)).unwrap() {
+                self.popup = Some(PopupPage::General);
+
+                let doc = window().doc();
+                let background_color = match doc.query_selector(&format!("#{} #background-color-input", self.popup_id)).unwrap() {
                     Some(el) => el.dyn_into::<HtmlInputElement>().unwrap().value(),
                     None => return false,
                 };

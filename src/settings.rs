@@ -185,8 +185,8 @@ impl Component for SettingsPage {
                 };
 
                 let window = window();
-                let document = window.document().unwrap();
-                let html = document.first_element_child().unwrap();
+                let doc = window.doc();
+                let html = doc.first_element_child().unwrap();
                 let storage = window.local_storage().unwrap().unwrap();
 
                 if theme == "system" {
@@ -254,6 +254,8 @@ impl Component for SettingsPage {
         }
 
         let app_link = ctx.props().app_link.clone();
+        let app_link2 = ctx.props().app_link.clone();
+        let app_link3 = ctx.props().app_link.clone();
         html! {
             <>
             <header>
@@ -280,12 +282,12 @@ impl Component for SettingsPage {
                             <div class="setting">
                                 <h4>{t("Changer de classe")}</h4>
                                 <p>{format!("{} {} {} {}.", t("Vous êtes actuellement en"), promotion, t("dans le groupe"), class)}</p>
-                                <div class="primary-button">{t("Modifier")}</div>
+                                <div class="primary-button" onclick={move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangeGroup))}>{t("Modifier")}</div>
                             </div>
                             <div class="setting">
                                 <h4>{t("Adresse mail")}</h4>
                                 <p>{format!("{} {email}.{verified_msg}", t("Votre adresse actuelle est"))}</p>
-                                <div class="primary-button">{t("Changer / Vérifier")}</div>
+                                <div class="primary-button" onclick={move |_| app_link3.send_message(AppMsg::SetPage(Page::ChangeEmail))}>{t("Modifier")}</div>
                             </div>
                         </div>
                     </section>
@@ -331,8 +333,8 @@ impl Component for SettingsPage {
                     </section>
                 </div>
 
-                <div class="secondary-button " onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda))}>{t("Annuler")}</div>
                 <div class="primary-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
+                <div class="secondary-button " onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda))}>{t("Annuler")}</div>
             </main>
             </>
         }
