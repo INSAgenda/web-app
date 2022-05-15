@@ -86,10 +86,8 @@ impl Component for EventComp {
                 true
             },
             EventCompMsg::SaveColors => {
-                self.popup = Some(PopupPage::General);
-
-                let doc = window().doc();
-                let background_color = match doc.query_selector(&format!("#{} #background-color-input", self.popup_id)).unwrap() {
+                let document = window().doc();
+                let background_color = match document.query_selector(&format!("#{} #background-color-input", self.popup_id)).unwrap() {
                     Some(el) => el.dyn_into::<HtmlInputElement>().unwrap().value(),
                     None => return false,
                 };
