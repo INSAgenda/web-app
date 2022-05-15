@@ -1,18 +1,16 @@
 use crate::prelude::*;
 
-pub enum Msg {
-    Submit,
-    SetMessage(Option<String>),
-    SetLoading(bool),
-}
-
+/// What data is being changed
 enum Data {
+    /// password, new_password, confirm_password
     NewPassword(NodeRef, NodeRef, NodeRef),
+    /// password, email
     Email(NodeRef, NodeRef),
     Group,
 }
 
 impl Data {
+    /// Title to be displayed on top of the page
     fn h2(&self) -> &'static str {
         match self {
             Data::NewPassword(_, _, _) => "Changer de mot de passe",
@@ -21,6 +19,7 @@ impl Data {
         }
     }
 
+    /// Title to be displayed on top of the form
     fn h3(&self) -> &'static str {
         match self {
             Data::NewPassword(_, _, _) => "Nouveau mot de passe",
@@ -30,16 +29,24 @@ impl Data {
     }
 }
 
+/// Message for the component `ChangeDataPage`
+pub enum Msg {
+    Submit,
+    SetMessage(Option<String>),
+    SetLoading(bool),
+}
+
+/// Properties for the component `ChangeDataPage`
 #[derive(Properties, Clone)]
 pub struct ChangeDataProps {
     pub app_link: Scope<App>,
     pub kind: String,
 }
-
 impl PartialEq for ChangeDataProps {
     fn eq(&self, _other: &Self) -> bool { true }
 }
 
+/// The `ChangeDataPage` component
 pub struct ChangeDataPage {
     data: Data,
     message: Option<String>,
@@ -132,17 +139,24 @@ impl Component for ChangeDataPage {
                         use web_sys::HtmlSelectElement;
                         let doc = window().doc();
 
+                        // Get what the user selected
                         let promotion_select = doc.get_element_by_id("promotion-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
-                        let promotion = promotion_select.selected_value().replace('"', "\\\"");
+                        let promotion = promotion_select.selected_value();
 
                         let class_select = doc.get_element_by_id("class-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
-                        let class = class_select.selected_value().replace('"', "\\\"");
+                        let class = class_select.selected_value();
 
                         let lang_select = doc.get_element_by_id("lang-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
-                        let lang = lang_select.selected_value().replace('"', "\\\"");
+                        let lang = lang_select.selected_value();
 
                         let class_half_select = doc.get_element_by_id("class-half-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
-                        let class_half = class_half_select.selected_value().replace('"', "\\\"");
+                        let class_half = class_half_select.selected_value();
+
+                        // Make sure it is not default values
+                        if promotion == "Promotion" || class == "Classe" || lang == "Langue" || class_half == "Groupe" {
+                            ctx.link().send_message(Msg::SetMessage(Some(t("Tous les champs doivent être remplis.").to_string())));
+                            return true;
+                        }
 
                         format!(r#"{{
                             "new_group":{{
@@ -194,6 +208,7 @@ impl Component for ChangeDataPage {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
+        // Build the custom part of the form
         let inputs = match &self.data {
             Data::NewPassword(password, new_password, confirm_password) => html! {<>
                 <div class="labeled-input">
@@ -225,7 +240,7 @@ impl Component for ChangeDataPage {
                         <option disabled=true selected=true>{"Promotion"}</option>
                         <option value="Stpi1">{"STPI1"}</option>
                         <option disabled=true value="Stpi2">{"STPI2"}</option>
-                    </select>   
+                    </select>
                 </div>
 
                 <div class="dropdown-list-box">
@@ -265,6 +280,7 @@ impl Component for ChangeDataPage {
             </>},
         };
         
+        /// Make the form using the custom part we just built
         let app_link = ctx.props().app_link.clone();
         html! {
             <>
