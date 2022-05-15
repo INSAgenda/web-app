@@ -11,6 +11,10 @@ pub struct GliderSelectorProps {
     pub selected: usize,
     #[prop_or_default]
     pub on_change: Option<Callback<usize>>,
+    #[prop_or_default]
+    pub big: bool,
+    #[prop_or_default]
+    pub large: bool,
 }
 
 pub struct GliderSelector {
@@ -44,7 +48,7 @@ impl Component for GliderSelector {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Init => {
-                let this = window().document().unwrap().get_element_by_id(&self.id).unwrap();
+                let this = window().doc().get_element_by_id(&self.id).unwrap();
                 let children = this.children();
                 self.sizes.clear();
                 for i in 1..=ctx.props().values.len() {
@@ -92,13 +96,21 @@ impl Component for GliderSelector {
             }
         };
 
+        let mut classes = String::from("glider-selector");
+        if ctx.props().big {
+            classes.push_str(" big-glider-selector");
+        }
+        if ctx.props().large {
+            classes.push_str(" large-glider-selector");
+        }
+
         html! {
-            <div class="glider-selector" id={self.id.clone()}>
+            <div class={classes} id={self.id.clone()}>
                 {glider_selected}
                 {
                     ctx.props().values.iter().enumerate().map(|(i, v)|
                         if i == self.selected {
-                            html! { <div style="color: white;">{v}</div> }
+                            html! { <div style="color: var(--background);">{v}</div> }
                         } else {
                             html! { <div onclick={
                                 let on_change = ctx.props().on_change.clone();

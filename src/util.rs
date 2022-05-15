@@ -1,3 +1,7 @@
+use web_sys::HtmlOptionsCollection;
+use wasm_bindgen::JsCast;
+use web_sys::*;
+
 #[macro_export]
 macro_rules! log {
     ($($t:tt)*) => (web_sys::console::log_1(&format_args!($($t)*).to_string().into()))
@@ -22,5 +26,29 @@ pub fn window() -> web_sys::Window {
     // We know the unwrap will never fail because in the context of a website, window is always defined.
     unsafe {
         web_sys::window().unwrap_unchecked()
+    }
+}
+
+pub trait HackTraitDocOnWindow {
+    fn doc(&self) -> Document;
+}
+
+impl HackTraitDocOnWindow for Window {
+    fn doc(&self) -> Document {
+        unsafe {
+            self.document().unwrap_unchecked()
+        }
+    }
+}
+
+pub trait HackTraitSelectedValueOnHtmlSelectElement {
+    fn selected_value(&self) -> String;
+}
+
+impl HackTraitSelectedValueOnHtmlSelectElement for HtmlSelectElement {
+    fn selected_value(&self) -> String {
+        unsafe {
+            self.selected_options().item(0).unwrap().dyn_into::<HtmlOptionElement>().unwrap_unchecked().value()
+        }
     }
 }

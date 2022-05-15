@@ -20,33 +20,7 @@
 #agenda-hours>span {
     height: calc((100% - 0.7rem/2) / 44100 * 6300);
     font-size: .7rem;
-    color: var(--calendar-text);
-}
-
-/* Lines */
-
-#line-container {
-    position: absolute;
-    height: 100%;
-    width: 99%;
-    margin: 0 0.5%;
-}
-
-.line {
-    height: calc(100% / 44100 * 6300);
-    display: flex;
-    flex-direction: column-reverse;
-    position: relative;
-    top: 1px;
-}
-
-.line>div {
-    width: 100%;
-    height: 2px;
-    background-image: url(/assets/elements/line-border.svg);
-    background-position: bottom;
-    background-size: 17px 2px;
-    background-repeat: repeat-x;
+    color: var(--text);
 }
 
 /* Arrows */
@@ -72,7 +46,7 @@
     
     #agenda-arrow-left>div, #agenda-arrow-right>div {
         background: url(/assets/elements/arrow.svg) center no-repeat;
-        filter: invert(43%) sepia(23%) saturate(2808%) hue-rotate(328deg) brightness(83%) contrast(103%); 
+        filter: invert(79%) sepia(71%) saturate(5902%) hue-rotate(241deg) brightness(97%) contrast(85%) ; 
         width: 100%;
         height: 100%;
     }
@@ -96,7 +70,8 @@
     margin: 0 5px;
     text-align: center;
     align-items: center;
-    color: var(--calendar-text);
+    font-weight: bold;
+    color: var(--text);
 }
 
 /* Days */
@@ -117,7 +92,7 @@
     height: 100%;
     width: 19%;
     margin: 0 .5%;
-    background-color: var(--dp02);
+    background-color: var(--day);
 }
 
 #settings-button{
@@ -133,5 +108,3 @@
 :root[data-theme="dark"] #settings-button{
     filter: invert(1);
 }
-
-

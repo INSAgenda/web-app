@@ -33,14 +33,16 @@ impl Colors {
         let inner = match crate::settings::SETTINGS.theme() {
             crate::settings::Theme::Light => self.light.lock().unwrap(),
             crate::settings::Theme::Dark => self.dark.lock().unwrap(),
+            crate::settings::Theme::System => self.dark.lock().unwrap(), // Remove themes colors kits
         };
-        inner.get(course).map(|(v,w)| (v.to_string(),w.to_string())).unwrap_or_else(|| (String::from("#98fb98"), String::from("black")))
+        inner.get(course).map(|(v,w)| (v.to_string(),w.to_string())).unwrap_or_else(|| (String::from("#CB6CE6"), String::from("black")))
     }
 
     pub fn set(&self, course: &str, background_color: String, text_color: String) {
         let mut inner = match crate::settings::SETTINGS.theme() {
             crate::settings::Theme::Light => self.light.lock().unwrap(),
             crate::settings::Theme::Dark => self.dark.lock().unwrap(),
+            crate::settings::Theme::System => todo!("System colors"),
         };
         inner.insert(course.to_string(), (background_color, text_color));
         std::mem::drop(inner);

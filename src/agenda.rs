@@ -75,7 +75,7 @@ impl App {
             <>
             <header>
                 <a id="header-logo" href="../index.html">
-                <img src="/assets/elements/webLogo.svg" alt="INSAgenda logo"/> 
+                <img src="/assets/logo/logo.svg" alt="INSAgenda logo"/> 
                 <h1 id="header-name">{"INSAgenda"}</h1>
                 </a>
                 <button id="settings-button" onclick={ctx.link().callback(|_| AppMsg::SetPage(Page::Settings))}/>
@@ -103,14 +103,6 @@ impl App {
                     </div>
                     <div id="day-container-scope">
                         <div id="day-container" style={if mobile_view {Some(format!("position: relative; right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000)))} else {None}}>
-                            <div id="line-container">
-                                <div class="line"><div></div></div>
-                                <div class="line"><div></div></div>
-                                <div class="line"><div></div></div>
-                                <div class="line"><div></div></div>
-                                <div class="line"><div></div></div>
-                                <div class="line"><div></div></div>
-                            </div>
                             { days }
                         </div>
                     </div>
