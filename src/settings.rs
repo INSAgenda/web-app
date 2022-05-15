@@ -332,6 +332,7 @@ impl Component for SettingsPage {
                         </div>
                     </section>
                 </div>
+
                 <div class="primary-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
                 <div class="secondary-button " onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda))}>{t("Annuler")}</div>
             </main>
