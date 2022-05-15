@@ -241,7 +241,7 @@ fn main() {
     let window = web_sys::window().expect("Please run the program in a browser context");
     stop_bots(&window);
     install_sw(&window);
-    let document = window.document().unwrap();
-    let element = document.get_element_by_id("render").unwrap();
+    let doc = window.doc();
+    let element = doc.get_element_by_id("render").unwrap();
     yew::start_app_in_element::<App>(element);
 }

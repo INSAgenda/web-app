@@ -185,8 +185,8 @@ impl Component for SettingsPage {
                 };
 
                 let window = window();
-                let document = window.document().unwrap();
-                let html = document.first_element_child().unwrap();
+                let doc = window.doc();
+                let html = doc.first_element_child().unwrap();
                 let storage = window.local_storage().unwrap().unwrap();
 
                 if theme == "system" {

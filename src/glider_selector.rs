@@ -48,7 +48,7 @@ impl Component for GliderSelector {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Init => {
-                let this = window().document().unwrap().get_element_by_id(&self.id).unwrap();
+                let this = window().doc().get_element_by_id(&self.id).unwrap();
                 let children = this.children();
                 self.sizes.clear();
                 for i in 1..=ctx.props().values.len() {
