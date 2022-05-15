@@ -213,10 +213,6 @@ impl Component for ChangeDataPage {
         let inputs = match &self.data {
             Data::NewPassword(password, new_password, confirm_password) => html! {<>
                 <div class="labeled-input">
-                    <input type="password" placeholder="Password" id="password-input1" autocomplete="password" ref={password.clone()} />
-                    <label for="password-input1">{t("Mot de passe actuel")}</label>
-                </div>
-                <div class="labeled-input">
                     <input type="password" placeholder="New password" id="password-input2" autocomplete="new-password" ref={new_password.clone()}/>
                     <label for="password-input2">{t("Nouveau mot de passe")}</label>
                 </div>
@@ -224,15 +220,19 @@ impl Component for ChangeDataPage {
                     <input type="password" placeholder="Password (confirmation)" id="password-input3" autocomplete="new-password" ref={confirm_password.clone()} />
                     <label for="password-input3">{t("Nouveau mot de passe (confirmation)")}</label>
                 </div>
-            </>},
-            Data::Email(password, email) => html! {<>
                 <div class="labeled-input">
                     <input type="password" placeholder="Password" id="password-input1" autocomplete="password" ref={password.clone()} />
                     <label for="password-input1">{t("Mot de passe actuel")}</label>
                 </div>
+            </>},
+            Data::Email(password, email) => html! {<>
                 <div class="labeled-input">
                     <input type="email" placeholder="Email" id="email" autocomplete="email" ref={email.clone()}/>
                     <label for="email">{t("Adresse email de l'INSA")}</label>
+                </div>
+                <div class="labeled-input">
+                    <input type="password" placeholder="Password" id="password-input1" autocomplete="password" ref={password.clone()} />
+                    <label for="password-input1">{t("Mot de passe actuel")}</label>
                 </div>
             </>},
             Data::Group => {
