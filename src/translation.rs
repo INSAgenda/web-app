@@ -51,7 +51,6 @@ pub fn t(s: &'static str) -> &'static str {
         "Confirmer" => "Confirm",
 
         // In event.rs
-
         "Enseignant" => "Teacher",
         "Emplacement" => "Location",
         "Horaires" => "Hours",
