@@ -21,11 +21,7 @@
     height: calc((100% - 0.7rem/2) / 44100 * 6300);
     font-size: .7rem;
     color: var(--text);
-    font-family: 'Roboto', sans-serif;
-    font-weight: bold;
 }
-
-
 
 /* Arrows */
 
@@ -74,7 +70,6 @@
     margin: 0 5px;
     text-align: center;
     align-items: center;
-    font-family: 'Roboto', sans-serif;
     font-weight: bold;
     color: var(--text);
 }
@@ -113,5 +108,3 @@
 :root[data-theme="dark"] #settings-button{
     filter: invert(1);
 }
-
-
