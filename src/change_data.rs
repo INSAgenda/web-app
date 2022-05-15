@@ -280,8 +280,9 @@ impl Component for ChangeDataPage {
             </>},
         };
         
-        /// Make the form using the custom part we just built
+        // Make the form using the custom part we just built
         let app_link = ctx.props().app_link.clone();
+        let app_link2 = ctx.props().app_link.clone();
         html! {
             <>
             <header>
@@ -299,18 +300,19 @@ impl Component for ChangeDataPage {
                 <h3 class="login-title">{self.data.h3()}</h3>
                 <form class="centred">
                     {inputs}
-                    if self.is_loading{
+                    if self.is_loading {
                         <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
-                    }else{
+                    } else {
                         if self.message.is_some() {
                             <span class="error-message">
                                 {self.message.clone().unwrap()}
                             </span>
                         }
+                        <br/><br/>
                         <input type="button" class="primary-button" id="submit-button" value={t("Confirmer")} onclick={ctx.link().callback(|_| Msg::Submit) }/>
+                        <input type="button" class="secondary-button" value={t("Annuler")} onclick={move |_| app_link2.send_message(AppMsg::SetPage(Page::Settings))}/>
                     }
-
-                </form>   
+                </form>
             </main>
             </>
         }
