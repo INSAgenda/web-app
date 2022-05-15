@@ -76,6 +76,10 @@
     height: 2rem;
 }
 
+#auth .primary-button, #auth .secondary-button {
+    width: min-content;
+}
+
 :root[data-theme="dark"] .setting {
     padding: 1.5rem;
 }
@@ -107,5 +111,9 @@
 
     .logout-button > span{
         display: none;
+    }
+
+    #auth .primary-button, #auth .secondary-button {
+        width: calc(100% - 5rem);
     }
 }
