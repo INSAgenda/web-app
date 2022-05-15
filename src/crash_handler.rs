@@ -90,7 +90,7 @@ use crate::prelude::*;
 pub fn init() {
     std::panic::set_hook(Box::new(|info| {
         let window = window();
-        let doc = window.doc().doc_element().unwrap();
+        let doc = window.doc().document_element().unwrap();
 
         let mut payload: Option<String> = info.payload().downcast_ref().map(|v: &String| v.to_owned());
         if payload.is_none() {
