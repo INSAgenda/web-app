@@ -77,7 +77,7 @@
 }
 
 .setting > p{
-    height: 2rem;
+    min-height: 2rem;
 }
 
 #auth .primary-button, #auth .secondary-button {
@@ -89,7 +89,7 @@
 }
 
 .setting .glider-selector {
-    margin: 31px 0 10px 0;
+    margin: 1rem 0;
 }
 
 #settings-main > .primary-button, #settings-main > .secondary-button{
