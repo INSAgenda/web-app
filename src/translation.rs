@@ -66,7 +66,8 @@ pub fn t(s: &'static str) -> &'static str {
         // In settings.rs
         "[indisponible]" => "[unavailable]",
         "[inconnue]" => "[unknown]",
-        "Paramètres" => "Parameters",
+        "Paramètres" => "Settings",
+        "Général" => "General",
         "Paramètres du compte" => "Account parameters",
         "Mot de passe" => "Password",
         "Votre mot de passe a été changé il y a" => "Your password was changed ",
@@ -74,11 +75,14 @@ pub fn t(s: &'static str) -> &'static str {
         "Adresse mail" => "Email address",
         "Votre adresse actuelle est" => "Your current email address is",
         " Elle n'a pas encore été vérifiée." => " It has not been verified yet.",
+        "Changer de classe" => "Change class",
+        "Vous êtes actuellement en" => "You are currently in",
+        "dans le groupe" => "in the group",
         "Changer le type d'authentification" => "Change authentication type",
+        "Vérifier mon adresse Email" => "Verify my email address",
         "Email" => "Email",
-        "Email + Mot de passe" => "Email + Password",
-        "L'authentification par email consiste a rentrer un code unique qui vous sera envoyé par email." => "Authentication by email consists in entering a unique code which will be sent to you by email.",
         "Affichage" => "Appearance",
+        "Changer / Vérifier" => "Edit / Verify",
         "Thème" => "Theme",
         "Sombre" => "Dark",
         "Clair" => "Light",
@@ -87,8 +91,10 @@ pub fn t(s: &'static str) -> &'static str {
         "Nom des bâtiments" => "Building names",
         "Court" => "Short",
         "Long" => "Long",
+        "Système" => "System",
         "Valider" => "Save",
         "Se déconnecter" => "Log out",
+        "Changer de mot de passse" => "Change password",
         s => {
             log!("Untranslated string: {}", s);
             s

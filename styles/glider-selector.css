@@ -5,14 +5,16 @@
     display: flex;
     flex-direction: row;
     width: fit-content;
-    border-radius: 1rem;
+    border-radius: 2rem;
     background-color: var(--closer-background);
+    height: 2.5rem;
 }
 
 
 .glider-selector>div {
-    padding: .5rem 1rem;
-    border-radius: 1rem;
+    padding: 0 1rem;
+    margin: auto;
+    border-radius: 1.25rem;
     z-index: 2;
     cursor: pointer;
     transition: all .5s;
@@ -22,6 +24,6 @@
     position: absolute;
     color: transparent;
     background-color: var(--primary);
-    border-radius: 1rem;
-    height: calc(1rem + 2px);
+    border-radius: 1.25rem;
+    height: 2.5rem;
 }
