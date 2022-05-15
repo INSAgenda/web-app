@@ -13,18 +13,18 @@ impl Data {
     /// Title to be displayed on top of the page
     fn h2(&self) -> &'static str {
         match self {
-            Data::NewPassword(_, _, _) => "Changer de mot de passe",
-            Data::Email(_, _) => "Changer d'email",
-            Data::Group => "Changer de groupe",
+            Data::NewPassword(_, _, _) => t("Changer de mot de passe"),
+            Data::Email(_, _) => t("Changer d'email"),
+            Data::Group => t("Changer de groupe"),
         }
     }
 
     /// Title to be displayed on top of the form
     fn h3(&self) -> &'static str {
         match self {
-            Data::NewPassword(_, _, _) => "Nouveau mot de passe",
-            Data::Email(_, _) => "Nouvelle adresse email",
-            Data::Group => "Nouveau groupe",
+            Data::NewPassword(_, _, _) => t("Nouveau mot de passe"),
+            Data::Email(_, _) => t("Nouvelle adresse email"),
+            Data::Group => t("Nouveau groupe"),
         }
     }
 }
@@ -245,36 +245,36 @@ impl Component for ChangeDataPage {
 
                 <div class="dropdown-list-box">
                     <select required=true class="dropdown-list" name="class" id="class-select">
-                        <option disabled=true selected=true>{"Classe"}</option>
-                        <option value="A">{"Classe A"}</option>
-                        <option value="B">{"Classe B"}</option>
-                        <option value="C">{"Classe C"}</option>
-                        <option value="D">{"Classe D"}</option>
-                        <option value="E">{"Classe E"}</option>
-                        <option value="F">{"Classe F"}</option>
-                        <option value="H">{"Classe H"}</option>
-                        <option value="I">{"Classe I"}</option>
-                        <option value="J">{"Classe J"}</option>
-                        <option value="K">{"Classe K"}</option>
+                        <option disabled=true selected=true>{t("Classe")}</option>
+                        <option value="A">{t("Classe A")}</option>
+                        <option value="B">{t("Classe B")}</option>
+                        <option value="C">{t("Classe C")}</option>
+                        <option value="D">{t("Classe D")}</option>
+                        <option value="E">{t("Classe E")}</option>
+                        <option value="F">{t("Classe F")}</option>
+                        <option value="H">{t("Classe H")}</option>
+                        <option value="I">{t("Classe I")}</option>
+                        <option value="J">{t("Classe J")}</option>
+                        <option value="K">{t("Classe K")}</option>
                     </select>
                 </div>
 
                 <div class="dropdown-list-box">
                     <select required=true class="dropdown-list" name="lang" id="lang-select">
-                        <option disabled=true selected=true>{"Langue"}</option>
-                        <option value="All">{"Allemand"}</option>
-                        <option value="AllDeb">{"Allemand Débutant"}</option>
-                        <option value="Esp">{"Espagnol"}</option>
-                        <option value="EspDeb">{"Espagnol Débutant"}</option>
-                        <option value="Fle">{"Français Langue Etrangère"}</option>
+                        <option disabled=true selected=true>{t("Langue")}</option>
+                        <option value="All">{t("Allemand")}</option>
+                        <option value="AllDeb">{t("Allemand Débutant")}</option>
+                        <option value="Esp">{t("Espagnol")}</option>
+                        <option value="EspDeb">{t("Espagnol Débutant")}</option>
+                        <option value="Fle">{t("Français Langue Étrangère")}</option>
                     </select>
                 </div>
 
                 <div class="dropdown-list-box">
                     <select required=true class="dropdown-list" name="class-half" id="class-half-select">
-                        <option disabled=true selected=true>{"Groupe"}</option>
-                        <option value="1">{"Groupe 1"}</option>
-                        <option value="2">{"Groupe 2"}</option>
+                        <option disabled=true selected=true>{t("Groupe")}</option>
+                        <option value="1">{t("Groupe 1")}</option>
+                        <option value="2">{t("Groupe 2")}</option>
                     </select>
                 </div>
             </>},
