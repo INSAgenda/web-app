@@ -5,7 +5,7 @@ pub fn width() -> usize {
 }
 
 pub struct SliderManager {
-    pub enabled: bool,
+    enabled: bool,
     start_pos: Option<i32>,
     day_container: Option<HtmlElement>,
     days_offset: Rc<Cell<i32>>,
@@ -165,7 +165,7 @@ impl SliderManager {
 
         let document = window().document().unwrap();
         if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()) {
-            day_container.style().set_property("transform", "translateX(0px)").unwrap();
+            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
         }
     }
 

@@ -33,7 +33,7 @@ pub enum Msg {
     SetPage(Page),
     SilentSetPage(Page),
     Refresh,
-    SliderState(bool),
+    SetSliderState(bool),
 }
 
 #[derive(Serialize, Deserialize)]
@@ -193,9 +193,12 @@ impl Component for App {
                 true
             }
             Msg::Refresh => true,
-            Msg::SliderState(state) => {
+            Msg::SetSliderState(state) => {
                 let mut slider = self.slider.borrow_mut();
-                slider.enabled = state;
+                match state {
+                    true => slider.enable(),
+                    false => slider.disable(),
+                }
                 true
             }
         }

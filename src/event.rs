@@ -80,7 +80,7 @@ impl Component for EventComp {
 
                 // Enable/Disable slider 
                 if width() <= 1000 {
-                    ctx.props().app_link.send_message(AppMsg::SliderState(!self.popup_displayed));
+                    ctx.props().app_link.send_message(AppMsg::SetSliderState(!self.popup_displayed));
                 }
 
                 true
@@ -157,7 +157,7 @@ impl Component for EventComp {
                     if let Some(l) = &location { <span class="location" >{l}</span>}
                 </div>
                 <div class={format!("event-details {}", class)} id={self.popup_id.clone()} style={String::new() + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;" + if percent_offset > 50. && !mobile {"transform: translateY(-50%);"}  else {""}}  >
-                        if mobile{
+                        if mobile {
                             <div class="close-arrow" onclick={ Some(ctx.link().callback(|_| EventCompMsg::ShowPopup(false))) } >
                                 <svg width="110" height="28" viewBox="0 0 110 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M55.5 28C55.5 28 19.6743 2 0.5 0H55.5V28Z" fill="var(--day)"/>
