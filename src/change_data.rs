@@ -39,8 +39,9 @@ pub enum Msg {
 /// Properties for the component `ChangeDataPage`
 #[derive(Properties, Clone)]
 pub struct ChangeDataProps {
-    pub app_link: Scope<App>,
     pub kind: String,
+    pub app_link: Scope<App>,
+    pub user_info: Rc<Option<UserInfo>>,
 }
 impl PartialEq for ChangeDataProps {
     fn eq(&self, _other: &Self) -> bool { true }
@@ -234,50 +235,59 @@ impl Component for ChangeDataPage {
                     <label for="email">{t("Adresse email de l'INSA")}</label>
                 </div>
             </>},
-            Data::Group => html! {<>
-                <div class="dropdown-list-box">
-                    <select required=true class="dropdown-list" name="promotion" id="promotion-select">
-                        <option disabled=true selected=true>{"Promotion"}</option>
-                        <option value="Stpi1">{"STPI1"}</option>
-                        <option disabled=true value="Stpi2">{"STPI2"}</option>
-                    </select>
-                </div>
+            Data::Group => {
+                let GroupDescriptor { promotion, lang, class, class_half } = ctx.props().user_info.as_ref().as_ref().map(|u| &u.group_desc).unwrap_or(&GroupDescriptor {
+                    promotion: Promotion::Stpi1,
+                    lang: Language::All,
+                    class: Class::A,
+                    class_half: 1,
+                });
 
-                <div class="dropdown-list-box">
-                    <select required=true class="dropdown-list" name="class" id="class-select">
-                        <option disabled=true selected=true>{t("Classe")}</option>
-                        <option value="A">{t("Classe A")}</option>
-                        <option value="B">{t("Classe B")}</option>
-                        <option value="C">{t("Classe C")}</option>
-                        <option value="D">{t("Classe D")}</option>
-                        <option value="E">{t("Classe E")}</option>
-                        <option value="F">{t("Classe F")}</option>
-                        <option value="H">{t("Classe H")}</option>
-                        <option value="I">{t("Classe I")}</option>
-                        <option value="J">{t("Classe J")}</option>
-                        <option value="K">{t("Classe K")}</option>
-                    </select>
-                </div>
+                html! {<>
+                    <div class="dropdown-list-box">
+                        <select required=true class="dropdown-list" name="promotion" id="promotion-select">
+                            <option disabled=true>{"Promotion"}</option>
+                            <option value="Stpi1" selected={*promotion == Promotion::Stpi1}>{"STPI1"}</option>
+                            <option disabled=true value="Stpi2" selected={*promotion == Promotion::Stpi2}>{"STPI2"}</option>
+                        </select>
+                    </div>
 
-                <div class="dropdown-list-box">
-                    <select required=true class="dropdown-list" name="lang" id="lang-select">
-                        <option disabled=true selected=true>{t("Langue")}</option>
-                        <option value="All">{t("Allemand")}</option>
-                        <option value="AllDeb">{t("Allemand Débutant")}</option>
-                        <option value="Esp">{t("Espagnol")}</option>
-                        <option value="EspDeb">{t("Espagnol Débutant")}</option>
-                        <option value="Fle">{t("Français Langue Étrangère")}</option>
-                    </select>
-                </div>
+                    <div class="dropdown-list-box">
+                        <select required=true class="dropdown-list" name="class" id="class-select">
+                            <option disabled=true>{t("Classe")}</option>
+                            <option value="A" selected={*class==Class::A} > { t("Classe A") } </option>
+                            <option value="B" selected={*class==Class::B} > { t("Classe B") } </option>
+                            <option value="C" selected={*class==Class::C} > { t("Classe C") } </option>
+                            <option value="D" selected={*class==Class::D} > { t("Classe D") } </option>
+                            <option value="E" selected={*class==Class::E} > { t("Classe E") } </option>
+                            <option value="F" selected={*class==Class::F} > { t("Classe F") } </option>
+                            <option value="H" selected={*class==Class::H} > { t("Classe H") } </option>
+                            <option value="I" selected={*class==Class::I} > { t("Classe I") } </option>
+                            <option value="J" selected={*class==Class::J} > { t("Classe J") } </option>
+                            <option value="K" selected={*class==Class::K} > { t("Classe K") } </option>
+                        </select>
+                    </div>
 
-                <div class="dropdown-list-box">
-                    <select required=true class="dropdown-list" name="class-half" id="class-half-select">
-                        <option disabled=true selected=true>{t("Groupe")}</option>
-                        <option value="1">{t("Groupe 1")}</option>
-                        <option value="2">{t("Groupe 2")}</option>
-                    </select>
-                </div>
-            </>},
+                    <div class="dropdown-list-box">
+                        <select required=true class="dropdown-list" name="lang" id="lang-select">
+                            <option disabled=true>{t("Langue")}</option>
+                            <option value="All" selected={*lang==Language::All} > { t("Allemand") } </option>
+                            <option value="AllDeb" selected={*lang==Language::AllDeb} > { t("Allemand Débutant") } </option>
+                            <option value="Esp" selected={*lang==Language::Esp} > { t("Espagnol") } </option>
+                            <option value="EspDeb" selected={*lang==Language::EspDeb} > { t("Espagnol Débutant") } </option>
+                            <option value="Fle" selected={*lang==Language::Fle} > { t("Français Langue Étrangère") } </option>
+                        </select>
+                    </div>
+
+                    <div class="dropdown-list-box">
+                        <select required=true class="dropdown-list" name="class-half" id="class-half-select">
+                            <option disabled=true>{t("Groupe")}</option>
+                            <option value="1" selected={*class_half == 1} > { t("Groupe 1") } </option>
+                            <option value="2" selected={*class_half == 2} > { t("Groupe 2") } </option>
+                        </select>
+                    </div>
+                </>}
+            },
         };
         
         // Make the form using the custom part we just built

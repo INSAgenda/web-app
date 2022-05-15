@@ -212,9 +212,9 @@ impl Component for App {
         match &self.page {
             Page::Agenda => self.view_agenda(ctx),
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangePassword => html!( <ChangeDataPage kind="new_password" app_link={ ctx.link().clone() } /> ),
-            Page::ChangeEmail => html!( <ChangeDataPage kind="email" app_link={ ctx.link().clone() } /> ),
-            Page::ChangeGroup => html!( <ChangeDataPage kind="group" app_link={ ctx.link().clone() } /> ),
+            Page::ChangePassword => html!( <ChangeDataPage kind="new_password" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
+            Page::ChangeEmail => html!( <ChangeDataPage kind="email" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
+            Page::ChangeGroup => html!( <ChangeDataPage kind="group" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
         }
     }
 }
