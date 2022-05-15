@@ -156,7 +156,7 @@ impl Component for EventComp {
                     </span>
                     if let Some(l) = &location { <span class="location" >{l}</span>}
                 </div>
-                <div class={format!("event-details {}", class)} id={self.popup_id.clone()} style={String::new() + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;" + if percent_offset > 50. && !mobile {"transform: translateY(-50%);"}  else {""}}  >
+                <div class={format!("event-details {}", class)} id={self.popup_id.clone()} style={String::new() + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;" + if percent_offset > 50. && !mobile {"transform: translateY(-70%);"}  else {""}}  >
                         if mobile {
                             <div class="close-arrow" onclick={ Some(ctx.link().callback(|_| EventCompMsg::ShowPopup(false))) } >
                                 <svg width="110" height="28" viewBox="0 0 110 28" fill="none" xmlns="http://www.w3.org/2000/svg">
