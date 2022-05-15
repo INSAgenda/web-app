@@ -63,9 +63,7 @@ impl Component for EventComp {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-
             EventCompMsg::ShowPopup(state) => {
-
                 // Double call protection
                 let now = chrono::Utc::now().timestamp_millis();
                 if self.last_click_timestamp + 100 > now {
@@ -156,7 +154,7 @@ impl Component for EventComp {
                     <span class="teacher">
                         { ctx.props().event.teachers.join(", ") }
                     </span>
-                    {if let Some(l) = &location {html! {<span class="location" >{l}</span>}} else {html!{}}}
+                    if let Some(l) = &location { <span class="location" >{l}</span>}
                 </div>
                 <div class={format!("event-details {}", class)} id={self.popup_id.clone()} style={String::new() + if ctx.props().day_of_week > 2 { "left" } else { "right" } + ": -214px;" + if percent_offset > 50. && !mobile {"transform: translateY(-50%);"}  else {""}}  >
                         if mobile{
@@ -172,34 +170,34 @@ impl Component for EventComp {
                         }
                         <h3>{ name }</h3>
                         <div style={format!("background-color: {};", bg_color.clone())} class="divider-bar-option"></div>                   
-                        <div  class="event-details-content">
+                        <div class="event-details-content">
                             <div class="info-block">
                                 <h4>{t("Horaires")}</h4>
                                 <span>{format!("{} - {}", start.time().format("%Hh%M"), end.time().format("%Hh%M"))}</span>
                             </div>
-                            if location.is_some() {
-                            <div class="info-block">
-                                <h4>{t("Emplacement")}</h4>
-                                <span>{location.unwrap_or_else(|| t("Inconnu").to_string())}</span>
-                            </div>
+
+                            if let Some(location) = location { 
+                                <div class="info-block">
+                                    <h4>{t("Emplacement")}</h4>
+                                    <span>{location}</span>
+                                </div>
                             }
 
                             if !ctx.props().event.teachers.is_empty() {
-                            <div class="info-block">
-                                <h4>{t("Enseignant")}</h4>
-                                <span>{ctx.props().event.teachers.join(", ")}</span>
-                            </div>
+                                <div class="info-block">
+                                    <h4>{t("Enseignant")}</h4>
+                                    <span>{ctx.props().event.teachers.join(", ")}</span>
+                                </div>
                             }
-                            </div>
-
-                            <div class="info-block">
-                                <h4>{t("Couleur")}</h4>
-                                <input type="color" id="background-color-input" value={bg_color.clone()} onchange={ctx.link().callback(|_| EventCompMsg::SaveColors)}  />
-
-                                <span style={format!("background: {}80;", bg_color)}>{t("Fond")}</span>
-                            </div>
-                      
                         </div>
+
+                        <div class="info-block">
+                            <h4>{t("Couleur")}</h4>
+                            <input type="color" id="background-color-input" value={bg_color.clone()} onchange={ctx.link().callback(|_| EventCompMsg::SaveColors)}  />
+
+                            <span style={format!("background: {}80;", bg_color)}>{t("Fond")}</span>
+                        </div>
+                    </div>
                 </div>
         }
     }
