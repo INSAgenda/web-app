@@ -234,6 +234,8 @@ impl Component for ChangeDataPage {
                     <input type="password" placeholder="Password" id="password-input1" autocomplete="password" ref={password.clone()} />
                     <label for="password-input1">{t("Mot de passe actuel")}</label>
                 </div>
+                <br/>
+                <p>{t("Un email de confirmation vous sera immédiatement envoyé.")}</p>
             </>},
             Data::Group => {
                 let GroupDescriptor { promotion, lang, class, class_half } = ctx.props().user_info.as_ref().as_ref().map(|u| &u.group_desc).unwrap_or(&GroupDescriptor {
