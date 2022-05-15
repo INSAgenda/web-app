@@ -11,6 +11,10 @@ pub struct GliderSelectorProps {
     pub selected: usize,
     #[prop_or_default]
     pub on_change: Option<Callback<usize>>,
+    #[prop_or_default]
+    pub big: bool,
+    #[prop_or_default]
+    pub large: bool,
 }
 
 pub struct GliderSelector {
@@ -92,8 +96,16 @@ impl Component for GliderSelector {
             }
         };
 
+        let mut classes = String::from("glider-selector");
+        if ctx.props().big {
+            classes.push_str(" big-glider-selector");
+        }
+        if ctx.props().large {
+            classes.push_str(" large-glider-selector");
+        }
+
         html! {
-            <div class="glider-selector" id={self.id.clone()}>
+            <div class={classes} id={self.id.clone()}>
                 {glider_selected}
                 {
                     ctx.props().values.iter().enumerate().map(|(i, v)|

@@ -20,6 +20,7 @@ pub enum Page {
     Settings,
     ChangePassword,
     ChangeEmail,
+    ChangeGroup,
     Agenda,
 }
 
@@ -74,6 +75,7 @@ impl Component for App {
                 Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
                 Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
+                Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
             }
@@ -124,6 +126,7 @@ impl Component for App {
             Ok(hash) if hash == "#settings" => Page::Settings,
             Ok(hash) if hash == "#change-password" => Page::ChangePassword,
             Ok(hash) if hash == "#change-email" => Page::ChangeEmail,
+            Ok(hash) if hash == "#change-group" => Page::ChangeGroup,
             Ok(hash) if hash.is_empty() => Page::Agenda,
             Ok(hash) => {
                 alert(format!("Page {hash} not found"));
@@ -166,6 +169,7 @@ impl Component for App {
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
                     Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("#change-password")).unwrap(),
                     Page::ChangeEmail => history.push_state_with_url(&JsValue::from_str("change-email"), "Change email", Some("#change-email")).unwrap(),
+                    Page::ChangeGroup => history.push_state_with_url(&JsValue::from_str("change-group"), "Change group", Some("#change-group")).unwrap(),
                 }
                 self.page = page;
                 true
@@ -210,6 +214,7 @@ impl Component for App {
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
             Page::ChangePassword => html!( <ChangeDataPage kind="new_password" app_link={ ctx.link().clone() } /> ),
             Page::ChangeEmail => html!( <ChangeDataPage kind="email" app_link={ ctx.link().clone() } /> ),
+            Page::ChangeGroup => html!( <ChangeDataPage kind="group" app_link={ ctx.link().clone() } /> ),
         }
     }
 }

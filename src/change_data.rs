@@ -6,9 +6,28 @@ pub enum Msg {
     SetLoading(bool),
 }
 
-pub enum Data {
+enum Data {
     NewPassword(NodeRef, NodeRef, NodeRef),
     Email(NodeRef, NodeRef),
+    Group,
+}
+
+impl Data {
+    fn h2(&self) -> &'static str {
+        match self {
+            Data::NewPassword(_, _, _) => "Changer de mot de passe",
+            Data::Email(_, _) => "Changer d'email",
+            Data::Group => "Changer de groupe",
+        }
+    }
+
+    fn h3(&self) -> &'static str {
+        match self {
+            Data::NewPassword(_, _, _) => "Nouveau mot de passe",
+            Data::Email(_, _) => "Nouvelle adresse email",
+            Data::Group => "Nouveau groupe",
+        }
+    }
 }
 
 #[derive(Properties, Clone)]
@@ -36,6 +55,7 @@ impl Component for ChangeDataPage {
             data: match ctx.props().kind.as_str() {
                 "new_password" => Data::NewPassword(NodeRef::default(), NodeRef::default(), NodeRef::default()),
                 "email" => Data::Email(NodeRef::default(), NodeRef::default()),
+                "group" => Data::Group,
                 _ => unreachable!(),
             },
             message: None,
@@ -108,6 +128,31 @@ impl Component for ChangeDataPage {
                             "email": "{}"
                         }}"#, password.replace('"', "\\\""), email.replace('"', "\\\""))
                     },
+                    Data::Group => {
+                        use web_sys::HtmlSelectElement;
+                        let doc = window().doc();
+
+                        let promotion_select = doc.get_element_by_id("promotion-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
+                        let promotion = promotion_select.selected_value().replace('"', "\\\"");
+
+                        let class_select = doc.get_element_by_id("class-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
+                        let class = class_select.selected_value().replace('"', "\\\"");
+
+                        let lang_select = doc.get_element_by_id("lang-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
+                        let lang = lang_select.selected_value().replace('"', "\\\"");
+
+                        let class_half_select = doc.get_element_by_id("class-half-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
+                        let class_half = class_half_select.selected_value().replace('"', "\\\"");
+
+                        format!(r#"{{
+                            "new_group":{{
+                                "promotion":"{}",
+                                "lang":"{}",
+                                "class":"{}",
+                                "class_half":{}
+                            }}
+                        }}"#, promotion, lang, class, class_half)
+                    },
                 };
 
                 ctx.link().send_message(Msg::SetLoading(true));
@@ -174,6 +219,50 @@ impl Component for ChangeDataPage {
                     <label for="email">{t("Adresse email de l'INSA")}</label>
                 </div>
             </>},
+            Data::Group => html! {<>
+                <div class="dropdown-list-box">
+                    <select required=true class="dropdown-list" name="promotion" id="promotion-select">
+                        <option disabled=true selected=true>{"Promotion"}</option>
+                        <option value="Stpi1">{"STPI1"}</option>
+                        <option disabled=true value="Stpi2">{"STPI2"}</option>
+                    </select>   
+                </div>
+
+                <div class="dropdown-list-box">
+                    <select required=true class="dropdown-list" name="class" id="class-select">
+                        <option disabled=true selected=true>{"Classe"}</option>
+                        <option value="A">{"Classe A"}</option>
+                        <option value="B">{"Classe B"}</option>
+                        <option value="C">{"Classe C"}</option>
+                        <option value="D">{"Classe D"}</option>
+                        <option value="E">{"Classe E"}</option>
+                        <option value="F">{"Classe F"}</option>
+                        <option value="H">{"Classe H"}</option>
+                        <option value="I">{"Classe I"}</option>
+                        <option value="J">{"Classe J"}</option>
+                        <option value="K">{"Classe K"}</option>
+                    </select>
+                </div>
+
+                <div class="dropdown-list-box">
+                    <select required=true class="dropdown-list" name="lang" id="lang-select">
+                        <option disabled=true selected=true>{"Langue"}</option>
+                        <option value="All">{"Allemand"}</option>
+                        <option value="AllDeb">{"Allemand Débutant"}</option>
+                        <option value="Esp">{"Espagnol"}</option>
+                        <option value="EspDeb">{"Espagnol Débutant"}</option>
+                        <option value="Fle">{"Français Langue Etrangère"}</option>
+                    </select>
+                </div>
+
+                <div class="dropdown-list-box">
+                    <select required=true class="dropdown-list" name="class-half" id="class-half-select">
+                        <option disabled=true selected=true>{"Groupe"}</option>
+                        <option value="1">{"Groupe 1"}</option>
+                        <option value="2">{"Groupe 2"}</option>
+                    </select>
+                </div>
+            </>},
         };
         
         let app_link = ctx.props().app_link.clone();
@@ -187,11 +276,11 @@ impl Component for ChangeDataPage {
                 <button id="settings-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::Settings))}/>
             </header>
             <section class="section-page-title">
-                <h2 class="page-title">{t("Changement de mot de passe")}</h2>
+                <h2 class="page-title">{self.data.h2()}</h2>
                 <div class="divider-bar"></div>
             </section>
             <main class="centred" id="auth">
-                <h3 class="login-title">{t("Changer son mot de passse")}</h3>
+                <h3 class="login-title">{self.data.h3()}</h3>
                 <form class="centred">
                     {inputs}
                     if self.is_loading{
