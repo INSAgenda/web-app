@@ -43,6 +43,10 @@
     font-size: 1.2rem;
 }
 
+.setting>h3, .setting>.secondary-button {
+    margin: 0;
+}
+
 #settings-main section{
     width: 50%;
     padding-left: 5%;
