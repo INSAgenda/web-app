@@ -25,7 +25,7 @@ impl Colors {
                 None => HashMap::new(),
             };
             // Collect the colors where user's theme is more filled 
-            let tmp_colors = if light.len() > dark.len(){
+            let tmp_colors = if light.len() > dark.len() {
                 light
             } else {
                 dark
