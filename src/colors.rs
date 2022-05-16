@@ -16,7 +16,6 @@ impl Colors {
         let tmp_colors = local_storage.get_item("colors").unwrap();
         let mut colors: HashMap<String, String> = HashMap::new();
         if tmp_colors.is_none(){
-            log!("last");
             let light: HashMap<String, (String, String)>  = match local_storage.get_item("light-colors").unwrap() {
                 Some(json) => serde_json::from_str(&json).unwrap_or_default(),
                 None => HashMap::new(),
