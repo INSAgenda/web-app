@@ -98,7 +98,7 @@ impl Component for EventComp {
                     EventKind::Tp(kind) => kind,
                     EventKind::Other(kind) => kind,
                 };
-                COLORS.set(kind, background_color); // TODO: remove text's colors
+                COLORS.set(kind, background_color); 
 
                 // We need to set this so that other events know that they have to refresh
                 COLORS_CHANGED.store(true, Ordering::Relaxed);
