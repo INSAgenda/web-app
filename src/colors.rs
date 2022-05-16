@@ -27,7 +27,7 @@ impl Colors {
             // Collect the colors where user's theme is more filled 
             let tmp_colors = if light.len() > dark.len(){
                 light
-            }else{
+            } else {
                 dark
             };
             
