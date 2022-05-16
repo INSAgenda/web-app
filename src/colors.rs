@@ -12,7 +12,7 @@ impl Colors {
     fn restore() -> Colors {
         let local_storage = window().local_storage().unwrap().unwrap();
         
-        /* Convert new color's system  */
+        // Convert new color's system  
         let tmp_colors = local_storage.get_item("colors").unwrap();
         let mut colors: HashMap<String, String> = HashMap::new();
         if tmp_colors.is_none(){
@@ -24,13 +24,12 @@ impl Colors {
                 Some(json) => serde_json::from_str(&json).unwrap_or_default(),
                 None => HashMap::new(),
             };
-            let mut tmp_colors = HashMap::new();
-            /* Collect the colors where user's theme is more filled */
-            if light.len() > dark.len(){
-                tmp_colors = light;
+            // Collect the colors where user's theme is more filled 
+            let tmp_colors = if light.len() > dark.len(){
+                light
             }else{
-                tmp_colors = dark;
-            }
+                dark
+            };
             
             for color in tmp_colors.iter(){
                 let (background, _) = color.1;
