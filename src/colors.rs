@@ -20,7 +20,7 @@ impl Colors {
                 Some(json) => serde_json::from_str(&json).unwrap_or_default(),
                 None => HashMap::new(),
             };
-            let dark: HashMap<String, (String, String)>  = match local_storage.get_item("dark-colors").unwrap() {
+            let dark: HashMap<String, (String, String)> = match local_storage.get_item("dark-colors").unwrap() {
                 Some(json) => serde_json::from_str(&json).unwrap_or_default(),
                 None => HashMap::new(),
             };
