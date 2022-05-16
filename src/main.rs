@@ -152,7 +152,6 @@ impl Component for App {
                 true
             }
             Msg::UserInfoSuccess(user_info) => {
-                log!("Updating 2");
                 self.user_info = Rc::new(Some(user_info));
                 false
             }
