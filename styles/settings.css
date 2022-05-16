@@ -43,6 +43,10 @@
     font-size: 1.2rem;
 }
 
+.setting>h3, .setting>.secondary-button {
+    margin: 0;
+}
+
 #settings-main section{
     width: 50%;
     padding-left: 5%;
@@ -73,7 +77,11 @@
 }
 
 .setting > p{
-    height: 2rem;
+    min-height: 2rem;
+}
+
+#auth .primary-button, #auth .secondary-button {
+    width: min-content;
 }
 
 :root[data-theme="dark"] .setting {
@@ -81,7 +89,7 @@
 }
 
 .setting .glider-selector {
-    margin: 31px 0 10px 0;
+    margin: 1rem 0;
 }
 
 #settings-main > .primary-button, #settings-main > .secondary-button{
@@ -107,5 +115,9 @@
 
     .logout-button > span{
         display: none;
+    }
+
+    #auth .primary-button, #auth .secondary-button {
+        width: calc(100% - 5rem);
     }
 }

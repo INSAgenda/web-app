@@ -40,6 +40,9 @@ features = [
     "DomRect",
     "Navigator",
     "ServiceWorkerContainer",
+    "HtmlSelectElement",
+    "HtmlOptionsCollection",
+    "HtmlOptionElement",
 ]
 
 [profile.release]

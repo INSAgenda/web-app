@@ -90,7 +90,7 @@ use crate::prelude::*;
 pub fn init() {
     std::panic::set_hook(Box::new(|info| {
         let window = window();
-        let document = window.document().unwrap().document_element().unwrap();
+        let doc = window.doc().document_element().unwrap();
 
         let mut payload: Option<String> = info.payload().downcast_ref().map(|v: &String| v.to_owned());
         if payload.is_none() {
@@ -116,6 +116,6 @@ pub fn init() {
         message = message.replace('>', "&gt;");
 
         let html = html.replace("[MESSAGE]", &message);
-        document.set_inner_html(&html);
+        doc.set_inner_html(&html);
     }));
 }

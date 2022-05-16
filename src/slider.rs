@@ -11,6 +11,7 @@ pub struct SliderManager {
     days_offset: Rc<Cell<i32>>,
     swift_next_callback: Closure<dyn FnMut()>,
     swift_prev_callback: Closure<dyn FnMut()>,
+    has_moved: bool,
 }
 
 impl SliderManager {
@@ -38,6 +39,7 @@ impl SliderManager {
             days_offset,
             swift_next_callback,
             swift_prev_callback,
+            has_moved: false,
         }));
         if width() <= 1000 {
             slider.borrow_mut().enable();
@@ -161,9 +163,9 @@ impl SliderManager {
         self.enabled = false;
         self.start_pos = None;
 
-        let document = window().document().unwrap();
-        if let Some(day_container) = document.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()) {
-            day_container.style().set_property("transform", "translateX(0px)").unwrap();
+        let doc = window().doc();
+        if let Some(day_container) = doc.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()) {
+            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
         }
     }
 
@@ -171,8 +173,8 @@ impl SliderManager {
         match &self.day_container {
             Some(day_container) => day_container.clone(),
             None => {
-                let document = window().document().unwrap();
-                let day_container = document.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()).expect("No day container");
+                let doc = window().doc();
+                let day_container = doc.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()).expect("No day container");
                 self.day_container = Some(day_container.clone());
                 day_container
             }
@@ -180,10 +182,10 @@ impl SliderManager {
     }
 
     fn touch_start(&mut self, mouse_x: i32, mouse_y: i32) {
-        let document = window().document().unwrap();
-        self.day_container = document.get_element_by_id("day-container").map(|e| e.dyn_into().unwrap());
+        let doc = window().doc();
+        self.day_container = doc.get_element_by_id("day-container").map(|e| e.dyn_into().unwrap());
         self.start_pos = None;
-        
+        self.has_moved = false;
         if let Some(day_container) = &self.day_container {
             let rect = day_container.get_bounding_client_rect();
             if rect.y() as i32 <= mouse_y && mouse_y <= rect.y() as i32 + rect.height() as i32 {
@@ -202,7 +204,7 @@ impl SliderManager {
             Some(start_pos) => start_pos,
             None => return,
         };
-
+        self.has_moved = true;
         let offset = mouse_x - start_pos;
 
         day_container.style().remove_property("transform").unwrap();
@@ -218,6 +220,9 @@ impl SliderManager {
         let day_container = self.get_cached_day_container();
 
         let offset = mouse_x - start_pos;
+        if !self.has_moved{
+            return;
+        }
         if offset > 90 {
             day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
             window().set_timeout_with_callback(self.swift_prev_callback.as_ref().unchecked_ref()).unwrap();

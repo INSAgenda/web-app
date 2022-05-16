@@ -27,3 +27,23 @@
     border-radius: 1.25rem;
     height: 2.5rem;
 }
+
+/* Big and large variants */
+
+.big-glider-selector {
+    height: 3.5rem;
+}
+
+.big-glider-selector>#glider-selected {
+    height: 3.5rem;
+    border-radius: 1.75rem;
+}
+
+.large-glider-selector {
+    width: 100%;
+}
+
+.large-glider-selector>div {
+    flex-grow: 1;
+    text-align: center;
+}
