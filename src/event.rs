@@ -98,7 +98,7 @@ impl Component for EventComp {
                     EventKind::Tp(kind) => kind,
                     EventKind::Other(kind) => kind,
                 };
-                COLORS.set(kind, background_color,  String::new()); // TODO: remove text's colors
+                COLORS.set(kind, background_color); // TODO: remove text's colors
 
                 // We need to set this so that other events know that they have to refresh
                 COLORS_CHANGED.store(true, Ordering::Relaxed);
@@ -121,7 +121,7 @@ impl Component for EventComp {
             EventKind::Tp(kind) => (format!("TP: {}", kind), kind),
             EventKind::Other(kind) => (kind.to_string(), kind),
         };
-        let (bg_color, _) = COLORS.get(kind);
+        let bg_color = COLORS.get(kind);
         
         let location = ctx.props().event.location.map(|location| {
             let building =  match SETTINGS.building_naming() {
