@@ -29,6 +29,10 @@ pub fn window() -> web_sys::Window {
     }
 }
 
+pub fn now_ts() -> i64 {
+    (js_sys::Date::new_0().get_time() / 1000.0) as i64
+}
+
 pub trait HackTraitDocOnWindow {
     fn doc(&self) -> Document;
 }

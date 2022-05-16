@@ -74,14 +74,17 @@ impl Component for ChangeDataPage {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::SetMessage(message) => {
+                let update_required = self.message != message;
                 self.message = message;
-                true
+                update_required
             },
             Msg::SetLoading(is_loading) => {
                 self.is_loading = is_loading;
                 true
             },
             Msg::Submit => {
+                let mut new_user_info = (*(ctx.props().user_info)).clone();
+
                 let body = match &self.data {
                     Data::NewPassword(password, new_password, confirm_password) => {
                         // Get inputs
@@ -112,6 +115,11 @@ impl Component for ChangeDataPage {
                             return true;
                         }
 
+                        // Update user info
+                        if let Some(new_user_info) = &mut new_user_info {
+                            new_user_info.last_password_mod = Some(now_ts());
+                        }
+
                         format!(r#"{{
                             "password": "{}",
                             "new_password": "{}"
@@ -129,6 +137,11 @@ impl Component for ChangeDataPage {
                         if password.is_empty() || email.is_empty() {
                             ctx.link().send_message(Msg::SetMessage(Some(t("Tous les champs doivent être remplis.").to_string())));
                             return true;
+                        }
+
+                        // Update user info
+                        if let Some(new_user_info) = &mut new_user_info {
+                            new_user_info.email.0 = email.clone();
                         }
 
                         format!(r#"{{
@@ -159,6 +172,18 @@ impl Component for ChangeDataPage {
                             return true;
                         }
 
+                        // Update user info
+                        if let Some(new_user_info) = &mut new_user_info {
+                            let mut parsing_lang = lang.to_uppercase();
+                            if parsing_lang.len() > 3 {
+                                parsing_lang.insert(3, '-'); // Here we might get 'AllDeb' but the parsing method expects 'ALL-DEB'
+                            }
+                            new_user_info.group_desc.promotion = promotion.to_uppercase().parse().unwrap_or(new_user_info.group_desc.promotion);
+                            new_user_info.group_desc.class = class.parse().unwrap_or(new_user_info.group_desc.class);
+                            new_user_info.group_desc.lang = parsing_lang.parse().unwrap_or(new_user_info.group_desc.lang);
+                            new_user_info.group_desc.class_half = class_half.parse().unwrap_or(new_user_info.group_desc.class_half);
+                        }
+
                         format!(r#"{{
                             "new_group":{{
                                 "promotion":"{}",
@@ -184,7 +209,9 @@ impl Component for ChangeDataPage {
                             match response.status() {
                                 200 => {
                                     app_link.send_message(AppMsg::SetPage(Page::Agenda));
-                                    link.send_message(Msg::SetMessage(None));
+                                    if let Some(new_user_info) = new_user_info {
+                                        app_link.send_message(AppMsg::UserInfoSuccess(new_user_info));
+                                    }
                                 }
                                 400 => {
                                     let json = JsFuture::from(response.json().unwrap()).await.map_err(|e| e).unwrap();
@@ -203,6 +230,7 @@ impl Component for ChangeDataPage {
                     }
                     link.send_message(Msg::SetLoading(false));       
                 });
+
                 true
             }
         }
