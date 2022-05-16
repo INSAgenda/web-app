@@ -38,7 +38,7 @@ pub enum Msg {
     SetSliderState(bool),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct UserInfo {
     /// The count of api keys
     pub api_key_count: u64,
@@ -152,6 +152,7 @@ impl Component for App {
                 true
             }
             Msg::UserInfoSuccess(user_info) => {
+                log!("Updating 2");
                 self.user_info = Rc::new(Some(user_info));
                 false
             }
