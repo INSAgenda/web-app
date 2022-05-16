@@ -50,7 +50,6 @@ impl Colors {
         }
         
         Colors(Mutex::new(colors))
-        
     }
 
     pub fn get(&self, course: &str) -> String {
