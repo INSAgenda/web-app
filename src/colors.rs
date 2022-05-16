@@ -42,7 +42,7 @@ impl Colors {
             // Remove old colors
             local_storage.remove_item("light-colors").unwrap();
             local_storage.remove_item("dark-colors").unwrap();
-        }else {
+        } else {
             match tmp_colors {
                 Some(json) => colors = serde_json::from_str(&json).unwrap_or_default(),
                 None => colors = HashMap::new(),
