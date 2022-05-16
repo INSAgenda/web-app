@@ -31,7 +31,7 @@ impl Colors {
                 dark
             };
             
-            for color in tmp_colors.iter(){
+            for color in tmp_colors.iter() {
                 let (background, _) = color.1;
                 colors.insert(color.0.clone(), background.to_string());
             }
