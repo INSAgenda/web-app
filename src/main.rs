@@ -72,11 +72,12 @@ impl Component for App {
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
             let state = e.state().as_string();
             match state.as_deref() {
-                Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
+                Some("settings") | Some("parametres") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
                 Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
-                Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
+                Some("change-password") | Some("changer-mot-de-passe")  => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
                 Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
+
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
             }
@@ -124,13 +125,13 @@ impl Component for App {
 
         // Detect page
         let page = match window().location().hash() {
-            Ok(hash) if hash == "#settings" => Page::Settings,
-            Ok(hash) if hash == "#change-password" => Page::ChangePassword,
+            Ok(hash) if hash == "#parametres" || hash == format!("#{}", te("parametres")) => Page::Settings,
+            Ok(hash) if hash == "#changer-mot-de-passe" || hash == format!("#{}", te("changer-mot-de-passe")) => Page::ChangePassword,
             Ok(hash) if hash == "#change-email" => Page::ChangeEmail,
             Ok(hash) if hash == "#change-group" => Page::ChangeGroup,
             Ok(hash) if hash.is_empty() => Page::Agenda,
             Ok(hash) => {
-                alert(format!("Page {hash} not found"));
+                alert(format!("Page {hash} {}", t("introuvable")));
                 Page::Agenda
             },
             _ => Page::Agenda,
@@ -156,19 +157,19 @@ impl Component for App {
                 false
             }
             Msg::ScheduleFailure(api_error) => {
-                alert(format!("Failed to load events: {}", api_error));
+                alert(format!("{} {}", t("Impossible de charger les cours : "), api_error));
                 false
             },
             Msg::UserInfoFailure(api_error) => {
-                alert(format!("Failed to load user info: {}", api_error));
+                alert(format!("{} {}", t("Impossible de charger les informations utilisateur :") ,api_error));
                 false
             },
             Msg::SetPage(page) => {
-                let history = window().history().expect("Failed to access history");                
+                let history = window().history().expect(t("Impossible de charger l'historique"));                
                 match &page {
-                    Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#settings")).unwrap(),
+                    Page::Settings => history.push_state_with_url(&JsValue::from_str(t("parametres")), t("Paramètres"), Some(&format!("#{}", t("parametres")))).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
-                    Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("#change-password")).unwrap(),
+                    Page::ChangePassword => history.push_state_with_url(&JsValue::from_str(t("changer-mot-de-passe")), t("Changer son mot de passse"), Some(&format!("#{}", t("changer-mot-de-passe")))).unwrap(),
                     Page::ChangeEmail => history.push_state_with_url(&JsValue::from_str("change-email"), "Change email", Some("#change-email")).unwrap(),
                     Page::ChangeGroup => history.push_state_with_url(&JsValue::from_str("change-group"), "Change group", Some("#change-group")).unwrap(),
                 }

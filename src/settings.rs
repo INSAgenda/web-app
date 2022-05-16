@@ -256,6 +256,7 @@ impl Component for SettingsPage {
         let app_link = ctx.props().app_link.clone();
         let app_link2 = ctx.props().app_link.clone();
         let app_link3 = ctx.props().app_link.clone();
+      
         html! {
             <>
             <header>
@@ -277,7 +278,7 @@ impl Component for SettingsPage {
                             <div class="setting">
                                 <h4>{t("Changer de mot de passse")}</h4>
                                 <p>{format!("{} {}.", t("Votre mot de passe a été changé il y a"), last_password_mod_str)}</p>
-                                <div class="primary-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
+                                <div class="primary-button" onclick={move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
                             </div>
                             <div class="setting">
                                 <h4>{t("Changer de classe")}</h4>
