@@ -173,11 +173,32 @@ impl Component for App {
                 should_refresh
             }
             Msg::ScheduleFailure(api_error) => {
-                alert(format!("Failed to load events: {}", api_error));
+                match api_error {
+                    ApiError::Known(error) if error.kind == "counter_too_low" => {
+                        log!("Counter too low");
+                        counter_to_the_moon();
+                        refresh_events(ctx.link().clone());
+                    }
+                    ApiError::Known(error) => alert(format!("Failed to load events: {}", error)),
+                    ApiError::Unknown(error) => {
+                        log!("Failed to load events: {:?}", error);
+                        alert("Failed to load events.");
+                    }
+                }
                 false
             },
             Msg::UserInfoFailure(api_error) => {
-                alert(format!("Failed to load user info: {}", api_error));
+                match api_error {
+                    ApiError::Known(error) if error.kind == "counter_too_low" => {
+                        log!("Counter too low");
+                        counter_to_the_moon();
+                    }
+                    ApiError::Known(error) => alert(format!("Failed to load user info: {}", error)),
+                    ApiError::Unknown(error) => {
+                        log!("Failed to load user info: {:?}", error);
+                        alert("Failed to load user info.");
+                    }
+                }
                 false
             },
             Msg::SetPage(page) => {

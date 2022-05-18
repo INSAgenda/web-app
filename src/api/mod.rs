@@ -36,6 +36,13 @@ fn get_login_info() -> (u64, u64) {
     (api_key, counter)
 }
 
+/// Increase the counter, by a lot. Use when getting `counter_too_low` errors.
+pub fn counter_to_the_moon() {
+    let local_storage = window().local_storage().unwrap().unwrap();
+    let counter: u64 = local_storage.get("counter").unwrap().unwrap().parse().unwrap();
+    local_storage.set("counter", &(counter + 111).to_string()).unwrap();
+}
+
 /// Send a POST request to the API and update the counter
 /// 
 /// debug: http://127.0.0.1/api/{endpoint}
