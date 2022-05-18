@@ -3,7 +3,7 @@ use std::{fs::*, io::{Read, Write}};
 static DEBUG_BUILD_ALGO: &str = r#"
 /// Only the debug server build will accept messages marked with codes generated with this function.
 pub fn gen_code(api_key: u64, counter: u64) -> u64 {
-    api_key + counter
+    api_key.wrapping_add(counter)
 }
 "#;
 
