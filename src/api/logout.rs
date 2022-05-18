@@ -16,10 +16,15 @@ pub(crate) async fn logout()-> Result<(), ApiError> {
         "Api-Key",
         &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
     )?;
-    local_storage.delete("api_key").unwrap();
-    local_storage.delete("counter").unwrap();
-    local_storage.delete("last_updated").unwrap();
-    local_storage.delete("cached_events").unwrap();
+    let theme = local_storage.get("setting-theme").unwrap();
+    let auto = local_storage.get("auto-theme").unwrap();
+    local_storage.clear().unwrap();
+    if let Some(theme) = theme {
+        local_storage.set("setting-theme", &theme).unwrap();
+    }
+    if let Some(auto) = auto {
+        local_storage.set("auto-theme", &auto).unwrap();
+    }
 
     let resp = JsFuture::from(window.fetch_with_request(&request)).await?;
     let resp: web_sys::Response = resp.dyn_into()?;
