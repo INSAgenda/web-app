@@ -28,5 +28,10 @@
     </div>
     <div id="errors">
     </div>
+    <script>
+        if (!(typeof WebAssembly === "object" && typeof WebAssembly.instantiate === "function")) {
+            window.location.href = "/browser-not-supported";
+        }
+    </script>
 </body>
 </html>
