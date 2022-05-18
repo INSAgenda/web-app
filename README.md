@@ -1,15 +1,15 @@
-# INSAgenda's web-app
+# web-app
 
-Welcome to INSAgenda's open-source frontend.  
+Welcome to [INSAgenda](https://insagenda.fr/)'s open-source client repository.  
 Feel free to check our code, suggest ideas and contribute by adding new features.  
 
 ## Running
 
 You can compile this project and run it on your local machine.  
-In order to enable you to test the program, we will provide you with a binary of the backend. This binary is an unoptimized build that is intented to be used for development only. This publicly provided backend is compatible with this public repository.  
-However, the production backend will refuse all requests sent by clients you compiled yourself. Only we can compile clients that will be compatible with the production backend. When you contribute to this repository and your changes are accepted, we will take care of deploying your code on [insagenda.fr](https://insagenda.fr).  
+In order to enable you to test the program, we will provide you with a binary of the backend. This binary is an unoptimized build that is intented to be used for development purposes only. This publicly provided backend is compatible with this public repository.  
+However, the production backend will refuse all requests sent by clients you compiled yourself. Only we can compile clients that will be compatible with the production backend. When you contribute to this repository and your changes are accepted, we will take care of deploying your code to [insagenda.fr](https://insagenda.fr).  
   
-If you need help at any time feel free to come chat with us on [our discord server](https://discord.gg/TpdbUyfcbJ).
+If you need help at any time feel free to come chat with us on [our discord server](https://discord.gg/TpdbUyfcbJ).  
 Now that you know how we work, let's get started!
 
 ### Install the tools
@@ -19,7 +19,7 @@ Please install [Rust](https://www.rust-lang.org/), [SQLite3](https://www.sqlite.
 Here are the commands to run on Ubuntu-based machines:
 
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh # Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sudo sh # Install Rust
 sudo apt install sqlite3 # Install SQLite3
 cargo install trunk # Install Trunk
 ```
@@ -42,11 +42,10 @@ insagenda/
 Commands to run:
 
 ```bash
-mkdir insagenda
+mkdir insagenda && cd insagenda
 git clone https://github.com/INSAgenda/frontend
 git clone https://github.com/INSAgenda/web-app
-mkdir backend
-cd backend
+mkdir backend && cd backend
 wget https://insagenda.fr/development/backend # Download the backend binary
 wget https://insagenda.fr/development/database # Download an empty database ready to be used by the backend
 ```
