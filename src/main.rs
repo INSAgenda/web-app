@@ -58,6 +58,15 @@ pub struct App {
     slider: Rc<RefCell<slider::SliderManager>>,
 }
 
+fn refresh_events(app_link: Scope<App>) {
+    wasm_bindgen_futures::spawn_local(async move {
+        match api::load_events().await {
+            Ok(events) => app_link.send_message(Msg::ScheduleSuccess(events)),
+            Err(e) => app_link.send_message(Msg::ScheduleFailure(e)),
+        }
+    });
+}
+
 impl Component for App {
     type Message = Msg;
     type Properties = ();
@@ -94,13 +103,7 @@ impl Component for App {
             events = cached_events;
         }
         if !skip_event_loading {
-            let link2 = ctx.link().clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                match api::load_events().await {
-                    Ok(events) => link2.send_message(Msg::ScheduleSuccess(events)),
-                    Err(e) => link2.send_message(Msg::ScheduleFailure(e)),
-                }
-            });
+            refresh_events(ctx.link().clone());
         }
 
         // Update user info
@@ -145,15 +148,29 @@ impl Component for App {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::ScheduleSuccess(events) => {
                 self.events = events;
                 true
             }
             Msg::UserInfoSuccess(user_info) => {
+                let mut should_refresh = false;
+
+                // If user's group changed, update the events
+                if let Some(old_user_info) = self.user_info.as_ref() {
+                    if old_user_info.group_desc != user_info.group_desc {
+                        self.events.clear();
+                        refresh_events(ctx.link().clone());
+                        should_refresh = true;
+                    }
+                }
+
+                // Update user info
+                api::save_user_info_cache(&user_info);
                 self.user_info = Rc::new(Some(user_info));
-                false
+
+                should_refresh
             }
             Msg::ScheduleFailure(api_error) => {
                 alert(format!("Failed to load events: {}", api_error));

@@ -21,10 +21,10 @@ pub fn load_cached_user_info() -> Option<(i64, UserInfo)> {
     Some((last_updated, user_info))
 }
 
-fn save_cache(last_updated: i64, user_info: &UserInfo) {
+pub fn save_user_info_cache(user_info: &UserInfo) {
     let local_storage = window().local_storage().unwrap().unwrap();
 
-    let _ = local_storage.set("last_updated_user_info", &last_updated.to_string());
+    let _ = local_storage.set("last_updated_user_info", &now_ts().to_string());
     let _ = local_storage.set("cached_user_info", &serde_json::to_string(&user_info).unwrap());
 }
 
@@ -51,9 +51,6 @@ pub async fn load_user_info() -> Result<UserInfo, ApiError> {
     }
 
     let user_info = json.into_serde().expect("JSON parsing issue");
-
-    let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
-    save_cache(now, &user_info);
 
     Ok(user_info)
 }
