@@ -27,7 +27,7 @@ cargo install trunk # Install Trunk
 ### Organize data
 
 This repository only contains the web-app hosted at `/agenda`.
-All other files are stored in [our frontend repository](https://github.com/INSAgenda/frontend), and the backend is closed-source.
+All other files are stored in [our frontend repository](https://github.com/INSAgenda/frontend), and the backend is closed-source. There is also [another public repository](https://github.com/INSAgenda/data-structures) containing common data structures used by both the web-app and the backend.
 In order to setup your development environment, you will need to clone the frontend repository and download a backend binary.
 
 Here is the recommended file structure:
@@ -36,6 +36,7 @@ Here is the recommended file structure:
 insagenda/
 ├─ frontend/
 ├─ web-app/
+├─ data-structures/
 ├─ backend/
 ```
 
@@ -45,6 +46,7 @@ Commands to run:
 mkdir insagenda && cd insagenda
 git clone https://github.com/INSAgenda/frontend
 git clone https://github.com/INSAgenda/web-app
+git clone https://github.com/INSAgenda/data-structures
 mkdir backend && cd backend
 wget https://insagenda.fr/development/backend # Download the backend binary
 wget https://insagenda.fr/development/database # Download an empty database ready to be used by the backend
