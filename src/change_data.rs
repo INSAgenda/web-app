@@ -146,7 +146,7 @@ impl Component for ChangeDataPage {
 
                         format!(r#"{{
                             "password": "{}",
-                            "email": "{}"
+                            "new_email": "{}"
                         }}"#, password.replace('"', "\\\""), email.replace('"', "\\\""))
                     },
                     Data::Group => {
