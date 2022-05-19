@@ -50,6 +50,7 @@ git clone https://github.com/INSAgenda/data-structures
 mkdir backend && cd backend
 wget https://insagenda.fr/development/backend # Download the backend binary
 wget https://insagenda.fr/development/database # Download an empty database ready to be used by the backend
+cd ..
 ```
 
 ### Run the code
@@ -59,12 +60,9 @@ wget https://insagenda.fr/development/database # Download an empty database read
 rm -rf backend/files
 cp -r frontend/. backend/files 
 mkdir backend/files/agenda
-chown -R $me:$me backend/files
 
-# Run the backend
-cd backend
-./backend &
-cd ..
+# Run the backend on background
+./backend/backend &
 
 # Build the web-app
 cd web-app
