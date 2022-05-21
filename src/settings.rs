@@ -265,7 +265,7 @@ impl Component for SettingsPage {
                 </a>
                 <div class="logout-button" onclick={ctx.link().callback(move |_| Msg::LogOut)}>
                     <span>{t("Se déconnecter")}</span>
-                    <img src="agenda/images/log-out.svg"/>
+                    <img src="agenda/images/log-out.svg" alt="Settings button"/>
                 </div>
             </header>
             <main id="settings-main">
