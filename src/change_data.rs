@@ -238,12 +238,6 @@ impl Component for ChangeDataPage {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Build the custom part of the form
-        let hast_password = match ctx.props().user_info.as_ref(){
-            Some(user_info) => user_info.last_password_mod.is_some(),
-            None => false
-        };
-        log!("hast_password: {}", hast_password);
-        
         let inputs = match &self.data {
             Data::NewPassword(password, new_password, confirm_password) => html! {<>
                 <div class="labeled-input">
@@ -254,13 +248,10 @@ impl Component for ChangeDataPage {
                     <input type="password" placeholder="Password (confirmation)" id="password-input3" autocomplete="new-password" ref={confirm_password.clone()} />
                     <label for="password-input3">{t("Nouveau mot de passe (confirmation)")}</label>
                 </div>
-                if hast_password {
-                    <div class="labeled-input">
+                <div class="labeled-input">
                     <input type="password" placeholder="Password" id="password-input1" autocomplete="password" ref={password.clone()} />
                     <label for="password-input1">{t("Mot de passe actuel")}</label>
                 </div>
-                }
-                
             </>},
             Data::Email(password, email) => html! {<>
                 <div class="labeled-input">
