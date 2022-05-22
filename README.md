@@ -1,7 +1,13 @@
-# web-app
-
-Welcome to [INSAgenda](https://insagenda.fr/)'s main open-source repository.  
-Feel free to check our code, suggest ideas and contribute by adding new features.  
+<div align="center">
+    <a href="https://insagenda.fr/">
+        <img src="https://insagenda.fr/assets/logo/logo.svg" alt="INSAgenda's logo" width="80" height="80">
+    </a>
+    <h1 align="center">INSAgenda (web-app)</h1>
+    <p align="center">
+        INSAgenda is a free website allowing students to view their course schedule at INSA Rouen.<br/>
+        <a href="https://insagenda.fr/"><b>Explore our website »</b></a><br/><br/>
+    </p>
+</div>
 
 ## Table of contents
 
