@@ -19,7 +19,7 @@ body {
     justify-content: space-around;
     height: calc(100vh - 5rem);
     padding: .5rem;
-    min-height: 30rem;
+    min-height: 35rem;
 }
 
 #agenda, #option {
