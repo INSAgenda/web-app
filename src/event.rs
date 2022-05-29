@@ -111,10 +111,6 @@ impl Component for EventComp {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let sec_offset = ctx.props().event.start_unixtime.saturating_sub(ctx.props().day_start + 8 * 3600);
-        let percent_offset = 100.0 / (44100.0) * sec_offset as f64;
-        let percent_height = 100.0 / (44100.0) * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;
-
         let (name, kind) = match &ctx.props().event.kind {
             EventKind::Td(kind) => (format!("TD: {}", kind), kind),
             EventKind::Cm(kind) => (format!("CM: {}", kind), kind),
@@ -137,6 +133,14 @@ impl Component for EventComp {
 
             format!("{} - {} - {} - {}", building, location.building_area, location.level, location.room_number)
         });
+
+        let sec_offset = ctx.props().event.start_unixtime.saturating_sub(ctx.props().day_start + 8 * 3600);
+        let percent_offset = 100.0 / (44100.0) * sec_offset as f64;
+        if ctx.props().event.start_unixtime >= ctx.props().event.end_unixtime {
+            log!("Event {} in {:?}  ends before it starts", name, location);
+            return html!{};
+        }
+        let percent_height = 100.0 / (44100.0) * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;        
     
         let start = Paris.timestamp(ctx.props().event.start_unixtime as i64, 0);
         let end = Paris.timestamp(ctx.props().event.end_unixtime as i64, 0);
