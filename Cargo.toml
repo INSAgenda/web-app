@@ -11,7 +11,7 @@ js-sys = "0.3"
 chrono = {version="0.4", features=["wasmbind"]}
 chrono-tz = "0.6"
 anyhow = "1.0"
-data-structures = {path="../data-structures"}
+common = {path="../common"}
 serde_json = "1.0"
 serde = {version="1.0", features=["derive"]}
 lazy_static = "1.4"
