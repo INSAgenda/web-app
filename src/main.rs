@@ -309,7 +309,9 @@ impl App{
                     }
                     _ => {}
                 }
+                
                 if let Some(dir) = travel_direction{
+                    // Find the closest course in the travel direction
                     let mut close_i = None;
                     let mut min_d = if dir {std::i64::MIN} else {std::i64::MAX};
                     for (i, event) in self.events.iter().enumerate(){
@@ -319,10 +321,12 @@ impl App{
                             min_d = d;
                         }
                     }
+
                     if let Some(i) = close_i{
+                        // if found a closest course, select it
                         let date = Paris.timestamp(self.events[i].start_unixtime as i64, 0).date();
-                        ctx.link().send_message(AppMsg::Goto { day: date.day(), month: date.month(), year: date.year() }); 
-                        }
+                        ctx.link().send_message(AppMsg::Goto { day: date.day(), month: date.month(), year: date.year() });           
+                    }
                 }
 
             }
