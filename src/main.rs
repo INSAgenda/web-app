@@ -38,6 +38,13 @@ pub enum Msg {
     SetSliderState(bool),
 }
 
+#[derive(PartialEq)]
+enum InputAction{
+    None,
+    Next,
+    Previous,
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct UserInfo {
     /// The count of api keys
@@ -56,6 +63,12 @@ pub struct App {
     page: Page,
     user_info: Rc<Option<UserInfo>>,
     slider: Rc<RefCell<slider::SliderManager>>,
+
+    /// input tracking
+    n_reapeted_input: u16,
+    sum_time_beetween: i64,
+    last_input_time: i64,
+    last_action: InputAction,
 }
 
 fn refresh_events(app_link: Scope<App>) {
@@ -145,6 +158,10 @@ impl Component for App {
             page,
             user_info: Rc::new(user_info),
             slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
+            n_reapeted_input: 0,
+            sum_time_beetween: 0,
+            last_input_time: 0,
+            last_action: InputAction::None,
         }
     }
 
@@ -224,6 +241,7 @@ impl Component for App {
                     self.selected_day = self.selected_day.pred();
                 }
                 self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
+                self.handle_action(ctx, InputAction::Previous);
                 true
             },
             Msg::Next => {
@@ -233,10 +251,13 @@ impl Component for App {
                     self.selected_day = self.selected_day.succ();
                 }
                 self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
+                self.handle_action(ctx, InputAction::Next);
                 true
             },
             Msg::Goto {day, month, year} => {
                 self.selected_day = Paris.ymd(year, month, day);
+                self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
+
                 true
             }
             Msg::Refresh => true,
@@ -263,6 +284,55 @@ impl Component for App {
             Page::ChangeEmail => html!( <ChangeDataPage kind="email" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
             Page::ChangeGroup => html!( <ChangeDataPage kind="group" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
         }
+    }
+}
+
+impl App{
+    fn handle_action(&mut self, ctx: &Context<Self>, action: InputAction) {
+        let now = chrono::Local::now().timestamp();
+        let time_between = now - self.last_input_time;
+
+        if self.last_action == action && time_between < 3 {
+            self.n_reapeted_input += 1;
+            self.sum_time_beetween += time_between;
+            // check if is equal to 4 and not if is upper than 3 because if there is no other courses after it will test all courses each click
+            if self.n_reapeted_input == 3 {
+                let mut travel_direction = None;
+                match action {
+                    InputAction::Previous => {
+                        travel_direction = Some(true);
+                        log!("Previous");
+                    }
+                    InputAction::Next => {
+                        travel_direction = Some(false);
+                        log!("Next");
+                    }
+                    _ => {}
+                }
+                if let Some(dir) = travel_direction{
+                    let mut close_i = None;
+                    let mut min_d = if dir {std::i64::MIN} else {std::i64::MAX};
+                    for (i, event) in self.events.iter().enumerate(){
+                        let d = (event.start_unixtime as i64) - self.selected_day.and_hms(0,0,0).timestamp();
+                        if (dir && d < 0 && d > min_d) || (!dir && d > 0 && d < min_d){
+                            close_i = Some(i);
+                            min_d = d;
+                        }
+                    }
+                    if let Some(i) = close_i{
+                        let date = Paris.timestamp(self.events[i].start_unixtime as i64, 0).date();
+                        ctx.link().send_message(AppMsg::Goto { day: date.day(), month: date.month(), year: date.year() }); 
+                        }
+                }
+
+            }
+        } else {
+            self.n_reapeted_input = 0;
+            self.sum_time_beetween = 0;
+        }
+
+        self.last_action = action;
+        self.last_input_time = now;   
     }
 }
 
