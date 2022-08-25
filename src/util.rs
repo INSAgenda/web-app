@@ -1,4 +1,3 @@
-use web_sys::HtmlOptionsCollection;
 use wasm_bindgen::JsCast;
 use web_sys::*;
 

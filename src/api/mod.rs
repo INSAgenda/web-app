@@ -1,7 +1,7 @@
 mod load_events;
 pub use load_events::*;
 mod logout;
-pub use logout::*;
+pub(crate) use logout::*;
 mod user_info;
 pub use user_info::*;
 mod error;
@@ -54,7 +54,5 @@ pub(crate) async fn post_api_request(endpoint: &str, mut request_init: RequestIn
     for (header, value) in headers {
         request.headers().set(header, value)?;
     }
-    let resp = JsFuture::from(window().fetch_with_request(&request)).await;
-
-    resp
+    JsFuture::from(window().fetch_with_request(&request)).await
 }

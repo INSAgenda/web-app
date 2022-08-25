@@ -214,7 +214,7 @@ impl Component for ChangeDataPage {
                                     }
                                 }
                                 400 => {
-                                    let json = JsFuture::from(response.json().unwrap()).await.map_err(|e| e).unwrap();
+                                    let json = JsFuture::from(response.json().unwrap()).await.unwrap();
                                     let error: KnownApiError = json.into_serde().expect("JSON parsing issue");
                                     link.send_message(Msg::SetMessage(Some(error.message_fr)) );
                                 }
