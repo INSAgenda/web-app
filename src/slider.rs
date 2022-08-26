@@ -168,7 +168,9 @@ impl SliderManager {
 
         let doc = window().doc();
         if let Some(day_container) = doc.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()) {
-            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
+            if width() <= 1000 {
+                day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
+            }
         }
     }
 
