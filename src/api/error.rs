@@ -62,7 +62,7 @@ impl From<KnownApiError> for ApiError {
 }
 
 pub fn sentry_report(error: JsValue) {
-    match Reflect::get(&window().document().unwrap(), &JsValue::from_str("Sentry")) {
+    match Reflect::get(&window(), &JsValue::from_str("Sentry")) {
         Ok(sentry) => {
             let capture_exception = Reflect::get(&sentry, &JsValue::from_str("captureException")).expect("captureException in Sentry");
             let capture_exception: Function = capture_exception.dyn_into().expect("captureException to be a function");
@@ -76,7 +76,7 @@ impl ApiError{
     /// Handle API errors and redirect the user to the login page if necessary
     pub fn handle_api_error(&self) {
         sentry_report(JsValue::from_str(&self.to_string_en()));
-        
+
         match self {
             ApiError::Known(error) if error.kind == "counter_too_low" => {
                 log!("Counter too low");
