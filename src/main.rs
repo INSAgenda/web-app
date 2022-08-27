@@ -252,7 +252,7 @@ impl Component for App {
 
 /// Redirect the user
 fn redirect(page: &str){
-    window().location().set_href(page);
+    let _ = window().location().set_href(page);
 }
 
 /// Prevent webdrivers from accessing the page

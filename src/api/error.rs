@@ -20,7 +20,7 @@ impl std::fmt::Display for KnownApiError {
 
 impl KnownApiError {
     fn to_string_en(&self) -> String {
-        let KnownApiError { kind, origin, message_en, message_fr } = self;
+        let KnownApiError { kind, origin, message_en, message_fr: _ } = self;
         format!("{message_en} ({kind} in {origin})")
     }
 }
