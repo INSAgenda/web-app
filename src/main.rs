@@ -255,6 +255,7 @@ impl Component for App {
 fn redirect(page: &str){
     window().location().set_href(page);
 }
+
 /// Prevent webdrivers from accessing the page
 fn stop_bots(window: &web_sys::Window) {
     if js_sys::Reflect::get(&window.navigator(), &"webdriver".to_string().into()).unwrap().as_bool().unwrap_or(false) {
