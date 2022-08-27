@@ -215,8 +215,8 @@ impl Component for ChangeDataPage {
                                 }
                                 400 => {
                                     let json = JsFuture::from(response.json().unwrap()).await.unwrap();
-                                    let error: KnownApiError = json.into_serde().expect("JSON parsing issue");
-                                    link.send_message(Msg::SetMessage(Some(error.message_fr)) );
+                                    let api_error = ApiError::from(json);
+                                    api_error.handle_api_error();
                                 }
                                 _ => {
                                     alert(t("Une erreur inconnue est survenue. Veuillez contacter le support: support@insagenda.fr"));
