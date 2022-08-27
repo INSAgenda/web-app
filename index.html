@@ -34,6 +34,6 @@
             window.location.href = "/unsupported";
         }
     </script>
-    [COMMON-MANIFEST-SCRIPT]
+    <script common_code="manifest-script">async function u(a,b){let c=await (await fetch(b)).text();a.outerHTML=c}var e=document.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
 </body>
 </html>
