@@ -4,6 +4,7 @@ const CRASH_PAGE: &str = r#"
 <head>
   <title>Crash report</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script noinline src="https://js.sentry-cdn.com/5d343bdb601a48ef99cec222ee944943.min.js" crossorigin="anonymous"></script>
   <style>
     body {
       width: 50%;
@@ -80,6 +81,7 @@ const CRASH_PAGE: &str = r#"
     <a href="">Recharger la page</a>
   </div>
   <div style="height: 10rem;"></div>
+  <script>Sentry.captureException("[MESSAGE]");</script>
 </body>
 </html>
 "#;

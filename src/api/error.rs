@@ -1,4 +1,6 @@
+use std::iter::FromIterator;
 use crate::{prelude::*, redirect};
+use js_sys::{Reflect, Function, Array};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -16,6 +18,13 @@ impl std::fmt::Display for KnownApiError {
     }
 }
 
+impl KnownApiError {
+    fn to_string_en(&self) -> String {
+        let KnownApiError { kind, origin, message_en, message_fr } = self;
+        format!("{message_en} ({kind} in {origin})")
+    }
+}
+
 pub enum ApiError {
     Known(KnownApiError),
     Unknown(JsValue),
@@ -26,6 +35,15 @@ impl std::fmt::Display for ApiError {
         match self {
             ApiError::Known(e) => e.fmt(f),
             ApiError::Unknown(e) => write!(f, "{:?}", e),
+        }
+    }
+}
+
+impl ApiError {
+    fn to_string_en(&self) -> String {
+        match self {
+            ApiError::Known(e) => e.to_string_en(),
+            ApiError::Unknown(e) => format!("{:?}", e),
         }
     }
 }
@@ -42,9 +60,22 @@ impl From<KnownApiError> for ApiError {
     }
 }
 
+pub fn sentry_report(error: JsValue) {
+    match Reflect::get(&window(), &JsValue::from_str("Sentry")) {
+        Ok(sentry) => {
+            let capture_exception = Reflect::get(&sentry, &JsValue::from_str("captureException")).expect("captureException in Sentry");
+            let capture_exception: Function = capture_exception.dyn_into().expect("captureException to be a function");
+            Reflect::apply(&capture_exception, &sentry, &Array::from_iter([error])).expect("Failed to call captureException");
+        }
+        Err(_) => log!("Sentry not found")
+    }
+}
+
 impl ApiError{
     /// Handle API errors and redirect the user to the login page if necessary
     pub fn handle_api_error(&self) {
+        sentry_report(JsValue::from_str(&self.to_string_en()));
+
         match self {
             ApiError::Known(error) if error.kind == "counter_too_low" => {
                 log!("Counter too low");
@@ -52,7 +83,7 @@ impl ApiError{
             }
             ApiError::Known(error) => {
                 log!("{}", error.to_string());
-                alert(error.to_string());
+                alert_no_reporting(error.to_string());
                 if error.kind == "invalid_api_key" || error.kind == "authentification_required" || error.kind == "api_key_does_not_exist" || error.kind == "expired" {
                     redirect("/login");
                 }
