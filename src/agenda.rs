@@ -74,7 +74,7 @@ impl App {
         html! {
             <>
             <header>
-                <a id="header-logo" href="../index.html">
+                <a id="header-logo" href="/agenda">
                 <img src="/assets/logo/logo.svg" alt="INSAgenda logo"/> 
                 <h1 id="header-name">{"INSAgenda"}</h1>
                 </a>
