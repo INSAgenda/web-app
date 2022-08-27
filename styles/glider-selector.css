@@ -20,7 +20,7 @@
     transition: all .5s;
 }
 
-#glider-selected {
+.glider-selected {
     position: absolute;
     color: transparent;
     background-color: var(--primary);
@@ -34,7 +34,7 @@
     height: 3.5rem;
 }
 
-.big-glider-selector>#glider-selected {
+.big-glider-selector>.glider-selected {
     height: 3.5rem;
     border-radius: 1.75rem;
 }
