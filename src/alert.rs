@@ -1,7 +1,11 @@
 use crate::prelude::*;
 
 /// Display an alert message to the user
-pub fn alert(message: impl AsRef<str>) {
+fn alert_with_report(message: impl AsRef<str>, report: bool) {
+    if report {
+        sentry_report(JsValue::from_str(message.as_ref()));
+    }
+
     let doc = window().doc();
     let error_container = doc.get_element_by_id("errors").unwrap();
     let alert = doc.create_element("div").unwrap();
@@ -19,4 +23,12 @@ pub fn alert(message: impl AsRef<str>) {
 
     error_container.add_event_listener_with_callback("click", on_click.as_ref().unchecked_ref()).unwrap();
     on_click.forget();
+}
+
+pub fn alert(message: impl AsRef<str>) {
+    alert_with_report(message, true);
+}
+
+pub fn alert_no_reporting(message: impl AsRef<str>) {
+    alert_with_report(message, false);
 }
