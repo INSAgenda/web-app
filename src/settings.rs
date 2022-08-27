@@ -57,7 +57,7 @@ pub enum Theme {
     System,
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Lang {
     French = 0,
     English,

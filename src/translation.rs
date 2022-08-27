@@ -113,7 +113,6 @@ pub fn t(s: &'static str) -> &'static str {
         "Sombre" => "Dark",
         "Clair" => "Light",
         "Par défault, le thème est celui renseigné par votre navigateur." => "By default, the theme is the one set by your browser.",
-        "Langue" => "Language",
         "Nom des bâtiments" => "Building names",
         "Court" => "Short",
         "Long" => "Long",

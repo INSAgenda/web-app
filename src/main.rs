@@ -15,7 +15,6 @@ mod translation;
 
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
-#[derive(PartialEq)]
 pub enum Page {
     Settings,
     ChangePassword,

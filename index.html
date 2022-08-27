@@ -22,6 +22,7 @@
     <!-- 100% privacy friendly analytics -->
     <script data-collect-dnt="true" async defer src="https://zebi.insagenda.fr/latest.js"></script>
     <noscript><img src="https://zebi.insagenda.fr/noscript.gif" alt="zebi" referrerpolicy="no-referrer-when-downgrade" collect-dnt=true /></noscript>
+    <script zebar src="https://js.sentry-cdn.com/5d343bdb601a48ef99cec222ee944943.min.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div id="render">
@@ -33,6 +34,6 @@
             window.location.href = "/unsupported";
         }
     </script>
-    [COMMON-MANIFEST-SCRIPT]
+    <script common_code="manifest-script">async function u(a,b){let c=await (await fetch(b)).text();a.outerHTML=c}var e=document.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
 </body>
 </html>
