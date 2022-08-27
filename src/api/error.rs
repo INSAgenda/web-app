@@ -1,5 +1,4 @@
-use std::{iter::FromIterator, fmt::Write};
-
+use std::iter::FromIterator;
 use crate::{prelude::*, redirect};
 use js_sys::{Reflect, Function, Array};
 use serde::Deserialize;
