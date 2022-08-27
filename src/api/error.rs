@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, redirect};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -39,5 +39,28 @@ impl From<JsValue> for ApiError {
 impl From<KnownApiError> for ApiError {
     fn from(value: KnownApiError) -> Self {
         ApiError::Known(value)
+    }
+}
+
+impl ApiError{
+    /// Handle API errors and redirect the user to the login page if necessary
+    pub fn handle_api_error(&self) {
+        match self {
+            ApiError::Known(error) if error.kind == "counter_too_low" => {
+                log!("Counter too low");
+                counter_to_the_moon();
+            }
+            ApiError::Known(error) => {
+                log!("{}", error.to_string());
+                alert(error.to_string());
+                if error.kind == "invalid_api_key" || error.kind == "authentification_required" || error.kind == "api_key_does_not_exist" {
+                    redirect("/login");
+                }
+            }
+            ApiError::Unknown(error) => {
+                log!("Failed to call api: {:?}", error);
+                redirect("/login");
+            }
+        }
     }
 }
