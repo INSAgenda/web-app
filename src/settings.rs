@@ -1,3 +1,4 @@
+use js_sys::{Reflect, Function, Array};
 use crate::prelude::*;
 
 lazy_static::lazy_static!{
@@ -194,6 +195,14 @@ impl Component for SettingsPage {
                     storage.set_item("auto-theme", "false").unwrap();
                     html.set_attribute("data-theme", theme).unwrap();
                     storage.set_item("setting-theme", theme).unwrap();
+                }
+                // update the theme
+                match Reflect::get(&window.doc(), &JsValue::from_str("reflectTheme")) {
+                    Ok(reflect_theme) => {
+                        let reflect_theme: Function = reflect_theme.dyn_into().expect("reflectTheme can't be a function");
+                        Reflect::apply(&reflect_theme, &window.doc(), &Array::new()).expect("Failed to call reflectTheme");
+                    }
+                    Err(_) => log!("reflectTheme not found")
                 }
 
                 true
