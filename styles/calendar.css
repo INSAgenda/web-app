@@ -2,7 +2,7 @@
     width: min-content;
     border-radius: 1rem;
     box-shadow: 0px 3px 6px #00000029;
-    background-color: var(--closer-background);
+    background-color: var(--day);
 }
 
 /* Header */

@@ -88,7 +88,7 @@
     height: 100%;
     width: 19%;
     margin: 0 .5%;
-    background-color: var(--closer-background);
+    background-color: var(--day);
 }
 
 #settings-button{
