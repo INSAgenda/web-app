@@ -17,18 +17,13 @@ body {
 #agenda-main {
     display: flex;
     justify-content: space-around;
-    height: calc(100vh - 5rem);
-    padding: .5rem;
+    height: calc(100vh - 4rem);
     min-height: 35rem;
 }
 
 #agenda, #option {
-    box-shadow: 0px 0px 15px #00000029;;
-    height: calc(100% - 1.5rem - 1rem);
-    padding: .75rem;
-    margin: .5rem;
-    border-radius: .5rem;
-    background-color: var(--closer-background);
+    height: calc(100% - 2rem);
+    padding: 1rem;
 }
 
 /* Option */

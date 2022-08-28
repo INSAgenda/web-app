@@ -88,6 +88,7 @@
     height: 100%;
     width: 19%;
     margin: 0 .5%;
+    border-radius: 0.3rem;
     background-color: var(--day);
 }
 
