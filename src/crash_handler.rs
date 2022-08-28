@@ -67,7 +67,7 @@ const CRASH_PAGE: &str = r#"
     }
   </style>
 </head>
-<body>
+<body onload="Sentry.captureException(\"[MESSAGE]\");">
   <div id="title">
     <svg xmlns="http://www.w3.org/2000/svg" height="4rem" viewBox="0 0 24 24" width="4rem" fill="\#000000"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
     <h1>Fatal error</h1>
@@ -81,7 +81,6 @@ const CRASH_PAGE: &str = r#"
     <a href="">Recharger la page</a>
   </div>
   <div style="height: 10rem;"></div>
-  <script>Sentry.captureException("[MESSAGE]");</script>
 </body>
 </html>
 "#;
@@ -114,6 +113,7 @@ pub fn init() {
         let encoded_message = encoded_message.as_string().unwrap();
         let html = CRASH_PAGE.replace("[ENCODED MESSAGE]", &encoded_message);
 
+        message = message.replace('\"', "&quot;");
         message = message.replace('<', "&lt;");
         message = message.replace('>', "&gt;");
 
