@@ -278,7 +278,7 @@ impl Component for ChangeDataPage {
                         <select required=true class="dropdown-list" name="promotion" id="promotion-select">
                             <option disabled=true>{"Promotion"}</option>
                             <option value="Stpi1" selected={*promotion == Promotion::Stpi1}>{"STPI1"}</option>
-                            <option disabled=true value="Stpi2" selected={*promotion == Promotion::Stpi2}>{"STPI2"}</option>
+                            <option value="Stpi2" selected={*promotion == Promotion::Stpi2}>{"STPI2"}</option>
                         </select>
                     </div>
 
