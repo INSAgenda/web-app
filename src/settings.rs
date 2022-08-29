@@ -1,4 +1,3 @@
-use js_sys::{Reflect, Function, Array};
 use crate::prelude::*;
 
 lazy_static::lazy_static!{
@@ -138,6 +137,7 @@ impl SettingStore {
 
 pub enum Msg {
     Confirm,
+    Cancel,
     BuildingNamingChange(usize),
     ThemeChange(usize),
     LogOut,
@@ -154,20 +154,36 @@ impl PartialEq for SettingsProps {
     fn eq(&self, _other: &Self) -> bool { true }
 }
 
-pub struct SettingsPage {}
+pub struct SettingsPage {
+    clone_storage: SettingStore,
+}
 
 impl Component for SettingsPage {
     type Message = Msg;
     type Properties = SettingsProps;
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Self {}
+        Self {
+            clone_storage: SettingStore {
+                building_naming: AtomicUsize::new(SETTINGS.building_naming.load(Ordering::Relaxed)),
+                theme: AtomicUsize::new(SETTINGS.theme.load(Ordering::Relaxed)),
+                lang: AtomicUsize::new(SETTINGS.lang.load(Ordering::Relaxed)),
+            }
+        }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Confirm => {
                 ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
+                false
+            }
+            Msg::Cancel => {
+                ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
+                SETTINGS.set_building_naming(self.clone_storage.building_naming.load(Ordering::Relaxed));
+                SETTINGS.set_theme(self.clone_storage.theme.load(Ordering::Relaxed));
+                SETTINGS.set_lang(self.clone_storage.lang.load(Ordering::Relaxed));
+                ctx.props().app_link.send_message(AppMsg::Refresh);
                 false
             }
             Msg::BuildingNamingChange(v) => {
@@ -197,18 +213,8 @@ impl Component for SettingsPage {
                     storage.set_item("setting-theme", theme).unwrap();
                 }
                 // update the theme
-                match Reflect::get(&window.doc(), &JsValue::from_str("reflectTheme")) {
-                    Ok(reflect_theme) => {
-                        let reflect_theme: Function = match reflect_theme.dyn_into() {
-                            Ok(reflect_theme) => reflect_theme,
-                            Err(e) => {log!("Impossible to convert reflectTheme to Function: {:?}", e); return true},
-                        };
-                        
-                        Reflect::apply(&reflect_theme, &window.doc(), &Array::new()).expect("Failed to call reflectTheme");
-                    }
-                    Err(_) => log!("reflectTheme not found")
-                }
-
+                ctx.props().app_link.send_message(AppMsg::Refresh);
+                
                 true
             }
             Msg::LogOut => {
@@ -346,7 +352,7 @@ impl Component for SettingsPage {
                 </div>
 
                 <div class="primary-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
-                <div class="secondary-button " onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda))}>{t("Annuler")}</div>
+                <div class="secondary-button " onclick={ctx.link().callback(move |_| Msg::Cancel)}>{t("Annuler")}</div>
             </main>
             </>
         }

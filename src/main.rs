@@ -223,7 +223,24 @@ impl Component for App {
                 self.selected_day = Paris.ymd(year, month, day);
                 true
             }
-            Msg::Refresh => true,
+            Msg::Refresh => {
+                let window = window();
+                match Reflect::get(&window.doc(), &JsValue::from_str("reflectTheme")) {
+                    Ok(reflect_theme) => {
+                        let reflect_theme: Function = match reflect_theme.dyn_into(){
+                            Ok(reflect_theme) => reflect_theme,
+                            Err(e) => {
+                                log!("Failed to convert reflect theme: {:?}", e);
+                                return false;
+                            }
+                        };
+                    
+                        Reflect::apply(&reflect_theme, &window.doc(), &Array::new()).expect("Failed to call reflectTheme");
+                    }
+                    Err(_) => log!("reflectTheme not found")
+                }
+                true
+            },
             Msg::SetSliderState(state) => {
                 let mut slider = self.slider.borrow_mut();
                 match state {
