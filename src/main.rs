@@ -13,6 +13,8 @@ mod change_data;
 mod prelude;
 mod translation;
 
+use js_sys::{Reflect, Function, Array};
+
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 pub enum Page {
@@ -223,7 +225,17 @@ impl Component for App {
                 self.selected_day = Paris.ymd(year, month, day);
                 true
             }
-            Msg::Refresh => true,
+            Msg::Refresh => {
+                let window = window();
+                match Reflect::get(&window.doc(), &JsValue::from_str("reflectTheme")) {
+                    Ok(reflect_theme) => {
+                        let reflect_theme: Function = reflect_theme.dyn_into().expect("reflectTheme should be a function");
+                        Reflect::apply(&reflect_theme, &window.doc(), &Array::new()).expect("Failed to call reflectTheme");
+                    }
+                    Err(_) => log!("reflectTheme not found")
+                }
+                true
+            },
             Msg::SetSliderState(state) => {
                 let mut slider = self.slider.borrow_mut();
                 match state {
