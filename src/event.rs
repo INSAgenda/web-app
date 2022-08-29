@@ -92,13 +92,7 @@ impl Component for EventComp {
                     None => return false,
                 };
 
-                let kind = match &ctx.props().event.kind {
-                    EventKind::Td(kind) => kind,
-                    EventKind::Cm(kind) => kind,
-                    EventKind::Tp(kind) => kind,
-                    EventKind::Other(kind) => kind,
-                };
-                COLORS.set(kind, background_color); 
+                COLORS.set(&ctx.props().event.summary, background_color); 
 
                 // We need to set this so that other events know that they have to refresh
                 COLORS_CHANGED.store(true, Ordering::Relaxed);
@@ -111,33 +105,41 @@ impl Component for EventComp {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let (name, kind) = match &ctx.props().event.kind {
-            EventKind::Td(kind) => (format!("TD: {}", kind), kind),
-            EventKind::Cm(kind) => (format!("CM: {}", kind), kind),
-            EventKind::Tp(kind) => (format!("TP: {}", kind), kind),
-            EventKind::Other(kind) => (kind.to_string(), kind),
+        // Format title
+        let summary = &ctx.props().event.summary;
+        let name = match &ctx.props().event.kind {
+            Some(EventKind::Td) => format!("TD: {summary}"),
+            Some(EventKind::Tp) => format!("TP: {summary}"),
+            Some(EventKind::Cm) => format!("CM: {summary}"),
+            None => summary.clone(),
         };
-        let bg_color = COLORS.get(kind);
+        let bg_color = COLORS.get(&ctx.props().event.summary);
         
-        let location = ctx.props().event.location.map(|location| {
-            let building =  match SETTINGS.building_naming() {
-                BuildingNaming::Short => match location.building {
-                    Building::Magellan => "Ma",
-                    Building::DumontDurville => "Du",
-                    Building::Bougainville => "Bo",
-                    Building::Darwin => "Da",
-                },
-                BuildingNaming::Long => match location.building {
-                    Building::Magellan => "Magellan",
-                    Building::DumontDurville => "Dumont Durville",
-                    Building::Bougainville => "Bougainville",
-                    Building::Darwin => "Darwin",
-                },
-            };
-
-            format!("{} - {} - {} - {}", building, location.building_area, location.level, location.room_number)
+        // Format location
+        let location = ctx.props().event.location.as_ref().map(|location| {
+            match location {
+                Location::Parsed { building, building_area, level, room_number } => {
+                    let building = match SETTINGS.building_naming() {
+                        BuildingNaming::Short => match building {
+                            Building::Magellan => "Ma",
+                            Building::DumontDurville => "Du",
+                            Building::Bougainville => "Bo",
+                            Building::Darwin => "Da",
+                        },
+                        BuildingNaming::Long => match building {
+                            Building::Magellan => "Magellan",
+                            Building::DumontDurville => "Dumont Durville",
+                            Building::Bougainville => "Bougainville",
+                            Building::Darwin => "Darwin",
+                        },
+                    };
+                    format!("{} - {} - {} - {}", building, building_area, level, room_number)
+                }
+                Location::Unparsed(location) => location.clone(),
+            }
         });
 
+        // Calculate position
         let sec_offset = ctx.props().event.start_unixtime.saturating_sub(ctx.props().day_start + 8 * 3600);
         let percent_offset = 100.0 / (44100.0) * sec_offset as f64;
         if ctx.props().event.start_unixtime >= ctx.props().event.end_unixtime {
