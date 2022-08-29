@@ -124,10 +124,14 @@ impl Component for EventComp {
                 BuildingNaming::Short => match location.building {
                     Building::Magellan => "Ma",
                     Building::DumontDurville => "Du",
+                    Building::Bougainville => "Bo",
+                    Building::Darwin => "Da",
                 },
                 BuildingNaming::Long => match location.building {
                     Building::Magellan => "Magellan",
                     Building::DumontDurville => "Dumont Durville",
+                    Building::Bougainville => "Bougainville",
+                    Building::Darwin => "Darwin",
                 },
             };
 
