@@ -164,7 +164,7 @@ impl Component for SettingsPage {
 
     fn create(_ctx: &Context<Self>) -> Self {
         Self {
-            clone_storage: SettingStore{
+            clone_storage: SettingStore {
                 building_naming: AtomicUsize::new(SETTINGS.building_naming.load(Ordering::Relaxed)),
                 theme: AtomicUsize::new(SETTINGS.theme.load(Ordering::Relaxed)),
                 lang: AtomicUsize::new(SETTINGS.lang.load(Ordering::Relaxed)),
