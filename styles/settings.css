@@ -90,7 +90,7 @@
     margin: 1.2rem auto;
 }
 
-@media screen and (max-width: 800px){
+@media all and (max-width: 800px){
     .settings-group {
         align-items: center;
     }
