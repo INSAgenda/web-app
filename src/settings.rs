@@ -199,7 +199,11 @@ impl Component for SettingsPage {
                 // update the theme
                 match Reflect::get(&window.doc(), &JsValue::from_str("reflectTheme")) {
                     Ok(reflect_theme) => {
-                        let reflect_theme: Function = reflect_theme.dyn_into().expect("reflectTheme should be a function");
+                        let reflect_theme: Function = match reflect_theme.dyn_into() {
+                            Ok(reflect_theme) => reflect_theme,
+                            Err(e) => {log!("Impossible to convert reflectTheme to Function: {:?}", e); return true},
+                        };
+                        
                         Reflect::apply(&reflect_theme, &window.doc(), &Array::new()).expect("Failed to call reflectTheme");
                     }
                     Err(_) => log!("reflectTheme not found")
