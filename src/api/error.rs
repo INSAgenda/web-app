@@ -63,9 +63,20 @@ impl From<KnownApiError> for ApiError {
 pub fn sentry_report(error: JsValue) {
     match Reflect::get(&window(), &JsValue::from_str("Sentry")) {
         Ok(sentry) => {
-            let capture_exception = Reflect::get(&sentry, &JsValue::from_str("captureException")).expect("captureException in Sentry");
-            let capture_exception: Function = capture_exception.dyn_into().expect("captureException to be a function");
-            Reflect::apply(&capture_exception, &sentry, &Array::from_iter([error])).expect("Failed to call captureException");
+            let capture_exception = match Reflect::get(&sentry, &JsValue::from_str("captureException")){
+                Ok(capture_exception) => capture_exception,
+                Err(e) => {log!("Impossible to get the sentry JsValue: {:?}", e); return},
+            };
+            
+            let capture_exception: Function = match capture_exception.dyn_into(){
+                Ok(capture_exception) => capture_exception,
+                Err(e) => {log!("Impossible to get the sentry function: {:?}", e); return},
+            };
+            
+            match Reflect::apply(&capture_exception, &sentry, &Array::from_iter([error])){
+                Ok(_) => {},
+                Err(e) => log!("Impossible to call the sentry function: {:?}", e),
+            }
         }
         Err(_) => log!("Sentry not found")
     }

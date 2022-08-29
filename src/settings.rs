@@ -214,7 +214,7 @@ impl Component for SettingsPage {
                 }
                 // update the theme
                 ctx.props().app_link.send_message(AppMsg::Refresh);
-
+                
                 true
             }
             Msg::LogOut => {
