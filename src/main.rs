@@ -231,7 +231,7 @@ impl Component for App {
                             Ok(reflect_theme) => reflect_theme,
                             Err(e) => {
                                 log!("Failed to convert reflect theme: {:?}", e);
-                                return false;
+                                return true;
                             }
                         };
                     
