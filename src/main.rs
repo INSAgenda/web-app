@@ -13,8 +13,6 @@ mod change_data;
 mod prelude;
 mod translation;
 
-use js_sys::{Reflect, Function, Array};
-
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 pub enum Page {
