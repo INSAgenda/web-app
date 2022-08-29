@@ -339,6 +339,7 @@ impl App{
         self.last_action = action;
         self.last_input_time = now;   
     }
+}
 
 /// Redirect the user
 fn redirect(page: &str){
