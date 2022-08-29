@@ -90,7 +90,11 @@
     margin: 1.2rem auto;
 }
 
-@media screen and (max-width: 800px){
+@media all and (max-width: 800px){
+    .settings-group {
+        align-items: center;
+    }
+    
     #settings-container {
         padding: .6rem 10%;
         display: flex;
@@ -105,6 +109,11 @@
 
     .setting {
         padding: 1.5rem 0;
+        text-align: center;
+        width: 100%;
+        flex-direction: column;
+        display: flex;
+        align-items: center;
     }
 
     .setting > .primary-button, .setting > .secondary-button {
@@ -113,8 +122,6 @@
 
     #settings-main > .primary-button, #settings-main > .secondary-button {
         width: calc(80% - 5rem - 4px);
-        margin-left: 10%;
-        margin-right: 10%;
     }
 
     #settings-main section:first-child {
