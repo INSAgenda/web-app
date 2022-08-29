@@ -15,7 +15,6 @@ mod translation;
 
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
-#[derive(PartialEq)]
 pub enum Page {
     Settings,
     ChangePassword,
@@ -190,32 +189,17 @@ impl Component for App {
                 should_refresh
             }
             Msg::ScheduleFailure(api_error) => {
+                api_error.handle_api_error();
                 match api_error {
                     ApiError::Known(error) if error.kind == "counter_too_low" => {
-                        log!("Counter too low");
-                        counter_to_the_moon();
                         refresh_events(ctx.link().clone());
                     }
-                    ApiError::Known(error) => alert(format!("Failed to load events: {}", error)),
-                    ApiError::Unknown(error) => {
-                        log!("Failed to load events: {:?}", error);
-                        alert("Failed to load events.");
-                    }
+                    _ => {},
                 }
                 false
             },
             Msg::UserInfoFailure(api_error) => {
-                match api_error {
-                    ApiError::Known(error) if error.kind == "counter_too_low" => {
-                        log!("Counter too low");
-                        counter_to_the_moon();
-                    }
-                    ApiError::Known(error) => alert(format!("Failed to load user info: {}", error)),
-                    ApiError::Unknown(error) => {
-                        log!("Failed to load user info: {:?}", error);
-                        alert("Failed to load user info.");
-                    }
-                }
+                api_error.handle_api_error();
                 false
             },
             Msg::SetPage(page) => {
@@ -260,7 +244,24 @@ impl Component for App {
 
                 true
             }
-            Msg::Refresh => true,
+            Msg::Refresh => {
+                let window = window();
+                match Reflect::get(&window.doc(), &JsValue::from_str("reflectTheme")) {
+                    Ok(reflect_theme) => {
+                        let reflect_theme: Function = match reflect_theme.dyn_into(){
+                            Ok(reflect_theme) => reflect_theme,
+                            Err(e) => {
+                                log!("Failed to convert reflect theme: {:?}", e);
+                                return false;
+                            }
+                        };
+                    
+                        Reflect::apply(&reflect_theme, &window.doc(), &Array::new()).expect("Failed to call reflectTheme");
+                    }
+                    Err(_) => log!("reflectTheme not found")
+                }
+                true
+            },
             Msg::SetSliderState(state) => {
                 let mut slider = self.slider.borrow_mut();
                 match state {
@@ -338,6 +339,10 @@ impl App{
         self.last_action = action;
         self.last_input_time = now;   
     }
+
+/// Redirect the user
+fn redirect(page: &str){
+    let _ = window().location().set_href(page);
 }
 
 /// Prevent webdrivers from accessing the page

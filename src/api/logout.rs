@@ -7,10 +7,7 @@ pub(crate) async fn logout()-> Result<(), ApiError> {
     
     let mut init = web_sys::RequestInit::new();
     init.method("POST");
-    #[cfg(debug_assertions)]
-    let request = Request::new_with_str_and_init("http://127.0.0.1:8080/api/auth/logout", &init).unwrap();
-    #[cfg(not(debug_assertions))]
-    let request = Request::new_with_str_and_init("https://insagenda.fr/api/auth/logout", &init).unwrap();
+    let request = Request::new_with_str_and_init("/api/auth/logout", &init).unwrap();
 
     request.headers().set(
         "Api-Key",

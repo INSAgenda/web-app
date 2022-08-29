@@ -32,10 +32,7 @@ fn save_cache(last_updated: i64, events: &[RawEvent]) {
 pub async fn load_events() -> Result<Vec<RawEvent>, ApiError> {
     let (api_key, counter) = get_login_info();
 
-    #[cfg(debug_assertions)]
-    let request = Request::new_with_str("http://127.0.0.1:8080/api/schedule")?;
-    #[cfg(not(debug_assertions))]
-    let request = Request::new_with_str("https://insagenda.fr/api/schedule")?;
+    let request = Request::new_with_str("/api/schedule")?;
 
     request.headers().set(
         "Api-Key",

@@ -9,3 +9,4 @@ pub use web_sys::{HtmlElement, HtmlInputElement, RequestInit, Request};
 pub use wasm_bindgen_futures::{JsFuture, spawn_local};
 pub use lazy_static::lazy_static;
 pub use serde::{Serialize, Deserialize};
+pub use js_sys::{Reflect, Function, Array};

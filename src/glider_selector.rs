@@ -82,7 +82,7 @@ impl Component for GliderSelector {
             let width = self.sizes[self.selected];
 
             html! {
-                <div id="glider-selected" style={format!("left: {}px; width: calc({}px - 2rem);", offset, width)}></div>
+                <div class="glider-selected" style={format!("left: {}px; width: calc({}px - 2rem);", offset, width)}></div>
             }
         } else {
             let link2 = ctx.link().clone();
@@ -92,7 +92,7 @@ impl Component for GliderSelector {
             });
 
             html! {
-                <div id="glider-selected"></div>
+                <div class="glider-selected"></div>
             }
         };
 

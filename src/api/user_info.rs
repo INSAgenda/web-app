@@ -31,10 +31,7 @@ pub fn save_user_info_cache(user_info: &UserInfo) {
 pub async fn load_user_info() -> Result<UserInfo, ApiError> {
     let (api_key, counter) = get_login_info();
 
-    #[cfg(debug_assertions)]
-    let request = Request::new_with_str("http://127.0.0.1:8080/api/user-info")?;
-    #[cfg(not(debug_assertions))]
-    let request = Request::new_with_str("https://insagenda.fr/api/user-info")?;
+    let request = Request::new_with_str("/api/user-info")?;
 
     request.headers().set(
         "Api-Key",

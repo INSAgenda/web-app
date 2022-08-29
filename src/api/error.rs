@@ -1,4 +1,6 @@
-use crate::prelude::*;
+use std::iter::FromIterator;
+use crate::{prelude::*, redirect};
+use js_sys::{Reflect, Function, Array};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -16,6 +18,13 @@ impl std::fmt::Display for KnownApiError {
     }
 }
 
+impl KnownApiError {
+    fn to_string_en(&self) -> String {
+        let KnownApiError { kind, origin, message_en, message_fr: _ } = self;
+        format!("{message_en} ({kind} in {origin})")
+    }
+}
+
 pub enum ApiError {
     Known(KnownApiError),
     Unknown(JsValue),
@@ -30,6 +39,15 @@ impl std::fmt::Display for ApiError {
     }
 }
 
+impl ApiError {
+    fn to_string_en(&self) -> String {
+        match self {
+            ApiError::Known(e) => e.to_string_en(),
+            ApiError::Unknown(e) => format!("{:?}", e),
+        }
+    }
+}
+
 impl From<JsValue> for ApiError {
     fn from(value: JsValue) -> Self {
         ApiError::Unknown(value)
@@ -39,5 +57,52 @@ impl From<JsValue> for ApiError {
 impl From<KnownApiError> for ApiError {
     fn from(value: KnownApiError) -> Self {
         ApiError::Known(value)
+    }
+}
+
+pub fn sentry_report(error: JsValue) {
+    match Reflect::get(&window(), &JsValue::from_str("Sentry")) {
+        Ok(sentry) => {
+            let capture_exception = match Reflect::get(&sentry, &JsValue::from_str("captureException")){
+                Ok(capture_exception) => capture_exception,
+                Err(e) => {log!("Impossible to get the sentry JsValue: {:?}", e); return},
+            };
+            
+            let capture_exception: Function = match capture_exception.dyn_into(){
+                Ok(capture_exception) => capture_exception,
+                Err(e) => {log!("Impossible to get the sentry function: {:?}", e); return},
+            };
+            
+            match Reflect::apply(&capture_exception, &sentry, &Array::from_iter([error])){
+                Ok(_) => {},
+                Err(e) => log!("Impossible to call the sentry function: {:?}", e),
+            }
+        }
+        Err(_) => log!("Sentry not found")
+    }
+}
+
+impl ApiError{
+    /// Handle API errors and redirect the user to the login page if necessary
+    pub fn handle_api_error(&self) {
+        sentry_report(JsValue::from_str(&self.to_string_en()));
+
+        match self {
+            ApiError::Known(error) if error.kind == "counter_too_low" => {
+                log!("Counter too low");
+                counter_to_the_moon();
+            }
+            ApiError::Known(error) => {
+                log!("{}", error.to_string());
+                alert_no_reporting(error.to_string());
+                if error.kind == "invalid_api_key" || error.kind == "authentification_required" || error.kind == "api_key_does_not_exist" || error.kind == "expired" {
+                    redirect("/login");
+                }
+            }
+            ApiError::Unknown(error) => {
+                log!("Failed to call api: {:?}", error);
+                redirect("/login");
+            }
+        }
     }
 }

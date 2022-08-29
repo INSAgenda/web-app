@@ -1,7 +1,7 @@
 mod load_events;
 pub use load_events::*;
 mod logout;
-pub use logout::*;
+pub(crate) use logout::*;
 mod user_info;
 pub use user_info::*;
 mod error;
@@ -33,19 +33,12 @@ pub fn counter_to_the_moon() {
 }
 
 /// Send a POST request to the API and update the counter
-/// 
-/// debug: http://127.0.0.1/api/{endpoint}
-/// release: https://insagenda.fr/api/{endpoint}
-/// 
 pub(crate) async fn post_api_request(endpoint: &str, mut request_init: RequestInit, headers: Vec<(&str, &str)>) -> Result<JsValue, JsValue> {
     let (api_key, counter) = get_login_info();
     
     request_init.method("POST");
 
-    #[cfg(debug_assertions)]
-    let request = Request::new_with_str_and_init(&format!("http://127.0.0.1:8080/api/{}", endpoint), &request_init).unwrap();
-    #[cfg(not(debug_assertions))]
-    let request = Request::new_with_str_and_init(&format!("https://insagenda.fr/api/{}", endpoint), &request_init).unwrap();
+    let request = Request::new_with_str_and_init(&format!("/api/{}", endpoint), &request_init).unwrap();
 
     request.headers().set(
         "Api-Key",
@@ -54,7 +47,5 @@ pub(crate) async fn post_api_request(endpoint: &str, mut request_init: RequestIn
     for (header, value) in headers {
         request.headers().set(header, value)?;
     }
-    let resp = JsFuture::from(window().fetch_with_request(&request)).await;
-
-    resp
+    JsFuture::from(window().fetch_with_request(&request)).await
 }
