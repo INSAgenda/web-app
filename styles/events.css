@@ -32,7 +32,8 @@
 .event-details {
     width: calc(214px - 2.2rem); /* ALED */
     font-size: 1rem;
-    position: absolute;
+    position: relative;
+    top: -100%;
     background-color: var(--closer-background);
     color: var(--text);
     border-radius: 1rem;
