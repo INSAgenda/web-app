@@ -43,11 +43,17 @@ pub async fn load_user_info() -> Result<UserInfo, ApiError> {
     let json = JsFuture::from(resp.json()?).await?;
 
     if resp.status() == 400 {
-        let error: KnownApiError = json.into_serde().expect("JSON parsing issue");
+        let error: KnownApiError = match json.into_serde() {
+            Ok(error) => error,
+            _ => return Err(ApiError::Unknown(json)),
+        };
         return Err(error.into());
     }
 
-    let user_info = json.into_serde().expect("JSON parsing issue");
+    let user_info = match json.into_serde() {
+        Ok(user_info) => user_info,
+        _ => return Err(ApiError::Unknown(json)),
+    };
 
     Ok(user_info)
 }

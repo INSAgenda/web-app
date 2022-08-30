@@ -44,11 +44,17 @@ pub async fn load_events() -> Result<Vec<RawEvent>, ApiError> {
     let json = JsFuture::from(resp.json()?).await?;
 
     if resp.status() == 400 {
-        let error: KnownApiError = json.into_serde().expect("JSON parsing issue");
+        let error: KnownApiError = match json.into_serde() {
+            Ok(error) => error,
+            _ => return Err(ApiError::Unknown(json)),
+        };
         return Err(error.into());
     }
 
-    let events: Vec<RawEvent> = json.into_serde().expect("JSON parsing issue");
+    let events: Vec<RawEvent> = match json.into_serde() {
+        Ok(events) => events,
+        _ => return Err(ApiError::Unknown(json)),
+    };
 
     let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
     save_cache(now, &events);

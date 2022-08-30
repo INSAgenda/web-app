@@ -28,7 +28,10 @@ pub(crate) async fn logout()-> Result<(), ApiError> {
     let json = JsFuture::from(resp.json()?).await?;
     
     if resp.status() != 200 {
-        let error: KnownApiError = json.into_serde().expect("JSON parsing issue");
+        let error: KnownApiError = match json.into_serde(){
+            Ok(error) => error,
+            _ => return Err(ApiError::Unknown(json)),
+        };
         return Err(error.into());
     }
     Ok(())
