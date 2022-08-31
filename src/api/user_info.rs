@@ -13,11 +13,11 @@ pub fn load_cached_user_info() -> Option<(i64, UserInfo)> {
         _ => return None,
     };
 
-    let user_info = match serde_json::from_str(&user_info_str) {
+    let user_info: UserInfo = match serde_json::from_str(&user_info_str) {
         Ok(user_info) => user_info,
         _ => return None,
     };
-
+    set_sentry_user_info(&user_info.email.0);
     Some((last_updated, user_info))
 }
 
@@ -50,10 +50,13 @@ pub async fn load_user_info() -> Result<UserInfo, ApiError> {
         return Err(error.into());
     }
 
-    let user_info = match json.into_serde() {
+    let user_info: UserInfo = match json.into_serde() {
         Ok(user_info) => user_info,
         _ => return Err(ApiError::Unknown(json)),
     };
+    set_sentry_user_info(&user_info.email.0);
 
     Ok(user_info)
 }
+
+

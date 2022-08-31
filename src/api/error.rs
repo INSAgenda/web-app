@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 use crate::{prelude::*, redirect};
-use js_sys::{Reflect, Function, Array};
+use js_sys::{Reflect, Function, Array, };
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -81,6 +81,34 @@ pub fn sentry_report(error: JsValue) {
         Err(_) => log!("Sentry not found")
     }
 }
+
+pub fn set_sentry_user_info(email: &str) {
+    match Reflect::get(&window(), &JsValue::from_str("Sentry")) {
+        Ok(sentry) => {
+            let set_user = match Reflect::get(&sentry, &JsValue::from_str("setUser")){
+                Ok(set_user) => set_user,
+                Err(e) => {log!("Impossible to get the sentry JsValue: {:?}", e); return},
+            };
+            
+            let set_user: Function = match set_user.dyn_into(){
+                Ok(set_user) => set_user,
+                Err(e) => {log!("Impossible to get the sentry function: {:?}", e); return},
+            };
+            let obj = js_sys::Object::new();
+            match js_sys::Reflect::set(&obj, &"email".into(), &email.into()){
+                Ok(_) => {},
+                Err(e) => log!("Impossible to set the email for sentry: {:?}", e),
+            }
+            let array = Array::from_iter([obj]);
+            match Reflect::apply(&set_user, &sentry, &array){
+                Ok(_) => {},
+                Err(e) => log!("Impossible to call the sentry function: {:?}", e),
+            }
+        }
+        Err(_) => log!("Sentry not found")
+    }
+}
+
 
 impl ApiError{
     /// Handle API errors and redirect the user to the login page if necessary
