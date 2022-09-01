@@ -93,6 +93,7 @@
 @media screen and (max-width: 1000px) {
     .event-details {
         position: fixed;
+        top: unset;
         bottom: 0px;
         right: 0px !important;
         min-height: 30%;
