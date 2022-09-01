@@ -77,7 +77,7 @@ cd ..
 
 ```bash
 # Run the backend in a terminal
-./backend/backend &
+./backend/backend
 
 # Build the web-app in another terminal
 cd web-app
