@@ -84,7 +84,9 @@ impl Component for ChangeDataPage {
             },
             Msg::Submit => {
                 let mut new_user_info = (*(ctx.props().user_info)).clone();
-
+                let user_info = ctx.props().user_info.as_ref();
+                let has_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(false);
+        
                 let body = match &self.data {
                     Data::NewPassword(password, new_password, confirm_password) => {
                         // Get inputs
@@ -125,7 +127,7 @@ impl Component for ChangeDataPage {
                             "new_password": "{}"
                         }}"#, password.replace('"', "\\\""), new_password.replace('"', "\\\""))
                     },
-                    Data::Email(password, email) => {
+                    Data::Email(password, email) if has_password => {
                         // Get inputs
                         let input = password.cast::<HtmlInputElement>().unwrap();
                         let password = input.value();
@@ -193,6 +195,7 @@ impl Component for ChangeDataPage {
                             }}
                         }}"#, promotion, lang, class, class_half)
                     },
+                    _ => return false
                 };
 
                 ctx.link().send_message(Msg::SetLoading(true));
@@ -238,8 +241,17 @@ impl Component for ChangeDataPage {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Build the custom part of the form
+        let user_info = ctx.props().user_info.as_ref();
+        let display_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(false);
+        
         let inputs = match &self.data {
-            Data::NewPassword(password, new_password, confirm_password) => html! {<>
+            Data::NewPassword(password, new_password, confirm_password) => html! {<>    
+                if display_password {     
+                    <div class="labeled-input">
+                        <input type="password" placeholder="Password" id="password-input1" autocomplete="password" ref={password.clone()} />
+                        <label for="password-input1">{t("Mot de passe actuel").to_string() + if user_info.is_some() {""} else {t(" (vide si inexistant)")}}</label>
+                    </div>
+                }
                 <div class="labeled-input">
                     <input type="password" placeholder="New password" id="password-input2" autocomplete="new-password" ref={new_password.clone()}/>
                     <label for="password-input2">{t("Nouveau mot de passe")}</label>
@@ -247,10 +259,6 @@ impl Component for ChangeDataPage {
                 <div class="labeled-input">
                     <input type="password" placeholder="Password (confirmation)" id="password-input3" autocomplete="new-password" ref={confirm_password.clone()} />
                     <label for="password-input3">{t("Nouveau mot de passe (confirmation)")}</label>
-                </div>
-                <div class="labeled-input">
-                    <input type="password" placeholder="Password" id="password-input1" autocomplete="password" ref={password.clone()} />
-                    <label for="password-input1">{t("Mot de passe actuel")}</label>
                 </div>
             </>},
             Data::Email(password, email) => html! {<>

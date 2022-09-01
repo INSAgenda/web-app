@@ -42,6 +42,7 @@ pub fn t(s: &'static str) -> &'static str {
         "Changer d'email" => "Change email",
         "Changer de groupe" => "Change group",
         "Nouveau mot de passe" => "New password",
+        "Ajouter un mot de passe" => "Add password",
         "Nouvelle adresse email" => "New email",
         "Nouveau groupe" => "New group",
         "Tous les champs doivent être remplis." => "All fields must be filled.",
@@ -97,6 +98,7 @@ pub fn t(s: &'static str) -> &'static str {
         "Paramètres du compte" => "Account parameters",
         "Mot de passe" => "Password",
         "Votre mot de passe a été changé il y a" => "Your password was changed ",
+        "Vous n'avez pas encore de mot de passe." => "You have no password yet.",
         "Modifier" => "Modify",
         "Adresse mail" => "Email address",
         "Votre adresse actuelle est" => "Your current email address is",
@@ -120,7 +122,7 @@ pub fn t(s: &'static str) -> &'static str {
         "Valider" => "Save",
         "Se déconnecter" => "Log out",
         "Changer de mot de passse" => "Change password",
-
+        "(vide si inexistant)" => "(empty if non-existent)", 
         s => {
             log!("Untranslated string: {}", s);
             s

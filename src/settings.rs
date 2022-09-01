@@ -274,6 +274,10 @@ impl Component for SettingsPage {
         let app_link = ctx.props().app_link.clone();
         let app_link2 = ctx.props().app_link.clone();
         let app_link3 = ctx.props().app_link.clone();
+
+        let user_info = ctx.props().user_info.as_ref();
+        let has_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(false);
+
         html! {
             <>
             <header>
@@ -292,21 +296,31 @@ impl Component for SettingsPage {
                     <section>
                         <h3>{t("Général")}</h3>
                         <div class="settings-group">
+                            if has_password {
                             <div class="setting">
                                 <h4>{t("Changer de mot de passse")}</h4>
                                 <p>{format!("{} {}.", t("Votre mot de passe a été changé il y a"), last_password_mod_str)}</p>
                                 <div class="primary-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
                             </div>
+                            } else {
+                            <div class="setting">
+                                <h4>{t("Ajouter un mot de passe")}</h4>
+                                <p>{t("Vous n'avez pas encore de mot de passe.")}</p>
+                                <div class="primary-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
+                            </div>
+                            }
                             <div class="setting">
                                 <h4>{t("Changer de classe")}</h4>
                                 <p>{format!("{} {} {} {}.", t("Vous êtes actuellement en"), promotion, t("dans le groupe"), class)}</p>
                                 <div class="primary-button" onclick={move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangeGroup))}>{t("Modifier")}</div>
                             </div>
+                            if has_password {
                             <div class="setting">
                                 <h4>{t("Adresse mail")}</h4>
                                 <p>{format!("{} {email}.{verified_msg}", t("Votre adresse actuelle est"))}</p>
                                 <div class="primary-button" onclick={move |_| app_link3.send_message(AppMsg::SetPage(Page::ChangeEmail))}>{t("Modifier")}</div>
                             </div>
+                            }
                         </div>
                     </section>
                     <section>
