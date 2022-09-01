@@ -1,6 +1,6 @@
 use std::iter::FromIterator;
 use crate::{prelude::*, redirect};
-use js_sys::{Reflect, Function, Array};
+use js_sys::{Reflect, Function, Array, Object};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -82,6 +82,23 @@ pub fn sentry_report(error: JsValue) {
     }
 }
 
+pub fn set_sentry_user_info(email: &str) {
+    use Reflect::*;
+    fn set_sentry_user_info_dirty(email: &str) -> Result<(), String> {
+        let sentry = get(&window(), &JsValue::from_str("Sentry")).map_err(|e| format!("could not get Sentry {e:?}"))?;
+        let set_user = get(&sentry, &JsValue::from_str("setUser")).map_err(|e| format!("could not get Sentry.setUser {e:?}"))?;
+        let set_user = set_user.dyn_into::<Function>().map_err(|e| format!("Sentry.setUser isn't a function {e:?}"))?;
+        let obj = Object::new();
+        set(&obj, &"email".into(), &email.into()).map_err(|e| format!("could not set email {e:?}"))?;
+        let array = Array::from_iter([obj]);
+        apply(&set_user, &sentry, &array).map_err(|e| format!("could not call Sentry.setUser {e:?}"))?;
+        Ok(())
+    }
+    if let Err(e) = set_sentry_user_info_dirty(email) {
+        log!("Could not set sentry user info: {}", e);
+    }
+}
+
 impl ApiError{
     /// Handle API errors and redirect the user to the login page if necessary
     pub fn handle_api_error(&self) {
@@ -101,7 +118,6 @@ impl ApiError{
             }
             ApiError::Unknown(error) => {
                 log!("Failed to call api: {:?}", error);
-                redirect("/login");
             }
         }
     }

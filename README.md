@@ -49,7 +49,7 @@ All other files are stored in [our frontend repository](https://github.com/INSAg
 
 In order to setup your development environment, you will thus need to clone three repositories and download a backend binary[^backend-binary].
 
-Here is the recommended file structure:
+Here is the **required** file structure:
 
 ```text
 insagenda/
@@ -76,20 +76,15 @@ cd ..
 ### Run the code
 
 ```bash
-# Copy frontend into the backend-served folder
-rm -rf backend/files
-cp -r frontend/. backend/files 
-mkdir backend/files/agenda
+# Run the backend in a terminal
+./backend/backend
 
-# Run the backend on background
-./backend/backend &
-
-# Build the web-app
+# Build the web-app in another terminal
 cd web-app
-trunk build --dist ../backend/files/agenda --public-url=agenda
+trunk build --public-url=agenda
 ```
 
-The web-app will be served at `http://localhost:8080/agenda`.  
+The web-app will be served at `http://localhost:8088/agenda`. All files from the frontend folder will also be served.  
 
 You can also run `trunk watch` instead of `trunk build`.
 This will continuously build the web-app as source files are modified.
