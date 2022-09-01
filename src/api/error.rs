@@ -118,7 +118,6 @@ impl ApiError{
             }
             ApiError::Unknown(error) => {
                 log!("Failed to call api: {:?}", error);
-                redirect("/login");
             }
         }
     }
