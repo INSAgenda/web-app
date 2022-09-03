@@ -3,6 +3,9 @@ use crate::prelude::*;
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
     pub app_link: Scope<App>,
+    pub day: u32,
+    pub month: u32,
+    pub year: i32,
 }
 
 impl PartialEq for CalendarProps {
@@ -25,14 +28,11 @@ impl Component for Calendar {
     type Message = Msg;
     type Properties = CalendarProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        let now = Local::now();
-        let now = now.with_timezone(&Paris);
-
+    fn create(ctx: &Context<Self>) -> Self {
         Calendar {
-            selected_day: now.day(),
-            selected_month: now.month(),
-            selected_year: now.year()
+            selected_day: ctx.props().day,
+            selected_month: ctx.props().month,
+            selected_year: ctx.props().year as i32,
         }
     }
 
