@@ -3,6 +3,9 @@ use crate::prelude::*;
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
     pub app_link: Scope<App>,
+    pub day: u32,
+    pub month: u32,
+    pub year: i32,
 }
 
 impl PartialEq for CalendarProps {
@@ -25,14 +28,11 @@ impl Component for Calendar {
     type Message = Msg;
     type Properties = CalendarProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        let now = Local::now();
-        let now = now.with_timezone(&Paris);
-
+    fn create(ctx: &Context<Self>) -> Self {
         Calendar {
-            selected_day: now.day(),
-            selected_month: now.month(),
-            selected_year: now.year()
+            selected_day: ctx.props().day,
+            selected_month: ctx.props().month,
+            selected_year: ctx.props().year as i32,
         }
     }
 
@@ -45,10 +45,7 @@ impl Component for Calendar {
                 } else {
                     self.selected_month += 1;
                 }
-                let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
-                if self.selected_day > last_day.day() {
-                    self.selected_day = last_day.day();
-                }
+                self.selected_day = 1;
                 ctx.props().app_link.send_message(AppMsg::Goto {
                     day: self.selected_day,
                     month: self.selected_month,
@@ -65,9 +62,7 @@ impl Component for Calendar {
                     self.selected_month -= 1;
                 }
                 let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
-                if self.selected_day > last_day.day() {
-                    self.selected_day = last_day.day();
-                }
+                self.selected_day = last_day.day();
                 ctx.props().app_link.send_message(AppMsg::Goto {
                     day: self.selected_day,
                     month: self.selected_month,
