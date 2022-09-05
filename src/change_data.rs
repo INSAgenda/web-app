@@ -84,7 +84,7 @@ impl Component for ChangeDataPage {
             },
             Msg::Submit => {
                 let mut new_user_info = (*(ctx.props().user_info)).clone();
-                let has_password = new_user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(false);
+                let has_password = new_user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(true);
         
                 let body = match &self.data {
                     Data::NewPassword(password, new_password, confirm_password) => {
@@ -241,7 +241,7 @@ impl Component for ChangeDataPage {
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Build the custom part of the form
         let user_info = ctx.props().user_info.as_ref();
-        let display_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(false);
+        let display_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(true);
         
         let inputs = match &self.data {
             Data::NewPassword(password, new_password, confirm_password) => html! {<>    
