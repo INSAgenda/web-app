@@ -122,7 +122,7 @@ pub fn t(s: &'static str) -> &'static str {
         "Valider" => "Save",
         "Se déconnecter" => "Log out",
         "Changer de mot de passse" => "Change password",
-        "(vide si inexistant)" => "(empty if non-existent)", 
+        " (vide si inexistant)" => " (empty if non-existent)", 
         s => {
             log!("Untranslated string: {}", s);
             s
