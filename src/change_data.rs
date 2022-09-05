@@ -88,10 +88,8 @@ impl Component for ChangeDataPage {
         
                 let body = match &self.data {
                     Data::NewPassword(password, new_password, confirm_password) => {
-                        // Get inputs
-                        let input = password.cast::<HtmlInputElement>().unwrap();
-                        let password = input.value();
-
+              
+                        let password = password.cast::<HtmlInputElement>().map(|input| input.value()).unwrap_or_default();
                         let input = new_password.cast::<HtmlInputElement>().unwrap();
                         let new_password = input.value();
 
@@ -99,7 +97,7 @@ impl Component for ChangeDataPage {
                         let confirm_password = input.value();
 
                         // Check if all inputs are filled
-                        if password.is_empty() || new_password.is_empty() || confirm_password.is_empty() {
+                        if (has_password && password.is_empty()) || new_password.is_empty() || confirm_password.is_empty() {
                             ctx.link().send_message(Msg::SetMessage(Some(t("Tous les champs doivent être remplis.").to_string())));
                             return true;
                         }
