@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, redirect};
 
 /// What data is being changed
 enum Data {
@@ -194,7 +194,7 @@ impl Component for ChangeDataPage {
                             }}
                         }}"#, promotion, lang, class, class_half)
                     },
-                    _ => return false
+                    _ => redirect("agenda")
                 };
 
                 ctx.link().send_message(Msg::SetLoading(true));
