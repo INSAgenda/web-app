@@ -315,11 +315,11 @@ impl Component for SettingsPage {
                                 <div class="primary-button" onclick={move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangeGroup))}>{t("Modifier")}</div>
                             </div>
                             if has_password {
-                            <div class="setting">
-                                <h4>{t("Adresse mail")}</h4>
-                                <p>{format!("{} {email}.{verified_msg}", t("Votre adresse actuelle est"))}</p>
-                                <div class="primary-button" onclick={move |_| app_link3.send_message(AppMsg::SetPage(Page::ChangeEmail))}>{t("Modifier")}</div>
-                            </div>
+                                <div class="setting">
+                                    <h4>{t("Adresse mail")}</h4>
+                                    <p>{format!("{} {email}.{verified_msg}", t("Votre adresse actuelle est"))}</p>
+                                    <div class="primary-button" onclick={move |_| app_link3.send_message(AppMsg::SetPage(Page::ChangeEmail))}>{t("Modifier")}</div>
+                                </div>
                             }
                         </div>
                     </section>
