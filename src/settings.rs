@@ -276,7 +276,7 @@ impl Component for SettingsPage {
         let app_link3 = ctx.props().app_link.clone();
 
         let user_info = ctx.props().user_info.as_ref();
-        let has_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(false);
+        let has_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(true);
 
         html! {
             <>
