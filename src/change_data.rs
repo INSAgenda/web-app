@@ -126,7 +126,7 @@ impl Component for ChangeDataPage {
                             "new_password": "{}"
                         }}"#, password.replace('"', "\\\""), new_password.replace('"', "\\\""))
                     },
-                    Data::Email(password, email) if has_password => {
+                    Data::Email(password, email) => {
                         // Get inputs
                         let input = password.cast::<HtmlInputElement>().unwrap();
                         let password = input.value();
@@ -194,7 +194,6 @@ impl Component for ChangeDataPage {
                             }}
                         }}"#, promotion, lang, class, class_half)
                     },
-                    _ => redirect("agenda")
                 };
 
                 ctx.link().send_message(Msg::SetLoading(true));
@@ -260,7 +259,7 @@ impl Component for ChangeDataPage {
                     <label for="password-input3">{t("Nouveau mot de passe (confirmation)")}</label>
                 </div>
             </>},
-            Data::Email(password, email) => html! {<>
+            Data::Email(password, email) if !display_password => html! {<>
                 <div class="labeled-input">
                     <input type="email" placeholder="Email" id="email" autocomplete="email" ref={email.clone()}/>
                     <label for="email">{t("Adresse email de l'INSA")}</label>
@@ -326,6 +325,7 @@ impl Component for ChangeDataPage {
                     </div>
                 </>}
             },
+            Data::Email(password, email) => {redirect("agenda"); html! {}}
         };
         
         // Make the form using the custom part we just built
