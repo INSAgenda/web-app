@@ -113,7 +113,7 @@ impl App {
                     <span>{t("Options")}</span>
                     <div class="divider-bar-option"></div>
                 </div>
-                <Calendar app_link={ctx.link().clone()}/>
+                <Calendar day={self.selected_day.day()} month={self.selected_day.month()} year={self.selected_day.year()} app_link={ctx.link().clone()}/>
                 <br/>
             </div>
         </main>

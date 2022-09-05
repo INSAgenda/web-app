@@ -299,6 +299,7 @@ impl Component for ChangeDataPage {
                             <option value="D" selected={*class==Class::D} > { t("Classe D") } </option>
                             <option value="E" selected={*class==Class::E} > { t("Classe E") } </option>
                             <option value="F" selected={*class==Class::F} > { t("Classe F") } </option>
+                            <option value="G" selected={*class==Class::G} > { t("Classe G") } </option>
                             <option value="H" selected={*class==Class::H} > { t("Classe H") } </option>
                             <option value="I" selected={*class==Class::I} > { t("Classe I") } </option>
                             <option value="J" selected={*class==Class::J} > { t("Classe J") } </option>
