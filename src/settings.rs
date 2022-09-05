@@ -306,7 +306,7 @@ impl Component for SettingsPage {
                             <div class="setting">
                                 <h4>{t("Ajouter un mot de passe")}</h4>
                                 <p>{t("Vous n'avez pas encore de mot de passe.")}</p>
-                                <div class="primary-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
+                                <div class="primary-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Ajouter")}</div>
                             </div>
                             }
                             <div class="setting">
