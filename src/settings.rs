@@ -297,11 +297,11 @@ impl Component for SettingsPage {
                         <h3>{t("Général")}</h3>
                         <div class="settings-group">
                             if has_password {
-                            <div class="setting">
-                                <h4>{t("Changer de mot de passse")}</h4>
-                                <p>{format!("{} {}.", t("Votre mot de passe a été changé il y a"), last_password_mod_str)}</p>
-                                <div class="primary-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
-                            </div>
+                                <div class="setting">
+                                    <h4>{t("Changer de mot de passse")}</h4>
+                                    <p>{format!("{} {}.", t("Votre mot de passe a été changé il y a"), last_password_mod_str)}</p>
+                                    <div class="primary-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
+                                </div>
                             } else {
                             <div class="setting">
                                 <h4>{t("Ajouter un mot de passe")}</h4>
