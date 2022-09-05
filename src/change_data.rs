@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, redirect};
 
 /// What data is being changed
 enum Data {
@@ -84,7 +84,8 @@ impl Component for ChangeDataPage {
             },
             Msg::Submit => {
                 let mut new_user_info = (*(ctx.props().user_info)).clone();
-
+                let has_password = new_user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(true);
+        
                 let body = match &self.data {
                     Data::NewPassword(password, new_password, confirm_password) => {
                         // Get inputs
@@ -238,8 +239,17 @@ impl Component for ChangeDataPage {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Build the custom part of the form
+        let user_info = ctx.props().user_info.as_ref();
+        let display_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(true);
+        
         let inputs = match &self.data {
-            Data::NewPassword(password, new_password, confirm_password) => html! {<>
+            Data::NewPassword(password, new_password, confirm_password) => html! {<>    
+                if display_password {     
+                    <div class="labeled-input">
+                        <input type="password" placeholder="Password" id="password-input1" autocomplete="password" ref={password.clone()} />
+                        <label for="password-input1">{t("Mot de passe actuel").to_string() + if user_info.is_some() {""} else {t(" (vide si inexistant)")}}</label>
+                    </div>
+                }
                 <div class="labeled-input">
                     <input type="password" placeholder="New password" id="password-input2" autocomplete="new-password" ref={new_password.clone()}/>
                     <label for="password-input2">{t("Nouveau mot de passe")}</label>
@@ -248,12 +258,8 @@ impl Component for ChangeDataPage {
                     <input type="password" placeholder="Password (confirmation)" id="password-input3" autocomplete="new-password" ref={confirm_password.clone()} />
                     <label for="password-input3">{t("Nouveau mot de passe (confirmation)")}</label>
                 </div>
-                <div class="labeled-input">
-                    <input type="password" placeholder="Password" id="password-input1" autocomplete="password" ref={password.clone()} />
-                    <label for="password-input1">{t("Mot de passe actuel")}</label>
-                </div>
             </>},
-            Data::Email(password, email) => html! {<>
+            Data::Email(password, email) if !display_password => html! {<>
                 <div class="labeled-input">
                     <input type="email" placeholder="Email" id="email" autocomplete="email" ref={email.clone()}/>
                     <label for="email">{t("Adresse email de l'INSA")}</label>
@@ -319,6 +325,7 @@ impl Component for ChangeDataPage {
                     </div>
                 </>}
             },
+            Data::Email(password, email) => {redirect("agenda"); html! {}}
         };
         
         // Make the form using the custom part we just built
