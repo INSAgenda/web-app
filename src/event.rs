@@ -8,6 +8,7 @@ lazy_static::lazy_static!{
 pub struct EventCompProps {
     pub event: RawEvent,
     pub day_start: u64,
+    pub has_mobile_ad: bool,
     pub app_link: yew::html::Scope<crate::App>,
     pub day_of_week: u8,
 }
@@ -140,13 +141,17 @@ impl Component for EventComp {
         });
 
         // Calculate position
+        let day_sec_count = match ctx.props().has_mobile_ad {
+            false => 43200.0,
+            true => 43200.0 - 6300.0,
+        };
         let sec_offset = ctx.props().event.start_unixtime.saturating_sub(ctx.props().day_start + 8 * 3600);
-        let percent_offset = 100.0 / (43200.0) * sec_offset as f64;
+        let percent_offset = 100.0 / day_sec_count * sec_offset as f64;
         if ctx.props().event.start_unixtime >= ctx.props().event.end_unixtime {
             log!("Event {} in {:?}  ends before it starts", name, location);
             return html!{};
         }
-        let percent_height = 100.0 / (43200.0) * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;        
+        let percent_height = 100.0 / day_sec_count * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;        
     
         let start = Paris.timestamp(ctx.props().event.start_unixtime as i64, 0);
         let end = Paris.timestamp(ctx.props().event.end_unixtime as i64, 0);

@@ -21,6 +21,10 @@ body {
     min-height: 35rem;
 }
 
+#agenda-main.has-mobile-ad {
+    flex-direction: column;
+}
+
 #agenda, #option {
     height: calc(100% - 2rem);
     padding: 1rem;
