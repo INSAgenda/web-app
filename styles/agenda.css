@@ -18,9 +18,13 @@
 }
 
 #agenda-hours>span {
-    height: calc((100% - 0.7rem/2) / 44100 * 6300);
+    height: calc((100% - 0.7rem/2) / 43200 * 6300);
     font-size: .7rem;
     color: var(--text);
+}
+
+#agenda-hours>span:last-child {
+    height: calc((100% - 0.7rem/2) / 43200 * 5400);
 }
 
 /* Arrows */
