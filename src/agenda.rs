@@ -33,7 +33,7 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
 impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
         let mobile_view = crate::slider::width() <= 1000;
-        let show_mobile_ad = true;
+        let mut show_mobile_ad = true;
 
         // Go on the first day of the week
         let mut current_day = self.selected_day;
@@ -43,6 +43,17 @@ impl App {
                 current_day = current_day.pred();
             },
         };
+
+        // Check if there is room for the mobile ad TODO if mobile
+        let ad_cancelling_start_ts = current_day.succ().succ().and_hms(18,30,0).timestamp();
+        let ad_cancelling_end_ts = current_day.succ().succ().and_hms(20,0,0).timestamp();
+        let ad_cancelling_range = (ad_cancelling_start_ts..=ad_cancelling_end_ts);
+        for event in &self.events {
+            if ad_cancelling_range.contains(&(event.start_unixtime as i64)) || ad_cancelling_range.contains(&(event.end_unixtime as i64)) {
+                show_mobile_ad = false;
+                break;
+            }
+        }
 
         let mut days = Vec::new();
         let mut day_names = Vec::new();

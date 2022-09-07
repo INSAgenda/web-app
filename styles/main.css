@@ -21,10 +21,6 @@ body {
     min-height: 35rem;
 }
 
-#agenda-main.show-mobile-ad {
-    flex-direction: column;
-}
-
 #agenda, #option {
     height: calc(100% - 2rem);
     padding: 1rem;
@@ -73,6 +69,11 @@ body {
         will-change: right;
     }
 
+    #agenda-main {
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+    
     #agenda-top {
         width: 100%;
         align-self: center;

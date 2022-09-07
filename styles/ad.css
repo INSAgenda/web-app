@@ -1,11 +1,10 @@
 #mobile-ad {
-    display: none;
-    flex-grow: 1;
+    height: 0;
     position: relative;
     box-shadow: 0px 0px 15px 0px #aaa;
     overflow: hidden;
 }
 
 .show-mobile-ad #mobile-ad {
-    display: initial;
+    flex-grow: 1;
 }
