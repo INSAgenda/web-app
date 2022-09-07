@@ -1,5 +1,5 @@
 pub use yew::{prelude::*, html::Scope};
-pub use common::{Event as RawEvent, *};
+pub use common::{Event as RawEvent, *, AdRecord};
 pub use wasm_bindgen::{prelude::*, JsCast, JsValue};
 pub use std::{rc::Rc, cell::{Cell, RefCell}, sync::atomic::{AtomicUsize, Ordering}, time::Duration};
 pub use chrono_tz::Europe::Paris;

@@ -8,3 +8,12 @@
 .show-mobile-ad #mobile-ad {
     flex-grow: 1;
 }
+
+.show-mobile-ad .mobile-ad-default-style {
+    padding: .5rem 1rem;
+}
+
+.show-mobile-ad .mobile-ad-default-style>div {
+    font-size: 1.1rem;
+    font-weight: bold;
+}

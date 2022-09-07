@@ -33,7 +33,9 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
 impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
         let mobile_view = crate::slider::width() <= 1000;
-        let mut show_mobile_ad = true;
+
+        let announcement = self.displayed_announcement.as_ref();
+        let mut show_mobile_ad = mobile_view && announcement.is_some();
 
         // Go on the first day of the week
         let mut current_day = self.selected_day;
@@ -47,7 +49,7 @@ impl App {
         // Check if there is room for the mobile ad TODO if mobile
         let ad_cancelling_start_ts = current_day.succ().succ().and_hms(18,30,0).timestamp();
         let ad_cancelling_end_ts = current_day.succ().succ().and_hms(20,0,0).timestamp();
-        let ad_cancelling_range = (ad_cancelling_start_ts..=ad_cancelling_end_ts);
+        let ad_cancelling_range = ad_cancelling_start_ts..=ad_cancelling_end_ts;
         for event in &self.events {
             if ad_cancelling_range.contains(&(event.start_unixtime as i64)) || ad_cancelling_range.contains(&(event.end_unixtime as i64)) {
                 show_mobile_ad = false;
@@ -97,6 +99,21 @@ impl App {
             current_day = current_day.succ();
         }
 
+
+        let announcement_vnode = announcement.map(|announcement| {
+            let div = window()
+                .doc()
+                .create_element("div")
+                .unwrap();
+            match announcement.ty {
+                AdContentType::Text => div.clone().dyn_into::<HtmlElement>().unwrap().set_inner_text(announcement.content_fr.as_ref().map(|s| s.as_str()).unwrap_or_default()), // TODO lang
+                AdContentType::Html => div.set_inner_html(announcement.content_fr.as_ref().map(|s| s.as_str()).unwrap_or_default()), // TODO lang
+            }
+            let node = web_sys::Node::from(div);
+            let vnode = yew::virtual_dom::VNode::VRef(node);
+            vnode
+        });
+
         let agenda_class = if show_mobile_ad { "show-mobile-ad" } else { "" };
 
         html! {
@@ -144,8 +161,34 @@ impl App {
                 <Calendar day={self.selected_day.day()} month={self.selected_day.month()} year={self.selected_day.year()} app_link={ctx.link().clone()}/>
                 <br/>
             </div>
-            <div id="mobile-ad">
-            <style>
+            if let Some(announcement) = announcement {
+                {match announcement.ty {
+                    AdContentType::Text => html! {
+                        <div id="mobile-ad" class="mobile-ad-default-style">
+                            <div>{announcement.title.as_str()}</div>
+                            <p>
+                                {announcement.content_fr.as_deref().unwrap_or_default()}
+                            </p>
+                        </div>
+                    }, // TODO lang
+                    AdContentType::Html => {
+                        let div = window()
+                            .doc()
+                            .create_element("div")
+                            .unwrap();
+                        div.set_inner_html(announcement.content_fr.as_deref().unwrap_or_default());
+                        let node = web_sys::Node::from(div);
+                        let vnode = yew::virtual_dom::VNode::VRef(node);
+                        html! {
+                            <div id="mobile-ad">
+                                {vnode}
+                            </div>
+                        }
+                    }
+                }}
+            }
+            
+            /*<style>
             {"#zevent-ad {
                 /*background-color: #57AF37;*/
                 -webkit-box-shadow: 0px 0px 18px 0px #aaa; 
@@ -173,7 +216,7 @@ impl App {
                 {"Le ZEvent c'est samedi!"}
             </div>
         </div>
-            </div>
+            </div>*/
         </main>
             </>
         }
