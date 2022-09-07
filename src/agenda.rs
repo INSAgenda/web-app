@@ -167,7 +167,10 @@ impl App {
                         <div id="mobile-ad" class="mobile-ad-default-style">
                             <div>{announcement.title.as_str()}</div>
                             <p>
-                                {announcement.content_fr.as_deref().unwrap_or_default()}
+                                {match SETTINGS.lang() {
+                                    Lang::French => announcement.content_fr.as_deref().unwrap_or_default(),
+                                    Lang::English => announcement.content_en.as_deref().unwrap_or_default(),
+                                }}
                             </p>
                         </div>
                     }, // TODO lang
@@ -176,7 +179,10 @@ impl App {
                             .doc()
                             .create_element("div")
                             .unwrap();
-                        div.set_inner_html(announcement.content_fr.as_deref().unwrap_or_default());
+                        match SETTINGS.lang() {
+                            Lang::French => div.set_inner_html(announcement.content_fr.as_deref().unwrap_or_default()),
+                            Lang::English => div.set_inner_html(announcement.content_en.as_deref().unwrap_or_default()),
+                        }
                         let node = web_sys::Node::from(div);
                         let vnode = yew::virtual_dom::VNode::VRef(node);
                         html! {
