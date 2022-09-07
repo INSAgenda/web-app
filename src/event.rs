@@ -8,7 +8,7 @@ lazy_static::lazy_static!{
 pub struct EventCompProps {
     pub event: RawEvent,
     pub day_start: u64,
-    pub has_mobile_ad: bool,
+    pub show_mobile_ad: bool,
     pub app_link: yew::html::Scope<crate::App>,
     pub day_of_week: u8,
 }
@@ -141,7 +141,7 @@ impl Component for EventComp {
         });
 
         // Calculate position
-        let day_sec_count = match ctx.props().has_mobile_ad {
+        let day_sec_count = match ctx.props().show_mobile_ad {
             false => 43200.0,
             true => 43200.0 - 6300.0,
         };

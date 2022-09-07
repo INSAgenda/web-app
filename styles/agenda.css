@@ -3,7 +3,7 @@
     display: flex;
 }
 
-.has-mobile-ad #agenda {
+.show-mobile-ad #agenda {
     height: calc((100% - 2rem) / 43200 * (43200 - 6300));
     flex-grow: 0;
 }
@@ -28,7 +28,7 @@
     color: var(--text);
 }
 
-.has-mobile-ad #agenda-hours>span {
+.show-mobile-ad #agenda-hours>span {
     height: calc((100% - 0.7rem/2) / (43200 - 6300) * 6300);
 }
 
@@ -36,7 +36,7 @@
     height: calc((100% - 0.7rem/2) / 43200 * 5400);
 }
 
-.has-mobile-ad #agenda-hours>span:last-child {
+.show-mobile-ad #agenda-hours>span:last-child {
     height: calc((100% - 0.7rem/2) / (43200 - 6300) * 5400);
 }
 

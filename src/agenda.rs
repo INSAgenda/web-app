@@ -33,7 +33,7 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
 impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
         let mobile_view = crate::slider::width() <= 1000;
-        let has_mobile_ad = true;
+        let show_mobile_ad = true;
 
         // Go on the first day of the week
         let mut current_day = self.selected_day;
@@ -58,7 +58,7 @@ impl App {
                             event={event.clone()}
                             day_start={current_day.and_hms(0,0,0).timestamp() as u64}
                             app_link={ctx.link().clone()}
-                            has_mobile_ad={has_mobile_ad}>
+                            show_mobile_ad={show_mobile_ad}>
                         </EventComp>
                     });
                 }
@@ -68,7 +68,7 @@ impl App {
                 true => format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20),
                 false => String::new(),
             };
-            /*if has_mobile_ad {
+            /*if show_mobile_ad {
                 day_style.push_str("height: calc(100% / 43200 * (43200 - 6300));");
             }*/
 
@@ -86,7 +86,7 @@ impl App {
             current_day = current_day.succ();
         }
 
-        let agenda_class = if has_mobile_ad { "has-mobile-ad" } else { "" };
+        let agenda_class = if show_mobile_ad { "show-mobile-ad" } else { "" };
 
         html! {
             <>
@@ -106,7 +106,7 @@ impl App {
                     <span>{"13:15"}</span>
                     <span>{"15:00"}</span>
                     <span>{"16:45"}</span>
-                    if !has_mobile_ad {<span>{"18:30"}</span>}
+                    if !show_mobile_ad {<span>{"18:30"}</span>}
                 </div>
                 <div id="agenda-main-part">
                     <div id="agenda-top">
@@ -134,7 +134,34 @@ impl App {
                 <br/>
             </div>
             <div id="mobile-ad">
-                {"Hey! I'm a mobile ad!"}
+            <style>
+            {"#zevent-ad {
+                /*background-color: #57AF37;*/
+                -webkit-box-shadow: 0px 0px 18px 0px #aaa; 
+                position: absolute;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                height: 100%;
+            }
+        
+            #zevent-ad img {
+                max-width: 100%;
+                max-height: 70%;
+            }
+        
+            #separator {
+                width: 2rem;
+            }"}
+        </style>
+        <div id="zevent-ad">
+            <img src="https://zevent.fr/assets/logo.5cb95698.png"/>
+            <div id="separator"></div>
+            <div>
+                {"Le ZEvent c'est samedi!"}
+            </div>
+        </div>
             </div>
         </main>
             </>
