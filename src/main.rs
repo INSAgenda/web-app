@@ -1,4 +1,5 @@
 mod alert;
+mod announcements;
 mod event;
 mod settings;
 mod agenda;
