@@ -80,3 +80,65 @@ pub fn select_announcement(announcements: &[AnnouncementDesc]) -> Option<Announc
 
     None
 }
+
+/// Generate Yew HTML for displaying an announcement
+pub fn view_announcement(a: &AnnouncementDesc, ctx: &Context<App>) -> Html {
+    let mut classes = String::new();
+    if a.ty == ContentType::Text {
+        classes.push_str(" text-announcement");
+    }
+
+    // Create script element if required
+    let script = a.script.as_ref().map(|s| {
+        let script = window()
+            .doc()
+            .create_element("script")
+            .unwrap();
+        script.clone().dyn_into::<HtmlElement>().unwrap().set_inner_text(s);
+        let node = web_sys::Node::from(script);
+        yew::virtual_dom::VNode::VRef(node)
+    });
+
+    // Create close button
+    let close_button = match a.closable {
+        true => html! {
+            <svg id="close-announcement-button" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16" onclick={ctx.link().callback(|_| AppMsg::CloseAnnouncement)}>
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+            </svg>
+        },
+        false => html! {},
+    };
+
+    // Create main structure
+    html! {
+        <div id="announcement" class={classes}>
+            {close_button}
+            {match a.ty {
+                ContentType::Text => html! {<>
+                    <div>{a.title.as_str()}</div>
+                    <p>
+                        {match SETTINGS.lang() {
+                            Lang::French => a.content_fr.as_deref().unwrap_or_default(),
+                            Lang::English => a.content_en.as_deref().unwrap_or_default(),
+                        }}
+                    </p>
+                </>},
+                ContentType::Html => {
+                    let div = window()
+                        .doc()
+                        .create_element("div")
+                        .unwrap();
+                    match SETTINGS.lang() {
+                        Lang::French => div.set_inner_html(a.content_fr.as_deref().unwrap_or_default()),
+                        Lang::English => div.set_inner_html(a.content_en.as_deref().unwrap_or_default()),
+                    }
+                    let node = web_sys::Node::from(div);
+                    yew::virtual_dom::VNode::VRef(node)
+                }
+            }}
+            if let Some(script) = script {
+                {script}
+            }
+        </div>
+    }
+}

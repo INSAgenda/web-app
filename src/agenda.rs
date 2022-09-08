@@ -34,9 +34,6 @@ impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
         let mobile_view = crate::slider::width() <= 1000;
 
-        let announcement = self.displayed_announcement.as_ref();
-        let mut show_announcement = mobile_view && announcement.is_some();
-
         // Go on the first day of the week
         let mut current_day = self.selected_day;
         match mobile_view {
@@ -46,17 +43,24 @@ impl App {
             },
         };
 
-        // Check if there is room for the mobile ad TODO if mobile
-        let announcement_start = current_day.succ().succ().and_hms(18,30,0).timestamp();
-        let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp();
-        let announcement_range = announcement_start..=announcement_end;
-        for event in &self.events {
-            if announcement_range.contains(&(event.start_unixtime as i64)) || announcement_range.contains(&(event.end_unixtime as i64)) {
-                show_announcement = false;
-                break;
+        // Check if there is room for the announcement on mobile
+        let announcement = self.displayed_announcement.as_ref();
+        let mut show_announcement = mobile_view && announcement.is_some();
+        if show_announcement {
+            let announcement_start = current_day.succ().succ().and_hms(18,30,0).timestamp();
+            let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp();
+            let announcement_range = announcement_start..=announcement_end;
+            for event in &self.events {
+                if announcement_range.contains(&(event.start_unixtime as i64)) || announcement_range.contains(&(event.end_unixtime as i64)) {
+                    show_announcement = false;
+                    break;
+                }
             }
         }
+        let agenda_class = if show_announcement { "show-announcement" } else { "" };
+        let announcement = announcement.map(|a| view_announcement(a, ctx));
 
+        // Build each day and put events in them
         let mut days = Vec::new();
         let mut day_names = Vec::new();
         for d in 0..5 {
@@ -95,60 +99,6 @@ impl App {
 
             current_day = current_day.succ();
         }
-
-        // Build announcement
-        let announcement = announcement.map(|a| {
-            let mut classes = String::new();
-            if a.ty == ContentType::Text {
-                classes.push_str(" text-announcement");
-            }
-            let script = a.script.as_ref().map(|s| {
-                let script = window()
-                    .doc()
-                    .create_element("script")
-                    .unwrap();
-                script.clone().dyn_into::<HtmlElement>().unwrap().set_inner_text(s);
-                let node = web_sys::Node::from(script);
-                yew::virtual_dom::VNode::VRef(node)
-            });
-            html! {
-                <div id="announcement" class={classes}>
-                    if a.closable {
-                        <svg id="close-announcement-button" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16" onclick={ctx.link().callback(|_| AppMsg::CloseAnnouncement)}>
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-                        </svg>
-                    }
-                    {match a.ty {
-                        ContentType::Text => html! {<>
-                            <div>{a.title.as_str()}</div>
-                            <p>
-                                {match SETTINGS.lang() {
-                                    Lang::French => a.content_fr.as_deref().unwrap_or_default(),
-                                    Lang::English => a.content_en.as_deref().unwrap_or_default(),
-                                }}
-                            </p>
-                        </>},
-                        ContentType::Html => {
-                            let div = window()
-                                .doc()
-                                .create_element("div")
-                                .unwrap();
-                            match SETTINGS.lang() {
-                                Lang::French => div.set_inner_html(a.content_fr.as_deref().unwrap_or_default()),
-                                Lang::English => div.set_inner_html(a.content_en.as_deref().unwrap_or_default()),
-                            }
-                            let node = web_sys::Node::from(div);
-                            yew::virtual_dom::VNode::VRef(node)
-                        }
-                    }}
-                    if let Some(script) = script {
-                        {script}
-                    }
-                </div>
-            }
-        });
-
-        let agenda_class = if show_announcement { "show-announcement" } else { "" };
 
         html! {
             <>
