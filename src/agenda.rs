@@ -102,7 +102,7 @@ impl App {
         // Build announcement
         let announcement = announcement.map(|announcement| {
             match announcement.ty {
-                AdContentType::Text => html! {
+                ContentType::Text => html! {
                     <div id="mobile-ad" class="mobile-ad-default-style">
                         <div>{announcement.title.as_str()}</div>
                         <p>
@@ -113,7 +113,7 @@ impl App {
                         </p>
                     </div>
                 }, // TODO lang
-                AdContentType::Html => {
+                ContentType::Html => {
                     let div = window()
                         .doc()
                         .create_element("div")

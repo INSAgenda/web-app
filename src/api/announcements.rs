@@ -1,7 +1,7 @@
 use super::*;
 use crate::prelude::*;
 
-pub fn load_cached_announcements() -> Option<(i64, Vec<AdRecord>)> {
+pub fn load_cached_announcements() -> Option<(i64, Vec<AnnouncementDesc>)> {
     let local_storage = window().local_storage().unwrap().unwrap();
 
     let last_updated = match local_storage.get("last_updated_announcements").map(|v| v.map(|v| v.parse())) {
@@ -14,7 +14,7 @@ pub fn load_cached_announcements() -> Option<(i64, Vec<AdRecord>)> {
         _ => return None,
     };
 
-    let cached_announcements = match serde_json::from_str::<Vec<AdRecord>>(&cached_announcements_str) {
+    let cached_announcements = match serde_json::from_str::<Vec<AnnouncementDesc>>(&cached_announcements_str) {
         Ok(cached_announcements) => cached_announcements,
         _ => return None,
     };
@@ -22,7 +22,7 @@ pub fn load_cached_announcements() -> Option<(i64, Vec<AdRecord>)> {
     Some((last_updated, cached_announcements))
 }
 
-pub async fn load_announcements() -> Result<Vec<AdRecord>, ApiError> {
+pub async fn load_announcements() -> Result<Vec<AnnouncementDesc>, ApiError> {
     let (api_key, counter) = get_login_info();
 
     let request = Request::new_with_str("/api/ads")?;
@@ -44,7 +44,7 @@ pub async fn load_announcements() -> Result<Vec<AdRecord>, ApiError> {
         return Err(error.into());
     }
 
-    let events: Vec<AdRecord> = match json.into_serde() {
+    let events: Vec<AnnouncementDesc> = match json.into_serde() {
         Ok(events) => events,
         _ => return Err(ApiError::Unknown(json)),
     };
@@ -57,7 +57,7 @@ pub async fn load_announcements() -> Result<Vec<AdRecord>, ApiError> {
     Ok(events)
 }
 
-pub fn select_announcement(announcements: &[AdRecord]) -> Option<AdRecord> {
+pub fn select_announcement(announcements: &[AnnouncementDesc]) -> Option<AnnouncementDesc> {
     let now = (js_sys::Date::new_0().get_time() / 1000.0) as u64;
     
     for a in announcements {

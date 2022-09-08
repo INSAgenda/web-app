@@ -26,7 +26,7 @@ pub enum Page {
 pub enum Msg {
     ScheduleSuccess(Vec<RawEvent>),
     UserInfoSuccess(UserInfo),
-    AnnouncementsSuccess(Vec<AdRecord>),
+    AnnouncementsSuccess(Vec<AnnouncementDesc>),
     ScheduleFailure(ApiError),
     UserInfoFailure(ApiError),
     Previous,
@@ -42,8 +42,8 @@ pub enum Msg {
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
     events: Vec<RawEvent>,
-    announcements: Vec<AdRecord>,
-    displayed_announcement: Option<AdRecord>,
+    announcements: Vec<AnnouncementDesc>,
+    displayed_announcement: Option<AnnouncementDesc>,
     page: Page,
     user_info: Rc<Option<UserInfo>>,
     slider: Rc<RefCell<slider::SliderManager>>,
