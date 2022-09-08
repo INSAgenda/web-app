@@ -45,19 +45,19 @@ impl App {
 
         // Check if there is room for the announcement on mobile
         let announcement = self.displayed_announcement.as_ref();
-        let mut show_announcement = mobile_view && announcement.is_some();
-        if show_announcement {
+        let mut show_mobile_announcement = mobile_view && announcement.is_some();
+        if show_mobile_announcement {
             let announcement_start = current_day.succ().succ().and_hms(18,30,0).timestamp();
             let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp();
             let announcement_range = announcement_start..=announcement_end;
             for event in &self.events {
                 if announcement_range.contains(&(event.start_unixtime as i64)) || announcement_range.contains(&(event.end_unixtime as i64)) {
-                    show_announcement = false;
+                    show_mobile_announcement = false;
                     break;
                 }
             }
         }
-        let agenda_class = if show_announcement { "show-announcement" } else { "" };
+        let agenda_class = if show_mobile_announcement { "show-announcement" } else { "" };
         let announcement = announcement.map(|a| view_announcement(a, ctx));
 
         // Build each day and put events in them
@@ -75,7 +75,7 @@ impl App {
                             event={event.clone()}
                             day_start={current_day.and_hms(0,0,0).timestamp() as u64}
                             app_link={ctx.link().clone()}
-                            show_announcement={show_announcement}>
+                            show_announcement={show_mobile_announcement}>
                         </EventComp>
                     });
                 }
@@ -118,7 +118,7 @@ impl App {
                     <span>{"13:15"}</span>
                     <span>{"15:00"}</span>
                     <span>{"16:45"}</span>
-                    if !show_announcement {<span>{"18:30"}</span>}
+                    if !show_mobile_announcement {<span>{"18:30"}</span>}
                 </div>
                 <div id="agenda-main-part">
                     <div id="agenda-top">
@@ -150,7 +150,7 @@ impl App {
                 }
                 <br/>
             </div>
-            if mobile_view && show_announcement {
+            if mobile_view && show_mobile_announcement {
                 if let Some(announcement) = announcement {
                     { announcement }
                 }
