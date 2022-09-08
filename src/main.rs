@@ -1,4 +1,5 @@
 mod alert;
+mod announcements;
 mod event;
 mod settings;
 mod agenda;
@@ -26,6 +27,7 @@ pub enum Page {
 pub enum Msg {
     ScheduleSuccess(Vec<RawEvent>),
     UserInfoSuccess(UserInfo),
+    AnnouncementsSuccess(Vec<AnnouncementDesc>),
     ScheduleFailure(ApiError),
     UserInfoFailure(ApiError),
     Previous,
@@ -35,12 +37,15 @@ pub enum Msg {
     SilentSetPage(Page),
     Refresh,
     SetSliderState(bool),
+    CloseAnnouncement,
 }
 
 
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
     events: Vec<RawEvent>,
+    announcements: Vec<AnnouncementDesc>,
+    displayed_announcement: Option<AnnouncementDesc>,
     page: Page,
     user_info: Rc<Option<UserInfo>>,
     slider: Rc<RefCell<slider::SliderManager>>,
@@ -113,6 +118,26 @@ impl Component for App {
             });
         }
 
+        // Update announcements
+        let mut skip_announcements_loading = false;
+        let mut announcements = Vec::new();
+        if let Some((last_updated, cached_announcements)) = api::load_cached_announcements() {
+            if last_updated > now.timestamp() - 3600*12 && !cached_announcements.is_empty() {
+                skip_announcements_loading = true;
+            }
+            announcements = cached_announcements;
+        }
+        let displayed_announcement = select_announcement(&announcements);
+        if !skip_announcements_loading {
+            let link2 = ctx.link().clone();
+            wasm_bindgen_futures::spawn_local(async move {
+                match api::load_announcements().await {
+                    Ok(events) => link2.send_message(Msg::AnnouncementsSuccess(events)),
+                    Err(e) => e.handle_api_error(),
+                }
+            });
+        }
+
         // Detect page
         let page = match window().location().hash() {
             Ok(hash) if hash == "#settings" => Page::Settings,
@@ -131,6 +156,8 @@ impl Component for App {
             selected_day: now.date(),
             events,
             page,
+            announcements,
+            displayed_announcement,
             user_info: Rc::new(user_info),
             slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
         }
@@ -159,6 +186,10 @@ impl Component for App {
                 self.user_info = Rc::new(Some(user_info));
 
                 should_refresh
+            }
+            Msg::AnnouncementsSuccess(announcements) => {
+                self.announcements = announcements;
+                false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
             }
             Msg::ScheduleFailure(api_error) => {
                 api_error.handle_api_error();
@@ -230,6 +261,7 @@ impl Component for App {
                 }
                 true
             },
+            Msg::CloseAnnouncement => update_close_announcement(self),
             Msg::SetSliderState(state) => {
                 let mut slider = self.slider.borrow_mut();
                 match state {

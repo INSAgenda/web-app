@@ -8,6 +8,8 @@ mod error;
 pub use error::*;
 mod gen_code;
 pub use gen_code::gen_code;
+mod announcements;
+pub use announcements::*;
 
 use crate::prelude::*;
 

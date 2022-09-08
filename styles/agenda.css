@@ -3,6 +3,11 @@
     display: flex;
 }
 
+.show-announcement #agenda {
+    height: calc((100% - 4rem) / 43200 * (43200 - 6300) + 2rem);
+    flex-grow: 0;
+}
+
 #agenda-main-part {
     display: flex;
     flex-direction: column;
@@ -23,8 +28,16 @@
     color: var(--text);
 }
 
+.show-announcement #agenda-hours>span {
+    height: calc((100% - 0.7rem/2) / (43200 - 6300) * 6300);
+}
+
 #agenda-hours>span:last-child {
     height: calc((100% - 0.7rem/2) / 43200 * 5400);
+}
+
+.show-announcement #agenda-hours>span:last-child {
+    height: calc((100% - 0.7rem/2) / (43200 - 6300) * 5400);
 }
 
 /* Arrows */

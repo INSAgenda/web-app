@@ -1,0 +1,24 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build with Trunk",
+            "command": "trunk",
+            "args": [
+                "build",
+                "--public-url=/agenda"
+            ],
+            "type": "shell",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "close": true,
+                "clear": true
+            }
+        }
+    ]
+}

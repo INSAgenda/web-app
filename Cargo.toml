@@ -43,6 +43,7 @@ features = [
     "HtmlSelectElement",
     "HtmlOptionsCollection",
     "HtmlOptionElement",
+    "HtmlElement",
 ]
 
 [profile.release]
