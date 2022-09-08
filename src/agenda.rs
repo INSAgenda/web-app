@@ -99,19 +99,38 @@ impl App {
             current_day = current_day.succ();
         }
 
-
-        let announcement_vnode = announcement.map(|announcement| {
-            let div = window()
-                .doc()
-                .create_element("div")
-                .unwrap();
+        // Build announcement
+        let announcement = announcement.map(|announcement| {
             match announcement.ty {
-                AdContentType::Text => div.clone().dyn_into::<HtmlElement>().unwrap().set_inner_text(announcement.content_fr.as_ref().map(|s| s.as_str()).unwrap_or_default()), // TODO lang
-                AdContentType::Html => div.set_inner_html(announcement.content_fr.as_ref().map(|s| s.as_str()).unwrap_or_default()), // TODO lang
+                AdContentType::Text => html! {
+                    <div id="mobile-ad" class="mobile-ad-default-style">
+                        <div>{announcement.title.as_str()}</div>
+                        <p>
+                            {match SETTINGS.lang() {
+                                Lang::French => announcement.content_fr.as_deref().unwrap_or_default(),
+                                Lang::English => announcement.content_en.as_deref().unwrap_or_default(),
+                            }}
+                        </p>
+                    </div>
+                }, // TODO lang
+                AdContentType::Html => {
+                    let div = window()
+                        .doc()
+                        .create_element("div")
+                        .unwrap();
+                    match SETTINGS.lang() {
+                        Lang::French => div.set_inner_html(announcement.content_fr.as_deref().unwrap_or_default()),
+                        Lang::English => div.set_inner_html(announcement.content_en.as_deref().unwrap_or_default()),
+                    }
+                    let node = web_sys::Node::from(div);
+                    let vnode = yew::virtual_dom::VNode::VRef(node);
+                    html! {
+                        <div id="mobile-ad">
+                            {vnode}
+                        </div>
+                    }
+                }
             }
-            let node = web_sys::Node::from(div);
-            let vnode = yew::virtual_dom::VNode::VRef(node);
-            vnode
         });
 
         let agenda_class = if show_mobile_ad { "show-mobile-ad" } else { "" };
@@ -159,70 +178,18 @@ impl App {
                     <div class="divider-bar-option"></div>
                 </div>
                 <Calendar day={self.selected_day.day()} month={self.selected_day.month()} year={self.selected_day.year()} app_link={ctx.link().clone()}/>
+                if !mobile_view {
+                    if let Some(announcement) = announcement.clone() {
+                        { announcement }
+                    }
+                }
                 <br/>
             </div>
-            if let Some(announcement) = announcement {
-                {match announcement.ty {
-                    AdContentType::Text => html! {
-                        <div id="mobile-ad" class="mobile-ad-default-style">
-                            <div>{announcement.title.as_str()}</div>
-                            <p>
-                                {match SETTINGS.lang() {
-                                    Lang::French => announcement.content_fr.as_deref().unwrap_or_default(),
-                                    Lang::English => announcement.content_en.as_deref().unwrap_or_default(),
-                                }}
-                            </p>
-                        </div>
-                    }, // TODO lang
-                    AdContentType::Html => {
-                        let div = window()
-                            .doc()
-                            .create_element("div")
-                            .unwrap();
-                        match SETTINGS.lang() {
-                            Lang::French => div.set_inner_html(announcement.content_fr.as_deref().unwrap_or_default()),
-                            Lang::English => div.set_inner_html(announcement.content_en.as_deref().unwrap_or_default()),
-                        }
-                        let node = web_sys::Node::from(div);
-                        let vnode = yew::virtual_dom::VNode::VRef(node);
-                        html! {
-                            <div id="mobile-ad">
-                                {vnode}
-                            </div>
-                        }
-                    }
-                }}
+            if mobile_view && show_mobile_ad {
+                if let Some(announcement) = announcement {
+                    { announcement }
+                }
             }
-            
-            /*<style>
-            {"#zevent-ad {
-                /*background-color: #57AF37;*/
-                -webkit-box-shadow: 0px 0px 18px 0px #aaa; 
-                position: absolute;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                width: 100%;
-                height: 100%;
-            }
-        
-            #zevent-ad img {
-                max-width: 100%;
-                max-height: 70%;
-            }
-        
-            #separator {
-                width: 2rem;
-            }"}
-        </style>
-        <div id="zevent-ad">
-            <img src="https://zevent.fr/assets/logo.5cb95698.png"/>
-            <div id="separator"></div>
-            <div>
-                {"Le ZEvent c'est samedi!"}
-            </div>
-        </div>
-            </div>*/
         </main>
             </>
         }

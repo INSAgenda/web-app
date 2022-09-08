@@ -4,7 +4,7 @@
 }
 
 .show-mobile-ad #agenda {
-    height: calc((100% - 2rem) / 43200 * (43200 - 6300));
+    height: calc((100% - 4rem) / 43200 * (43200 - 6300) + 2rem);
     flex-grow: 0;
 }
 
