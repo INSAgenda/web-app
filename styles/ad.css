@@ -9,11 +9,11 @@
     flex-grow: 1;
 }
 
-.show-announcement .announcement-default-style {
+.show-announcement .text-announcement {
     padding: .5rem 1rem;
 }
 
-.show-announcement .announcement-default-style>div {
+.show-announcement .text-announcement>div {
     font-size: 1.1rem;
     font-weight: bold;
 }

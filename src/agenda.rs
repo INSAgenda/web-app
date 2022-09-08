@@ -100,36 +100,40 @@ impl App {
         }
 
         // Build announcement
-        let announcement = announcement.map(|announcement| {
-            match announcement.ty {
-                ContentType::Text => html! {
-                    <div id="announcement" class="announcement-default-style">
-                        <div>{announcement.title.as_str()}</div>
-                        <p>
-                            {match SETTINGS.lang() {
-                                Lang::French => announcement.content_fr.as_deref().unwrap_or_default(),
-                                Lang::English => announcement.content_en.as_deref().unwrap_or_default(),
-                            }}
-                        </p>
-                    </div>
-                }, // TODO lang
-                ContentType::Html => {
-                    let div = window()
-                        .doc()
-                        .create_element("div")
-                        .unwrap();
-                    match SETTINGS.lang() {
-                        Lang::French => div.set_inner_html(announcement.content_fr.as_deref().unwrap_or_default()),
-                        Lang::English => div.set_inner_html(announcement.content_en.as_deref().unwrap_or_default()),
-                    }
-                    let node = web_sys::Node::from(div);
-                    let vnode = yew::virtual_dom::VNode::VRef(node);
-                    html! {
-                        <div id="announcement">
-                            {vnode}
-                        </div>
-                    }
-                }
+        let announcement = announcement.map(|a| {
+            let mut classes = String::new();
+            if a.closable {
+                classes.push_str(" closable-announcement");
+            }
+            if a.ty == ContentType::Text {
+                classes.push_str(" text-announcement");
+            }
+            html! {
+                <div id="announcement" class={classes}>
+                    {match a.ty {
+                        ContentType::Text => html! {<>
+                            <div>{a.title.as_str()}</div>
+                            <p>
+                                {match SETTINGS.lang() {
+                                    Lang::French => a.content_fr.as_deref().unwrap_or_default(),
+                                    Lang::English => a.content_en.as_deref().unwrap_or_default(),
+                                }}
+                            </p>
+                        </>},
+                        ContentType::Html => {
+                            let div = window()
+                                .doc()
+                                .create_element("div")
+                                .unwrap();
+                            match SETTINGS.lang() {
+                                Lang::French => div.set_inner_html(a.content_fr.as_deref().unwrap_or_default()),
+                                Lang::English => div.set_inner_html(a.content_en.as_deref().unwrap_or_default()),
+                            }
+                            let node = web_sys::Node::from(div);
+                            yew::virtual_dom::VNode::VRef(node)
+                        }
+                    }}
+                </div>
             }
         });
 
