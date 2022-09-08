@@ -1,22 +1,38 @@
+#announcement {
+    box-shadow: 0px 3px 6px #00000029;
+    overflow: hidden;
+    position: relative;
+    background-color: var(--day);
+}
+
+/* Mobile only */
+
 #agenda-main > #announcement {
     height: 0;
-    position: relative;
-    box-shadow: 0px 0px 15px 0px #aaa;
-    overflow: hidden;
 }
 
 .show-announcement #announcement {
     flex-grow: 1;
 }
 
-.show-announcement .text-announcement {
+/* Desktop only */
+
+#option > #announcement {
+    margin-top: 2rem;
+}
+
+/* Text announcement on mobile and desktop */
+
+.show-announcement .text-announcement, #option .text-announcement {
     padding: .5rem 1rem;
 }
 
-.show-announcement .text-announcement>div {
+.show-announcement .text-announcement>div, #option .text-announcement>div {
     font-size: 1.1rem;
     font-weight: bold;
 }
+
+/* Close button */
 
 #close-announcement-button {
     position: absolute;
