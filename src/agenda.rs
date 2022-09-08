@@ -51,7 +51,7 @@ impl App {
             let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp();
             let announcement_range = announcement_start..=announcement_end;
             for event in &self.events {
-                if announcement_range.contains(&(event.start_unixtime as i64)) || announcement_range.contains(&(event.end_unixtime as i64)) {
+                if announcement_range.contains(&(event.end_unixtime as i64)) {
                     show_mobile_announcement = false;
                     break;
                 }
