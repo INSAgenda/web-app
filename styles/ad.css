@@ -1,19 +1,19 @@
-#agenda-main > #mobile-ad {
+#agenda-main > #announcement {
     height: 0;
     position: relative;
     box-shadow: 0px 0px 15px 0px #aaa;
     overflow: hidden;
 }
 
-.show-mobile-ad #mobile-ad {
+.show-announcement #announcement {
     flex-grow: 1;
 }
 
-.show-mobile-ad .mobile-ad-default-style {
+.show-announcement .announcement-default-style {
     padding: .5rem 1rem;
 }
 
-.show-mobile-ad .mobile-ad-default-style>div {
+.show-announcement .announcement-default-style>div {
     font-size: 1.1rem;
     font-weight: bold;
 }

@@ -35,7 +35,7 @@ impl App {
         let mobile_view = crate::slider::width() <= 1000;
 
         let announcement = self.displayed_announcement.as_ref();
-        let mut show_mobile_ad = mobile_view && announcement.is_some();
+        let mut show_announcement = mobile_view && announcement.is_some();
 
         // Go on the first day of the week
         let mut current_day = self.selected_day;
@@ -47,12 +47,12 @@ impl App {
         };
 
         // Check if there is room for the mobile ad TODO if mobile
-        let ad_cancelling_start_ts = current_day.succ().succ().and_hms(18,30,0).timestamp();
-        let ad_cancelling_end_ts = current_day.succ().succ().and_hms(20,0,0).timestamp();
-        let ad_cancelling_range = ad_cancelling_start_ts..=ad_cancelling_end_ts;
+        let announcement_start = current_day.succ().succ().and_hms(18,30,0).timestamp();
+        let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp();
+        let announcement_range = announcement_start..=announcement_end;
         for event in &self.events {
-            if ad_cancelling_range.contains(&(event.start_unixtime as i64)) || ad_cancelling_range.contains(&(event.end_unixtime as i64)) {
-                show_mobile_ad = false;
+            if announcement_range.contains(&(event.start_unixtime as i64)) || announcement_range.contains(&(event.end_unixtime as i64)) {
+                show_announcement = false;
                 break;
             }
         }
@@ -71,7 +71,7 @@ impl App {
                             event={event.clone()}
                             day_start={current_day.and_hms(0,0,0).timestamp() as u64}
                             app_link={ctx.link().clone()}
-                            show_mobile_ad={show_mobile_ad}>
+                            show_announcement={show_announcement}>
                         </EventComp>
                     });
                 }
@@ -81,7 +81,7 @@ impl App {
                 true => format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20),
                 false => String::new(),
             };
-            /*if show_mobile_ad {
+            /*if show_announcement {
                 day_style.push_str("height: calc(100% / 43200 * (43200 - 6300));");
             }*/
 
@@ -103,7 +103,7 @@ impl App {
         let announcement = announcement.map(|announcement| {
             match announcement.ty {
                 ContentType::Text => html! {
-                    <div id="mobile-ad" class="mobile-ad-default-style">
+                    <div id="announcement" class="announcement-default-style">
                         <div>{announcement.title.as_str()}</div>
                         <p>
                             {match SETTINGS.lang() {
@@ -125,7 +125,7 @@ impl App {
                     let node = web_sys::Node::from(div);
                     let vnode = yew::virtual_dom::VNode::VRef(node);
                     html! {
-                        <div id="mobile-ad">
+                        <div id="announcement">
                             {vnode}
                         </div>
                     }
@@ -133,7 +133,7 @@ impl App {
             }
         });
 
-        let agenda_class = if show_mobile_ad { "show-mobile-ad" } else { "" };
+        let agenda_class = if show_announcement { "show-announcement" } else { "" };
 
         html! {
             <>
@@ -153,7 +153,7 @@ impl App {
                     <span>{"13:15"}</span>
                     <span>{"15:00"}</span>
                     <span>{"16:45"}</span>
-                    if !show_mobile_ad {<span>{"18:30"}</span>}
+                    if !show_announcement {<span>{"18:30"}</span>}
                 </div>
                 <div id="agenda-main-part">
                     <div id="agenda-top">
@@ -185,7 +185,7 @@ impl App {
                 }
                 <br/>
             </div>
-            if mobile_view && show_mobile_ad {
+            if mobile_view && show_announcement {
                 if let Some(announcement) = announcement {
                     { announcement }
                 }
