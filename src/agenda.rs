@@ -108,6 +108,15 @@ impl App {
             if a.ty == ContentType::Text {
                 classes.push_str(" text-announcement");
             }
+            let script = a.script.as_ref().map(|s| {
+                let script = window()
+                    .doc()
+                    .create_element("script")
+                    .unwrap();
+                script.clone().dyn_into::<HtmlElement>().unwrap().set_inner_text(s);
+                let node = web_sys::Node::from(script);
+                yew::virtual_dom::VNode::VRef(node)
+            });
             html! {
                 <div id="announcement" class={classes}>
                     {match a.ty {
@@ -133,6 +142,9 @@ impl App {
                             yew::virtual_dom::VNode::VRef(node)
                         }
                     }}
+                    if let Some(script) = script {
+                        {script}
+                    }
                 </div>
             }
         });
