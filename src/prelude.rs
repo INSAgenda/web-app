@@ -1,7 +1,7 @@
 pub use yew::{prelude::*, html::Scope};
 pub use common::{Event as RawEvent, *};
 pub use wasm_bindgen::{prelude::*, JsCast, JsValue};
-pub use std::{rc::Rc, cell::{Cell, RefCell}, sync::atomic::{AtomicUsize, Ordering}, time::Duration};
+pub use std::{rc::Rc, cell::{Cell, RefCell}, sync::atomic::{AtomicUsize, Ordering}, time::Duration, collections::HashMap};
 pub use chrono_tz::Europe::Paris;
 pub use chrono::{Datelike, Date, TimeZone, Weekday, NaiveDate, Local};
 pub use crate::{util::*, api::*, glider_selector::*, alert::*, event::*, calendar::*, settings::*, colors::*, translation::*, App, Msg as AppMsg, Page, log};

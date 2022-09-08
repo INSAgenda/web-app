@@ -57,11 +57,47 @@ pub async fn load_announcements() -> Result<Vec<AnnouncementDesc>, ApiError> {
     Ok(events)
 }
 
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+struct AnnouncementImpressions {
+    pub count: u64,
+    pub closed: bool,
+}
+
+fn load_impressions() -> Option<HashMap<String, AnnouncementImpressions>> {
+    let local_storage = window().local_storage().unwrap().unwrap();
+    let impression_counts_str = local_storage.get("announcement_impressions").ok().flatten()?;
+    serde_json::from_str(&impression_counts_str).ok()
+}
+
+fn save_impressions(impression_counts: &HashMap<String, AnnouncementImpressions>) {
+    let local_storage = window().local_storage().unwrap().unwrap();
+
+    let impression_counts_str = match serde_json::to_string(impression_counts) {
+        Ok(impression_counts_str) => impression_counts_str,
+        _ => return,
+    };
+
+    let _ = local_storage.set("announcement_impressions", &impression_counts_str);
+}
+
 pub fn select_announcement(announcements: &[AnnouncementDesc]) -> Option<AnnouncementDesc> {
+    let mut impressions = load_impressions().unwrap_or_default();
     let now = (js_sys::Date::new_0().get_time() / 1000.0) as u64;
     
     for a in announcements {
         if (a.start_ts..=a.end_ts).contains(&now) {
+            let mut impression_data = impressions.get(&a.id).cloned().unwrap_or_default();
+            if impression_data.closed {
+                continue;
+            }
+            if let Some(max_impressions) = a.max_impressions {
+                if impression_data.count >= max_impressions {
+                    continue
+                }
+            }
+            impression_data.count += 1;
+            impressions.insert(a.id.clone(), impression_data);
+            save_impressions(&impressions);
             return Some(a.clone());
         }
     }
