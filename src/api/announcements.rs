@@ -25,7 +25,7 @@ pub fn load_cached_announcements() -> Option<(i64, Vec<AnnouncementDesc>)> {
 pub async fn load_announcements() -> Result<Vec<AnnouncementDesc>, ApiError> {
     let (api_key, counter) = get_login_info();
 
-    let request = Request::new_with_str("/api/ads")?;
+    let request = Request::new_with_str("/api/announcements")?;
 
     request.headers().set(
         "Api-Key",
