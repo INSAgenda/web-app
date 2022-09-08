@@ -36,6 +36,7 @@ pub enum Msg {
     SilentSetPage(Page),
     Refresh,
     SetSliderState(bool),
+    CloseAnnouncement,
 }
 
 
@@ -259,6 +260,7 @@ impl Component for App {
                 }
                 true
             },
+            Msg::CloseAnnouncement => update_close_announcement(self),
             Msg::SetSliderState(state) => {
                 let mut slider = self.slider.borrow_mut();
                 match state {

@@ -80,6 +80,34 @@ fn save_impressions(impression_counts: &HashMap<String, AnnouncementImpressions>
     let _ = local_storage.set("announcement_impressions", &impression_counts_str);
 }
 
+/// Function to be called by App in its update method
+pub fn update_close_announcement(app: &mut App) -> bool {
+    // Make announcement not displayed
+    let announcement = match app.displayed_announcement.take() {
+        Some(announcement) => announcement,
+        None => return true,
+    };
+
+    // Remember user's choice for future runs
+    let mut impressions = load_impressions().unwrap_or_default();
+    let mut impression_data = impressions.get(&announcement.id).cloned().unwrap_or_default();
+    impression_data.closed = true;
+    impressions.insert(announcement.id, impression_data);
+    save_impressions(&impressions);
+
+    // Try to hide the announcement without refreshing the display
+    // TODO: enable this on desktop only
+    /*let announcement_el = match window().doc().get_element_by_id("announcement") {
+        Some(announcement_el) => announcement_el,
+        None => return true,
+    };
+    let announcement_el: HtmlElement = announcement_el.dyn_into().unwrap();
+    announcement_el.style().set_property("display", "none").unwrap();
+    return false;*/
+
+    true
+}
+
 pub fn select_announcement(announcements: &[AnnouncementDesc]) -> Option<AnnouncementDesc> {
     let mut impressions = load_impressions().unwrap_or_default();
     let now = (js_sys::Date::new_0().get_time() / 1000.0) as u64;

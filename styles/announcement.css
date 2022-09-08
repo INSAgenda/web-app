@@ -17,3 +17,16 @@
     font-size: 1.1rem;
     font-weight: bold;
 }
+
+#close-announcement-button {
+    position: absolute;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    top: 0;
+    right: 0;
+}
+
+#close-announcement-button:hover, #close-announcement-button:active {
+    fill: red;
+}
