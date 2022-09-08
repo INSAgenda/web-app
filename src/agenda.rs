@@ -77,13 +77,10 @@ impl App {
                 }
             }
 
-            let mut day_style = match mobile_view {
+            let day_style = match mobile_view {
                 true => format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20),
                 false => String::new(),
             };
-            /*if show_announcement {
-                day_style.push_str("height: calc(100% / 43200 * (43200 - 6300));");
-            }*/
 
             day_names.push(html! {
                 <span id={if current_day == self.selected_day {"selected-day"} else {""}}>
