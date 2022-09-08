@@ -32,11 +32,11 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
 
 impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
-        let mobile_view = crate::slider::width() <= 1000;
+        let mobile = crate::slider::width() <= 1000;
 
         // Go on the first day of the week
         let mut current_day = self.selected_day;
-        match mobile_view {
+        match mobile {
             true => current_day = current_day.pred().pred(),
             false => for _ in 0..self.selected_day.weekday().num_days_from_monday() {
                 current_day = current_day.pred();
@@ -45,7 +45,7 @@ impl App {
 
         // Check if there is room for the announcement on mobile
         let announcement = self.displayed_announcement.as_ref();
-        let mut show_mobile_announcement = mobile_view && announcement.is_some();
+        let mut show_mobile_announcement = mobile && announcement.is_some();
         if show_mobile_announcement {
             let announcement_start = current_day.succ().succ().and_hms(18,30,0).timestamp();
             let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp();
@@ -81,7 +81,7 @@ impl App {
                 }
             }
 
-            let day_style = match mobile_view {
+            let day_style = match mobile {
                 true => format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20),
                 false => String::new(),
             };
@@ -131,7 +131,7 @@ impl App {
                         </a>
                     </div>
                     <div id="day-container-scope">
-                        <div id="day-container" style={if mobile_view {Some(format!("position: relative; right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000)))} else {None}}>
+                        <div id="day-container" style={if mobile {Some(format!("position: relative; right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000)))} else {None}}>
                             { days }
                         </div>
                     </div>
@@ -143,14 +143,14 @@ impl App {
                     <div class="divider-bar-option"></div>
                 </div>
                 <Calendar day={self.selected_day.day()} month={self.selected_day.month()} year={self.selected_day.year()} app_link={ctx.link().clone()}/>
-                if !mobile_view {
+                if !mobile {
                     if let Some(announcement) = announcement.clone() {
                         { announcement }
                     }
                 }
                 <br/>
             </div>
-            if mobile_view && show_mobile_announcement {
+            if mobile && show_mobile_announcement {
                 if let Some(announcement) = announcement {
                     { announcement }
                 }
