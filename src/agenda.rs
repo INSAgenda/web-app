@@ -34,8 +34,6 @@ impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
         let mobile = crate::slider::width() <= 1000;
 
-        let performance_now = js_sys::Date::now();
-
         // Go on the first day of the week
         let mut current_day = self.selected_day;
         match mobile {
@@ -126,9 +124,6 @@ impl App {
 
             current_day = current_day.succ();
         }
-
-        let elapsed = js_sys::Date::now() - performance_now;
-        log!("Rendered agenda in {}ms", elapsed);
 
         html! {
             <>
