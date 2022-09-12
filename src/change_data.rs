@@ -224,7 +224,7 @@ impl Component for ChangeDataPage {
                                 
                         }
                         Err(_) => {
-                            alert(t("Impossible de se connecter au le serveur. Veuillez contacter le support: support@insagenda.fr"));
+                            alert(t("Impossible de se connecter au serveur. Veuillez contacter le support: support@insagenda.fr"));
                         }
                     }
                     link.send_message(Msg::SetLoading(false));       

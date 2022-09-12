@@ -39,13 +39,13 @@ impl Colors {
 
     pub fn set(&self, course: &str, background_color: String) {
         match self.content.try_lock(){
-            Ok(mut v) => {
+            Ok(v) => {
                 v.insert(course.to_string(), background_color.clone());
             },
             Err(e) => sentry_report(JsValue::from_str("try lock impossible")),
         }
         match self.to_publish.as_ref().try_lock() {
-            Ok(mut v) => v.push((course.to_string(), background_color)),
+            Ok(v) => v.push((course.to_string(), background_color)),
             Err(e) => sentry_report(JsValue::from_str("try lock impossible")),
         } 
         self.save();
@@ -70,8 +70,8 @@ impl Colors {
     pub fn update_colors(&self, colors: HashMap<String, String>) {
         // Merge new colors
         let mut content = match self.content.try_lock() {
-            Ok(mut v) => v,
-            Err(e) => {sentry_report(JsValue::from_str("try lock impossible")); return},
+            Ok(v) => v,
+            Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
         };
         for (course, color) in content.iter() {
             if !content.contains_key(course) {
@@ -91,14 +91,19 @@ impl Colors {
 
     pub fn push_colors(&self) {//, ctx: &Context<App>) {
        // let link = ctx.link().clone();
-        let mut to_publish2 = match self.to_publish.as_ref().try_lock() {
-            Ok(v) => v.clone(),
-            Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
-        };
+        let  to_publish2 = self.to_publish.clone();
+        
         wasm_bindgen_futures::spawn_local(async move {
-            match crate::api::publish_colors(&to_publish2).await  {
-                Ok(_) => to_publish2.clear(),
-                Err(_) => (),
+            let mut to_publish2 = match to_publish2.as_ref().try_lock() {
+                Ok(v) => v,
+                Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
+            };
+
+            if crate::api::publish_colors(&to_publish2.clone()).await.is_ok() {
+                to_publish2.clear();
+                log!("Colors pushed");
+            } else {
+                log!("Colors not pushed");
             }
         });
     }
