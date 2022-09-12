@@ -17,13 +17,11 @@ impl Colors {
         
         // Convert new color's system  
         let tmp_colors = local_storage.get_item("colors").unwrap();
-        let mut colors: HashMap<String, String> = HashMap::new();
-      
-        match tmp_colors {
-            Some(json) => colors = serde_json::from_str(&json).unwrap_or_default(),
-            None => colors = HashMap::new(),
-        }
-        
+        let mut colors = match tmp_colors {
+            Some(json) => serde_json::from_str(&json).unwrap_or_default(),
+            None => HashMap::new(),
+        };
+
         Colors {
             content: Mutex::new(colors),
             to_publish: Arc::new(Mutex::new(Vec::new())),
@@ -33,20 +31,20 @@ impl Colors {
     pub fn get(&self, course: &str) -> String {
         match self.content.try_lock() {
             Ok(v) => v.get(course).map(|v| v.to_string()).unwrap_or_else(|| String::from("#CB6CE6")),
-            Err(e) => {sentry_report(JsValue::from_str("try lock impossible")); String::from("#CB6CE6")},
+            Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); String::from("#CB6CE6")},
         }
     }
 
     pub fn set(&self, course: &str, background_color: String) {
         match self.content.try_lock(){
-            Ok(v) => {
+            Ok(mut v) => {
                 v.insert(course.to_string(), background_color.clone());
             },
-            Err(e) => sentry_report(JsValue::from_str("try lock impossible")),
+            Err(_) => sentry_report(JsValue::from_str("try lock impossible")),
         }
         match self.to_publish.as_ref().try_lock() {
-            Ok(v) => v.push((course.to_string(), background_color)),
-            Err(e) => sentry_report(JsValue::from_str("try lock impossible")),
+            Ok(mut v) => v.push((course.to_string(), background_color)),
+            Err(_) => sentry_report(JsValue::from_str("try lock impossible")),
         } 
         self.save();
     }
@@ -54,7 +52,6 @@ impl Colors {
     fn save(&self) {
         let local_storage = window().local_storage().unwrap().unwrap();
         local_storage.set_item("colors", &serde_json::to_string(&self.content).unwrap()).unwrap();
-        self.push_colors();
     }
 
     pub fn fetch_colors(&self, ctx: &Context<App>) {
@@ -90,7 +87,7 @@ impl Colors {
     }
 
     pub fn push_colors(&self) {//, ctx: &Context<App>) {
-       // let link = ctx.link().clone();
+        // let link = ctx.link().clone();
         let  to_publish2 = self.to_publish.clone();
         
         wasm_bindgen_futures::spawn_local(async move {

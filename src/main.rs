@@ -31,6 +31,7 @@ pub enum Msg {
     ScheduleFailure(ApiError),
     ApiFailure(ApiError),
     FetchColors(HashMap<String, String>),
+    PushColors(),
     Previous,
     Next,
     Goto {day: u32, month: u32, year: i32},
@@ -153,6 +154,14 @@ impl Component for App {
             _ => Page::Agenda,
         };
 
+        let link = ctx.link().clone();
+        let unload = Closure::wrap(Box::new(move |event: web_sys::Event| {
+            link.send_message(AppMsg::PushColors());
+
+        }) as Box<dyn FnMut(_)>);
+        window().add_event_listener_with_callback("unload", unload.as_ref().unchecked_ref()).unwrap();
+        unload.forget();
+        
         // Get colors
         crate::COLORS.as_ref().fetch_colors(ctx);
 
@@ -278,6 +287,11 @@ impl Component for App {
                 let colors = crate::COLORS.as_ref();
                 colors.update_colors(new_colors);
                 true
+            },
+            Msg::PushColors() => {
+                let colors = crate::COLORS.as_ref();
+                colors.push_colors();
+                false
             },
   
         }
