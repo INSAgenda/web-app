@@ -323,7 +323,7 @@ impl Component for ChangeDataPage {
                     </div>
                 </>}
             },
-            Data::Email(password, email) => {redirect("agenda"); html! {}}
+            Data::Email(_password, _email) => {redirect("agenda"); html! {}}
         };
         
         // Make the form using the custom part we just built

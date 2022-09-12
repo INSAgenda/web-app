@@ -161,9 +161,26 @@ impl Component for App {
         }) as Box<dyn FnMut(_)>);
         window().add_event_listener_with_callback("unload", unload.as_ref().unchecked_ref()).unwrap();
         unload.forget();
-        
+
         // Get colors
         crate::COLORS.as_ref().fetch_colors(ctx);
+
+        // Auto-push colors every 30s if needed
+        let link = ctx.link().clone();
+        let push_colors = Closure::wrap(Box::new(move || {
+            link.send_message(AppMsg::PushColors());
+            log!("Pushed colors");
+        }) as Box<dyn FnMut()>);
+
+        match window().set_interval_with_callback_and_timeout_and_arguments(
+            push_colors.as_ref().unchecked_ref(),
+            1000*30,
+            &Array::new(),
+        ) {
+            Ok(_) => (),
+            Err(e) => sentry_report(JsValue::from(&format!("Failed to set timeout: {:?}", e))),
+        }
+        push_colors.forget();
 
         Self {
             selected_day: now.date(),

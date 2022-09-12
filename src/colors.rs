@@ -17,7 +17,7 @@ impl Colors {
         
         // Convert new color's system  
         let tmp_colors = local_storage.get_item("colors").unwrap();
-        let mut colors = match tmp_colors {
+        let colors = match tmp_colors {
             Some(json) => serde_json::from_str(&json).unwrap_or_default(),
             None => HashMap::new(),
         };
@@ -70,12 +70,13 @@ impl Colors {
             Ok(v) => v,
             Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
         };
+        let mut to_publish = match self.to_publish.as_ref().try_lock() {
+            Ok(v) => v,
+            Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
+        };
         for (course, color) in content.iter() {
-            if !content.contains_key(course) {
-                match self.to_publish.try_lock(){
-                    Ok(mut v) => v.push((course.to_string(), color.to_string())),
-                    Err(e) => sentry_report(JsValue::from_str("try lock impossible")),
-                }
+            if !colors.contains_key(course) {
+                to_publish.push((course.to_string(), color.to_string()));
             }
         }
         content.extend(colors);
@@ -87,20 +88,16 @@ impl Colors {
     }
 
     pub fn push_colors(&self) {//, ctx: &Context<App>) {
-        // let link = ctx.link().clone();
-        let  to_publish2 = self.to_publish.clone();
-        
+
+        let to_publish2 = self.to_publish.clone();
         wasm_bindgen_futures::spawn_local(async move {
             let mut to_publish2 = match to_publish2.as_ref().try_lock() {
                 Ok(v) => v,
                 Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
             };
 
-            if crate::api::publish_colors(&to_publish2.clone()).await.is_ok() {
+            if to_publish2.len() > 0 && crate::api::publish_colors(&to_publish2.clone()).await.is_ok() {
                 to_publish2.clear();
-                log!("Colors pushed");
-            } else {
-                log!("Colors not pushed");
             }
         });
     }
