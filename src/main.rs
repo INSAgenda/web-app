@@ -14,8 +14,6 @@ mod change_data;
 mod prelude;
 mod translation;
 
-use chrono::Timelike;
-
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 pub enum Page {
