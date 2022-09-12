@@ -34,6 +34,8 @@ impl App {
     pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
         let mobile = crate::slider::width() <= 1000;
 
+        let performance_now = js_sys::Date::now();
+
         // Go on the first day of the week
         let mut current_day = self.selected_day;
         match mobile {
@@ -47,15 +49,33 @@ impl App {
         let announcement = self.displayed_announcement.as_ref();
         let mut show_mobile_announcement = mobile && announcement.is_some();
         if show_mobile_announcement {
-            let announcement_start = current_day.succ().succ().and_hms(18,30,0).timestamp();
-            let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp();
+            let announcement_start = current_day.succ().succ().and_hms(18,30,0).timestamp() as u64;
+            let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp() as u64;
             let announcement_range = announcement_start..=announcement_end;
-            for event in &self.events {
-                if announcement_range.contains(&(event.end_unixtime as i64)) {
+            match self.events.binary_search_by_key(&announcement_start, |e| e.start_unixtime) { // Check if an event starts exactly at that time.
+                Ok(_) => {
                     show_mobile_announcement = false;
-                    break;
-                }
-            }
+                },
+                Err(mut idx) => {
+                    if let Some(e) = self.events.get(idx) {
+                        if announcement_range.contains(&(e.start_unixtime)) { // Check if the next event starts in the range
+                            show_mobile_announcement = false;
+                        } else {
+                            idx -= 1;
+                            while let Some(e) = self.events.get(idx) { // Check if a few previous events end in the range
+                                if announcement_range.contains(&(e.end_unixtime)) {
+                                    show_mobile_announcement = false;
+                                    break;
+                                }
+                                if e.end_unixtime < announcement_start - 6*3600 { // Avoid backtracking too much, 6h is enough
+                                    break;
+                                }
+                                idx -= 1;
+                            }
+                        }
+                    }
+                },
+            };
         }
         let agenda_class = if show_mobile_announcement { "show-announcement" } else { "" };
         let announcement = announcement.map(|a| view_announcement(a, ctx));
@@ -65,20 +85,27 @@ impl App {
         let mut day_names = Vec::new();
         for d in 0..5 {
             let mut events = Vec::new();
-            for event in &self.events {
-                if (event.start_unixtime as i64) > current_day.and_hms(0,0,0).timestamp()
-                    && (event.start_unixtime as i64) < current_day.and_hms(23,59,59).timestamp()
-                {
-                    events.push(html! {
-                        <EventComp
-                            day_of_week={d}
-                            event={event.clone()}
-                            day_start={current_day.and_hms(0,0,0).timestamp() as u64}
-                            app_link={ctx.link().clone()}
-                            show_announcement={show_mobile_announcement}>
-                        </EventComp>
-                    });
+
+            // Iterate over events, starting from the first one that starts during the current day
+            let day_start = current_day.and_hms(0,0,0).timestamp() as u64;
+            let mut idx = match self.events.binary_search_by_key(&day_start, |e| e.start_unixtime) {
+                Ok(idx) => idx,
+                Err(idx) => idx,
+            };
+            while let Some(e) = self.events.get(idx) {
+                if e.start_unixtime > day_start + 24*3600 {
+                    break;
                 }
+                events.push(html! {
+                    <EventComp
+                        day_of_week={d}
+                        event={e.clone()}
+                        day_start={current_day.and_hms(0,0,0).timestamp() as u64}
+                        app_link={ctx.link().clone()}
+                        show_announcement={show_mobile_announcement}>
+                    </EventComp>
+                });
+                idx += 1;
             }
 
             let day_style = match mobile {
@@ -99,6 +126,9 @@ impl App {
 
             current_day = current_day.succ();
         }
+
+        let elapsed = js_sys::Date::now() - performance_now;
+        log!("Rendered agenda in {}ms", elapsed);
 
         html! {
             <>
