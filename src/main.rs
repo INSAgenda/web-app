@@ -29,7 +29,8 @@ pub enum Msg {
     UserInfoSuccess(UserInfo),
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
     ScheduleFailure(ApiError),
-    UserInfoFailure(ApiError),
+    ApiFailure(ApiError),
+    FetchColors(HashMap<String, String>),
     Previous,
     Next,
     Goto {day: u32, month: u32, year: i32},
@@ -113,7 +114,7 @@ impl Component for App {
             wasm_bindgen_futures::spawn_local(async move {
                 match api::load_user_info().await {
                     Ok(events) => link2.send_message(Msg::UserInfoSuccess(events)),
-                    Err(e) => link2.send_message(Msg::UserInfoFailure(e)),
+                    Err(e) => link2.send_message(Msg::ApiFailure(e)),
                 }
             });
         }
@@ -151,6 +152,9 @@ impl Component for App {
             },
             _ => Page::Agenda,
         };
+
+        // Get colors
+        crate::COLORS.as_ref().fetch_colors(ctx);
 
         Self {
             selected_day: now.date(),
@@ -201,7 +205,7 @@ impl Component for App {
                 }
                 false
             },
-            Msg::UserInfoFailure(api_error) => {
+            Msg::ApiFailure(api_error) => {
                 api_error.handle_api_error();
                 false
             },
@@ -269,7 +273,13 @@ impl Component for App {
                     false => slider.disable(),
                 }
                 true
-            }
+            },
+            Msg::FetchColors(new_colors) => {
+                let colors = crate::COLORS.as_ref();
+                colors.update_colors(new_colors);
+                true
+            },
+  
         }
     }
     
