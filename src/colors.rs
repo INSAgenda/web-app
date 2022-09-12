@@ -55,6 +55,15 @@ impl Colors {
     }
 
     pub fn fetch_colors(&self, ctx: &Context<App>) {
+        let local_storage = window().local_storage().unwrap().unwrap();
+
+        if let Some(time) = local_storage.get_item("last_colors_updated").unwrap() {
+            let last_updated = time.parse::<i64>().unwrap();
+            let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+            if now - last_updated < 10 {
+                return;
+            }   
+        }
         let link = ctx.link().clone();
         wasm_bindgen_futures::spawn_local(async move {
             match crate::api::get_colors().await  {
@@ -87,8 +96,7 @@ impl Colors {
         local_storage.set_item("last_colors_updated", &now.to_string()).unwrap();
     }
 
-    pub fn push_colors(&self) {//, ctx: &Context<App>) {
-
+    pub fn push_colors(&self) {
         let to_publish2 = self.to_publish.clone();
         wasm_bindgen_futures::spawn_local(async move {
             let mut to_publish2 = match to_publish2.as_ref().try_lock() {
