@@ -257,7 +257,7 @@ impl Component for ChangeDataPage {
                     <label for="password-input3">{t("Nouveau mot de passe (confirmation)")}</label>
                 </div>
             </>},
-            Data::Email(password, email) if !display_password => html! {<>
+            Data::Email(password, email) if display_password => html! {<>
                 <div class="labeled-input">
                     <input type="email" placeholder="Email" id="email" autocomplete="email" ref={email.clone()}/>
                     <label for="email">{t("Adresse email de l'INSA")}</label>
