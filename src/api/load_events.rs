@@ -14,10 +14,11 @@ pub fn load_cached_events() -> Option<(i64, Vec<RawEvent>)> {
         _ => return None,
     };
 
-    let cached_events = match serde_json::from_str::<Vec<RawEvent>>(&cached_events_str) {
+    let mut cached_events = match serde_json::from_str::<Vec<RawEvent>>(&cached_events_str) {
         Ok(cached_events) => cached_events,
         _ => return None,
     };
+    cached_events.sort_by_key(|e| e.start_unixtime);
 
     Some((last_updated, cached_events))
 }
@@ -51,10 +52,11 @@ pub async fn load_events() -> Result<Vec<RawEvent>, ApiError> {
         return Err(error.into());
     }
 
-    let events: Vec<RawEvent> = match json.into_serde() {
+    let mut events: Vec<RawEvent> = match json.into_serde() {
         Ok(events) => events,
         _ => return Err(ApiError::Unknown(json)),
     };
+    events.sort_by_key(|e| e.start_unixtime);
 
     let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
     save_cache(now, &events);
