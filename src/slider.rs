@@ -108,9 +108,14 @@ impl SliderManager {
         let last_pos2 = Rc::clone(&last_pos);
         let move_animation2 = Rc::clone(&move_animation);
         let mouse_move = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-            if slider2.borrow().can_move() {
-                last_pos2.set(event.client_x() as i32);
-                window().request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
+            match slider2.try_borrow() {
+                Ok(slider) => {
+                    if slider.can_move() {
+                        last_pos2.set(event.client_x() as i32);
+                        window().request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
+                    }
+                },
+                Err(_) => sentry_report(JsValue::from("Can't borrow slider.")),
             }
         }) as Box<dyn FnMut(_)>);
         w.add_event_listener_with_callback("mousemove", mouse_move.as_ref().unchecked_ref()).unwrap();
