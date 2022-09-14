@@ -181,6 +181,20 @@ impl Component for App {
         }
         push_colors.forget();
 
+        // Switch to next day if it's late or to monday if it's weekend
+        let weekday = now.weekday();
+        if now.hour() >= 19 || weekday == Weekday::Sat || weekday == Weekday::Sun {
+            let link2 = ctx.link().clone();
+            spawn_local(async move {
+                sleep(Duration::from_millis(500)).await;
+                link2.send_message(Msg::Next);
+                if weekday == Weekday::Sat {
+                    sleep(Duration::from_millis(300)).await;
+                    link2.send_message(Msg::Next);
+                }
+            });
+        }
+
         Self {
             selected_day: now.date(),
             events,

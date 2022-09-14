@@ -240,8 +240,10 @@ impl SliderManager {
     }
 
     pub fn set_offset(&mut self, offset: i32) {
-        self.days_offset.set(offset);
-        let day_container = self.get_cached_day_container();
-        day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
+        if self.enabled {
+            self.days_offset.set(offset);
+            let day_container = self.get_cached_day_container();
+            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
+        }
     }
 }
