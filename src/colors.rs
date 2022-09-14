@@ -60,10 +60,11 @@ impl Colors {
         if let Some(time) = local_storage.get_item("last_colors_updated").unwrap() {
             let last_updated = time.parse::<i64>().unwrap();
             let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
-            if now - last_updated < 10 {
+            if now - last_updated < 15 { 
                 return;
             }   
         }
+
         let link = ctx.link().clone();
         wasm_bindgen_futures::spawn_local(async move {
             match crate::api::get_colors().await  {
@@ -94,6 +95,9 @@ impl Colors {
 
         let local_storage = window().local_storage().unwrap().unwrap();
         local_storage.set_item("last_colors_updated", &now.to_string()).unwrap();
+        drop(content);
+        crate::colors::COLORS_CHANGED.store(true, std::sync::atomic::Ordering::Relaxed);
+        self.save();
     }
 
     pub fn push_colors(&self) {

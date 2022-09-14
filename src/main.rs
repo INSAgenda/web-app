@@ -169,12 +169,11 @@ impl Component for App {
         let link = ctx.link().clone();
         let push_colors = Closure::wrap(Box::new(move || {
             link.send_message(AppMsg::PushColors());
-            log!("Pushed colors");
         }) as Box<dyn FnMut()>);
 
         match window().set_interval_with_callback_and_timeout_and_arguments(
             push_colors.as_ref().unchecked_ref(),
-            1000*30,
+            1000*15,
             &Array::new(),
         ) {
             Ok(_) => (),
