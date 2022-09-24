@@ -260,12 +260,13 @@ impl Component for SettingsPage {
                 } else if diff < 7*86400 {
                     format!("{} {}", diff / 86400, words[i][3])
                 } else if diff < 30*86400 {
-                    format!("{} {}", diff / 7*86400, words[i][4])
+                    format!("{} {}", diff / (7*86400), words[i][4])
                 } else if diff < 365*86400 {
-                    format!("{} {}", diff / 30*86400, words[i][5])
+                    format!("{} {}", diff / (30*86400), words[i][5])
                 } else {
-                    format!("{} {}", diff / 365*86400, words[i][6])
+                    format!("{} {}", diff / (365*86400), words[i][6])
                 };
+                log!("last_password_mod: {}", last_password_mod_str);
             }
             promotion = user_info.group_desc.promotion.to_string();
             class = format!("{}{}", user_info.group_desc.class, user_info.group_desc.class_half);
