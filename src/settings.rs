@@ -238,7 +238,7 @@ impl Component for SettingsPage {
         // Compute variable messages
         let mut verified_msg = String::new();
         let mut email = String::from(t("[inconnue]"));
-        let mut promotion = String::from(t("[inconnue]"));
+        let mut department = String::from(t("[inconnue]"));
         let mut class = String::from(t("[inconnue]"));
         let mut last_password_mod_str = String::from(t("[indisponible]"));
         if let Some(user_info) = ctx.props().user_info.as_ref() {
@@ -268,8 +268,19 @@ impl Component for SettingsPage {
                 };
                 log!("last_password_mod: {}", last_password_mod_str);
             }
-            promotion = user_info.group_desc.promotion.to_string();
-            class = format!("{}{}", user_info.group_desc.class, user_info.group_desc.class_half);
+            let school = user_info.group_desc.groups().get("school").map(|s| s.as_str()).unwrap_or_default();
+            match school {
+                "insa-rouen" => {
+                    if let Some(d) = user_info.group_desc.groups().get("insa-rouen:department") {
+                        department = d.to_owned();
+                    }
+                    if let (Some(c), Some(g)) = (user_info.group_desc.groups().get("insa-rouen:stpi:class"), user_info.group_desc.groups().get("insa-rouen:tp-group")) {
+                        class = format!("{c}{g}");
+                    }
+                }
+                "" => (),
+                _ => alert(format!("Unknown school {school}")),
+            };
         }
 
         let app_link = ctx.props().app_link.clone();
@@ -312,7 +323,7 @@ impl Component for SettingsPage {
                             }
                             <div class="setting">
                                 <h4>{t("Changer de classe")}</h4>
-                                <p>{format!("{} {} {} {}.", t("Vous êtes actuellement en"), promotion, t("dans le groupe"), class)}</p>
+                                <p>{format!("{} {} {} {}.", t("Vous êtes actuellement en"), department, t("dans le groupe"), class)}</p>
                                 <div class="primary-button" onclick={move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangeGroup))}>{t("Modifier")}</div>
                             </div>
                             if has_password {

@@ -177,10 +177,11 @@ impl Component for ChangeDataPage {
                             if parsing_lang.len() > 3 {
                                 parsing_lang.insert(3, '-'); // Here we might get 'AllDeb' but the parsing method expects 'ALL-DEB'
                             }
-                            new_user_info.group_desc.promotion = promotion.to_uppercase().parse().unwrap_or(new_user_info.group_desc.promotion);
+                            unimplemented!()
+                            /*new_user_info.group_desc.promotion = promotion.to_uppercase().parse().unwrap_or(new_user_info.group_desc.promotion);
                             new_user_info.group_desc.class = class.parse().unwrap_or(new_user_info.group_desc.class);
                             new_user_info.group_desc.lang = parsing_lang.parse().unwrap_or(new_user_info.group_desc.lang);
-                            new_user_info.group_desc.class_half = class_half.parse().unwrap_or(new_user_info.group_desc.class_half);
+                            new_user_info.group_desc.class_half = class_half.parse().unwrap_or(new_user_info.group_desc.class_half);*/
                         }
 
                         format!(r#"{{
@@ -270,7 +271,7 @@ impl Component for ChangeDataPage {
                 <p>{t("Un email de confirmation vous sera immédiatement envoyé.")}</p>
             </>},
             Data::Group => {
-                let GroupDescriptor { promotion, lang, class, class_half } = ctx.props().user_info.as_ref().as_ref().map(|u| &u.group_desc).unwrap_or(&GroupDescriptor {
+                /*let GroupDescriptor { promotion, lang, class, class_half } = ctx.props().user_info.as_ref().as_ref().map(|u| &u.group_desc).unwrap_or(&GroupDescriptor {
                     promotion: Promotion::Stpi1,
                     lang: Language::All,
                     class: Class::A,
@@ -321,7 +322,8 @@ impl Component for ChangeDataPage {
                             <option value="2" selected={*class_half == 2} > { t("Groupe 2") } </option>
                         </select>
                     </div>
-                </>}
+                </>}*/
+                html!(<>{"TODO"}</>)
             },
             Data::Email(password, email) => {redirect("agenda"); html! {}}
         };
