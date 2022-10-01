@@ -41,7 +41,6 @@ pub enum Msg {
     CloseAnnouncement,
 }
 
-
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
     events: Vec<RawEvent>,
@@ -51,15 +50,6 @@ pub struct App {
     page: Page,
     user_info: Rc<Option<UserInfo>>,
     slider: Rc<RefCell<slider::SliderManager>>,
-}
-
-fn refresh_events(app_link: Scope<App>) {
-    wasm_bindgen_futures::spawn_local(async move {
-        match api::load_events().await {
-            Ok(events) => app_link.send_message(Msg::ScheduleSuccess(events)),
-            Err(e) => app_link.send_message(Msg::ScheduleFailure(e)),
-        }
-    });
 }
 
 impl Component for App {
@@ -89,58 +79,11 @@ impl Component for App {
         closure.forget();
 
         // Update events
-        let mut skip_event_loading = false;
-        let mut events = Vec::new();
-        if let Some((last_updated, cached_events)) = api::load_cached_events() {
-            if last_updated > now.timestamp() - 3600*5 && !cached_events.is_empty() {
-                skip_event_loading = true;
-            }
-            events = cached_events;
-        }
-        if !skip_event_loading {
-            refresh_events(ctx.link().clone());
-        }
-
-        // Update user info
-        let mut skip_user_info_loading = false;
-        let mut user_info = None;
-        if let Some((last_updated, cached_user_info)) = api::load_cached_user_info() {
-            if last_updated > now.timestamp() - 60*5 {
-                skip_user_info_loading = true;
-            }
-            user_info = Some(cached_user_info);
-        }
-        if !skip_user_info_loading {
-            let link2 = ctx.link().clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                match api::load_user_info().await {
-                    Ok(events) => link2.send_message(Msg::UserInfoSuccess(events)),
-                    Err(e) => link2.send_message(Msg::UserInfoFailure(e)),
-                }
-            });
-        }
-
-        // Update announcements
-        let mut skip_announcements_loading = false;
-        let mut announcements = Vec::new();
-        if let Some((last_updated, cached_announcements)) = api::load_cached_announcements() {
-            if last_updated > now.timestamp() - 3600*12 && !cached_announcements.is_empty() {
-                skip_announcements_loading = true;
-            }
-            announcements = cached_announcements;
-        }
-        let displayed_announcement = select_announcement(&announcements);
-        if !skip_announcements_loading {
-            let link2 = ctx.link().clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                match api::load_announcements().await {
-                    Ok(events) => link2.send_message(Msg::AnnouncementsSuccess(events)),
-                    Err(e) => e.handle_api_error(),
-                }
-            });
-        }
-
+        let events = init_events(now, ctx.link().clone());
+        let user_info = init_user_info(now, ctx.link().clone());
         let groups = init_groups(now, ctx.link().clone());
+        let announcements = init_announcements(now, ctx.link().clone());
+        let displayed_announcement = select_announcement(&announcements);
 
         // Detect page
         let page = match window().location().hash() {

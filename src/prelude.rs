@@ -3,7 +3,7 @@ pub use common::{Event as RawEvent, *};
 pub use wasm_bindgen::{prelude::*, JsCast, JsValue};
 pub use std::{rc::Rc, cell::{Cell, RefCell}, sync::atomic::{AtomicUsize, Ordering}, time::Duration, collections::HashMap};
 pub use chrono_tz::Europe::Paris;
-pub use chrono::{Datelike, Date, TimeZone, Weekday, NaiveDate, Local, Timelike};
+pub use chrono::{Datelike, DateTime, Date, TimeZone, Weekday, NaiveDate, Local, Timelike};
 pub use crate::{announcements::*, util::*, api::*, glider_selector::*, alert::*, event::*, calendar::*, settings::*, colors::*, translation::*, App, Msg as AppMsg, Page, log};
 pub use web_sys::{HtmlElement, HtmlInputElement, RequestInit, Request};
 pub use wasm_bindgen_futures::{JsFuture, spawn_local};

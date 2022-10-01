@@ -1,6 +1,7 @@
 use super::*;
+use crate::prelude::*;
 
-pub fn load_cached_user_info() -> Option<(i64, UserInfo)> {
+fn load_cached_user_info() -> Option<(i64, UserInfo)> {
     let local_storage = window().local_storage().unwrap().unwrap();
 
     let last_updated = match local_storage.get("last_updated_user_info").map(|v| v.map(|v| v.parse())) {
@@ -28,7 +29,7 @@ pub fn save_user_info_cache(user_info: &UserInfo) {
     let _ = local_storage.set("cached_user_info", &serde_json::to_string(&user_info).unwrap());
 }
 
-pub async fn load_user_info() -> Result<UserInfo, ApiError> {
+async fn load_user_info() -> Result<UserInfo, ApiError> {
     let (api_key, counter) = get_login_info();
 
     let request = Request::new_with_str("/api/user-info")?;
@@ -59,4 +60,23 @@ pub async fn load_user_info() -> Result<UserInfo, ApiError> {
     Ok(user_info)
 }
 
+pub fn init_user_info(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) -> Option<UserInfo> {
+    // Get cached
+    let mut user_info = None;
+    if let Some((last_updated, cached)) = load_cached_user_info() {
+        user_info = Some(cached);
+        if last_updated > now.timestamp() - 60*5 {
+            return user_info;
+        }
+    }
 
+    // Update from server
+    wasm_bindgen_futures::spawn_local(async move {
+        match load_user_info().await {
+            Ok(user_info) => app_link.send_message(AppMsg::UserInfoSuccess(user_info)),
+            Err(e) => app_link.send_message(AppMsg::UserInfoFailure(e)),
+        }
+    });
+
+    user_info
+}

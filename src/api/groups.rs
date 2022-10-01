@@ -1,9 +1,7 @@
-use chrono::DateTime;
-
 use super::*;
 use crate::prelude::*;
 
-pub fn load_cached_groups() -> Option<(i64, Vec<Group>)> {
+fn load_cached_groups() -> Option<(i64, Vec<Group>)> {
     let local_storage = window().local_storage().unwrap().unwrap();
 
     let last_updated = match local_storage.get("last_updated_groups").map(|v| v.map(|v| v.parse())) {
@@ -31,7 +29,7 @@ fn save_cache(last_updated: i64, events: &[Group]) {
     let _ = local_storage.set("cached_groups", &serde_json::to_string(&events).unwrap());
 }
 
-pub async fn load_groups() -> Result<Vec<Group>, ApiError> {
+async fn load_groups() -> Result<Vec<Group>, ApiError> {
     let request = Request::new_with_str("/config/groups.json")?;
     let resp = JsFuture::from(window().fetch_with_request(&request)).await?;
     let resp: web_sys::Response = resp.dyn_into()?;
