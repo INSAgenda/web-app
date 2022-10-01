@@ -1,11 +1,11 @@
 .event {
-    width: inherit;
     color: var(--text);
     cursor: pointer;
     box-sizing: border-box;
     border-radius: 0.3rem;
     font-size: .95rem;
     transition: filter .2s ease;
+    position: sticky;
 }
 
 :root[data-theme="dark"] .event {
@@ -30,10 +30,13 @@
 /* Event details */
 
 .event-details {
-    width: calc(214px - 2.2rem); /* ALED */
     font-size: 1rem;
-    position: relative;
-    top: -100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50%;
+    height: 60%;
+    transform: translate(-50%, -50%);
     background-color: var(--closer-background);
     color: var(--text);
     border-radius: 1rem;
