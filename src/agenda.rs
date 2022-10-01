@@ -50,6 +50,7 @@ impl App {
             let announcement_start = current_day.succ().succ().and_hms(18,30,0).timestamp() as u64;
             let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp() as u64;
             let announcement_range = announcement_start..=announcement_end;
+
             match self.events.binary_search_by_key(&announcement_start, |e| e.start_unixtime) { // Check if an event starts exactly at that time.
                 Ok(_) => {
                     show_mobile_announcement = false;
