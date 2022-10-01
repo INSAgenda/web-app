@@ -4,7 +4,7 @@ pub use wasm_bindgen::{prelude::*, JsCast, JsValue};
 pub use std::{rc::Rc, cell::{Cell, RefCell}, sync::atomic::{AtomicUsize, Ordering}, time::Duration, collections::HashMap};
 pub use chrono_tz::Europe::Paris;
 pub use chrono::{Datelike, Date, TimeZone, Weekday, NaiveDate, Local, Timelike};
-pub use crate::{announcements::*, util::*, api::*, glider_selector::*, alert::*, event::*, calendar::*, settings::*, colors::*, translation::*, App, Msg as AppMsg, Page, log};
+pub use crate::{announcements::*, util::*, api::*, glider_selector::*, alert::*, event::*, calendar::*, settings::*, colors::*, agenda::*, translation::*, App, Msg as AppMsg, Page, popup::Popup, log};
 pub use web_sys::{HtmlElement, HtmlInputElement, RequestInit, Request};
 pub use wasm_bindgen_futures::{JsFuture, spawn_local};
 pub use lazy_static::lazy_static;

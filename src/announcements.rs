@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, agenda::Agenda};
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 struct AnnouncementImpressions {
@@ -28,7 +28,7 @@ fn save_impressions(impression_counts: &HashMap<String, AnnouncementImpressions>
 /// Close the currently displayed announcement
 /// 
 /// Function to be called by App in its update method
-pub fn update_close_announcement(app: &mut App) -> bool {
+pub fn update_close_announcement(app: &mut Agenda) -> bool {
     // Make announcement not displayed
     let announcement = match app.displayed_announcement.take() {
         Some(announcement) => announcement,
@@ -82,7 +82,7 @@ pub fn select_announcement(announcements: &[AnnouncementDesc]) -> Option<Announc
 }
 
 /// Generate Yew HTML for displaying an announcement
-pub fn view_announcement(a: &AnnouncementDesc, ctx: &Context<App>) -> Html {
+pub fn view_announcement(a: &AnnouncementDesc, ctx: &Context<Agenda>) -> Html {
     let mut classes = String::new();
     if a.ty == ContentType::Text {
         classes.push_str(" text-announcement");
@@ -102,7 +102,7 @@ pub fn view_announcement(a: &AnnouncementDesc, ctx: &Context<App>) -> Html {
     // Create close button
     let close_button = match a.closable {
         true => html! {
-            <svg id="close-announcement-button" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16" onclick={ctx.link().callback(|_| AppMsg::CloseAnnouncement)}>
+            <svg id="close-announcement-button" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16" onclick={ctx.link().callback(|_| AgendaMsg::CloseAnnouncement)}>
                 <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
             </svg>
         },

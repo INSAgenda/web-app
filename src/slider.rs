@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, agenda::{Agenda, AgendaMsg}};
 
 pub fn width() -> usize {
     window().inner_width().unwrap().as_f64().unwrap() as usize
@@ -15,23 +15,22 @@ pub struct SliderManager {
 }
 
 impl SliderManager {
-    pub fn init(link: Scope<App>, day_offset: i32) -> Rc<RefCell<SliderManager>> {
+    pub fn init(link: Scope<Agenda>, day_offset: i32) -> Rc<RefCell<SliderManager>> {
         // Create callbacks
 
         let days_offset = Rc::new(Cell::new(day_offset));
 
         let link2 = link.clone();
         let swift_next_callback = Closure::wrap(Box::new(move || {
-            link2.send_message(AppMsg::Next);
+            link2.send_message(AgendaMsg::Next);
         }) as Box<dyn FnMut()>);
 
         let link2 = link.clone();
         let swift_prev_callback = Closure::wrap(Box::new(move || {
-            link2.send_message(AppMsg::Previous);
+            link2.send_message(AgendaMsg::Previous);
         }) as Box<dyn FnMut()>);
 
         // Create slider
-
         let slider = Rc::new(RefCell::new(SliderManager {
             enabled: false,
             start_pos: None,
@@ -52,11 +51,11 @@ impl SliderManager {
             let mut slider = slider2.borrow_mut();
             match slider.enabled {
                 true if width() > 1000 => {
-                    link2.send_message(AppMsg::Refresh);
+                    link2.send_message(AgendaMsg::Refresh);
                     slider.disable();
                 }
                 false if width() <= 1000 => {
-                    link2.send_message(AppMsg::Refresh);
+                    link2.send_message(AgendaMsg::Refresh);
                     slider.enable();
                 },
                 _ => (),

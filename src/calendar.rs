@@ -1,8 +1,8 @@
-use crate::prelude::*;
+use crate::{prelude::*, agenda::AgendaMsg};
 
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
-    pub app_link: Scope<App>,
+    pub agenda_link: Scope<Agenda>,
     pub day: u32,
     pub month: u32,
     pub year: i32,
@@ -46,7 +46,7 @@ impl Component for Calendar {
                     self.selected_month += 1;
                 }
                 self.selected_day = 1;
-                ctx.props().app_link.send_message(AppMsg::Goto {
+                ctx.props().agenda_link.send_message(AgendaMsg::Goto {
                     day: self.selected_day,
                     month: self.selected_month,
                     year: self.selected_year
@@ -63,7 +63,7 @@ impl Component for Calendar {
                 }
                 let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
                 self.selected_day = last_day.day();
-                ctx.props().app_link.send_message(AppMsg::Goto {
+                ctx.props().agenda_link.send_message(AgendaMsg::Goto {
                     day: self.selected_day,
                     month: self.selected_month,
                     year: self.selected_year
@@ -75,7 +75,7 @@ impl Component for Calendar {
                 self.selected_day = day;
                 self.selected_month = month;
                 self.selected_year = year;
-                ctx.props().app_link.send_message(AppMsg::Goto {day,month,year});
+                ctx.props().agenda_link.send_message(AgendaMsg::Goto {day,month,year});
                 true
             },
         }

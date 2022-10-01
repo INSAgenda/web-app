@@ -13,8 +13,9 @@ mod colors;
 mod change_data;
 mod prelude;
 mod translation;
+mod popup;
 
-use chrono::{DateTime, NaiveDateTime, Utc, NaiveTime};
+use agenda::refresh_events;
 
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
@@ -27,40 +28,18 @@ pub enum Page {
 }
 
 pub enum Msg {
-    ScheduleSuccess(Vec<RawEvent>),
     UserInfoSuccess(UserInfo),
-    AnnouncementsSuccess(Vec<AnnouncementDesc>),
-    ScheduleFailure(ApiError),
     UserInfoFailure(ApiError),
-    Previous,
-    Next,
-    Goto {day: u32, month: u32, year: i32},
     SetPage(Page),
     SilentSetPage(Page),
-    Refresh,
-    SetSliderState(bool),
-    CloseAnnouncement,
 }
 
 
 pub struct App {
-    selected_day: Date<chrono_tz::Tz>,
-    events: Vec<RawEvent>,
-    announcements: Vec<AnnouncementDesc>,
-    displayed_announcement: Option<AnnouncementDesc>,
     page: Page,
     user_info: Rc<Option<UserInfo>>,
-    slider: Rc<RefCell<slider::SliderManager>>,
 }
 
-fn refresh_events(app_link: Scope<App>) {
-    wasm_bindgen_futures::spawn_local(async move {
-        match api::load_events().await {
-            Ok(events) => app_link.send_message(Msg::ScheduleSuccess(events)),
-            Err(e) => app_link.send_message(Msg::ScheduleFailure(e)),
-        }
-    });
-}
 
 impl Component for App {
     type Message = Msg;
@@ -88,19 +67,6 @@ impl Component for App {
         window().add_event_listener_with_callback("popstate", closure.as_ref().unchecked_ref()).unwrap();
         closure.forget();
 
-        // Update events
-        let mut skip_event_loading = false;
-        let mut events = Vec::new();
-        if let Some((last_updated, cached_events)) = api::load_cached_events() {
-            if last_updated > now.timestamp() - 3600*5 && !cached_events.is_empty() {
-                skip_event_loading = true;
-            }
-            events = cached_events;
-        }
-        if !skip_event_loading {
-            refresh_events(ctx.link().clone());
-        }
-
         // Update user info
         let mut skip_user_info_loading = false;
         let mut user_info = None;
@@ -120,26 +86,6 @@ impl Component for App {
             });
         }
 
-        // Update announcements
-        let mut skip_announcements_loading = false;
-        let mut announcements = Vec::new();
-        if let Some((last_updated, cached_announcements)) = api::load_cached_announcements() {
-            if last_updated > now.timestamp() - 3600*12 && !cached_announcements.is_empty() {
-                skip_announcements_loading = true;
-            }
-            announcements = cached_announcements;
-        }
-        let displayed_announcement = select_announcement(&announcements);
-        if !skip_announcements_loading {
-            let link2 = ctx.link().clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                match api::load_announcements().await {
-                    Ok(events) => link2.send_message(Msg::AnnouncementsSuccess(events)),
-                    Err(e) => e.handle_api_error(),
-                }
-            });
-        }
-
         // Detect page
         let page = match window().location().hash() {
             Ok(hash) if hash == "#settings" => Page::Settings,
@@ -154,43 +100,20 @@ impl Component for App {
             _ => Page::Agenda,
         };
 
-        // Switch to next day if it's late or to monday if it's weekend
-        let weekday = now.weekday();
-        let curr_day = now.naive_local().date().and_hms(0, 0, 0);
-        let has_event = has_event_on_day(&events, curr_day, Weekday::Sat);
-        if now.hour() >= 19 || weekday == Weekday::Sun || (weekday == Weekday::Sat && !has_event) {
-            let link2 = ctx.link().clone();
-            spawn_local(async move {
-                sleep(Duration::from_millis(500)).await;
-                link2.send_message(Msg::Next);
-            });
-        }
-
         Self {
-            selected_day: now.date(),
-            events,
             page,
-            announcements,
-            displayed_announcement,
             user_info: Rc::new(user_info),
-            slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
         }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::ScheduleSuccess(events) => {
-                self.events = events;
-                true
-            }
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
 
                 // If user's group changed, update the events
                 if let Some(old_user_info) = self.user_info.as_ref() {
                     if old_user_info.group_desc != user_info.group_desc {
-                        self.events.clear();
-                        refresh_events(ctx.link().clone());
                         should_refresh = true;
                     }
                 }
@@ -200,20 +123,6 @@ impl Component for App {
                 self.user_info = Rc::new(Some(user_info));
 
                 should_refresh
-            }
-            Msg::AnnouncementsSuccess(announcements) => {
-                self.announcements = announcements;
-                false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
-            }
-            Msg::ScheduleFailure(api_error) => {
-                api_error.handle_api_error();
-                match api_error {
-                    ApiError::Known(error) if error.kind == "counter_too_low" => {
-                        refresh_events(ctx.link().clone());
-                    }
-                    _ => {},
-                }
-                false
             },
             Msg::UserInfoFailure(api_error) => {
                 api_error.handle_api_error();
@@ -235,63 +144,6 @@ impl Component for App {
                 self.page = page;
                 true
             },
-            Msg::Previous => {
-                let prev_week = NaiveDateTime::new(self.selected_day.naive_local(), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
-                if self.selected_day.weekday() != Weekday::Mon {
-                    self.selected_day = self.selected_day.pred();
-                } else if self.selected_day.weekday() == Weekday::Mon && !has_event_on_day(&self.events, prev_week, Weekday::Sat) {
-                    self.selected_day = self.selected_day.pred().pred().pred();
-                } else {
-                    self.selected_day = self.selected_day.pred().pred();
-                }
-                self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
-                true
-            },
-            Msg::Next => {
-                let now = NaiveDateTime::new(self.selected_day.naive_local(), NaiveTime::from_hms(0, 0, 0));
-                if self.selected_day.weekday() == Weekday::Sat {
-                    self.selected_day = self.selected_day.succ().succ();
-                } else if self.selected_day.weekday() != Weekday::Fri {
-                    self.selected_day = self.selected_day.succ();
-                } else if self.selected_day.weekday() == Weekday::Fri && !has_event_on_day(&self.events, now, Weekday::Sat) {
-                    self.selected_day = self.selected_day.succ().succ().succ();
-                } else {
-                    self.selected_day = self.selected_day.succ();
-                }
-                self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
-                true
-            },
-            Msg::Goto {day, month, year} => {
-                self.selected_day = Paris.ymd(year, month, day);
-                true
-            }
-            Msg::Refresh => {
-                let window = window();
-                match Reflect::get(&window.doc(), &JsValue::from_str("reflectTheme")) {
-                    Ok(reflect_theme) => {
-                        let reflect_theme: Function = match reflect_theme.dyn_into(){
-                            Ok(reflect_theme) => reflect_theme,
-                            Err(e) => {
-                                log!("Failed to convert reflect theme: {:?}", e);
-                                return true;
-                            }
-                        };
-                    
-                        Reflect::apply(&reflect_theme, &window.doc(), &Array::new()).expect("Failed to call reflectTheme");
-                    }
-                    Err(_) => log!("reflectTheme not found")
-                }
-                true
-            },
-            Msg::CloseAnnouncement => update_close_announcement(self),
-            Msg::SetSliderState(state) => {
-                let mut slider = self.slider.borrow_mut();
-                match state {
-                    true => slider.enable(),
-                    false => slider.disable(),
-                }
-                true
-            }
         }
     }
     
@@ -301,7 +153,7 @@ impl Component for App {
     
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
-            Page::Agenda => self.view_agenda(ctx),
+            Page::Agenda => html!(<Agenda app_link={ ctx.link().clone()} />),
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
             Page::ChangePassword => html!( <ChangeDataPage kind="new_password" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
             Page::ChangeEmail => html!( <ChangeDataPage kind="email" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
