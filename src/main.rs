@@ -44,11 +44,11 @@ pub enum Msg {
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
     events: Vec<RawEvent>,
-    groups: Vec<Group>,
+    groups: Rc<Vec<Group>>,
+    user_info: Rc<Option<UserInfo>>,
     announcements: Vec<AnnouncementDesc>,
     displayed_announcement: Option<AnnouncementDesc>,
     page: Page,
-    user_info: Rc<Option<UserInfo>>,
     slider: Rc<RefCell<slider::SliderManager>>,
 }
 
@@ -116,7 +116,7 @@ impl Component for App {
         Self {
             selected_day: now.date(),
             events,
-            groups,
+            groups: Rc::new(groups),
             page,
             announcements,
             displayed_announcement,
@@ -154,7 +154,7 @@ impl Component for App {
                 false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
             }
             Msg::GroupsSuccess(groups) => {
-                self.groups = groups;
+                self.groups = Rc::new(groups);
                 false
             }
             Msg::ScheduleFailure(api_error) => {
@@ -247,9 +247,27 @@ impl Component for App {
         match &self.page {
             Page::Agenda => self.view_agenda(ctx),
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangePassword => html!( <ChangeDataPage kind="new_password" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangeEmail => html!( <ChangeDataPage kind="email" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangeGroup => html!( <ChangeDataPage kind="group" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
+            Page::ChangePassword => html!(
+                <ChangeDataPage
+                    kind="new_password"
+                    app_link={ ctx.link().clone() }
+                    user_info={Rc::clone(&self.user_info)}
+                    groups={Rc::clone(&self.groups)} />
+            ),
+            Page::ChangeEmail => html!(
+                <ChangeDataPage
+                    kind="email"
+                    app_link={ ctx.link().clone() }
+                    user_info={Rc::clone(&self.user_info)}
+                    groups={Rc::clone(&self.groups)} />
+            ),
+            Page::ChangeGroup => html!(
+                <ChangeDataPage
+                    kind="group"
+                    app_link={ ctx.link().clone() }
+                    user_info={Rc::clone(&self.user_info)}
+                    groups={Rc::clone(&self.groups)} />
+            ),
         }
     }
 }
