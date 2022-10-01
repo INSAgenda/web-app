@@ -238,8 +238,7 @@ impl Component for SettingsPage {
         // Compute variable messages
         let mut verified_msg = String::new();
         let mut email = String::from(t("[inconnue]"));
-        let mut department = String::from(t("[inconnue]"));
-        let mut class = String::from(t("[inconnue]"));
+        let mut formatted_group = String::from(t("[inconnu]"));
         let mut last_password_mod_str = String::from(t("[indisponible]"));
         if let Some(user_info) = ctx.props().user_info.as_ref() {
             if !user_info.email.1 {
@@ -268,14 +267,26 @@ impl Component for SettingsPage {
                 };
                 log!("last_password_mod: {}", last_password_mod_str);
             }
+
+            // Format group
             let school = user_info.group_desc.groups().get("school").map(|s| s.as_str()).unwrap_or_default();
             match school {
                 "insa-rouen" => {
-                    if let Some(d) = user_info.group_desc.groups().get("insa-rouen:department") {
-                        department = d.to_owned();
-                    }
-                    if let (Some(c), Some(g)) = (user_info.group_desc.groups().get("insa-rouen:stpi:class"), user_info.group_desc.groups().get("insa-rouen:tp-group")) {
-                        class = format!("{c}{g}");
+                    let department = user_info.group_desc.groups().get("insa-rouen:department").map(|s| s.as_str()).unwrap_or_default();
+                    match department {
+                        "STPI1" | "STPI2" => {
+                            if let (Some(c), Some(g)) = (user_info.group_desc.groups().get("insa-rouen:stpi:class"), user_info.group_desc.groups().get("insa-rouen:stpi:tp-group")) {
+                                formatted_group = format!("{department}, {} {c}{g}", t("en classe"));
+                            }
+                        }
+                        "ITI3" => {
+                            if let Some(g) = user_info.group_desc.groups().get("insa-rouen:iti:group") {
+                                formatted_group = format!("{department}, {} {g}", t("en groupe"));
+                            }
+                        }
+                        department => {
+                            formatted_group = format!("{department}");
+                        }
                     }
                 }
                 "" => (),
@@ -323,7 +334,7 @@ impl Component for SettingsPage {
                             }
                             <div class="setting">
                                 <h4>{t("Changer de classe")}</h4>
-                                <p>{format!("{} {} {} {}.", t("Vous êtes actuellement en"), department, t("dans le groupe"), class)}</p>
+                                <p>{format!("{} {}.", t("Vous êtes actuellement en "), formatted_group)}</p>
                                 <div class="primary-button" onclick={move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangeGroup))}>{t("Modifier")}</div>
                             </div>
                             if has_password {
