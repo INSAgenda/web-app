@@ -78,7 +78,7 @@ impl Component for App {
         window().add_event_listener_with_callback("popstate", closure.as_ref().unchecked_ref()).unwrap();
         closure.forget();
 
-        // Update events
+        // Update data
         let events = init_events(now, ctx.link().clone());
         let user_info = init_user_info(now, ctx.link().clone());
         let groups = init_groups(now, ctx.link().clone());
