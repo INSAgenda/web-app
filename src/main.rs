@@ -28,6 +28,7 @@ pub enum Msg {
     ScheduleSuccess(Vec<RawEvent>),
     UserInfoSuccess(UserInfo),
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
+    GroupsSuccess(Vec<Group>),
     ScheduleFailure(ApiError),
     UserInfoFailure(ApiError),
     Previous,
@@ -44,6 +45,7 @@ pub enum Msg {
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
     events: Vec<RawEvent>,
+    groups: Vec<Group>,
     announcements: Vec<AnnouncementDesc>,
     displayed_announcement: Option<AnnouncementDesc>,
     page: Page,
@@ -138,6 +140,8 @@ impl Component for App {
             });
         }
 
+        let groups = init_groups(now, ctx.link().clone());
+
         // Detect page
         let page = match window().location().hash() {
             Ok(hash) if hash == "#settings" => Page::Settings,
@@ -169,6 +173,7 @@ impl Component for App {
         Self {
             selected_day: now.date(),
             events,
+            groups,
             page,
             announcements,
             displayed_announcement,
@@ -204,6 +209,10 @@ impl Component for App {
             Msg::AnnouncementsSuccess(announcements) => {
                 self.announcements = announcements;
                 false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
+            }
+            Msg::GroupsSuccess(groups) => {
+                self.groups = groups;
+                false
             }
             Msg::ScheduleFailure(api_error) => {
                 api_error.handle_api_error();

@@ -1,5 +1,7 @@
-mod load_events;
-pub use load_events::*;
+mod schedule;
+pub use schedule::*;
+mod groups;
+pub use groups::*;
 mod logout;
 pub(crate) use logout::*;
 mod user_info;

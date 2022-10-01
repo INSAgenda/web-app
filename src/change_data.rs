@@ -271,6 +271,8 @@ impl Component for ChangeDataPage {
                 <p>{t("Un email de confirmation vous sera immédiatement envoyé.")}</p>
             </>},
             Data::Group => {
+                
+
                 /*let GroupDescriptor { promotion, lang, class, class_half } = ctx.props().user_info.as_ref().as_ref().map(|u| &u.group_desc).unwrap_or(&GroupDescriptor {
                     promotion: Promotion::Stpi1,
                     lang: Language::All,
