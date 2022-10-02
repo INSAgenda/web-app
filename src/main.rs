@@ -165,7 +165,7 @@ impl Component for App {
         // Get colors
         crate::COLORS.as_ref().fetch_colors(ctx);
 
-        // Auto-push colors every 30s if needed
+        // Auto-push colors every 15s if needed
         let link = ctx.link().clone();
         let push_colors = Closure::wrap(Box::new(move || {
             link.send_message(AppMsg::PushColors());
