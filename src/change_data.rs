@@ -8,7 +8,7 @@ enum Data {
     NewPassword(NodeRef, NodeRef, NodeRef),
     /// password, email
     Email(NodeRef, NodeRef),
-    Group(GroupDescriptor),
+    Group(UserGroups),
 }
 
 impl Data {
@@ -43,7 +43,7 @@ pub enum Msg {
 #[derive(Properties, Clone)]
 pub struct ChangeDataProps {
     pub kind: String,
-    pub groups: Rc<Vec<Group>>,
+    pub groups: Rc<Vec<GroupDesc>>,
     pub app_link: Scope<App>,
     pub user_info: Rc<Option<UserInfo>>,
 }
@@ -67,7 +67,7 @@ impl Component for ChangeDataPage {
             data: match ctx.props().kind.as_str() {
                 "new_password" => Data::NewPassword(NodeRef::default(), NodeRef::default(), NodeRef::default()),
                 "email" => Data::Email(NodeRef::default(), NodeRef::default()),
-                "group" => Data::Group(ctx.props().user_info.as_ref().as_ref().map(|ui| ui.group_desc.clone()).unwrap_or_else(|| GroupDescriptor::new_with_groups(BTreeMap::new()))),
+                "group" => Data::Group(ctx.props().user_info.as_ref().as_ref().map(|ui| ui.user_groups.clone()).unwrap_or_else(|| UserGroups::new_with_groups(BTreeMap::new()))),
                 _ => unreachable!(),
             },
             message: None,
@@ -99,12 +99,12 @@ impl Component for ChangeDataPage {
                     Some(name) => name,
                     None => return false,
                 };
-                let group_desc = match &mut self.data {
-                    Data::Group(group_desc) => group_desc,
+                let user_groups = match &mut self.data {
+                    Data::Group(user_groups) => user_groups,
                     _ => return false,
                 };
                 let value = select.selected_value();
-                group_desc.insert(name, value);
+                user_groups.insert(name, value);
                 true
             }
             Msg::Submit => {
@@ -173,11 +173,11 @@ impl Component for ChangeDataPage {
                             "new_email": "{}"
                         }}"#, password.replace('"', "\\\""), email.replace('"', "\\\""))
                     },
-                    Data::Group(input_group_desc) => {
+                    Data::Group(input_user_groups) => {
                         // Make sure all fields are set
                         for group in ctx.props().groups.iter() {
-                            let required = group.required_if.as_ref().map(|ri| input_group_desc.matches(ri)).unwrap_or(true);
-                            if required && input_group_desc.groups().get(&group.id).is_none() {
+                            let required = group.required_if.as_ref().map(|ri| input_user_groups.matches(ri)).unwrap_or(true);
+                            if required && input_user_groups.groups().get(&group.id).is_none() {
                                 ctx.link().send_message(Msg::SetMessage(Some(format!("{} ({})", t("Tous les champs doivent être remplis."), group.name.to_lowercase()))));
                                 return true;
                             }
@@ -185,12 +185,12 @@ impl Component for ChangeDataPage {
 
                         // Update user info
                         if let Some(new_user_info) = &mut new_user_info {
-                            new_user_info.group_desc = input_group_desc.to_owned();
+                            new_user_info.user_groups = input_user_groups.to_owned();
                         }
 
                         format!(r#"{{
                             "new_group": "{}"
-                        }}"#, input_group_desc.format_to_string())
+                        }}"#, input_user_groups.format_to_string())
                     },
                 };
 
@@ -274,24 +274,24 @@ impl Component for ChangeDataPage {
                 <br/>
                 <p>{t("Un email de confirmation vous sera immédiatement envoyé.")}</p>
             </>},
-            Data::Group(input_group_desc) => {
+            Data::Group(input_user_groups) => {
                 if ctx.props().groups.is_empty() {
                     todo!()
                 }
 
                 ctx.props().groups.iter().map(|group| {
-                    let Group { id, name, help, values, required_if } = group;
-                    let required = required_if.as_ref().map(|ri| input_group_desc.matches(ri)).unwrap_or(true);
+                    let GroupDesc { id, name, help, values, required_if } = group;
+                    let required = required_if.as_ref().map(|ri| input_user_groups.matches(ri)).unwrap_or(true);
                     let style = if required {"display: block;"} else {"display: none;"};
                     html! {
                         <div class="dropdown-list-box" style={style}>
                             <select required=true class="dropdown-list" name={id.clone()} onchange={ctx.link().callback(Msg::GroupSelectChanged)}>
-                                <option disabled=true selected={input_group_desc.groups().get(id).is_none()}>{name}</option>
+                                <option disabled=true selected={input_user_groups.groups().get(id).is_none()}>{name}</option>
                                 {
                                     values
                                         .iter()
                                         .map(|(v, l)| html!{
-                                            <option value={v.clone()} selected={input_group_desc.groups().get(id) == Some(v)}>{l}</option>
+                                            <option value={v.clone()} selected={input_user_groups.groups().get(id) == Some(v)}>{l}</option>
                                         })
                                         .collect::<Html>()
                                 }

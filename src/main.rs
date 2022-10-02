@@ -28,7 +28,7 @@ pub enum Msg {
     ScheduleSuccess(Vec<RawEvent>),
     UserInfoSuccess(UserInfo),
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
-    GroupsSuccess(Vec<Group>),
+    GroupsSuccess(Vec<GroupDesc>),
     ScheduleFailure(ApiError),
     UserInfoFailure(ApiError),
     Previous,
@@ -44,7 +44,7 @@ pub enum Msg {
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
     events: Vec<RawEvent>,
-    groups: Rc<Vec<Group>>,
+    groups: Rc<Vec<GroupDesc>>,
     user_info: Rc<Option<UserInfo>>,
     announcements: Vec<AnnouncementDesc>,
     displayed_announcement: Option<AnnouncementDesc>,
@@ -136,7 +136,7 @@ impl Component for App {
 
                 // If user's group changed, update the events
                 if let Some(old_user_info) = self.user_info.as_ref() {
-                    if old_user_info.group_desc != user_info.group_desc {
+                    if old_user_info.user_groups != user_info.user_groups {
                         self.events.clear();
                         refresh_events(ctx.link().clone());
                         should_refresh = true;

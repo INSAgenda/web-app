@@ -269,24 +269,22 @@ impl Component for SettingsPage {
             }
 
             // Format group
-            let school = user_info.group_desc.groups().get("school").map(|s| s.as_str()).unwrap_or_default();
+            let school = user_info.user_groups.groups().get("school").map(|s| s.as_str()).unwrap_or_default();
             match school {
                 "insa-rouen" => {
-                    let department = user_info.group_desc.groups().get("insa-rouen:department").map(|s| s.as_str()).unwrap_or_default();
+                    let department = user_info.user_groups.groups().get("insa-rouen:department").map(|s| s.as_str()).unwrap_or_default();
                     match department {
                         "STPI1" | "STPI2" => {
-                            if let (Some(c), Some(g)) = (user_info.group_desc.groups().get("insa-rouen:stpi:class"), user_info.group_desc.groups().get("insa-rouen:stpi:tp-group")) {
+                            if let (Some(c), Some(g)) = (user_info.user_groups.groups().get("insa-rouen:stpi:class"), user_info.user_groups.groups().get("insa-rouen:stpi:tp-group")) {
                                 formatted_group = format!("{department}, {} {c}{g}", t("en classe"));
                             }
                         }
                         "ITI3" => {
-                            if let Some(g) = user_info.group_desc.groups().get("insa-rouen:iti:group") {
+                            if let Some(g) = user_info.user_groups.groups().get("insa-rouen:iti:group") {
                                 formatted_group = format!("{department}, {} {g}", t("en groupe"));
                             }
                         }
-                        department => {
-                            formatted_group = format!("{department}");
-                        }
+                        department => formatted_group = department.to_string(),
                     }
                 }
                 "" => (),

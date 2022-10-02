@@ -1,7 +1,7 @@
 use super::*;
 use crate::prelude::*;
 
-fn load_cached_groups() -> Option<(i64, Vec<Group>)> {
+fn load_cached_groups() -> Option<(i64, Vec<GroupDesc>)> {
     let local_storage = window().local_storage().unwrap().unwrap();
 
     let last_updated = match local_storage.get("last_updated_groups").map(|v| v.map(|v| v.parse())) {
@@ -14,7 +14,7 @@ fn load_cached_groups() -> Option<(i64, Vec<Group>)> {
         _ => return None,
     };
 
-    let cached_groups = match serde_json::from_str::<Vec<Group>>(&cached_groups_str) {
+    let cached_groups = match serde_json::from_str::<Vec<GroupDesc>>(&cached_groups_str) {
         Ok(cached_events) => cached_events,
         _ => return None,
     };
@@ -22,14 +22,14 @@ fn load_cached_groups() -> Option<(i64, Vec<Group>)> {
     Some((last_updated, cached_groups))
 }
 
-fn save_cache(last_updated: i64, events: &[Group]) {
+fn save_cache(last_updated: i64, events: &[GroupDesc]) {
     let local_storage = window().local_storage().unwrap().unwrap();
 
     let _ = local_storage.set("last_updated_groups", &last_updated.to_string());
     let _ = local_storage.set("cached_groups", &serde_json::to_string(&events).unwrap());
 }
 
-async fn load_groups() -> Result<Vec<Group>, ApiError> {
+async fn load_groups() -> Result<Vec<GroupDesc>, ApiError> {
     let request = Request::new_with_str("/config/groups.json")?;
     let resp = JsFuture::from(window().fetch_with_request(&request)).await?;
     let resp: web_sys::Response = resp.dyn_into()?;
@@ -39,7 +39,7 @@ async fn load_groups() -> Result<Vec<Group>, ApiError> {
         return Err(ApiError::Unknown(json));
     }
 
-    let groups: Vec<Group> = match json.into_serde() {
+    let groups: Vec<GroupDesc> = match json.into_serde() {
         Ok(groups) => groups,
         _ => return Err(ApiError::Unknown(json)),
     };
@@ -50,7 +50,7 @@ async fn load_groups() -> Result<Vec<Group>, ApiError> {
     Ok(groups)
 }
 
-pub fn init_groups(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) -> Vec<Group> {
+pub fn init_groups(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) -> Vec<GroupDesc> {
     // Get cached groups
     let mut groups = Vec::new();
     if let Some((last_updated, cached)) = load_cached_groups() {
@@ -64,7 +64,7 @@ pub fn init_groups(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) -> Vec<Gr
     wasm_bindgen_futures::spawn_local(async move {
         match load_groups().await {
             Ok(groups) => app_link.send_message(AppMsg::GroupsSuccess(groups)),
-            Err(e) => todo!(),
+            Err(e) => sentry_report(JsValue::from_str(e.to_string().as_str())),
         }
     });
 
