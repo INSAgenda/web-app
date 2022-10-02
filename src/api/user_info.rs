@@ -74,7 +74,7 @@ pub fn init_user_info(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) -> Opt
     wasm_bindgen_futures::spawn_local(async move {
         match load_user_info().await {
             Ok(user_info) => app_link.send_message(AppMsg::UserInfoSuccess(user_info)),
-            Err(e) => app_link.send_message(AppMsg::UserInfoFailure(e)),
+            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
         }
     });
 
