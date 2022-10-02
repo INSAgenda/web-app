@@ -103,13 +103,13 @@ impl Colors {
     pub fn push_colors(&self) {
         let to_publish_arc = Arc::clone(&self.to_publish);
         wasm_bindgen_futures::spawn_local(async move {
-            let mut to_publish = match to_publish_arc.as_ref().try_lock() {
+            let to_publish = match to_publish_arc.as_ref().try_lock() {
                 Ok(v) => v,
                 Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
             };
             let to_publish_tpmp = to_publish.clone();
             drop(to_publish);
-            if !to_publish_tpmp.is_empty() && crate::api::publish_colors(&to_publish_tpmp.clone()).await.is_ok() {
+            if !to_publish_tpmp.is_empty() && crate::api::publish_colors(&to_publish_tpmp).await.is_ok() {
                 let mut to_publish = match to_publish_arc.as_ref().try_lock() {
                     Ok(v) => v,
                     Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
