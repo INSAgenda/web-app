@@ -65,17 +65,17 @@ pub fn sentry_report(error: JsValue) {
         Ok(sentry) => {
             let capture_exception = match Reflect::get(&sentry, &JsValue::from_str("captureException")){
                 Ok(capture_exception) => capture_exception,
-                Err(e) => {log!("Impossible to get the sentry JsValue: {:?}", e); return},
+                Err(_) => {log!("Impossible to get the sentry JsValue."); return},
             };
             
             let capture_exception: Function = match capture_exception.dyn_into(){
                 Ok(capture_exception) => capture_exception,
-                Err(e) => {log!("Impossible to get the sentry function: {:?}", e); return},
+                Err(_) => {log!("Impossible to get the sentry function."); return},
             };
             
             match Reflect::apply(&capture_exception, &sentry, &Array::from_iter([error])){
                 Ok(_) => {},
-                Err(e) => log!("Impossible to call the sentry function: {:?}", e),
+                Err(_) => log!("Impossible to call the sentry function."),
             }
         }
         Err(_) => log!("Sentry not found")
@@ -85,13 +85,13 @@ pub fn sentry_report(error: JsValue) {
 pub fn set_sentry_user_info(email: &str) {
     use Reflect::*;
     fn set_sentry_user_info_dirty(email: &str) -> Result<(), String> {
-        let sentry = get(&window(), &JsValue::from_str("Sentry")).map_err(|e| format!("could not get Sentry {e:?}"))?;
-        let set_user = get(&sentry, &JsValue::from_str("setUser")).map_err(|e| format!("could not get Sentry.setUser {e:?}"))?;
-        let set_user = set_user.dyn_into::<Function>().map_err(|e| format!("Sentry.setUser isn't a function {e:?}"))?;
+        let sentry = get(&window(), &JsValue::from_str("Sentry")).map_err(|_| format!("could not get Sentry."))?;
+        let set_user = get(&sentry, &JsValue::from_str("setUser")).map_err(|_| format!("could not get Sentry.setUser."))?;
+        let set_user = set_user.dyn_into::<Function>().map_err(|_| format!("Sentry.setUser isn't a function."))?;
         let obj = Object::new();
-        set(&obj, &"email".into(), &email.into()).map_err(|e| format!("could not set email {e:?}"))?;
+        set(&obj, &"email".into(), &email.into()).map_err(|_| format!("could not set email."))?;
         let array = Array::from_iter([obj]);
-        apply(&set_user, &sentry, &array).map_err(|e| format!("could not call Sentry.setUser {e:?}"))?;
+        apply(&set_user, &sentry, &array).map_err(|_| format!("could not call Sentry.setUser."))?;
         Ok(())
     }
     if let Err(e) = set_sentry_user_info_dirty(email) {

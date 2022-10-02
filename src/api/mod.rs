@@ -12,6 +12,8 @@ mod gen_code;
 pub use gen_code::gen_code;
 mod announcements;
 pub use announcements::*;
+mod colors;
+pub use colors::*;
 
 use crate::prelude::*;
 
