@@ -43,7 +43,7 @@ pub async fn publish_colors(colors: &Vec<(String, String)>) -> Result<(), ApiErr
             let response: web_sys::Response = resp_value.clone().dyn_into().unwrap();
             match response.status() {
                 200 => Ok(()),
-                400 => {
+                400 | 500 => {
                     let json = JsFuture::from(response.json().unwrap()).await.unwrap();
                     Err(ApiError::from(json))
                 },
