@@ -35,7 +35,7 @@ pub async fn get_colors() -> Result<HashMap<String, String>, ApiError> {
 
 pub async fn publish_colors(colors: &Vec<(String, String)>) -> Result<(), ApiError> {
     let mut init = web_sys::RequestInit::new();
-    let body= serde_json::to_string(&colors).unwrap();
+    let body = serde_json::to_string(&colors).unwrap();
     init.body(Some(&JsValue::from_str(&body)));
 
     match post_api_request("colors", init, vec![]).await {
