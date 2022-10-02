@@ -178,7 +178,7 @@ impl Component for ChangeDataPage {
                         for group in ctx.props().groups.iter() {
                             let required = group.required_if.as_ref().map(|ri| input_user_groups.matches(ri)).unwrap_or(true);
                             if required && input_user_groups.groups().get(&group.id).is_none() {
-                                ctx.link().send_message(Msg::SetMessage(Some(format!("{} ({})", t("Tous les champs doivent être remplis."), group.name.to_lowercase()))));
+                                ctx.link().send_message(Msg::SetMessage(Some(format!("{} ({})", t("Tous les champs doivent être remplis."), group.name.0.to_lowercase())))); // TODO: translation
                                 return true;
                             }
                         }
@@ -281,6 +281,8 @@ impl Component for ChangeDataPage {
 
                 ctx.props().groups.iter().map(|group| {
                     let GroupDesc { id, name, help, values, required_if } = group;
+                    let name = if SETTINGS.lang() == Lang::French { &name.0 } else { &name.1 };
+                    let help = if SETTINGS.lang() == Lang::French { &help.0 } else { &help.1 };
                     let required = required_if.as_ref().map(|ri| input_user_groups.matches(ri)).unwrap_or(true);
                     let style = if required {"display: block;"} else {"display: none;"};
                     html! {
@@ -291,7 +293,9 @@ impl Component for ChangeDataPage {
                                     values
                                         .iter()
                                         .map(|(v, l)| html!{
-                                            <option value={v.clone()} selected={input_user_groups.groups().get(id) == Some(v)}>{l}</option>
+                                            <option value={v.clone()} selected={input_user_groups.groups().get(id) == Some(v)}>
+                                                {if SETTINGS.lang() == Lang::French { &l.0 } else { &l.1 }}
+                                            </option>
                                         })
                                         .collect::<Html>()
                                 }
