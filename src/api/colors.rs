@@ -16,7 +16,7 @@ pub async fn get_colors() -> Result<HashMap<String, String>, ApiError> {
     let resp: web_sys::Response = resp.dyn_into()?;
     let json = JsFuture::from(resp.json()?).await?;
 
-    if resp.status() == 400 {
+    if resp.status() == 400 || resp.status() == 500 {
         let error: KnownApiError = match json.into_serde() {
             Ok(error) => error,
             _ => return Err(ApiError::Unknown(json)),
