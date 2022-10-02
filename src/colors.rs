@@ -2,12 +2,12 @@ use std::{collections::HashMap, sync::{Mutex, atomic::AtomicBool, Arc}};
 use crate::prelude::*;
 
 lazy_static::lazy_static!{
-    pub static ref COLORS: Arc<Colors> = Arc::new(Colors::restore());
+    pub static ref COLORS: Colors = Colors::restore();
     pub static ref COLORS_CHANGED: AtomicBool = AtomicBool::new(false);
 }
 
 pub struct Colors {
-    local_colors: Mutex<HashMap<String, String>>,
+    local_colors: Arc<Mutex<HashMap<String, String>>>,
     to_publish: Arc<Mutex<Vec<(String, String)>>>,
 }
 
@@ -23,7 +23,7 @@ impl Colors {
         };
 
         Colors {
-            local_colors: Mutex::new(colors),
+            local_colors: Arc::new(Mutex::new(colors)),
             to_publish: Arc::new(Mutex::new(Vec::new())),
         }
     }
@@ -51,7 +51,7 @@ impl Colors {
 
     fn save(&self) {
         let local_storage = window().local_storage().unwrap().unwrap();
-        local_storage.set_item("colors", &serde_json::to_string(&self.local_colors).unwrap()).unwrap();
+        local_storage.set_item("colors", &serde_json::to_string(&self.local_colors.as_ref()).unwrap()).unwrap();
     }
 
     pub fn fetch_colors(&self, ctx: &Context<App>) {

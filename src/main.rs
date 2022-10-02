@@ -163,7 +163,7 @@ impl Component for App {
         unload.forget();
 
         // Get colors
-        crate::COLORS.as_ref().fetch_colors(ctx);
+        crate::COLORS.fetch_colors(ctx);
 
         // Auto-push colors every 15s if needed
         let link = ctx.link().clone();
@@ -314,13 +314,11 @@ impl Component for App {
                 true
             },
             Msg::FetchColors(new_colors) => {
-                let colors = crate::COLORS.as_ref();
-                colors.update_colors(new_colors);
+                crate::COLORS.update_colors(new_colors);
                 true
             },
             Msg::PushColors() => {
-                let colors = crate::COLORS.as_ref();
-                colors.push_colors();
+                crate::COLORS.push_colors();
                 false
             },
   
