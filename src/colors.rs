@@ -108,7 +108,7 @@ impl Colors {
                 Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
             };
 
-            if to_publish2.len() > 0 && crate::api::publish_colors(&to_publish2.clone()).await.is_ok() {
+            if !to_publish2.is_empty() && crate::api::publish_colors(&to_publish2.clone()).await.is_ok() {
                 to_publish2.clear();
             }
         });
