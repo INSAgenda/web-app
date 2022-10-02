@@ -1,3 +1,5 @@
+use web_sys::HtmlSelectElement;
+
 use crate::{prelude::*, redirect};
 
 /// What data is being changed
@@ -6,7 +8,7 @@ enum Data {
     NewPassword(NodeRef, NodeRef, NodeRef),
     /// password, email
     Email(NodeRef, NodeRef),
-    Group,
+    Group(UserGroups),
 }
 
 impl Data {
@@ -15,7 +17,7 @@ impl Data {
         match self {
             Data::NewPassword(_, _, _) => t("Changer de mot de passe"),
             Data::Email(_, _) => t("Changer d'email"),
-            Data::Group => t("Changer de groupe"),
+            Data::Group(_) => t("Changer de groupe"),
         }
     }
 
@@ -24,7 +26,7 @@ impl Data {
         match self {
             Data::NewPassword(_, _, _) => t("Nouveau mot de passe"),
             Data::Email(_, _) => t("Nouvelle adresse email"),
-            Data::Group => t("Nouveau groupe"),
+            Data::Group(_) => t("Nouveau groupe"),
         }
     }
 }
@@ -32,6 +34,7 @@ impl Data {
 /// Message for the component `ChangeDataPage`
 pub enum Msg {
     Submit,
+    GroupSelectChanged(web_sys::Event),
     SetMessage(Option<String>),
     SetLoading(bool),
 }
@@ -40,6 +43,7 @@ pub enum Msg {
 #[derive(Properties, Clone)]
 pub struct ChangeDataProps {
     pub kind: String,
+    pub groups: Rc<Vec<GroupDesc>>,
     pub app_link: Scope<App>,
     pub user_info: Rc<Option<UserInfo>>,
 }
@@ -63,7 +67,7 @@ impl Component for ChangeDataPage {
             data: match ctx.props().kind.as_str() {
                 "new_password" => Data::NewPassword(NodeRef::default(), NodeRef::default(), NodeRef::default()),
                 "email" => Data::Email(NodeRef::default(), NodeRef::default()),
-                "group" => Data::Group,
+                "group" => Data::Group(ctx.props().user_info.as_ref().as_ref().map(|ui| ui.user_groups.clone()).unwrap_or_else(|| UserGroups::new_with_groups(BTreeMap::new()))),
                 _ => unreachable!(),
             },
             message: None,
@@ -82,6 +86,27 @@ impl Component for ChangeDataPage {
                 self.is_loading = is_loading;
                 true
             },
+            Msg::GroupSelectChanged(event) => {
+                let target = match event.target() {
+                    Some(target) => target,
+                    _ => return false,
+                };
+                let select = match target.dyn_into::<HtmlSelectElement>() {
+                    Ok(select) => select,
+                    Err(_) => return false,
+                };
+                let name = match select.get_attribute("name") {
+                    Some(name) => name,
+                    None => return false,
+                };
+                let user_groups = match &mut self.data {
+                    Data::Group(user_groups) => user_groups,
+                    _ => return false,
+                };
+                let value = select.selected_value();
+                user_groups.insert(name, value);
+                true
+            }
             Msg::Submit => {
                 let mut new_user_info = (*(ctx.props().user_info)).clone();
                 let has_password = new_user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(true);
@@ -148,49 +173,24 @@ impl Component for ChangeDataPage {
                             "new_email": "{}"
                         }}"#, password.replace('"', "\\\""), email.replace('"', "\\\""))
                     },
-                    Data::Group => {
-                        use web_sys::HtmlSelectElement;
-                        let doc = window().doc();
-
-                        // Get what the user selected
-                        let promotion_select = doc.get_element_by_id("promotion-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
-                        let promotion = promotion_select.selected_value();
-
-                        let class_select = doc.get_element_by_id("class-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
-                        let class = class_select.selected_value();
-
-                        let lang_select = doc.get_element_by_id("lang-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
-                        let lang = lang_select.selected_value();
-
-                        let class_half_select = doc.get_element_by_id("class-half-select").unwrap().dyn_into::<HtmlSelectElement>().unwrap();
-                        let class_half = class_half_select.selected_value();
-
-                        // Make sure it is not default values
-                        if promotion == "Promotion" || class == "Classe" || lang == "Langue" || class_half == "Groupe" {
-                            ctx.link().send_message(Msg::SetMessage(Some(t("Tous les champs doivent être remplis.").to_string())));
-                            return true;
+                    Data::Group(input_user_groups) => {
+                        // Make sure all fields are set
+                        for group in ctx.props().groups.iter() {
+                            let required = group.required_if.as_ref().map(|ri| input_user_groups.matches(ri)).unwrap_or(true);
+                            if required && input_user_groups.groups().get(&group.id).is_none() {
+                                ctx.link().send_message(Msg::SetMessage(Some(format!("{} ({})", t("Tous les champs doivent être remplis."), group.name.0.to_lowercase())))); // TODO: translation
+                                return true;
+                            }
                         }
 
                         // Update user info
                         if let Some(new_user_info) = &mut new_user_info {
-                            let mut parsing_lang = lang.to_uppercase();
-                            if parsing_lang.len() > 3 {
-                                parsing_lang.insert(3, '-'); // Here we might get 'AllDeb' but the parsing method expects 'ALL-DEB'
-                            }
-                            new_user_info.group_desc.promotion = promotion.to_uppercase().parse().unwrap_or(new_user_info.group_desc.promotion);
-                            new_user_info.group_desc.class = class.parse().unwrap_or(new_user_info.group_desc.class);
-                            new_user_info.group_desc.lang = parsing_lang.parse().unwrap_or(new_user_info.group_desc.lang);
-                            new_user_info.group_desc.class_half = class_half.parse().unwrap_or(new_user_info.group_desc.class_half);
+                            new_user_info.user_groups = input_user_groups.to_owned();
                         }
 
                         format!(r#"{{
-                            "new_group":{{
-                                "promotion":"{}",
-                                "lang":"{}",
-                                "class":"{}",
-                                "class_half":{}
-                            }}
-                        }}"#, promotion, lang, class, class_half)
+                            "new_group": "{}"
+                        }}"#, input_user_groups.format_to_string())
                     },
                 };
 
@@ -212,10 +212,15 @@ impl Component for ChangeDataPage {
                                         app_link.send_message(AppMsg::UserInfoSuccess(new_user_info));
                                     }
                                 }
-                                400 => {
-                                    let json = JsFuture::from(response.json().unwrap()).await.unwrap();
-                                    let api_error = ApiError::from(json);
-                                    api_error.handle_api_error();
+                                400 | 500 => {
+                                    if let Ok(json) = response.json() {
+                                        if let Ok(json) = JsFuture::from(json).await {
+                                            let api_error = ApiError::from(json);
+                                            api_error.handle_api_error();
+                                            return;
+                                        }
+                                    }
+                                    alert("Invalid json data returned after posting to /account");
                                 }
                                 _ => {
                                     alert(t("Une erreur inconnue est survenue. Veuillez contacter le support: support@insagenda.fr"));
@@ -269,59 +274,35 @@ impl Component for ChangeDataPage {
                 <br/>
                 <p>{t("Un email de confirmation vous sera immédiatement envoyé.")}</p>
             </>},
-            Data::Group => {
-                let GroupDescriptor { promotion, lang, class, class_half } = ctx.props().user_info.as_ref().as_ref().map(|u| &u.group_desc).unwrap_or(&GroupDescriptor {
-                    promotion: Promotion::Stpi1,
-                    lang: Language::All,
-                    class: Class::A,
-                    class_half: 1,
-                });
+            Data::Group(input_user_groups) => {
+                if ctx.props().groups.is_empty() {
+                    return html! {<>{t("Page indisponible, veuillez réessayer plus tard.")}</>};
+                }
 
-                html! {<>
-                    <div class="dropdown-list-box">
-                        <select required=true class="dropdown-list" name="promotion" id="promotion-select">
-                            <option disabled=true>{"Promotion"}</option>
-                            <option value="Stpi1" selected={*promotion == Promotion::Stpi1}>{"STPI1"}</option>
-                            <option value="Stpi2" selected={*promotion == Promotion::Stpi2}>{"STPI2"}</option>
-                        </select>
-                    </div>
-
-                    <div class="dropdown-list-box">
-                        <select required=true class="dropdown-list" name="class" id="class-select">
-                            <option disabled=true>{t("Classe")}</option>
-                            <option value="A" selected={*class==Class::A} > { t("Classe A") } </option>
-                            <option value="B" selected={*class==Class::B} > { t("Classe B") } </option>
-                            <option value="C" selected={*class==Class::C} > { t("Classe C") } </option>
-                            <option value="D" selected={*class==Class::D} > { t("Classe D") } </option>
-                            <option value="E" selected={*class==Class::E} > { t("Classe E") } </option>
-                            <option value="F" selected={*class==Class::F} > { t("Classe F") } </option>
-                            <option value="G" selected={*class==Class::G} > { t("Classe G") } </option>
-                            <option value="H" selected={*class==Class::H} > { t("Classe H") } </option>
-                            <option value="I" selected={*class==Class::I} > { t("Classe I") } </option>
-                            <option value="J" selected={*class==Class::J} > { t("Classe J") } </option>
-                            <option value="K" selected={*class==Class::K} > { t("Classe K") } </option>
-                        </select>
-                    </div>
-
-                    <div class="dropdown-list-box">
-                        <select required=true class="dropdown-list" name="lang" id="lang-select">
-                            <option disabled=true>{t("Langue")}</option>
-                            <option value="All" selected={*lang==Language::All} > { t("Allemand") } </option>
-                            <option value="AllDeb" selected={*lang==Language::AllDeb} > { t("Allemand Débutant") } </option>
-                            <option value="Esp" selected={*lang==Language::Esp} > { t("Espagnol") } </option>
-                            <option value="EspDeb" selected={*lang==Language::EspDeb} > { t("Espagnol Débutant") } </option>
-                            <option value="Fle" selected={*lang==Language::Fle} > { t("Français Langue Étrangère") } </option>
-                        </select>
-                    </div>
-
-                    <div class="dropdown-list-box">
-                        <select required=true class="dropdown-list" name="class-half" id="class-half-select">
-                            <option disabled=true>{t("Groupe")}</option>
-                            <option value="1" selected={*class_half == 1} > { t("Groupe 1") } </option>
-                            <option value="2" selected={*class_half == 2} > { t("Groupe 2") } </option>
-                        </select>
-                    </div>
-                </>}
+                ctx.props().groups.iter().map(|group| {
+                    let GroupDesc { id, name, help, values, required_if } = group;
+                    let name = if SETTINGS.lang() == Lang::French { &name.0 } else { &name.1 };
+                    let help = if SETTINGS.lang() == Lang::French { &help.0 } else { &help.1 };
+                    let required = required_if.as_ref().map(|ri| input_user_groups.matches(ri)).unwrap_or(true);
+                    let style = if required {"display: block;"} else {"display: none;"};
+                    html! {
+                        <div class="dropdown-list-box" style={style}>
+                            <select required=true class="dropdown-list" name={id.clone()} onchange={ctx.link().callback(Msg::GroupSelectChanged)}>
+                                <option disabled=true selected={input_user_groups.groups().get(id).is_none()}>{name}</option>
+                                {
+                                    values
+                                        .iter()
+                                        .map(|(v, l)| html!{
+                                            <option value={v.clone()} selected={input_user_groups.groups().get(id) == Some(v)}>
+                                                {if SETTINGS.lang() == Lang::French { &l.0 } else { &l.1 }}
+                                            </option>
+                                        })
+                                        .collect::<Html>()
+                                }
+                            </select>
+                        </div>
+                    }
+                }).collect()
             },
             Data::Email(_password, _email) => {redirect("agenda"); html! {}}
         };

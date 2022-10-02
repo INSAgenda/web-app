@@ -28,6 +28,7 @@ pub enum Msg {
     ScheduleSuccess(Vec<RawEvent>),
     UserInfoSuccess(UserInfo),
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
+    GroupsSuccess(Vec<GroupDesc>),
     ScheduleFailure(ApiError),
     ApiFailure(ApiError),
     FetchColors(HashMap<String, String>),
@@ -42,24 +43,15 @@ pub enum Msg {
     CloseAnnouncement,
 }
 
-
 pub struct App {
     selected_day: Date<chrono_tz::Tz>,
     events: Vec<RawEvent>,
+    groups: Rc<Vec<GroupDesc>>,
+    user_info: Rc<Option<UserInfo>>,
     announcements: Vec<AnnouncementDesc>,
     displayed_announcement: Option<AnnouncementDesc>,
     page: Page,
-    user_info: Rc<Option<UserInfo>>,
     slider: Rc<RefCell<slider::SliderManager>>,
-}
-
-fn refresh_events(app_link: Scope<App>) {
-    wasm_bindgen_futures::spawn_local(async move {
-        match api::load_events().await {
-            Ok(events) => app_link.send_message(Msg::ScheduleSuccess(events)),
-            Err(e) => app_link.send_message(Msg::ScheduleFailure(e)),
-        }
-    });
 }
 
 impl Component for App {
@@ -88,57 +80,12 @@ impl Component for App {
         window().add_event_listener_with_callback("popstate", closure.as_ref().unchecked_ref()).unwrap();
         closure.forget();
 
-        // Update events
-        let mut skip_event_loading = false;
-        let mut events = Vec::new();
-        if let Some((last_updated, cached_events)) = api::load_cached_events() {
-            if last_updated > now.timestamp() - 3600*5 && !cached_events.is_empty() {
-                skip_event_loading = true;
-            }
-            events = cached_events;
-        }
-        if !skip_event_loading {
-            refresh_events(ctx.link().clone());
-        }
-
-        // Update user info
-        let mut skip_user_info_loading = false;
-        let mut user_info = None;
-        if let Some((last_updated, cached_user_info)) = api::load_cached_user_info() {
-            if last_updated > now.timestamp() - 60*5 {
-                skip_user_info_loading = true;
-            }
-            user_info = Some(cached_user_info);
-        }
-        if !skip_user_info_loading {
-            let link2 = ctx.link().clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                match api::load_user_info().await {
-                    Ok(events) => link2.send_message(Msg::UserInfoSuccess(events)),
-                    Err(e) => link2.send_message(Msg::ApiFailure(e)),
-                }
-            });
-        }
-
-        // Update announcements
-        let mut skip_announcements_loading = false;
-        let mut announcements = Vec::new();
-        if let Some((last_updated, cached_announcements)) = api::load_cached_announcements() {
-            if last_updated > now.timestamp() - 3600*12 && !cached_announcements.is_empty() {
-                skip_announcements_loading = true;
-            }
-            announcements = cached_announcements;
-        }
+        // Update data
+        let events = init_events(now, ctx.link().clone());
+        let user_info = init_user_info(now, ctx.link().clone());
+        let groups = init_groups(now, ctx.link().clone());
+        let announcements = init_announcements(now, ctx.link().clone());
         let displayed_announcement = select_announcement(&announcements);
-        if !skip_announcements_loading {
-            let link2 = ctx.link().clone();
-            wasm_bindgen_futures::spawn_local(async move {
-                match api::load_announcements().await {
-                    Ok(events) => link2.send_message(Msg::AnnouncementsSuccess(events)),
-                    Err(e) => e.handle_api_error(),
-                }
-            });
-        }
 
         // Detect page
         let page = match window().location().hash() {
@@ -155,9 +102,8 @@ impl Component for App {
         };
 
         let link = ctx.link().clone();
-        let unload = Closure::wrap(Box::new(move |event: web_sys::Event| {
+        let unload = Closure::wrap(Box::new(move |_: web_sys::Event| {
             link.send_message(AppMsg::PushColors());
-
         }) as Box<dyn FnMut(_)>);
         window().add_event_listener_with_callback("unload", unload.as_ref().unchecked_ref()).unwrap();
         unload.forget();
@@ -198,6 +144,7 @@ impl Component for App {
         Self {
             selected_day: now.date(),
             events,
+            groups: Rc::new(groups),
             page,
             announcements,
             displayed_announcement,
@@ -217,7 +164,7 @@ impl Component for App {
 
                 // If user's group changed, update the events
                 if let Some(old_user_info) = self.user_info.as_ref() {
-                    if old_user_info.group_desc != user_info.group_desc {
+                    if old_user_info.user_groups != user_info.user_groups {
                         self.events.clear();
                         refresh_events(ctx.link().clone());
                         should_refresh = true;
@@ -233,6 +180,10 @@ impl Component for App {
             Msg::AnnouncementsSuccess(announcements) => {
                 self.announcements = announcements;
                 false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
+            }
+            Msg::GroupsSuccess(groups) => {
+                self.groups = Rc::new(groups);
+                false
             }
             Msg::ScheduleFailure(api_error) => {
                 api_error.handle_api_error();
@@ -333,9 +284,27 @@ impl Component for App {
         match &self.page {
             Page::Agenda => self.view_agenda(ctx),
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangePassword => html!( <ChangeDataPage kind="new_password" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangeEmail => html!( <ChangeDataPage kind="email" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangeGroup => html!( <ChangeDataPage kind="group" app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
+            Page::ChangePassword => html!(
+                <ChangeDataPage
+                    kind="new_password"
+                    app_link={ ctx.link().clone() }
+                    user_info={Rc::clone(&self.user_info)}
+                    groups={Rc::clone(&self.groups)} />
+            ),
+            Page::ChangeEmail => html!(
+                <ChangeDataPage
+                    kind="email"
+                    app_link={ ctx.link().clone() }
+                    user_info={Rc::clone(&self.user_info)}
+                    groups={Rc::clone(&self.groups)} />
+            ),
+            Page::ChangeGroup => html!(
+                <ChangeDataPage
+                    kind="group"
+                    app_link={ ctx.link().clone() }
+                    user_info={Rc::clone(&self.user_info)}
+                    groups={Rc::clone(&self.groups)} />
+            ),
         }
     }
 }

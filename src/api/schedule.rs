@@ -1,7 +1,7 @@
 use super::*;
 use crate::prelude::*;
 
-pub fn load_cached_events() -> Option<(i64, Vec<RawEvent>)> {
+fn load_cached_events() -> Option<(i64, Vec<RawEvent>)> {
     let local_storage = window().local_storage().unwrap().unwrap();
 
     let last_updated = match local_storage.get("last_updated").map(|v| v.map(|v| v.parse())) {
@@ -30,7 +30,7 @@ fn save_cache(last_updated: i64, events: &[RawEvent]) {
     let _ = local_storage.set("cached_events", &serde_json::to_string(&events).unwrap());
 }
 
-pub async fn load_events() -> Result<Vec<RawEvent>, ApiError> {
+async fn load_events() -> Result<Vec<RawEvent>, ApiError> {
     let (api_key, counter) = get_login_info();
 
     let request = Request::new_with_str("/api/schedule")?;
@@ -63,3 +63,29 @@ pub async fn load_events() -> Result<Vec<RawEvent>, ApiError> {
 
     Ok(events)
 }
+
+pub fn refresh_events(app_link: Scope<App>) {
+    wasm_bindgen_futures::spawn_local(async move {
+        match load_events().await {
+            Ok(events) => app_link.send_message(AppMsg::ScheduleSuccess(events)),
+            Err(e) => app_link.send_message(AppMsg::ScheduleFailure(e)),
+        }
+    });
+}
+
+pub fn init_events(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) -> Vec<RawEvent> {
+    // Get cached
+    let mut events = Vec::new();
+    if let Some((last_updated, cached)) = load_cached_events() {
+        events = cached;
+        if last_updated > now.timestamp() - 3600*5 && !events.is_empty() {
+            return events;
+        }
+    }
+
+    // Update from server
+    refresh_events(app_link);
+
+    events
+}
+

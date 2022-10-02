@@ -1,7 +1,7 @@
 use super::*;
 use crate::prelude::*;
 
-pub fn load_cached_announcements() -> Option<(i64, Vec<AnnouncementDesc>)> {
+fn load_cached_announcements() -> Option<(i64, Vec<AnnouncementDesc>)> {
     let local_storage = window().local_storage().unwrap().unwrap();
 
     let last_updated = match local_storage.get("last_updated_announcements").map(|v| v.map(|v| v.parse())) {
@@ -22,7 +22,7 @@ pub fn load_cached_announcements() -> Option<(i64, Vec<AnnouncementDesc>)> {
     Some((last_updated, cached_announcements))
 }
 
-pub async fn load_announcements() -> Result<Vec<AnnouncementDesc>, ApiError> {
+async fn load_announcements() -> Result<Vec<AnnouncementDesc>, ApiError> {
     let (api_key, counter) = get_login_info();
 
     let request = Request::new_with_str("/api/announcements")?;
@@ -55,4 +55,25 @@ pub async fn load_announcements() -> Result<Vec<AnnouncementDesc>, ApiError> {
     let _ = local_storage.set("cached_announcements", &serde_json::to_string(&events).unwrap());
 
     Ok(events)
+}
+
+pub fn init_announcements(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) -> Vec<AnnouncementDesc> {
+    // Get cached
+    let mut announcements = Vec::new();
+    if let Some((last_updated, cached)) = load_cached_announcements() {
+        announcements = cached;
+        if last_updated > now.timestamp() - 3600*12 && !announcements.is_empty() {
+            return announcements;
+        }
+    }
+
+    // Update from server
+    wasm_bindgen_futures::spawn_local(async move {
+        match load_announcements().await {
+            Ok(announcements) => app_link.send_message(AppMsg::AnnouncementsSuccess(announcements)),
+            Err(e) => e.handle_api_error(),
+        }
+    });
+
+    announcements
 }

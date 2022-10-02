@@ -45,6 +45,7 @@ pub fn t(s: &'static str) -> &'static str {
         "Ajouter un mot de passe" => "Add password",
         "Nouvelle adresse email" => "New email",
         "Nouveau groupe" => "New group",
+        "Page indisponible, veuillez réessayer plus tard." => "Page unavailable. Please try again later.",
         "Tous les champs doivent être remplis." => "All fields must be filled.",
         "Les mots de passe ne correspondent pas." => "Passwords do not match.",
         "Le nouveau mot de passe doit être différent du mot de passe actuel." => "New password must be different from the current one.",
@@ -92,7 +93,7 @@ pub fn t(s: &'static str) -> &'static str {
         
         // In settings.rs
         "[indisponible]" => "[unavailable]",
-        "[inconnue]" => "[unknown]",
+        "[inconnue]" | "[inconnu]" => "[unknown]",
         "Paramètres" => "Settings",
         "Général" => "General",
         "Paramètres du compte" => "Account parameters",
@@ -104,8 +105,9 @@ pub fn t(s: &'static str) -> &'static str {
         "Votre adresse actuelle est" => "Your current email address is",
         " Elle n'a pas encore été vérifiée." => " It has not been verified yet.",
         "Changer de classe" => "Change class",
-        "Vous êtes actuellement en" => "You are currently in",
-        "dans le groupe" => "in the group",
+        "Vous êtes actuellement en " => "You are currently in ",
+        "en classe" => "in class",
+        "en groupe" => "in group",
         "Changer le type d'authentification" => "Change authentication type",
         "Vérifier mon adresse Email" => "Verify my email address",
         "Email" => "Email",
