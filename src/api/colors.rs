@@ -44,7 +44,7 @@ pub async fn publish_colors(colors: &Vec<(String, String)>) -> Result<(), ApiErr
             match response.status() {
                 200 => Ok(()),
                 400 | 500 => {
-                    let json = JsFuture::from(response.json().unwrap()).await.unwrap();
+                    let json = JsFuture::from(response.json()?).await?;
                     Err(ApiError::from(json))
                 },
                 _ => Err(ApiError::Unknown(resp_value))
