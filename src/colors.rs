@@ -114,8 +114,7 @@ impl Colors {
                     Ok(v) => v,
                     Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
                 };
-                let delta = to_publish.len() - to_publish_tpmp.len();
-                to_publish.drain(delta..);
+                to_publish.drain(..to_publish_tpmp.len());
             }
         });
     }
