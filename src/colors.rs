@@ -101,7 +101,7 @@ impl Colors {
     }
 
     pub fn push_colors(&self) {
-        let to_publish2 = self.to_publish.clone();
+        let to_publish2 = Arc::clone(&self.to_publish);
         wasm_bindgen_futures::spawn_local(async move {
             let mut to_publish2 = match to_publish2.as_ref().try_lock() {
                 Ok(v) => v,
