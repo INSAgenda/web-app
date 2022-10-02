@@ -276,7 +276,7 @@ impl Component for ChangeDataPage {
             </>},
             Data::Group(input_user_groups) => {
                 if ctx.props().groups.is_empty() {
-                    todo!()
+                    return html! {<>{t("Page indisponible, veuillez réessayer plus tard.")}</>};
                 }
 
                 ctx.props().groups.iter().map(|group| {

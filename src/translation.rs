@@ -45,6 +45,7 @@ pub fn t(s: &'static str) -> &'static str {
         "Ajouter un mot de passe" => "Add password",
         "Nouvelle adresse email" => "New email",
         "Nouveau groupe" => "New group",
+        "Page indisponible, veuillez réessayer plus tard." => "Page unavailable. Please try again later.",
         "Tous les champs doivent être remplis." => "All fields must be filled.",
         "Les mots de passe ne correspondent pas." => "Passwords do not match.",
         "Le nouveau mot de passe doit être différent du mot de passe actuel." => "New password must be different from the current one.",
