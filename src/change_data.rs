@@ -224,7 +224,7 @@ impl Component for ChangeDataPage {
                                 
                         }
                         Err(_) => {
-                            alert(t("Impossible de se connecter au le serveur. Veuillez contacter le support: support@insagenda.fr"));
+                            alert(t("Impossible de se connecter au serveur. Veuillez contacter le support: support@insagenda.fr"));
                         }
                     }
                     link.send_message(Msg::SetLoading(false));       
@@ -323,7 +323,7 @@ impl Component for ChangeDataPage {
                     </div>
                 </>}
             },
-            Data::Email(password, email) => {redirect("agenda"); html! {}}
+            Data::Email(_password, _email) => {redirect("agenda"); html! {}}
         };
         
         // Make the form using the custom part we just built
