@@ -102,7 +102,7 @@ impl Component for App {
         };
 
         let link = ctx.link().clone();
-        let unload = Closure::wrap(Box::new(move |_| {
+        let unload = Closure::wrap(Box::new(move |_: web_sys::Event| {
             link.send_message(AppMsg::PushColors());
         }) as Box<dyn FnMut(_)>);
         window().add_event_listener_with_callback("unload", unload.as_ref().unchecked_ref()).unwrap();
