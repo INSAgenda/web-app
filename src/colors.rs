@@ -7,7 +7,7 @@ lazy_static::lazy_static!{
 }
 
 pub struct Colors {
-    content: Mutex<HashMap<String, String>>,
+    local_colors: Mutex<HashMap<String, String>>,
     to_publish: Arc<Mutex<Vec<(String, String)>>>,
 }
 
@@ -23,20 +23,20 @@ impl Colors {
         };
 
         Colors {
-            content: Mutex::new(colors),
+            local_colors: Mutex::new(colors),
             to_publish: Arc::new(Mutex::new(Vec::new())),
         }
     }
 
     pub fn get(&self, course: &str) -> String {
-        match self.content.try_lock() {
+        match self.local_colors.try_lock() {
             Ok(v) => v.get(course).map(|v| v.to_string()).unwrap_or_else(|| String::from("#CB6CE6")),
             Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); String::from("#CB6CE6")},
         }
     }
 
     pub fn set(&self, course: &str, background_color: String) {
-        match self.content.try_lock(){
+        match self.local_colors.try_lock(){
             Ok(mut v) => {
                 v.insert(course.to_string(), background_color.clone());
             },
@@ -51,7 +51,7 @@ impl Colors {
 
     fn save(&self) {
         let local_storage = window().local_storage().unwrap().unwrap();
-        local_storage.set_item("colors", &serde_json::to_string(&self.content).unwrap()).unwrap();
+        local_storage.set_item("colors", &serde_json::to_string(&self.local_colors).unwrap()).unwrap();
     }
 
     pub fn fetch_colors(&self, ctx: &Context<App>) {
@@ -74,9 +74,9 @@ impl Colors {
         });
     }
 
-    pub fn update_colors(&self, colors: HashMap<String, String>) {
+    pub fn update_colors(&self, remote_colors: HashMap<String, String>) {
         // Merge new colors
-        let mut content = match self.content.try_lock() {
+        let mut local_colors = match self.local_colors.try_lock() {
             Ok(v) => v,
             Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
         };
@@ -84,18 +84,18 @@ impl Colors {
             Ok(v) => v,
             Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
         };
-        for (course, color) in content.iter() {
-            if !colors.contains_key(course) {
+        for (course, color) in local_colors.iter() {
+            if !remote_colors.contains_key(course) {
                 to_publish.push((course.to_string(), color.to_string()));
             }
         }
-        content.extend(colors);
+        local_colors.extend(remote_colors);
         // Save last updated time
         let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
 
         let local_storage = window().local_storage().unwrap().unwrap();
         local_storage.set_item("last_colors_updated", &now.to_string()).unwrap();
-        drop(content);
+        drop(local_colors);
         crate::colors::COLORS_CHANGED.store(true, std::sync::atomic::Ordering::Relaxed);
         self.save();
     }
