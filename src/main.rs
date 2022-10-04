@@ -129,15 +129,13 @@ impl Component for App {
 
         // Switch to next day if it's late or to monday if it's weekend
         let weekday = now.weekday();
-        if now.hour() >= 19 || weekday == Weekday::Sat || weekday == Weekday::Sun {
+        let curr_day = now.naive_local().date().and_hms(0, 0, 0);
+        let has_event = has_event_on_day(&events, curr_day, Weekday::Sat);
+        if now.hour() >= 19 || weekday == Weekday::Sun || (weekday == Weekday::Sat && !has_event) {
             let link2 = ctx.link().clone();
             spawn_local(async move {
                 sleep(Duration::from_millis(500)).await;
                 link2.send_message(Msg::Next);
-                if weekday == Weekday::Sat {
-                    sleep(Duration::from_millis(300)).await;
-                    link2.send_message(Msg::Next);
-                }
             });
         }
 
@@ -216,7 +214,10 @@ impl Component for App {
                 true
             },
             Msg::Previous => {
-                if self.selected_day.weekday() == Weekday::Mon {
+                let prev_week = NaiveDateTime::new(self.selected_day.naive_local(), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
+                if self.selected_day.weekday() != Weekday::Mon {
+                    self.selected_day = self.selected_day.pred();
+                } else if self.selected_day.weekday() == Weekday::Mon && !has_event_on_day(&self.events, prev_week, Weekday::Sat) {
                     self.selected_day = self.selected_day.pred().pred().pred();
                 } else {
                     self.selected_day = self.selected_day.pred();
@@ -225,7 +226,12 @@ impl Component for App {
                 true
             },
             Msg::Next => {
-                if self.selected_day.weekday() ==  Weekday::Fri {
+                let now = NaiveDateTime::new(self.selected_day.naive_local(), NaiveTime::from_hms(0, 0, 0));
+                if self.selected_day.weekday() == Weekday::Sat {
+                    self.selected_day = self.selected_day.succ().succ();
+                } else if self.selected_day.weekday() != Weekday::Fri {
+                    self.selected_day = self.selected_day.succ();
+                } else if self.selected_day.weekday() == Weekday::Fri && !has_event_on_day(&self.events, now, Weekday::Sat) {
                     self.selected_day = self.selected_day.succ().succ().succ();
                 } else {
                     self.selected_day = self.selected_day.succ();

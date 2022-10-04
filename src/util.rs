@@ -1,5 +1,6 @@
 use wasm_bindgen::JsCast;
 use web_sys::*;
+use crate::prelude::*;
 
 #[macro_export]
 macro_rules! log {
@@ -54,4 +55,19 @@ impl HackTraitSelectedValueOnHtmlSelectElement for HtmlSelectElement {
             self.selected_options().item(0).unwrap().dyn_into::<HtmlOptionElement>().unwrap_unchecked().value()
         }
     }
+}
+
+// Check if the user has an event the saturday
+pub fn has_event_on_day(events: &Vec<RawEvent>, current_day: NaiveDateTime, weekday: Weekday) -> bool {
+    let offset = weekday.num_days_from_monday() as i64 - current_day.weekday().number_from_monday() as i64 + 1;
+    let saturday_stamp = (current_day + chrono::Duration::days(offset)).timestamp() as u64;
+    let range = saturday_stamp..saturday_stamp + 3600*24;
+    log!("range: {:?}", range);
+    if events.is_empty() { false } else { match events.binary_search_by(|e| e.start_unixtime.cmp(&saturday_stamp)) {
+        Ok(_) => true,
+        Err(i) => {
+            log!("i: {}", i);
+            range.contains(&events[i].start_unixtime)
+        },
+    }}
 }
