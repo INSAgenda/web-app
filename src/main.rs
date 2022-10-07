@@ -135,7 +135,10 @@ impl Component for App {
                 sleep(Duration::from_millis(500)).await;
                 link2.send_message(Msg::Next);
                 if weekday == Weekday::Sat {
-                    sleep(Duration::from_millis(300)).await;
+                    if (width() <= 1000)
+                    {
+                        sleep(Duration::from_millis(300)).await;
+                    }
                     link2.send_message(Msg::Next);
                 }
             });
