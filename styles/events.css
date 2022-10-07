@@ -1,11 +1,11 @@
 .event {
-    width: inherit;
     color: var(--text);
     cursor: pointer;
     box-sizing: border-box;
     border-radius: 0.3rem;
     font-size: .95rem;
     transition: filter .2s ease;
+    position: sticky;
 }
 
 :root[data-theme="dark"] .event {
@@ -29,11 +29,14 @@
 
 /* Event details */
 
-.event-details {
-    width: calc(214px - 2.2rem); /* ALED */
+#event-details {
     font-size: 1rem;
-    position: relative;
-    top: -100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50%;
+    height: 60%;
+    transform: translate(-50%, -50%);
     background-color: var(--closer-background);
     color: var(--text);
     border-radius: 1rem;
@@ -45,27 +48,27 @@
     text-align: start;
 }
 
-.event-details h3 {
+#event-details h3 {
     font-size: 1.2rem;
     margin-bottom: 0;
     font-weight: bold;
     text-align: center;
 }
 
-.event-details > .divider-bar-option {
+#event-details > .divider-bar-option {
     margin: 0.1rem auto;
 }
 
-.event-details span {
+#event-details span {
     font-size: 1rem;
     font-weight: normal;
 }
 
-.event-details h4 {
+#event-details h4 {
    margin: 0.325rem 0;
 }
 
-.event-details-content {
+#event-details-content {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -91,7 +94,7 @@
 /* Mobile view */
 
 @media screen and (max-width: 1000px) {
-    .event-details {
+    #event-details {
         position: fixed;
         top: unset;
         bottom: 0px;
@@ -103,7 +106,7 @@
         box-shadow: 0px -0.8rem 0.8rem #00000029;
     }
 
-    .event-details h3 {
+    #event-details h3 {
         margin-top: 0.6rem;
     }
 

@@ -183,7 +183,6 @@ impl Component for SettingsPage {
                 SETTINGS.set_building_naming(self.clone_storage.building_naming.load(Ordering::Relaxed));
                 SETTINGS.set_theme(self.clone_storage.theme.load(Ordering::Relaxed));
                 SETTINGS.set_lang(self.clone_storage.lang.load(Ordering::Relaxed));
-                ctx.props().app_link.send_message(AppMsg::Refresh);
                 false
             }
             Msg::BuildingNamingChange(v) => {
@@ -212,9 +211,7 @@ impl Component for SettingsPage {
                     html.set_attribute("data-theme", theme).unwrap();
                     storage.set_item("setting-theme", theme).unwrap();
                 }
-                // update the theme
-                ctx.props().app_link.send_message(AppMsg::Refresh);
-                
+                                
                 true
             }
             Msg::LogOut => {

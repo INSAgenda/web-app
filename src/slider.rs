@@ -15,19 +15,19 @@ pub struct SliderManager {
 }
 
 impl SliderManager {
-    pub fn init(link: Scope<App>, day_offset: i32) -> Rc<RefCell<SliderManager>> {
+    pub fn init(link: Scope<Agenda>, day_offset: i32) -> Rc<RefCell<SliderManager>> {
         // Create callbacks
 
         let days_offset = Rc::new(Cell::new(day_offset));
 
         let link2 = link.clone();
         let swift_next_callback = Closure::wrap(Box::new(move || {
-            link2.send_message(AppMsg::Next);
+            link2.send_message(AgendaMsg::Next);
         }) as Box<dyn FnMut()>);
 
         let link2 = link.clone();
         let swift_prev_callback = Closure::wrap(Box::new(move || {
-            link2.send_message(AppMsg::Previous);
+            link2.send_message(AgendaMsg::Previous);
         }) as Box<dyn FnMut()>);
 
         // Create slider
@@ -52,11 +52,11 @@ impl SliderManager {
             let mut slider = slider2.borrow_mut();
             match slider.enabled {
                 true if width() > 1000 => {
-                    link2.send_message(AppMsg::Refresh);
+                    link2.send_message(AgendaMsg::Refresh);
                     slider.disable();
                 }
                 false if width() <= 1000 => {
-                    link2.send_message(AppMsg::Refresh);
+                    link2.send_message(AgendaMsg::Refresh);
                     slider.enable();
                 },
                 _ => (),
@@ -245,10 +245,13 @@ impl SliderManager {
     }
 
     pub fn set_offset(&mut self, offset: i32) {
-        if self.enabled {
+        let day_container = self.get_cached_day_container();
+
+        if self.enabled && width() <= 1000 {
             self.days_offset.set(offset);
-            let day_container = self.get_cached_day_container();
             day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
+        } else {
+            day_container.style().set_property("right", "0px").unwrap();
         }
     }
 }

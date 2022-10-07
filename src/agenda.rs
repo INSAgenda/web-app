@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, slider};
 
 fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
     let month = t(match month {
@@ -29,11 +29,202 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
 
     format!("{} {} {}", day_name, day, month)
 }
+pub struct Agenda {
+    selected_day: Date<chrono_tz::Tz>,
+    events: Vec<RawEvent>,
+    slider: Rc<RefCell<slider::SliderManager>>,
+    announcements: Vec<AnnouncementDesc>,
+    pub displayed_announcement: Option<AnnouncementDesc>,
+    selected_event: Rc<Option<RawEvent>>,
+}
 
-impl App {
-    pub fn view_agenda(&self, ctx: &Context<Self>) -> Html {
+pub enum AgendaMsg {
+    ScheduleSuccess(Vec<RawEvent>),
+    ScheduleFailure(ApiError),
+    Previous,
+    Next,
+    Goto {day: u32, month: u32, year: i32},
+    SetSliderState(bool),
+    SetSelectedEvent(Option<common::Event>),
+    CloseAnnouncement,
+    AnnouncementsSuccess(Vec<AnnouncementDesc>),
+    Refresh,
+    FetchColors(HashMap<String, String>),
+    ApiFailure(ApiError),
+    PushColors(),
+}
+
+#[derive(Properties, Clone)]
+pub struct AgendaProps {
+    pub app_link: Scope<App>,
+}
+
+impl PartialEq for AgendaProps {
+    fn eq(&self, _other: &Self) -> bool { true }
+}
+
+impl Component for Agenda {
+    type Message = AgendaMsg;
+    type Properties = AgendaProps;
+
+    fn create(ctx: &Context<Self>) -> Self {
+        let now = chrono::Local::now();
+        let now = now.with_timezone(&Paris);
+
+        // Update data
+        let events = init_events(now, ctx.link().clone());
+        let announcements = init_announcements(now, ctx.link().clone());
+        let displayed_announcement = select_announcement(&announcements);
+
+        let link = ctx.link().clone();
+        let unload = Closure::wrap(Box::new(move |_: web_sys::Event| {
+        link.send_message(AgendaMsg::PushColors());
+        }) as Box<dyn FnMut(_)>);
+        window().add_event_listener_with_callback("unload", unload.as_ref().unchecked_ref()).unwrap();
+        unload.forget();
+
+        // Get colors
+        crate::COLORS.fetch_colors(ctx);
+
+        // Auto-push colors every 15s if needed
+        let link = ctx.link().clone();
+        let push_colors = Closure::wrap(Box::new(move || {
+        link.send_message(AgendaMsg::PushColors());
+        }) as Box<dyn FnMut()>);
+
+        match window().set_interval_with_callback_and_timeout_and_arguments(
+            push_colors.as_ref().unchecked_ref(),
+            1000*15,
+            &Array::new(),
+        ) {
+            Ok(_) => (),
+            Err(e) => sentry_report(JsValue::from(&format!("Failed to set timeout: {:?}", e))),
+        }
+        push_colors.forget();
+
+        // Switch to next day if it's late or to monday if it's weekend
+        let weekday = now.weekday();
+        let curr_day = now.naive_local().date().and_hms(0, 0, 0);
+        let has_event = has_event_on_day(&events, curr_day, Weekday::Sat);
+        if now.hour() >= 19 || weekday == Weekday::Sun || (weekday == Weekday::Sat && !has_event) {
+            let link2 = ctx.link().clone();
+            spawn_local(async move {
+                sleep(Duration::from_millis(500)).await;
+                link2.send_message(AgendaMsg::Next);
+            });
+        }
+        
+        Self {
+            events,
+            selected_day: now.date(),
+            slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
+            announcements,
+            displayed_announcement,
+            selected_event: Rc::new(None),
+        }
+    }
+
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            AgendaMsg::ScheduleSuccess(events) => {
+                self.events = events;
+                true
+            },
+            AgendaMsg::ScheduleFailure(api_error) => {
+                api_error.handle_api_error();
+                match api_error {
+                    ApiError::Known(error) if error.kind == "counter_too_low" => {
+                        refresh_events(ctx.link().clone());
+                    }
+                    _ => {},
+                }
+                false
+            },
+            AgendaMsg::AnnouncementsSuccess(announcements) => {
+                self.announcements = announcements;
+                false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
+            },
+            AgendaMsg::Previous => {
+                let prev_week = NaiveDateTime::new(self.selected_day.naive_local(), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
+                if self.selected_day.weekday() != Weekday::Mon {
+                    self.selected_day = self.selected_day.pred();
+                } else if self.selected_day.weekday() == Weekday::Mon && !has_event_on_day(&self.events, prev_week, Weekday::Sat) {
+                    self.selected_day = self.selected_day.pred().pred().pred();
+                } else {
+                    self.selected_day = self.selected_day.pred().pred();
+                }
+                self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
+                true
+            },
+            AgendaMsg::Next => {
+                let now = NaiveDateTime::new(self.selected_day.naive_local(), NaiveTime::from_hms(0, 0, 0));
+                if self.selected_day.weekday() == Weekday::Sat {
+                    self.selected_day = self.selected_day.succ().succ();
+                } else if self.selected_day.weekday() != Weekday::Fri {
+                    self.selected_day = self.selected_day.succ();
+                } else if self.selected_day.weekday() == Weekday::Fri && !has_event_on_day(&self.events, now, Weekday::Sat) {
+                    self.selected_day = self.selected_day.succ().succ().succ();
+                } else {
+                    self.selected_day = self.selected_day.succ();
+                }
+                    
+                self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
+                
+                true
+            },
+            AgendaMsg::Goto {day, month, year} => {
+                self.selected_day = Paris.ymd(year, month, day);
+                true
+            }
+            AgendaMsg::Refresh => {
+                let window = window();
+                match Reflect::get(&window.doc(), &JsValue::from_str("reflectTheme")) {
+                    Ok(reflect_theme) => {
+                        let reflect_theme: Function = match reflect_theme.dyn_into(){
+                            Ok(reflect_theme) => reflect_theme,
+                            Err(e) => {
+                                log!("Failed to convert reflect theme: {:?}", e);
+                                return true;
+                            }
+                        };
+                    
+                        Reflect::apply(&reflect_theme, &window.doc(), &Array::new()).expect("Failed to call reflectTheme");
+                    }
+                    Err(_) => log!("reflectTheme not found")
+                }
+                true
+            },
+            AgendaMsg::CloseAnnouncement => update_close_announcement(self),
+            AgendaMsg::SetSliderState(state) => {
+                let mut slider = self.slider.borrow_mut();
+                match state {
+                    true => slider.enable(),
+                    false => slider.disable(),
+                }
+                true
+            },
+            AgendaMsg::SetSelectedEvent(event) => {
+                self.selected_event = Rc::new(event);
+                log!("Selected event: {:?}", self.selected_event);
+                true
+            },
+            AgendaMsg::FetchColors(new_colors) => {
+                crate::COLORS.update_colors(new_colors);
+                true
+            },
+            AgendaMsg::PushColors() => {
+                crate::COLORS.push_colors();
+                false
+            },
+            AgendaMsg::ApiFailure(api_error) => {
+                api_error.handle_api_error();
+                false
+            },
+        }
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
         let mobile = crate::slider::width() <= 1000;
-
         // Go on the first day of the week
         let mut current_day = self.selected_day;
         match mobile {
@@ -42,7 +233,6 @@ impl App {
                 current_day = current_day.pred();
             },
         };
-
         // Check if there is room for the announcement on mobile
         let announcement = self.displayed_announcement.as_ref();
         let mut show_mobile_announcement = mobile && announcement.is_some();
@@ -50,6 +240,7 @@ impl App {
             let announcement_start = current_day.succ().succ().and_hms(18,30,0).timestamp() as u64;
             let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp() as u64;
             let announcement_range = announcement_start..=announcement_end;
+
             match self.events.binary_search_by_key(&announcement_start, |e| e.start_unixtime) { // Check if an event starts exactly at that time.
                 Ok(_) => {
                     show_mobile_announcement = false;
@@ -81,7 +272,7 @@ impl App {
         // Build each day and put events in them
         let mut days = Vec::new();
         let mut day_names = Vec::new();
-        for d in 0..5 {
+        for d in 0..6 {
             let mut events = Vec::new();
 
             // Iterate over events, starting from the first one that starts during the current day
@@ -94,13 +285,13 @@ impl App {
                 if e.start_unixtime > day_start + 24*3600 {
                     break;
                 }
-                events.push(html! {
+                events.push(html!{
                     <EventComp
                         day_of_week={d}
                         event={e.clone()}
                         day_start={current_day.and_hms(0,0,0).timestamp() as u64}
-                        app_link={ctx.link().clone()}
-                        show_announcement={show_mobile_announcement}>
+                        agenda_link={ctx.link().clone()}
+                        show_announcement={false}>
                     </EventComp>
                 });
                 idx += 1;
@@ -124,7 +315,7 @@ impl App {
 
             current_day = current_day.succ();
         }
-
+        
         html! {
             <>
             <header>
@@ -132,7 +323,7 @@ impl App {
                 <img src="/assets/logo/logo.svg" alt="INSAgenda logo"/> 
                 <h1 id="header-name">{"INSAgenda"}</h1>
                 </a>
-                <button id="settings-button" onclick={ctx.link().callback(|_| AppMsg::SetPage(Page::Settings))}/>
+                <button id="settings-button" onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings))}/>
             </header>
             <main id="agenda-main" class={agenda_class}>
             <div id="agenda">
@@ -147,11 +338,11 @@ impl App {
                 </div>
                 <div id="agenda-main-part">
                     <div id="agenda-top">
-                        <a id="agenda-arrow-left" onclick={ctx.link().callback(|_| AppMsg::Previous)}>
+                        <a id="agenda-arrow-left" onclick={ctx.link().callback(|_| AgendaMsg::Previous)}>
                             <div></div>
                         </a>
                         { day_names }
-                        <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| AppMsg::Next)}>
+                        <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| AgendaMsg::Next)}>
                             <div></div>
                         </a>
                     </div>
@@ -162,19 +353,10 @@ impl App {
                     </div>
                 </div>
             </div>
-            <div id="option">
-                <div id="option-header">
-                    <span>{t("Options")}</span>
-                    <div class="divider-bar-option"></div>
-                </div>
-                <Calendar day={self.selected_day.day()} month={self.selected_day.month()} year={self.selected_day.year()} app_link={ctx.link().clone()}/>
-                if !mobile {
-                    if let Some(announcement) = announcement.clone() {
-                        { announcement }
-                    }
-                }
-                <br/>
-            </div>
+            <Popup
+                event={self.selected_event.clone()}
+                agenda_link={ctx.link().clone()}>
+            </Popup>
             if mobile && show_mobile_announcement {
                 if let Some(announcement) = announcement {
                     { announcement }
