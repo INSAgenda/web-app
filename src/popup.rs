@@ -30,7 +30,6 @@ impl Component for Popup {
         // Creates a closure called on click that will close the popup if the user clicked outside of it
         let doc = window().doc();
         let link = ctx.link().clone();
-        let agenda_link = ctx.props().agenda_link.clone();
         let on_click = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
             let popup_el = doc.get_element_by_id("event-details").unwrap();
             let rect = popup_el.get_bounding_client_rect();
@@ -39,10 +38,9 @@ impl Component for Popup {
             if (rect.y()..rect.y()+rect.height()).contains(&(event.client_y() as f64))
                 && (rect.x()..rect.x()+rect.width()).contains(&(event.client_x() as f64))
             { return; }
-            agenda_link.send_message(crate::AgendaMsg::SetSelectedEvent(None));
+            link.send_message(PopupMsg::Close);
 
         }) as Box<dyn FnMut(_)>);
-        window().add_event_listener_with_callback("onclick", on_click.as_ref().unchecked_ref()).unwrap();
 
         Self {
             on_click,
@@ -51,6 +49,12 @@ impl Component for Popup {
     }
 
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
+        if ctx.props().event.is_some() {
+            self.last_click_timestamp = chrono::Utc::now().timestamp_millis();
+            window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+        } else if ctx.props().event.is_none() {
+            window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+        }
         true
     }
 
@@ -75,23 +79,15 @@ impl Component for Popup {
                 false
             },
             PopupMsg::Close => {
-                //ctx.props().agenda_link.send_message(crate::AgendaMsg::SetSelectedEvent(None));
                 // Double call protection
-                /*let now = chrono::Utc::now().timestamp_millis();
+                let now = chrono::Utc::now().timestamp_millis();
                 if self.last_click_timestamp + 100 > now {
                     return false;
                 }
-                self.last_click_timestamp = now;*/
-                /*{
-                    let mut event: RefMut<Option<common::Event>> = ctx.props().event.borrow_mut();
-                    *event = None;
-    
-                }
-                log!("Closing popup: {:?}" , ctx.props().event.borrow());
+                self.last_click_timestamp = now;
+
                 // Enable/Disable slider 
-                if width() <= 1000 {
-                    ctx.props().agenda_link.send_message(AgendaMsg::SetSliderState(false));
-                }*/
+                ctx.props().agenda_link.send_message(crate::AgendaMsg::SetSelectedEvent(None));
                 true
             },
         }
@@ -101,12 +97,8 @@ impl Component for Popup {
         // Format title
         let binding = &ctx.props().event;
         let event = match binding.as_ref() {
-            Some(e) => {log!("Event: {:?}", e); e},
-            None => {
-                log!("No event");
-                ctx.props().agenda_link.send_message(AgendaMsg::SetSliderState(true));
-                return html! {<div></div>}
-            },
+            Some(e) => e,
+            None => return html! {<div></div>},
         }; 
 
         let summary = &event.summary;
@@ -145,11 +137,11 @@ impl Component for Popup {
         let start = Paris.timestamp(event.start_unixtime as i64, 0);
         let end = Paris.timestamp(event.end_unixtime as i64, 0);
         let mobile = width() <= 1000;
-
+        // onclick event handler
         html! {
             <div id={"event-details"}>
                 if mobile {
-                    <div class="close-arrow" onclick={ctx.props().agenda_link.callback(|_| crate::AgendaMsg::SetSelectedEvent(None))} >
+                    <div class="close-arrow" onclick={ctx.link().callback(move |_| PopupMsg::Close)}>
                         <svg width="110" height="28" viewBox="0 0 110 28" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M55.5 28C55.5 28 19.6743 2 0.5 0H55.5V28Z" fill="var(--day)"/>
                             <path d="M55 28C55 28 90.8257 2 110 0H55V28Z" fill="var(--day)"/>

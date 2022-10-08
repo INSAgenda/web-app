@@ -103,7 +103,7 @@
 
 .day {
     height: 100%;
-    width: 19%;
+    width: calc(100% / 6 - 1%);
     margin: 0 .5%;
     border-radius: 0.3rem;
     background-color: var(--day);
@@ -121,4 +121,11 @@
 }
 :root[data-theme="dark"] #settings-button{
     filter: invert(1);
+}
+
+
+@media screen and (max-width: 1000px) {
+    .day {
+        width: 19%;
+    }
 }

@@ -19,21 +19,14 @@ impl PartialEq for EventCompProps {
     }
 }
 
-pub struct EventComp {
-    popup_id: String,
-}
-
+pub struct EventComp {}
 
 impl Component for EventComp {
     type Message = ();
     type Properties = EventCompProps;
 
     fn create(_ctx: &Context<Self>) -> Self {
-        let id = format!("event-popup-{}", ID_COUNTER.fetch_add(1, Ordering::Relaxed));
-
-        EventComp {
-            popup_id: id,
-        }
+        Self {}
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -89,7 +82,7 @@ impl Component for EventComp {
             <div
                 style={format!("background-color: {}80; border-left: 0.3rem solid {}; top: {}%; height: {}%;", bg_color.clone(), bg_color.clone(), percent_offset, percent_height)}
                 class="event" >
-                <div class="event-container"  onclick={ctx.props().agenda_link.callback(move |_| AgendaMsg::SetSelectedEvent(Some(event1.clone()))) } >
+                <div class="event-container" onclick={ctx.props().agenda_link.callback(move |_| AgendaMsg::SetSelectedEvent(Some(event1.clone()))) } >
                     <span class="name" >
                         { &name }
                     </span>

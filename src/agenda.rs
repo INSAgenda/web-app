@@ -204,8 +204,13 @@ impl Component for Agenda {
                 true
             },
             AgendaMsg::SetSelectedEvent(event) => {
+                if event.is_some() {
+                    self.slider.borrow_mut().disable();
+                } else {
+                    self.slider.borrow_mut().enable();
+                }
+
                 self.selected_event = Rc::new(event);
-                log!("Selected event: {:?}", self.selected_event);
                 true
             },
             AgendaMsg::FetchColors(new_colors) => {

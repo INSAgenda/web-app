@@ -17,7 +17,6 @@ pub struct SliderManager {
 impl SliderManager {
     pub fn init(link: Scope<Agenda>, day_offset: i32) -> Rc<RefCell<SliderManager>> {
         // Create callbacks
-
         let days_offset = Rc::new(Cell::new(day_offset));
 
         let link2 = link.clone();
@@ -31,7 +30,6 @@ impl SliderManager {
         }) as Box<dyn FnMut()>);
 
         // Create slider
-
         let slider = Rc::new(RefCell::new(SliderManager {
             enabled: false,
             start_pos: None,
@@ -163,7 +161,7 @@ impl SliderManager {
     }
     
     pub fn enable(&mut self) {
-        self.enabled = true;
+        self.enabled = width() <= 1000;
         self.start_pos = None;
     }
 
