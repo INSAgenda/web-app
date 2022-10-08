@@ -132,14 +132,12 @@ impl Component for App {
         if now.hour() >= 19 || weekday == Weekday::Sat || weekday == Weekday::Sun {
             let link2 = ctx.link().clone();
             spawn_local(async move {
-                if width() <= 1000
-                {
+                if width() <= 1000 {
                     sleep(Duration::from_millis(500)).await;
                 }
                 link2.send_message(Msg::Next);
                 if weekday == Weekday::Sat {
-                    if width() <= 1000
-                    {
+                    if width() <= 1000 { 
                         sleep(Duration::from_millis(300)).await;
                     }
                     link2.send_message(Msg::Next);
