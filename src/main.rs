@@ -85,7 +85,7 @@ impl Component for App {
         let user_info = init_user_info(now, ctx.link().clone());
         let groups = init_groups(now, ctx.link().clone());
         let announcements = init_announcements(now, ctx.link().clone());
-        let displayed_announcement = select_announcement(&announcements);
+        let displayed_announcement = select_announcement(&announcements, &user_info);
 
         // Detect page
         let page = match window().location().hash() {
