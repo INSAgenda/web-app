@@ -1,16 +1,20 @@
 #calendar {
-    width: min-content;
     border-radius: 1rem;
     box-shadow: 0px 3px 6px #00000029;
-    background-color: var(--day);
+    background-color: var(--closer-background);
+    z-index: 1;
+    position: absolute;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 /* Header */
 
 #calendar-header {
     width: 100%;
-    height: 2rem;
-    background-color: var(--primary);
+    height: 4rem;
+    background-color: var(--closer-background);
     border-radius: 1rem 1rem 0 0;
     display: flex;
     align-items: center;
@@ -18,9 +22,9 @@
 }
 
 #calendar-title {
-    color: white;
+    color: var(--light);
     min-width: 60%;
-    font-size: 0.8rem;
+    font-size: 1.6rem;
     text-align: center;
     user-select: none;
     overflow: visible;
@@ -30,7 +34,6 @@
 .calendar-arrow {
     background-image: url(/assets/elements/arrow.svg);
     border: none;
-    filter: invert(1);
     background-color: transparent;
     background-repeat: no-repeat;
     cursor: pointer;
@@ -45,7 +48,7 @@
 #calendar-days {
     display: flex;
     justify-content: space-around;
-    font-size: 0.7rem;
+    font-size: 1.4rem;
     margin: 2px 0 7px 0;
     color: var(--text);
     font-weight: 500;
@@ -58,9 +61,9 @@
 }
 
 .calendar-week {
-    width: 14rem;
-    height: 2rem;
-    font-size: 0.8rem;
+    width: 28rem;
+    line-height: 2rem;
+    font-size: 1.4rem;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -74,12 +77,13 @@
 /* Case */
 
 .calendar-case {
-    width: 1rem;
-    height: 1rem;
+    width: 100%;
+    height: 100%;
+    margin: 0.5rem;
     padding: .2rem;
     cursor: pointer;
     text-align: center;
-    border-radius: 15px;
+    border-radius: 50%;
     transition: 0.1s background-color;
     color: var(--text);
 }
@@ -91,4 +95,14 @@
 #selected-calendar-case {
     background-color: var(--primary);
     color: var(--text);
+}
+
+#calendar-arrow-right {
+    transform: rotate(180deg);
+}
+
+@media screen and (max-width: 1000px) {
+    .calendar-arrow {
+        display: none !important;
+    }
 }

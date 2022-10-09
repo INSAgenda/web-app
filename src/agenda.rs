@@ -320,14 +320,20 @@ impl Component for Agenda {
 
             current_day = current_day.succ();
         }
-        
+
         html! {
             <>
             <header>
                 <a id="header-logo" href="/agenda">
                 <img src="/assets/logo/logo.svg" alt="INSAgenda logo"/> 
-                <h1 id="header-name">{"INSAgenda"}</h1>
+                <h1 id="header-name" class="header-agenda">{"INSAgenda"}</h1>
                 </a>
+                <Calendar
+                    agenda_link={ctx.link().clone()}
+                    day={self.selected_day.day()}
+                    month={self.selected_day.month()}
+                    year={self.selected_day.year()}>
+                </Calendar>
                 <button id="settings-button" onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings))}/>
             </header>
             <main id="agenda-main" class={agenda_class}>

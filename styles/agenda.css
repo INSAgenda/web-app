@@ -67,6 +67,10 @@
         width: 100%;
         height: 100%;
     }
+
+    .header-agenda {
+        display: none;
+    }
 }
 
 /* Top */
