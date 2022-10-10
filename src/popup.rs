@@ -137,7 +137,6 @@ impl Component for Popup {
         let start = Paris.timestamp(event.start_unixtime as i64, 0);
         let end = Paris.timestamp(event.end_unixtime as i64, 0);
         let mobile = width() <= 1000;
-        // onclick event handler
 
         template_html!(
             "templates/components/popup.html",
@@ -146,7 +145,7 @@ impl Component for Popup {
             time = {format!("{} - {}", start.time().format("%Hh%M"), end.time().format("%Hh%M"))},
             teachers = {event.teachers.join(", ")},
             teachers_empty = {event.teachers.is_empty()},
-            mobile, name, bg_color, opt_location = {location}
+            mobile, name, bg_color = { bg_color.clone() }, opt_location = {location}
         )
     }
 }

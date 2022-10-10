@@ -78,14 +78,11 @@ impl Component for EventComp {
         let percent_height = 100.0 / day_sec_count * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;
 
         let event1 = ctx.props().event.clone();
-        let style = format!("background-color: {bg_color}80; border-left: 0.3rem solid {bg_color}; top: {percent_offset}%; height: {percent_height}%;");
         template_html!(
             "templates/components/event.html",
             onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::SetSelectedEvent(Some(event1.clone()))) },
-            name = {&name},
             teachers = { ctx.props().event.teachers.join(", ")},
-            location = { location.as_ref().map(|l| html!{<span class="location" >{l}</span>}).unwrap_or_default() },
-            style
+            opt_location = location, bg_color, percent_offset, percent_height, bg_color2 = bg_color, name,
         )
     }
 }
