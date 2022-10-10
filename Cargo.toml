@@ -5,7 +5,7 @@ edition = "2018"
 
 [dependencies]
 yew = "0.19"
-yew-template = "0.1"
+yew-template = {path = "../yew-template"}
 wasm-bindgen = {version="0.2", features=["serde-serialize"]}
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
