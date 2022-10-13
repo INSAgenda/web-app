@@ -82,7 +82,7 @@ impl Component for EventComp {
             "templates/components/event.html",
             onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::SetSelectedEvent(Some(event1.clone()))) },
             teachers = { ctx.props().event.teachers.join(", ")},
-            opt_location = location, bg_color, percent_offset, percent_height, bg_color2 = bg_color, name,
+            opt_location = location, bg_color2 = bg_color, ...
         )
     }
 }

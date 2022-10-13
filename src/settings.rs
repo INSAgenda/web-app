@@ -323,7 +323,8 @@ impl Component for SettingsPage {
             onclick_change_password2 = {move |_| app_link4.send_message(AppMsg::SetPage(Page::ChangePassword))},
             onclick_change_email = {move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangeEmail))},
             onclick_change_group = {move |_| app_link3.send_message(AppMsg::SetPage(Page::ChangeGroup))},
-            last_password_mod=last_password_mod_str, formatted_group, email, verified_msg, theme_glider_selector, language_glider_selector, language_message, has_password, not_has_password = {!has_password}
+            last_password_mod = last_password_mod_str,
+            ...
         )
     }
 }

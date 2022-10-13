@@ -145,7 +145,7 @@ impl Component for Popup {
             time = {format!("{} - {}", start.time().format("%Hh%M"), end.time().format("%Hh%M"))},
             teachers = {event.teachers.join(", ")},
             teachers_empty = {event.teachers.is_empty()},
-            mobile, name, bg_color = { bg_color.clone() }, opt_location = {location}
+            bg_color = { bg_color.clone() }, opt_location = {location}, ...
         )
     }
 }
