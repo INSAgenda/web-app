@@ -1,0 +1,58 @@
+<header>
+    <a id="header-logo" href="/agenda">
+        <img height="35" width="35" src="/assets/logo/logo.svg" alt="Insagenda logo"/> 
+        <h1 id="header-name">INSAgenda</h1>
+    </a>
+    <div class="logout-button" onclick="[onclick_logout]">
+        <span>Se déconnecter</span>
+        <img src="agenda/images/log-out.svg" alt="Settings button"/>
+    </div>
+</header>
+<main id="settings-main">
+    <h2>Paramètres</h2>
+    <div id="settings-container">
+        <section>
+            <h3>Général</h3>
+            <div class="settings-group">
+                <div present-if=[has_password] class="setting">
+                    <h4>Changer de mot de passe</h4>
+                    <p>Votre mot de passe a été changé il y a [last_password_mod].</p>
+                    <div class="primary-button" onclick=[onclick_change_password]>Modifier</div>
+                </div>
+                <div present-if=![has_password] class="setting">
+                    <h4>Ajouter un mot de passe</h4>
+                    <p>Vous n'avez pas encore de mot de passe.</p>
+                    <div class="primary-button" onclick=[onclick_change_password2]>Ajouter</div>
+                </div>
+                <div class="setting">
+                    <h4>Changer de classe</h4>
+                    <p>Vous êtes actuellement en [formatted_group].</p>
+                    <div class="primary-button" onclick=[onclick_change_group]>Modifier</div>
+                </div>
+                <div present-if=[has_password] class="setting">
+                    <h4>Adresse mail</h4>
+                    <p>Votre adresse actuelle est [email]. [verified_msg]</p>
+                    <div class="primary-button" onclick=[onclick_change_email]>Modifier</div>
+                </div>
+            </div>
+        </section>
+        <section>
+            <h3>Affichage</h3>
+            <div class="settings-group">
+                <div class="setting">
+                    <h4>Thème</h4>
+                    <p>Par défault, le thème est celui renseigné par votre navigateur.</p>
+                    [theme_glider_selector]
+                </div>
+                <div class="setting">
+                    <h4>Langue</h4>
+                    <p>[language_message]</p>
+                    [language_glider_selector]
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="primary-button" onclick=[onclick_confirm]>Valider</div>
+    <div class="secondary-button" onclick=[onclick_cancel]>Annuler</div>
+</main>

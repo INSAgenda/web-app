@@ -262,7 +262,6 @@ impl Component for SettingsPage {
                 } else {
                     format!("{} {}", diff / (365*86400), words[i][6])
                 };
-                log!("last_password_mod: {}", last_password_mod_str);
             }
 
             // Format group
@@ -292,101 +291,40 @@ impl Component for SettingsPage {
         let app_link = ctx.props().app_link.clone();
         let app_link2 = ctx.props().app_link.clone();
         let app_link3 = ctx.props().app_link.clone();
+        let app_link4 = ctx.props().app_link.clone();
 
         let user_info = ctx.props().user_info.as_ref();
         let has_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(true);
 
-        html! {
-            <>
-            <header>
-                <a id="header-logo"  href="/agenda">
-                    <img height="35" width="35" src="/assets/logo/logo.svg" alt="Insagenda logo"/> 
-                    <h1 id="header-name">{"INSAgenda"}</h1>
-                </a>
-                <div class="logout-button" onclick={ctx.link().callback(move |_| Msg::LogOut)}>
-                    <span>{t("Se déconnecter")}</span>
-                    <img src="agenda/images/log-out.svg" alt="Settings button"/>
-                </div>
-            </header>
-            <main id="settings-main">
-                <h2>{t("Paramètres")}</h2>
-                <div id="settings-container">
-                    <section>
-                        <h3>{t("Général")}</h3>
-                        <div class="settings-group">
-                            if has_password {
-                                <div class="setting">
-                                    <h4>{t("Changer de mot de passse")}</h4>
-                                    <p>{format!("{} {}.", t("Votre mot de passe a été changé il y a"), last_password_mod_str)}</p>
-                                    <div class="primary-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Modifier")}</div>
-                                </div>
-                            } else {
-                            <div class="setting">
-                                <h4>{t("Ajouter un mot de passe")}</h4>
-                                <p>{t("Vous n'avez pas encore de mot de passe.")}</p>
-                                <div class="primary-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))}>{t("Ajouter")}</div>
-                            </div>
-                            }
-                            <div class="setting">
-                                <h4>{t("Changer de classe")}</h4>
-                                <p>{format!("{} {}.", t("Vous êtes actuellement en "), formatted_group)}</p>
-                                <div class="primary-button" onclick={move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangeGroup))}>{t("Modifier")}</div>
-                            </div>
-                            if has_password {
-                                <div class="setting">
-                                    <h4>{t("Adresse mail")}</h4>
-                                    <p>{format!("{} {email}.{verified_msg}", t("Votre adresse actuelle est"))}</p>
-                                    <div class="primary-button" onclick={move |_| app_link3.send_message(AppMsg::SetPage(Page::ChangeEmail))}>{t("Modifier")}</div>
-                                </div>
-                            }
-                        </div>
-                    </section>
-                    <section>
-                        <h3>{t("Affichage")}</h3>
-                        <div class="settings-group">
-                            <div class="setting">
-                                <h4>{t("Thème")}</h4>
-                                <p>{t("Par défault, le thème est celui renseigné par votre navigateur.")}</p>
-                                <GliderSelector
-                                    values = { vec![t("Sombre"), t("Clair"), t("Système")] }
-                                    on_change = { ctx.link().callback(Msg::ThemeChange) }
-                                    selected = { SETTINGS.theme() as usize } />
-                            </div>
-                            <div class="setting">
-                                <h4>{t("Langue")}</h4>
-                                <p>{
-                                    match SETTINGS.lang() {
-                                        Lang::French => "Pour afficher l'interface dans langue de Molière.",
-                                        Lang::English => "To display the interface in Shakespeare's language.",
-                                    }
-                                }</p>
-                                <GliderSelector
-                                    values = { vec!["Français", "English"] }
-                                    on_change = { ctx.link().callback(Msg::LanguageChange) }
-                                    selected = { SETTINGS.lang() as usize } />
-                                
-                            </div>
-                            <div class="setting">
-                                <h4>{t("Nom des bâtiments")}</h4>
-                                <p>{
-                                    match SETTINGS.building_naming() {
-                                        BuildingNaming::Short => "Ex: Ma",
-                                        BuildingNaming::Long => "Ex: Magellan",
-                                    }
-                                }</p>
-                                <GliderSelector
-                                    values = { vec![t("Court"), t("Long")] }
-                                    on_change = { ctx.link().callback(Msg::BuildingNamingChange) }
-                                    selected = { SETTINGS.building_naming() as usize } />
-                            </div>
-                        </div>
-                    </section>
-                </div>
+        let theme_glider_selector = html! {
+            <GliderSelector
+                values = { vec![t("Sombre"), t("Clair"), t("Système")] }
+                on_change = { ctx.link().callback(Msg::ThemeChange) }
+                selected = { SETTINGS.theme() as usize } />
+        };
+        let language_glider_selector = html! {
+            <GliderSelector
+                values = { vec!["Français", "English"] }
+                on_change = { ctx.link().callback(Msg::LanguageChange) }
+                selected = { SETTINGS.lang() as usize } />
+        };
+        let language_message = match SETTINGS.lang() {
+            Lang::French => "Pour afficher l'interface dans langue de Molière.",
+            Lang::English => "To display the interface in Shakespeare's language.",
+        };
 
-                <div class="primary-button" onclick={ctx.link().callback(move |_| Msg::Confirm)}>{t("Valider")}</div>
-                <div class="secondary-button" onclick={ctx.link().callback(move |_| Msg::Cancel)}>{t("Annuler")}</div>
-            </main>
-            </>
-        }
+        template_html!(
+            "templates/settings.html",
+            onclick_logout = {ctx.link().callback(move |_| Msg::LogOut)},
+            onclick_confirm = {ctx.link().callback(move |_| Msg::Confirm)},
+            onclick_delete = {ctx.link().callback(move |_| Msg::Delete)},
+            onclick_cancel = {ctx.link().callback(move |_| Msg::Cancel)},
+            onclick_change_password = {move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))},
+            onclick_change_password2 = {move |_| app_link4.send_message(AppMsg::SetPage(Page::ChangePassword))},
+            onclick_change_email = {move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangeEmail))},
+            onclick_change_group = {move |_| app_link3.send_message(AppMsg::SetPage(Page::ChangeGroup))},
+            last_password_mod = last_password_mod_str,
+            ...
+        )
     }
 }

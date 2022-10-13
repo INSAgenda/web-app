@@ -75,23 +75,14 @@ impl Component for EventComp {
             log!("Event {} in {:?}  ends before it starts", name, location);
             return html!{};
         }
-        let percent_height = 100.0 / day_sec_count * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;        
-    
+        let percent_height = 100.0 / day_sec_count * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;
+
         let event1 = ctx.props().event.clone();
-        html! {<>
-            <div
-                style={format!("background-color: {}80; border-left: 0.3rem solid {}; top: {}%; height: {}%;", bg_color.clone(), bg_color.clone(), percent_offset, percent_height)}
-                class="event" >
-                <div class="event-container" onclick={ctx.props().agenda_link.callback(move |_| AgendaMsg::SetSelectedEvent(Some(event1.clone()))) } >
-                    <span class="name" >
-                        { &name }
-                    </span>
-                    <span class="teacher">
-                        { ctx.props().event.teachers.join(", ") }
-                    </span>
-                    if let Some(l) = &location { <span class="location" >{l}</span>}
-                </div>
-            </div>
-        </>}
+        template_html!(
+            "templates/components/event.html",
+            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::SetSelectedEvent(Some(event1.clone()))) },
+            teachers = { ctx.props().event.teachers.join(", ")},
+            opt_location = location, bg_color2 = bg_color, ...
+        )
     }
 }

@@ -321,60 +321,26 @@ impl Component for Agenda {
             current_day = current_day.succ();
         }
 
-        html! {
-            <>
-            <header>
-                <a id="header-logo" href="/agenda">
-                <img src="/assets/logo/logo.svg" alt="INSAgenda logo"/> 
-                <h1 id="header-name" class="header-agenda">{"INSAgenda"}</h1>
-                </a>
-                <Calendar
-                    agenda_link={ctx.link().clone()}
-                    day={self.selected_day.day()}
-                    month={self.selected_day.month()}
-                    year={self.selected_day.year()}>
-                </Calendar>
-                <button id="settings-button" onclick={ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings))}/>
-            </header>
-            <main id="agenda-main" class={agenda_class}>
-            <div id="agenda">
-                <div id="agenda-hours">
-                    <span>{"08:00"}</span>
-                    <span>{"09:45"}</span>
-                    <span>{"11:30"}</span>
-                    <span>{"13:15"}</span>
-                    <span>{"15:00"}</span>
-                    <span>{"16:45"}</span>
-                    if !show_mobile_announcement {<span>{"18:30"}</span>}
-                </div>
-                <div id="agenda-main-part">
-                    <div id="agenda-top">
-                        <a id="agenda-arrow-left" onclick={ctx.link().callback(|_| AgendaMsg::Previous)}>
-                            <div></div>
-                        </a>
-                        { day_names }
-                        <a id="agenda-arrow-right" onclick={ctx.link().callback(|_| AgendaMsg::Next)}>
-                            <div></div>
-                        </a>
-                    </div>
-                    <div id="day-container-scope">
-                        <div id="day-container" style={if mobile {Some(format!("position: relative; right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000)))} else {None}}>
-                            { days }
-                        </div>
-                    </div>
-                </div>
-            </div>
+        let calendar = html! {
+            <Calendar
+                agenda_link={ctx.link().clone()}
+                day={self.selected_day.day()}
+                month={self.selected_day.month()}
+                year={self.selected_day.year()} />
+        };
+        let popup = html! {
             <Popup
                 event={self.selected_event.clone()}
-                agenda_link={ctx.link().clone()}>
-            </Popup>
-            if mobile && show_mobile_announcement {
-                if let Some(announcement) = announcement {
-                    { announcement }
-                }
-            }
-        </main>
-            </>
-        }
+                agenda_link={ctx.link().clone()} />
+        };
+        let day_container_style = if mobile {format!("position: relative; right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000))} else {String::new()};
+        template_html!(
+            "templates/agenda.html",
+            onclick_settings = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings))},
+            onclick_previous = {ctx.link().callback(|_| AgendaMsg::Previous)},
+            onclick_next = {ctx.link().callback(|_| AgendaMsg::Next)},
+            opt_announcement = announcement,
+            ...
+        )
     }
 }
