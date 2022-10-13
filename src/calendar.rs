@@ -26,6 +26,7 @@ pub struct Calendar {
     selected_month: u32,
     selected_year: i32,
     folded: bool,
+    on_click: Closure<dyn FnMut(web_sys::MouseEvent)>,
 }
 
 impl Component for Calendar {
@@ -33,11 +34,24 @@ impl Component for Calendar {
     type Properties = CalendarProps;
 
     fn create(ctx: &Context<Self>) -> Self {
+        let doc = window().doc();
+        let link = ctx.link().clone();
+        let on_click = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
+            let popup_el = doc.get_element_by_id("calendar").unwrap();
+            let rect = popup_el.get_bounding_client_rect();
+
+            // Check the click was not inside the popup
+            if (rect.y()..rect.y()+rect.height()).contains(&(event.client_y() as f64))
+                && (rect.x()..rect.x()+rect.width()).contains(&(event.client_x() as f64))
+            { return; }
+            link.send_message(Msg::TriggerFold);
+        }) as Box<dyn FnMut(_)>);
         Calendar {
             selected_day: ctx.props().day,
             selected_month: ctx.props().month,
             selected_year: ctx.props().year as i32,
             folded: true,
+            on_click,
         }
     }
 
@@ -105,6 +119,11 @@ impl Component for Calendar {
             },
             Msg::TriggerFold => {
                 self.folded = !self.folded;
+                if self.folded {
+                    window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+                } else {
+                    window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+                }
                 true
             } 
         }
@@ -129,7 +148,7 @@ impl Component for Calendar {
 
         if self.folded {
             html!{
-                <div class="calendar">
+                <div id="calendar">
                     <div class="calendar-header">
                         <button class="calendar-arrow" onclick={ctx.link().callback(|_| Msg::PreviousWeek)}></button>
 
