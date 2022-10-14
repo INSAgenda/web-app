@@ -150,12 +150,12 @@ impl Component for Calendar {
             html!{
                 <div id="calendar">
                     <div id="calendar-header">
-                        <button class="calendar-arrow" onclick={ctx.link().callback(|_| Msg::PreviousWeek)}></button>
+                        <button class="calendar-arrow hide-mobile" onclick={ctx.link().callback(|_| Msg::PreviousWeek)}></button>
 
                         <img id="open-calendar" src="/agenda/images/calendar-btn.svg" onclick={ctx.link().callback(|_| Msg::TriggerFold)}/>
                         <span id="calendar-title">{display_month}</span>
 
-                        <button class="calendar-arrow" id="calendar-arrow-right" onclick={ctx.link().callback(|_| Msg::NextWeek)}></button>
+                        <button class="calendar-arrow hide-mobile" id="calendar-arrow-right" onclick={ctx.link().callback(|_| Msg::NextWeek)}></button>
                     </div>
                 </div>
             }
