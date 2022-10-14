@@ -95,10 +95,10 @@ impl Component for App {
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
 
-                 // If user's group changed, update the events
                 if let Some(old_user_info) = self.user_info.as_ref() {
-                    // TODO: Refresh events
-                    ()
+                    if old_user_info.user_groups != user_info.user_groups {
+                        should_refresh = true;
+                    }
                 }
 
                 // Update user info
@@ -140,7 +140,10 @@ impl Component for App {
     
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
-            Page::Agenda => html!(<Agenda app_link={ ctx.link().clone()} />),
+            Page::Agenda => {
+                let user_info = self.user_info.as_ref().clone();
+                html!(<Agenda user_info={user_info} app_link={ ctx.link().clone()} />)
+            },
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
             Page::ChangePassword => html!(
                 <ChangeDataPage

@@ -149,10 +149,10 @@ impl Component for Calendar {
         if self.folded {
             html!{
                 <div id="calendar">
-                    <div class="calendar-header">
+                    <div id="calendar-header">
                         <button class="calendar-arrow" onclick={ctx.link().callback(|_| Msg::PreviousWeek)}></button>
 
-                        <img src="/agenda/images/calendar-btn.svg" onclick={ctx.link().callback(|_| Msg::TriggerFold)}/>
+                        <img id="open-calendar" src="/agenda/images/calendar-btn.svg" onclick={ctx.link().callback(|_| Msg::TriggerFold)}/>
                         <span id="calendar-title">{display_month}</span>
 
                         <button class="calendar-arrow" id="calendar-arrow-right" onclick={ctx.link().callback(|_| Msg::NextWeek)}></button>
@@ -173,9 +173,18 @@ impl Component for Calendar {
             for day in 1..=last_day.day() {
                 let month = self.selected_month;
                 let year = self.selected_year;
-                calendar_cases.push(html! {
-                    <span class="calendar-case" id={if day==self.selected_day {Some("selected-calendar-case")} else {None}} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
-                });
+                let date = NaiveDate::from_ymd(year, month, day);
+                if date.weekday() == Weekday::Sun {
+                    let day_to_go = day - 1;
+                    calendar_cases.push(html! {
+                        <span class="calendar-case disabled" id={if day==self.selected_day {Some("selected-calendar-case")} else {None}} onclick={ctx.link().callback(move |_| Msg::Goto {day: day_to_go,month,year})}>{day.to_string()}</span>
+                    });
+                } else {
+                    calendar_cases.push(html! {
+                        <span class="calendar-case" id={if day==self.selected_day {Some("selected-calendar-case")} else {None}} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
+                    });
+                }
+                
             }
 
             while calendar_cases.len() % 7 != 0 {

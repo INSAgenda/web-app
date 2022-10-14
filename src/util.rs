@@ -65,7 +65,11 @@ pub fn has_event_on_day(events: &Vec<RawEvent>, current_day: NaiveDateTime, week
     if events.is_empty() { false } else { match events.binary_search_by(|e| e.start_unixtime.cmp(&saturday_stamp)) {
         Ok(_) => true,
         Err(i) => {
-            range.contains(&events[i].start_unixtime)
+            if i < events.len() {
+                range.contains(&events[i].start_unixtime)
+            } else {
+                false
+            }
         },
     }}
 }

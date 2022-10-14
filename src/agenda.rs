@@ -36,6 +36,7 @@ pub struct Agenda {
     announcements: Vec<AnnouncementDesc>,
     pub displayed_announcement: Option<AnnouncementDesc>,
     selected_event: Rc<Option<RawEvent>>,
+    user_info: Option<UserInfo>,
 }
 
 pub enum AgendaMsg {
@@ -57,6 +58,7 @@ pub enum AgendaMsg {
 #[derive(Properties, Clone)]
 pub struct AgendaProps {
     pub app_link: Scope<App>,
+    pub user_info: Option<UserInfo>,
 }
 
 impl PartialEq for AgendaProps {
@@ -121,6 +123,16 @@ impl Component for Agenda {
             announcements,
             displayed_announcement,
             selected_event: Rc::new(None),
+            user_info: ctx.props().user_info.clone(),
+        }
+    }
+
+    fn changed(&mut self, ctx: &Context<Self>) -> bool {
+        if self.user_info == ctx.props().user_info {
+            false
+        } else {
+            self.user_info = ctx.props().user_info.clone();
+            true
         }
     }
 
