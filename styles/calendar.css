@@ -1,6 +1,5 @@
 #calendar {
     border-radius: 1rem;
-    box-shadow: 0px 3px 6px #00000029;
     background-color: var(--closer-background);
     z-index: 1;
     position: absolute;
@@ -54,14 +53,19 @@
     font-weight: 500;
 }
 
+#open-calendar {
+    cursor: pointer;
+}
+
 /* Grid */
 
 #calendar-content {
     margin: 0 .4rem;
+    box-shadow: 0px 3px 6px #00000029;
 }
 
 .calendar-week {
-    width: 28rem;
+    width: 24rem;
     line-height: 2rem;
     font-size: 1.4rem;
     display: flex;
@@ -88,6 +92,12 @@
     color: var(--text);
 }
 
+
+.disabled {
+    color: var(--);
+    cursor: not-allowed;
+}
+
 .calendar-case:hover {
     background-color: var(--dp24);
 }
@@ -101,8 +111,6 @@
     transform: rotate(180deg);
 }
 
-@media screen and (max-width: 1000px) {
-    .calendar-arrow {
-        display: none !important;
-    }
+#calendar-header > * {
+    margin: 0 0.4rem;
 }
