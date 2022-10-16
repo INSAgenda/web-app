@@ -51,6 +51,7 @@ pub fn t(s: &'static str) -> &'static str {
         "Le nouveau mot de passe doit être différent du mot de passe actuel." => "New password must be different from the current one.",
         "Une erreur inconnue est survenue. Veuillez contacter le support: support@insagenda.fr" => "An unknown error has occurred. Please contact the support: support@insagenda.fr",
         "Impossible de se connecter au serveur. Veuillez contacter le support: support@insagenda.fr" => "Unable to connect to the server. Please contact the support: support@insagenda.fr",
+        "Vous devez être connecté à internet avant de modifidier vos paramètres." => "Please check your internet connection before changing your settings.",
         "Mot de passe actuel" => "Current password",
         "Nouveau mot de passe (confirmation)" => "New password (confirmation)",
         "Adresse email de l'INSA" => "INSA email address",
