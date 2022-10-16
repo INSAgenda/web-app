@@ -61,22 +61,20 @@ pub fn select_announcement(announcements: &[AnnouncementDesc], user_info: &Optio
     let now = (js_sys::Date::new_0().get_time() / 1000.0) as u64;
     
     for a in announcements {
-
-        if let (Some(user_info), Some(target)) = (user_info, &a.target) {
-           if !user_info.user_groups.matches(&target) {
-                // - Do nothing if user groups doesn't match target filter.
-           }
-        }
-        
         if (a.start_ts..=a.end_ts).contains(&now) {
-            
+            if let (Some(user_info), Some(target)) = (user_info, &a.target) {
+                if !user_info.user_groups.matches(target) {
+                    continue;
+                }
+            }
+
             let mut impression_data = impressions.get(&a.id).cloned().unwrap_or_default();
             if impression_data.closed {
                 continue;
             }
             if let Some(max_impressions) = a.max_impressions {
                 if impression_data.count >= max_impressions {
-                    continue
+                    continue;
                 }
             }
             impression_data.count += 1;

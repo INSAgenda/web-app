@@ -4,3 +4,4 @@
 testing/**
 src/api/gen_code_prod.rs
 src/api/gen_code.rs
+.vscode/settings.json
