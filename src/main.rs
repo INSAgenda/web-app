@@ -166,10 +166,11 @@ impl Component for App {
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
 
-                // If user's group changed, update the events
+                // If user's group changed, update the events and the announcement
                 if let Some(old_user_info) = self.user_info.as_ref() {
                     if old_user_info.user_groups != user_info.user_groups {
                         self.events.clear();
+                        self.displayed_announcement = select_announcement(&self.announcements, &Some(user_info.clone()));
                         refresh_events(ctx.link().clone());
                         should_refresh = true;
                     }
