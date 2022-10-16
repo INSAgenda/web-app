@@ -111,7 +111,7 @@ impl Component for ChangeDataPage {
                 let mut new_user_info = (*(ctx.props().user_info)).clone();
                 let has_password = new_user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(true);
 
-                if window().navigator().on_line() {
+                if !window().navigator().on_line() {
                     ctx.link().send_message(Msg::SetMessage(Some(t("Vous devez être connecté à internet avant de modifidier vos paramètres.").to_string())));
                     return true;
                 }
