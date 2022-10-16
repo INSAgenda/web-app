@@ -14,7 +14,7 @@ mod change_data;
 mod prelude;
 mod translation;
 
-use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
+use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage, slider::width};
 
 pub enum Page {
     Settings,
@@ -85,7 +85,7 @@ impl Component for App {
         let user_info = init_user_info(now, ctx.link().clone());
         let groups = init_groups(now, ctx.link().clone());
         let announcements = init_announcements(now, ctx.link().clone());
-        let displayed_announcement = select_announcement(&announcements);
+        let displayed_announcement = select_announcement(&announcements, &user_info);
 
         // Detect page
         let page = match window().location().hash() {
@@ -132,10 +132,14 @@ impl Component for App {
         if now.hour() >= 19 || weekday == Weekday::Sat || weekday == Weekday::Sun {
             let link2 = ctx.link().clone();
             spawn_local(async move {
-                sleep(Duration::from_millis(500)).await;
+                if width() <= 1000 {
+                    sleep(Duration::from_millis(500)).await;
+                }
                 link2.send_message(Msg::Next);
                 if weekday == Weekday::Sat {
-                    sleep(Duration::from_millis(300)).await;
+                    if width() <= 1000 { 
+                        sleep(Duration::from_millis(300)).await;
+                    }
                     link2.send_message(Msg::Next);
                 }
             });
@@ -162,10 +166,11 @@ impl Component for App {
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
 
-                // If user's group changed, update the events
+                // If user's group changed, update the events and the announcement
                 if let Some(old_user_info) = self.user_info.as_ref() {
                     if old_user_info.user_groups != user_info.user_groups {
                         self.events.clear();
+                        self.displayed_announcement = select_announcement(&self.announcements, &Some(user_info.clone()));
                         refresh_events(ctx.link().clone());
                         should_refresh = true;
                     }
