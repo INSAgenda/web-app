@@ -49,7 +49,13 @@ impl SliderManager {
         let slider2 = Rc::clone(&slider);
         let link2 = link;
         let resize = Closure::wrap(Box::new(move |_: web_sys::Event| {
-            let mut slider = slider2.borrow_mut();
+            let mut slider = match slider2.try_borrow_mut() {
+                Ok(slider) => slider,
+                Err(_) => {
+                    sentry_report("Slider could not be mutably borrowed".into());
+                    return
+                },
+            };
             match slider.enabled {
                 true if width() > 1000 => {
                     link2.send_message(AppMsg::Refresh);
@@ -69,20 +75,26 @@ impl SliderManager {
         let slider2 = Rc::clone(&slider);
         let last_pos2 = Rc::clone(&last_pos);
         let move_animation = Rc::new(Closure::wrap(Box::new(move || {
-            slider2.borrow_mut().touch_move(last_pos2.get());
+            let _ = slider2.try_borrow_mut().map(|mut s| s.touch_move(last_pos2.get()));
         }) as Box<dyn FnMut()>));
 
         let slider2 = Rc::clone(&slider);
         let last_pos2 = Rc::clone(&last_pos);
         let end_animation = Rc::new(Closure::wrap(Box::new(move || {
-            slider2.borrow_mut().touch_end(last_pos2.get());
+            let _ = slider2.try_borrow_mut().map(|mut s| s.touch_end(last_pos2.get()));
         }) as Box<dyn FnMut()>));
 
         // Start
 
         let slider2 = Rc::clone(&slider);
         let mouse_down = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-            let mut slider = slider2.borrow_mut();
+            let mut slider = match slider2.try_borrow_mut() {
+                Ok(slider) => slider,
+                Err(_) => {
+                    sentry_report("Slider could not be mutably borrowed".into());
+                    return
+                },
+            };
             if slider.enabled {
                 slider.touch_start(event.client_x() as i32, event.client_y() as i32);
             }
@@ -92,7 +104,13 @@ impl SliderManager {
 
         let slider2 = Rc::clone(&slider);
         let touch_start = Closure::wrap(Box::new(move |event: web_sys::TouchEvent| {
-            let mut slider = slider2.borrow_mut();
+            let mut slider = match slider2.try_borrow_mut() {
+                Ok(slider) => slider,
+                Err(_) => {
+                    sentry_report("Slider could not be mutably borrowed".into());
+                    return
+                },
+            };
             if slider.enabled {
                 let mouse_x = event.touches().get(0).unwrap().client_x() as i32;
                 let mouse_y = event.touches().get(0).unwrap().client_y() as i32;
@@ -125,7 +143,7 @@ impl SliderManager {
         let last_pos2 = Rc::clone(&last_pos);
         let move_animation2 = Rc::clone(&move_animation);
         let touch_move = Closure::wrap(Box::new(move |event: web_sys::TouchEvent| {
-            if slider2.borrow().can_move() {
+            if slider2.try_borrow().map(|s| s.can_move()).unwrap_or_default() {
                 let mouse_x = event.touches().get(0).unwrap().client_x() as i32;
                 last_pos2.set(mouse_x);
                 window().request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
@@ -140,7 +158,7 @@ impl SliderManager {
         let last_pos2 = Rc::clone(&last_pos);
         let end_animation2 = Rc::clone(&end_animation);
         let mouse_end = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-            if slider2.borrow().can_move() {
+            if slider2.try_borrow().map(|s| s.can_move()).unwrap_or_default() {
                 last_pos2.set(event.client_x() as i32);
                 window().request_animation_frame((*end_animation2).as_ref().unchecked_ref()).unwrap();
             }
@@ -152,7 +170,7 @@ impl SliderManager {
         let slider2 = Rc::clone(&slider);
         let end_animation2 = Rc::clone(&end_animation);
         let touch_end = Closure::wrap(Box::new(move |_: web_sys::TouchEvent| {
-            if slider2.borrow().can_move() {
+            if slider2.try_borrow().map(|s| s.can_move()).unwrap_or_default() {
                 window().request_animation_frame((*end_animation2).as_ref().unchecked_ref()).unwrap();
             }
         }) as Box<dyn FnMut(_)>);
@@ -179,14 +197,14 @@ impl SliderManager {
         }
     }
 
-    fn get_cached_day_container(&mut self) -> HtmlElement {
+    fn get_cached_day_container(&mut self) -> Option<HtmlElement> {
         match &self.day_container {
-            Some(day_container) => day_container.clone(),
+            Some(day_container) => Some(day_container.clone()),
             None => {
                 let doc = window().doc();
-                let day_container = doc.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()).expect("No day container");
+                let day_container = doc.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap())?;
                 self.day_container = Some(day_container.clone());
-                day_container
+                Some(day_container)
             }
         }
     }
@@ -209,7 +227,10 @@ impl SliderManager {
     }
 
     fn touch_move(&mut self, mouse_x: i32) {
-        let day_container = self.get_cached_day_container();
+        let day_container = match self.get_cached_day_container() {
+            Some(day_container) => day_container,
+            None => return,
+        };
         let start_pos = match self.start_pos {
             Some(start_pos) => start_pos,
             None => return,
@@ -227,7 +248,10 @@ impl SliderManager {
             Some(start_pos) => start_pos,
             None => return,
         };
-        let day_container = self.get_cached_day_container();
+        let day_container = match self.get_cached_day_container() {
+            Some(day_container) => day_container,
+            None => return,
+        };
 
         let offset = mouse_x - start_pos;
         if !self.has_moved{
@@ -247,7 +271,10 @@ impl SliderManager {
     pub fn set_offset(&mut self, offset: i32) {
         if self.enabled {
             self.days_offset.set(offset);
-            let day_container = self.get_cached_day_container();
+            let day_container = match self.get_cached_day_container() {
+                Some(day_container) => day_container,
+                None => return,
+            };
             day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
         }
     }
