@@ -125,7 +125,8 @@ pub fn t(s: &'static str) -> &'static str {
         "Valider" => "Save",
         "Se déconnecter" => "Log out",
         "Changer de mot de passse" => "Change password",
-        " (vide si inexistant)" => " (empty if non-existent)", 
+        " (vide si inexistant)" => " (empty if non-existent)",
+        "Echec de la déconnexion. Nous avons connaissance de ce problème et travaillons à sa résolution." => "Logout failed. We are aware of this issue and are working on resolving it.",
         "Ajouter" => "Add",
         s => {
             log!("Untranslated string: {}", s);

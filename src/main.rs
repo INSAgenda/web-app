@@ -123,7 +123,7 @@ impl Component for App {
             &Array::new(),
         ) {
             Ok(_) => (),
-            Err(e) => sentry_report(JsValue::from(&format!("Failed to set timeout: {:?}", e))),
+            Err(e) => sentry_report(format!("Failed to set timeout: {:?}", e)),
         }
         push_colors.forget();
 

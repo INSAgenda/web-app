@@ -3,7 +3,7 @@ use crate::prelude::*;
 /// Display an alert message to the user
 fn alert_with_report(message: impl AsRef<str>, report: bool) {
     if report {
-        sentry_report(JsValue::from_str(message.as_ref()));
+        sentry_report(message.as_ref());
     }
 
     let doc = window().doc();

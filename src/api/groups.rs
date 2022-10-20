@@ -64,7 +64,7 @@ pub fn init_groups(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) -> Vec<Gr
     wasm_bindgen_futures::spawn_local(async move {
         match load_groups().await {
             Ok(groups) => app_link.send_message(AppMsg::GroupsSuccess(groups)),
-            Err(e) => sentry_report(JsValue::from_str(e.to_string().as_str())),
+            Err(e) => sentry_report(&e),
         }
     });
 
