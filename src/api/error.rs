@@ -25,6 +25,7 @@ impl KnownApiError {
     }
 }
 
+#[derive(Debug)]
 pub enum ApiError {
     Known(KnownApiError),
     Unknown(JsValue),
@@ -60,7 +61,46 @@ impl From<KnownApiError> for ApiError {
     }
 }
 
-pub fn sentry_report(error: JsValue) {
+pub trait SentryReportable {
+    fn to_sentry_js_value(self) -> JsValue;
+}
+
+impl SentryReportable for JsValue {
+    fn to_sentry_js_value(self) -> JsValue {
+        self
+    }
+}
+
+impl SentryReportable for String {
+    fn to_sentry_js_value(self) -> JsValue {
+        JsValue::from_str(&self)
+    }
+}
+
+impl SentryReportable for &str {
+    fn to_sentry_js_value(self) -> JsValue {
+        JsValue::from_str(self)
+    }
+}
+
+impl SentryReportable for &ApiError {
+    fn to_sentry_js_value(self) -> JsValue {
+        match self {
+            ApiError::Known(e) => {
+                let KnownApiError { kind, origin, message_en, message_fr } = e;
+                let mut obj = Object::new();
+                Reflect::set(&obj, &"kind".into(), &kind.into()).unwrap();
+                Reflect::set(&obj, &"origin".into(), &origin.into()).unwrap();
+                Reflect::set(&obj, &"message_en".into(), &message_en.into()).unwrap();
+                Reflect::set(&obj, &"message_fr".into(), &message_fr.into()).unwrap();
+                obj.into()
+            }
+            ApiError::Unknown(e) => e.to_owned(),
+        }
+    }
+}
+
+pub fn sentry_report(error: impl SentryReportable) {
     match Reflect::get(&window(), &JsValue::from_str("Sentry")) {
         Ok(sentry) => {
             let capture_exception = match Reflect::get(&sentry, &JsValue::from_str("captureException")){
@@ -73,7 +113,7 @@ pub fn sentry_report(error: JsValue) {
                 Err(_) => {log!("Impossible to get the sentry function."); return},
             };
             
-            match Reflect::apply(&capture_exception, &sentry, &Array::from_iter([error])){
+            match Reflect::apply(&capture_exception, &sentry, &Array::from_iter([error.to_sentry_js_value()])){
                 Ok(_) => {},
                 Err(_) => log!("Impossible to call the sentry function."),
             }
@@ -84,14 +124,14 @@ pub fn sentry_report(error: JsValue) {
 
 pub fn set_sentry_user_info(email: &str) {
     use Reflect::*;
-    fn set_sentry_user_info_dirty(email: &str) -> Result<(), String> {
-        let sentry = get(&window(), &JsValue::from_str("Sentry")).map_err(|_| format!("could not get Sentry."))?;
-        let set_user = get(&sentry, &JsValue::from_str("setUser")).map_err(|_| format!("could not get Sentry.setUser."))?;
-        let set_user = set_user.dyn_into::<Function>().map_err(|_| format!("Sentry.setUser isn't a function."))?;
+    fn set_sentry_user_info_dirty(email: &str) -> Result<(), &'static str> {
+        let sentry = get(&window(), &JsValue::from_str("Sentry")).map_err(|_| "could not get Sentry.")?;
+        let set_user = get(&sentry, &JsValue::from_str("setUser")).map_err(|_| "could not get Sentry.setUser.")?;
+        let set_user = set_user.dyn_into::<Function>().map_err(|_| "Sentry.setUser isn't a function.")?;
         let obj = Object::new();
-        set(&obj, &"email".into(), &email.into()).map_err(|_| format!("could not set email."))?;
+        set(&obj, &"email".into(), &email.into()).map_err(|_| "could not set email.")?;
         let array = Array::from_iter([obj]);
-        apply(&set_user, &sentry, &array).map_err(|_| format!("could not call Sentry.setUser."))?;
+        apply(&set_user, &sentry, &array).map_err(|_| "could not call Sentry.setUser.")?;
         Ok(())
     }
     if let Err(e) = set_sentry_user_info_dirty(email) {
@@ -102,14 +142,13 @@ pub fn set_sentry_user_info(email: &str) {
 impl ApiError{
     /// Handle API errors and redirect the user to the login page if necessary
     pub fn handle_api_error(&self) {
-        sentry_report(JsValue::from_str(&self.to_string_en()));
-
         match self {
             ApiError::Known(error) if error.kind == "counter_too_low" => {
                 log!("Counter too low");
                 counter_to_the_moon();
             }
             ApiError::Known(error) => {
+                sentry_report(self);
                 log!("{}", error.to_string());
                 alert_no_reporting(error.to_string());
                 if error.kind == "invalid_api_key" || error.kind == "authentification_required" || error.kind == "api_key_does_not_exist" || error.kind == "expired" {
@@ -117,6 +156,7 @@ impl ApiError{
                 }
             }
             ApiError::Unknown(error) => {
+                sentry_report(self);
                 log!("Failed to call api: {:?}", error);
             }
         }
