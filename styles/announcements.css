@@ -25,6 +25,7 @@
 
 .show-announcement .text-announcement, #option .text-announcement {
     padding: .5rem 1rem;
+    overflow-y: scroll;
 }
 
 .show-announcement .text-announcement>div, #option .text-announcement>div {
