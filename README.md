@@ -103,6 +103,6 @@ Errors are to be handled, but unhandled errors are to be displayed to the user u
 ### License
 
 This project is unlicensed. This means the source code is protected by copyright laws in the most restrictive way.  
-You can read the code and contribute to it, but you mustn't use it for any other purpose. This is especially true for INSA, as we give them no right whatsoever on our project. We think it's like we worked for them for free and they owe us money.
+You can read the code and contribute to it, but you mustn't use it for any other purpose.
 
 [^backend-binary]: The backend binary can be downloaded [from our website](https://insagenda.fr/development/backend.tar.gz). This is obviously Linux-only. You will also need to download [an empty database](https://insagenda.fr/development/database).
