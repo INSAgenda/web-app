@@ -64,6 +64,7 @@ Commands to run:
 ```bash
 mkdir insagenda && cd insagenda
 git clone https://github.com/INSAgenda/frontend
+git clone https://github.com/INSAgenda/yew-template
 git clone https://github.com/INSAgenda/web-app
 git clone https://github.com/INSAgenda/common
 mkdir backend && cd backend
