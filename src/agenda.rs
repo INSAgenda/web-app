@@ -45,7 +45,6 @@ pub enum AgendaMsg {
     Previous,
     Next,
     Goto {day: u32, month: u32, year: i32},
-    SetSliderState(bool),
     SetSelectedEvent(Option<common::Event>),
     CloseAnnouncement,
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
@@ -207,14 +206,6 @@ impl Component for Agenda {
                 true
             },
             AgendaMsg::CloseAnnouncement => update_close_announcement(self),
-            AgendaMsg::SetSliderState(state) => {
-                let mut slider = self.slider.borrow_mut();
-                match state {
-                    true => slider.enable(),
-                    false => slider.disable(),
-                }
-                true
-            },
             AgendaMsg::SetSelectedEvent(event) => {
                 if event.is_some() {
                     self.slider.borrow_mut().disable();
