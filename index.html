@@ -5,6 +5,7 @@
     <title>Emploi du temps | INSAgenda</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Récupérez votre emploi du temps pour vos cours à l'INSA facilement et implicitement.">
     <link rel="stylesheet" href="../styles/colors.css">
     <link rel="stylesheet" href="../styles/insagenda.css">
     <link rel="stylesheet" href="../styles/auth.css">
@@ -18,12 +19,7 @@
     <link data-trunk rel="css" href="styles/alert.css" />
     <link data-trunk rel="css" href="styles/announcements.css" />
     <link data-trunk rel="copy-dir" href="images" />
-    <meta name="description" content="Récupérez votre emploi du temps pour vos cours à l'INSA facilement et implicitement.">
-    <script src="/theme-toggle.js"></script>
-    <!-- 100% privacy friendly analytics -->
-    <script data-collect-dnt="true" async defer src="https://zebi.insagenda.fr/latest.js"></script>
-    <noscript><img src="https://zebi.insagenda.fr/noscript.gif" alt="zebi" referrerpolicy="no-referrer-when-downgrade" collect-dnt=true /></noscript>
-    <script noinline src="https://browser.sentry-cdn.com/7.12.0/bundle.min.js" integrity="sha384-mrj3DfCLx5+BT177R8BRWDxgDhBGwz7mWSSQ6djr0mcw+iTQx1kDAiAKQ+t1i3bZ" crossorigin="anonymous"></script>
+    <script common_code="head">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
 </head>
 <body>
     <div id="render">
@@ -35,6 +31,11 @@
             window.location.href = "/unsupported";
         }
     </script>
-    <script common_code="manifest-script">async function u(a,b){let c=await (await fetch(b)).text();a.outerHTML=c}var e=document.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
+    <script common_code="manifest-script">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
+    <script>
+        if (typeof navigator.serviceWorker !== 'undefined') {
+          navigator.serviceWorker.register('sw.js')
+        }
+    </script>
 </body>
 </html>

@@ -218,7 +218,10 @@ impl Component for SettingsPage {
                 wasm_bindgen_futures::spawn_local(async move {
                     match logout().await{
                         Ok(_) => (),
-                        Err(_e) => alert("Impossible de se déconnecter !"),
+                        Err(e) => {
+                            sentry_report(&e);
+                            alert_no_reporting(t("Echec de la déconnexion. Nous avons connaissance de ce problème et travaillons à sa résolution."));
+                        },
                     }
                 });
                 window().location().replace("/login").unwrap();

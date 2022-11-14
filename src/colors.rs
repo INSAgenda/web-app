@@ -31,7 +31,7 @@ impl Colors {
     pub fn get(&self, course: &str) -> String {
         match self.local_colors.try_lock() {
             Ok(v) => v.get(course).map(|v| v.to_string()).unwrap_or_else(|| String::from("#CB6CE6")),
-            Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); String::from("#CB6CE6")},
+            Err(_) => {sentry_report("try lock impossible"); String::from("#CB6CE6")},
         }
     }
 
@@ -40,11 +40,11 @@ impl Colors {
             Ok(mut v) => {
                 v.insert(course.to_string(), background_color.clone());
             },
-            Err(_) => sentry_report(JsValue::from_str("try lock impossible")),
+            Err(_) => sentry_report("try lock impossible"),
         }
         match self.to_publish.as_ref().try_lock() {
             Ok(mut v) => v.push((course.to_string(), background_color)),
-            Err(_) => sentry_report(JsValue::from_str("try lock impossible")),
+            Err(_) => sentry_report("try lock impossible"),
         } 
         self.save();
     }
@@ -78,11 +78,11 @@ impl Colors {
         // Merge new colors
         let mut local_colors = match self.local_colors.try_lock() {
             Ok(v) => v,
-            Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
+            Err(_) => {sentry_report("try lock impossible"); return},
         };
         let mut to_publish = match self.to_publish.as_ref().try_lock() {
             Ok(v) => v,
-            Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
+            Err(_) => {sentry_report("try lock impossible"); return},
         };
         for (course, color) in local_colors.iter() {
             if !remote_colors.contains_key(course) {
@@ -105,14 +105,14 @@ impl Colors {
         wasm_bindgen_futures::spawn_local(async move {
             let to_publish = match to_publish_arc.as_ref().try_lock() {
                 Ok(v) => v,
-                Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
+                Err(_) => {sentry_report("try lock impossible"); return},
             };
             let to_publish_tpmp = to_publish.clone();
             drop(to_publish);
             if !to_publish_tpmp.is_empty() && crate::api::publish_colors(&to_publish_tpmp).await.is_ok() {
                 let mut to_publish = match to_publish_arc.as_ref().try_lock() {
                     Ok(v) => v,
-                    Err(_) => {sentry_report(JsValue::from_str("try lock impossible")); return},
+                    Err(_) => {sentry_report("try lock impossible"); return},
                 };
                 to_publish.drain(..to_publish_tpmp.len());
             }

@@ -15,7 +15,7 @@ mod prelude;
 mod translation;
 mod popup;
 
-use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
+use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage, slider::width};
 
 pub enum Page {
     Settings,
@@ -68,7 +68,7 @@ impl Component for App {
         // Update data
         let user_info = init_user_info(now, ctx.link().clone());
         let groups = init_groups(now, ctx.link().clone());
-        
+
         // Detect page
         let page = match window().location().hash() {
             Ok(hash) if hash == "#settings" => Page::Settings,
@@ -181,22 +181,9 @@ fn stop_bots(window: &web_sys::Window) {
         panic!("Your browser failed load this page");
     }
 }
-
-/// Install service worker for offline access
-fn install_sw(window: &web_sys::Window) {
-    let future = JsFuture::from(window.navigator().service_worker().register("/sw.js"));
-    spawn_local(async move {
-        match future.await {
-            Ok(_) => log!("Service worker doing well"),
-            Err(e) => alert(format!("Failed to register service worker: {:?}", e)),
-        }
-    })
-}
-
 fn main() {
     let window = web_sys::window().expect("Please run the program in a browser context");
     stop_bots(&window);
-    install_sw(&window);
     let doc = window.doc();
     let element = doc.get_element_by_id("render").unwrap();
     yew::start_app_in_element::<App>(element);
