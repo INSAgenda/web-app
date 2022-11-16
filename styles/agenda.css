@@ -113,21 +113,6 @@
     background-color: var(--day);
 }
 
-#settings-button{
-    background-image: url('/agenda/images/settings.svg');
-    background-size: 100%;
-    background-color: transparent;
-    margin-right: 2rem;
-    width: 2rem;
-    height: 2rem;
-    border: none;
-    cursor: pointer;
-}
-:root[data-theme="dark"] #settings-button{
-    filter: invert(1);
-}
-
-
 @media screen and (max-width: 1000px) {
     .day {
         width: 19%;

@@ -4,6 +4,10 @@ header {
     height: 4rem;
 }
 
+#header-logo {
+    aspect-ratio: 1 / 1;
+}
+
 /* Main section */
 
 body {
@@ -54,6 +58,12 @@ body {
     width: 48px;
     border-radius: 3px;
     margin-top: 3px;
+}
+
+/* Misc */
+
+:root[data-theme="dark"] .invert-when-dark {
+    filter: invert(1);
 }
 
 /* For mobile */
