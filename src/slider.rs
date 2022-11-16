@@ -267,7 +267,7 @@ impl SliderManager {
     }
 
     pub fn set_offset(&mut self, offset: i32) {
-        let day_container = self.get_cached_day_container();
+        let Some(day_container) = self.get_cached_day_container() else {return};
 
         if self.enabled && width() <= 1000 {
             self.days_offset.set(offset);
