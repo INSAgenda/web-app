@@ -43,7 +43,6 @@
 #calendar-days {
     display: flex;
     justify-content: space-around;
-    font-size: 1.4rem;
     margin: 2px 0 7px 0;
     color: var(--text);
     font-weight: 500;
@@ -67,9 +66,13 @@
     border-radius: 0 0 1rem 1rem;
 }
 
+:root[data-theme="light"] #calendar-content {
+    box-shadow: 0 .5rem .5rem rgba(0, 0, 0, 0.1);
+}
+
 @media screen and (max-width: 1000px) {
     #calendar-content {
-        position: fixed;
+        position: absolute;
         top: 4rem;
         left: 0;
         width: 100%;
@@ -78,7 +81,6 @@
 
 .calendar-week {
     line-height: 2rem;
-    font-size: 1.4rem;
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -106,7 +108,6 @@
     transition: 0.1s background-color;
     color: var(--text);
 }
-
 
 .disabled {
     color: var(--);

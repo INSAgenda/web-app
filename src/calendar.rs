@@ -111,13 +111,16 @@ impl Component for Calendar {
             },
             Msg::TriggerFold => {
                 self.folded = !self.folded;
-                if self.folded {
-                    window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-                    ctx.props().agenda_link.send_message(AgendaMsg::SetSliderState(true));
-                } else {
-                    ctx.props().agenda_link.send_message(AgendaMsg::SetSliderState(false));
-                    window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-                }
+                match self.folded {
+                    true => {
+                        ctx.props().agenda_link.send_message(AgendaMsg::SetSliderState(true));
+                        window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap()
+                    },
+                    false => {
+                        ctx.props().agenda_link.send_message(AgendaMsg::SetSliderState(false));
+                        window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap()
+                    },
+                };
             } 
         }
         true
