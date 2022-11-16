@@ -37,6 +37,7 @@ pub enum AgendaMsg {
     FetchColors(HashMap<String, String>),
     ApiFailure(ApiError),
     PushColors(),
+    SetSliderState(bool),
 }
 
 #[derive(Properties, Clone)]
@@ -165,6 +166,7 @@ impl Component for Agenda {
             },
             AgendaMsg::Goto {day, month, year} => {
                 self.selected_day = Paris.ymd(year, month, day);
+                self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
                 true
             }
             AgendaMsg::Refresh => {
@@ -207,6 +209,14 @@ impl Component for Agenda {
             AgendaMsg::ApiFailure(api_error) => {
                 api_error.handle_api_error();
                 false
+            },
+            AgendaMsg::SetSliderState(state) => {
+                if state {
+                    self.slider.borrow_mut().enable();
+                } else {
+                    self.slider.borrow_mut().disable();
+                }
+                true
             },
         }
     }

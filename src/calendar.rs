@@ -1,4 +1,4 @@
-use crate::{prelude::*, slider::width};
+use crate::prelude::*;
 
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
@@ -113,7 +113,9 @@ impl Component for Calendar {
                 self.folded = !self.folded;
                 if self.folded {
                     window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
+                    ctx.props().agenda_link.send_message(AgendaMsg::SetSliderState(true));
                 } else {
+                    ctx.props().agenda_link.send_message(AgendaMsg::SetSliderState(false));
                     window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
                 }
             } 

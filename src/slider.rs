@@ -273,8 +273,6 @@ impl SliderManager {
             self.days_offset.set(offset);
 
             day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
-        } else {
-            day_container.style().set_property("right", "0px").unwrap();
-        }
+        } 
     }
 }
