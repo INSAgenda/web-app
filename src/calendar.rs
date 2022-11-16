@@ -13,10 +13,8 @@ impl PartialEq for CalendarProps {
 }
 
 pub enum Msg {
-    NextMonth,
-    PreviousMonth,
-    NextWeek,
-    PreviousWeek,
+    Next,
+    Previous,
     Goto { day: u32, month: u32, year: i32 },
     TriggerFold,
 }
@@ -57,7 +55,7 @@ impl Component for Calendar {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::NextMonth => {
+            Msg::Next if !self.folded => {
                 if self.selected_month == 12 {
                     self.selected_month = 1;
                     self.selected_year += 1;
@@ -73,7 +71,7 @@ impl Component for Calendar {
 
                 true
             },
-            Msg::PreviousMonth => {
+            Msg::Previous if !self.folded => {
                 if self.selected_month == 1 {
                     self.selected_month = 12;
                     self.selected_year -= 1;
@@ -90,7 +88,7 @@ impl Component for Calendar {
 
                 true
             },
-            Msg::NextWeek => {
+            Msg::Next => {
                 let next_week = NaiveDateTime::new(NaiveDate::from_ymd(self.selected_year, self.selected_month, self.selected_day), NaiveTime::from_hms(0, 0, 0)) + chrono::Duration::days(7);
                 ctx.link().send_message(Msg::Goto {
                     day: next_week.day(),
@@ -100,7 +98,7 @@ impl Component for Calendar {
                 log!("next week: {:?}", next_week);
                 false
             },
-            Msg::PreviousWeek => {
+            Msg::Previous => {
                 let previous_week = NaiveDateTime::new(NaiveDate::from_ymd(self.selected_year, self.selected_month, self.selected_day), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
                 ctx.link().send_message(Msg::Goto {
                     day: previous_week.day(),
@@ -152,7 +150,7 @@ impl Component for Calendar {
         let mut calendar_cases = Vec::new();
         for _ in 0..first_day.weekday().number_from_monday() - 1 {
             calendar_cases.push(html! {
-                <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::PreviousMonth)}></span>
+                <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::Previous)}></span>
             });
         }
         for day in 1..=last_day.day() {
@@ -173,7 +171,7 @@ impl Component for Calendar {
         }
         while calendar_cases.len() % 7 != 0 {
             calendar_cases.push(html! {
-                <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::NextMonth)}></span>
+                <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::Next)}></span>
             });
         }
 
@@ -186,9 +184,9 @@ impl Component for Calendar {
 
         template_html! {
             "templates/components/calendar.html",
-            onclick_previous = {ctx.link().callback(|_| Msg::PreviousMonth)},
+            onclick_previous = {ctx.link().callback(|_| Msg::Previous)},
             onclick_fold = {ctx.link().callback(|_| Msg::TriggerFold)},
-            onclick_next = {ctx.link().callback(|_| Msg::NextMonth)},
+            onclick_next = {ctx.link().callback(|_| Msg::Next)},
             week_iter = {week_iter.into_iter()},
             cases_iter = {cases_iter.into_iter()},
             is_folded = {self.folded},
