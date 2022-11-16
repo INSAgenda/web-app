@@ -75,7 +75,7 @@ impl Component for Agenda {
         // Update data
         let events = init_events(now, ctx.link().clone());
         let announcements = init_announcements(now, ctx.link().clone());
-        let displayed_announcement = select_announcement(&announcements);
+        let displayed_announcement = select_announcement(&announcements, &ctx.props().user_info.clone());
 
         let link = ctx.link().clone();
         let unload = Closure::wrap(Box::new(move |_: web_sys::Event| {
