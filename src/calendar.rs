@@ -68,8 +68,6 @@ impl Component for Calendar {
                     month: self.selected_month,
                     year: self.selected_year
                 });
-
-                true
             },
             Msg::Previous if !self.folded => {
                 if self.selected_month == 1 {
@@ -85,8 +83,6 @@ impl Component for Calendar {
                     month: self.selected_month,
                     year: self.selected_year
                 });
-
-                true
             },
             Msg::Next => {
                 let next_week = NaiveDateTime::new(NaiveDate::from_ymd(self.selected_year, self.selected_month, self.selected_day), NaiveTime::from_hms(0, 0, 0)) + chrono::Duration::days(7);
@@ -95,8 +91,6 @@ impl Component for Calendar {
                     month: next_week.month(),
                     year: next_week.year() as i32
                 });
-                log!("next week: {:?}", next_week);
-                false
             },
             Msg::Previous => {
                 let previous_week = NaiveDateTime::new(NaiveDate::from_ymd(self.selected_year, self.selected_month, self.selected_day), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
@@ -105,15 +99,12 @@ impl Component for Calendar {
                     month: previous_week.month(),
                     year: previous_week.year() as i32
                 });
-                log!("previous week: {:?}", previous_week);
-                false
             }
             Msg::Goto { day, month, year } => {
                 self.selected_day = day;
                 self.selected_month = month;
                 self.selected_year = year;
                 ctx.props().agenda_link.send_message(AgendaMsg::Goto {day, month,year});
-                true
             },
             Msg::TriggerFold => {
                 self.folded = !self.folded;
@@ -122,9 +113,9 @@ impl Component for Calendar {
                 } else {
                     window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
                 }
-                true
             } 
         }
+        true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
