@@ -35,13 +35,16 @@ impl Component for Calendar {
         let doc = window().doc();
         let link = ctx.link().clone();
         let on_click = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
-            let popup_el = doc.get_element_by_id("calendar").unwrap();
+            let Some(popup_el) = doc.get_element_by_id("calendar-content") else {return};
             let rect = popup_el.get_bounding_client_rect();
 
+            let (mx, my) = (event.client_x() as f64, event.client_y() as f64);
+            let (rx, ry) = (rect.x(), rect.y());
+            let (rw, rh) = (rect.width(), rect.height());
+
             // Check the click was not inside the popup
-            if (rect.y()..rect.y()+rect.height()).contains(&(event.client_y() as f64))
-                && (rect.x()..rect.x()+rect.width()).contains(&(event.client_x() as f64))
-            { return; }
+            if ((ry..ry+rh).contains(&my) && (rx..rx+rw).contains(&mx)) || (my <= ry) { return; }
+            
             link.send_message(Msg::TriggerFold);
         }) as Box<dyn FnMut(_)>);
         Calendar {
