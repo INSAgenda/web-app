@@ -202,28 +202,12 @@ impl Component for Calendar {
                 })
             }
 
-            html! {
-                <div id="calendar">
-                    <div id="calendar-header">
-                        <button class="calendar-arrow" onclick={ctx.link().callback(|_| Msg::PreviousMonth)}></button>
-                        <span id="calendar-title">{display_month}</span>
-                        <button class="calendar-arrow" onclick={ctx.link().callback(|_| Msg::NextMonth)} id="calendar-right-arrow"></button>
-                    </div>
-                    <div id="calendar-content">
-                        <div id="calendar-days">
-                            <span>{t("Lun")}</span>
-                            <span>{t("Mar")}</span>
-                            <span>{t("Mer")}</span>
-                            <span>{t("Jeu")}</span>
-                            <span>{t("Ven")}</span>
-                            <span>{t("Sam")}</span>
-                            <span>{t("Dim")}</span>
-                        </div>
-                        { weeks }
-                    </div>
-                </div>
+            template_html! {
+                "templates/components/calendar.html",
+                onclick_previous = {ctx.link().callback(|_| Msg::PreviousMonth)},
+                onclick_next = {ctx.link().callback(|_| Msg::NextMonth)},
+                ...
             }
-
         }
     }
 }
