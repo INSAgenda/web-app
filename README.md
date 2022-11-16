@@ -38,6 +38,7 @@ Here are the commands to run on Ubuntu-based systems:
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sudo sh # Install Rust
+rustup target add wasm32-unknown-unknown # Install wasm target for Rust
 sudo apt install sqlite3 # Install SQLite3
 cargo install trunk # Install Trunk
 ```
