@@ -8,7 +8,12 @@ header {
     aspect-ratio: 1 / 1;
 }
 
-@media screen and (max-width: 420px) {
+@media screen and (max-width: 420px) and (min-width: 400px) {
+    #calendar-header>div>span {
+        font-size: 1.25rem !important;
+    }
+}
+@media screen and (max-width: 400px) {
     #calendar-header>div>span {
         font-size: 1rem !important;
     }
