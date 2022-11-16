@@ -1,4 +1,4 @@
-use crate::{prelude::*, slider::width};
+use crate::prelude::*;
 
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
@@ -111,11 +111,10 @@ impl Component for Calendar {
             },
             Msg::TriggerFold => {
                 self.folded = !self.folded;
-                if self.folded {
-                    window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-                } else {
-                    window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap();
-                }
+                match self.folded {
+                    true => window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap(),
+                    false => window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap(),
+                };
             } 
         }
         true
