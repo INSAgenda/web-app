@@ -1,22 +1,6 @@
 use crate::{prelude::*, slider};
 
-fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
-    let month = t(match month {
-        1 => "Janvier",
-        2 => "Février",
-        3 => "Mars",
-        4 => "Avril",
-        5 => "Mai",
-        6 => "Juin",
-        7 => "Juillet",
-        8 => "Août",
-        9 => "Septembre",
-        10 => "Octobre",
-        11 => "Novembre",
-        12 => "Décembre",
-        _ => unreachable!(),
-    });
-
+fn format_day(day_name: Weekday, day: u32) -> String {
     let day_name = t(match day_name {
         Weekday::Mon => "Lundi",
         Weekday::Tue => "Mardi",
@@ -27,7 +11,7 @@ fn format_day(day_name: Weekday, day: u32, month: u32) -> String {
         Weekday::Sun => "Dimanche",
     });
 
-    format!("{} {} {}", day_name, day, month)
+    format!("{} {}", day_name, day)
 }
 pub struct Agenda {
     selected_day: Date<chrono_tz::Tz>,
@@ -312,7 +296,7 @@ impl Component for Agenda {
 
             day_names.push(html! {
                 <span id={if current_day == self.selected_day {"selected-day"} else {""}}>
-                    { format_day(current_day.weekday(), current_day.day(), current_day.month()) }
+                    { format_day(current_day.weekday(), current_day.day()) }
                 </span>
             });
             days.push(html! {

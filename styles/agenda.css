@@ -82,6 +82,7 @@
 
 #agenda-top>span {
     width: 100%;
+    font-size: 1.2rem;
     display: flex;
     justify-content: center;
     margin: 0 5px;
