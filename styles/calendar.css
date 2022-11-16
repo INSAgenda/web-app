@@ -20,11 +20,19 @@
     justify-content: space-around;
 }
 
+#calendar-header > div {
+    height: 4rem;
+    display: flex;
+    align-items: center;
+}
+
+#calendar-header > button, #calendar-header > div > * {
+    margin: 0 0.4rem;
+}
+
 #calendar-title {
-    color: var(--light);
-    min-width: 60%;
-    font-size: 1.6rem;
-    text-align: center;
+    font-size: 1.5rem;
+    cursor: pointer;
     user-select: none;
     overflow: visible;
     white-space: nowrap;
@@ -109,8 +117,4 @@
 
 #calendar-arrow-right {
     transform: rotate(180deg);
-}
-
-#calendar-header > * {
-    margin: 0 0.4rem;
 }

@@ -1,10 +1,13 @@
 <div id="calendar">
     <div id="calendar-header">
         <button class="calendar-arrow" onclick=[onclick_previous]></button>
-        <span id="calendar-title">[display_month]</span>
-        <button class="calendar-arrow" onclick=[onclick_next] id="calendar-right-arrow"></button>
+        <div onclick=[onclick_fold]>
+            <img id="open-calendar" src="/agenda/images/calendar-btn.svg"/>
+            <span id="calendar-title">[display_month]</span>
+        </div>
+        <button class="calendar-arrow" id="calendar-right-arrow" onclick=[onclick_next]></button>
     </div>
-    <div id="calendar-content">
+    <div present-if=![is_folded] id="calendar-content">
         <div id="calendar-days">
             <span>Lun</span>
             <span>Mar</span>

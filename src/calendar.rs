@@ -146,65 +146,52 @@ impl Component for Calendar {
             _ => unreachable!(),
         }), self.selected_year);
 
-        if self.folded {
-            html!{
-                <div id="calendar">
-                    <div id="calendar-header">
-                        <button class="calendar-arrow hide-mobile" onclick={ctx.link().callback(|_| Msg::PreviousWeek)}></button>
+        let first_day = NaiveDate::from_ymd(self.selected_year, self.selected_month, 1);
+        let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
 
-                        <img id="open-calendar" src="/agenda/images/calendar-btn.svg" onclick={ctx.link().callback(|_| Msg::TriggerFold)}/>
-                        <span id="calendar-title">{display_month}</span>
-
-                        <button class="calendar-arrow hide-mobile" id="calendar-arrow-right" onclick={ctx.link().callback(|_| Msg::NextWeek)}></button>
-                    </div>
-                </div>
-            }
-        } else {
-            let first_day = NaiveDate::from_ymd(self.selected_year, self.selected_month, 1);
-            let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
-
-            let mut calendar_cases = Vec::new();
-            for _ in 0..first_day.weekday().number_from_monday() - 1 {
+        let mut calendar_cases = Vec::new();
+        for _ in 0..first_day.weekday().number_from_monday() - 1 {
+            calendar_cases.push(html! {
+                <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::PreviousMonth)}></span>
+            });
+        }
+        for day in 1..=last_day.day() {
+            let month = self.selected_month;
+            let year = self.selected_year;
+            let date = NaiveDate::from_ymd(year, month, day);
+            if date.weekday() == Weekday::Sun {
+                let day_to_go = day - 1;
                 calendar_cases.push(html! {
-                    <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::PreviousMonth)}></span>
+                    <span class="calendar-case disabled" id={if day==self.selected_day {Some("selected-calendar-case")} else {None}} onclick={ctx.link().callback(move |_| Msg::Goto {day: day_to_go,month,year})}>{day.to_string()}</span>
+                });
+            } else {
+                calendar_cases.push(html! {
+                    <span class="calendar-case" id={if day==self.selected_day {Some("selected-calendar-case")} else {None}} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
                 });
             }
-            for day in 1..=last_day.day() {
-                let month = self.selected_month;
-                let year = self.selected_year;
-                let date = NaiveDate::from_ymd(year, month, day);
-                if date.weekday() == Weekday::Sun {
-                    let day_to_go = day - 1;
-                    calendar_cases.push(html! {
-                        <span class="calendar-case disabled" id={if day==self.selected_day {Some("selected-calendar-case")} else {None}} onclick={ctx.link().callback(move |_| Msg::Goto {day: day_to_go,month,year})}>{day.to_string()}</span>
-                    });
-                } else {
-                    calendar_cases.push(html! {
-                        <span class="calendar-case" id={if day==self.selected_day {Some("selected-calendar-case")} else {None}} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
-                    });
-                }
-                
-            }
-            while calendar_cases.len() % 7 != 0 {
-                calendar_cases.push(html! {
-                    <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::NextMonth)}></span>
-                });
-            }
+            
+        }
+        while calendar_cases.len() % 7 != 0 {
+            calendar_cases.push(html! {
+                <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::NextMonth)}></span>
+            });
+        }
 
-            let mut week_iter = Vec::new();
-            let mut cases_iter = Vec::new();
-            for week in 1..=calendar_cases.len()/7 {
-                week_iter.push(week);
-                cases_iter.push(calendar_cases.drain(0..7).collect::<Vec<_>>());
-            }
+        let mut week_iter = Vec::new();
+        let mut cases_iter = Vec::new();
+        for week in 1..=calendar_cases.len()/7 {
+            week_iter.push(week);
+            cases_iter.push(calendar_cases.drain(0..7).collect::<Vec<_>>());
+        }
 
-            template_html! {
-                "templates/components/calendar.html",
-                onclick_previous = {ctx.link().callback(|_| Msg::PreviousMonth)},
-                onclick_next = {ctx.link().callback(|_| Msg::NextMonth)},
-                week_iter = {week_iter.into_iter()},
-                cases_iter = {cases_iter.into_iter()},
-            }
+        template_html! {
+            "templates/components/calendar.html",
+            onclick_previous = {ctx.link().callback(|_| Msg::PreviousMonth)},
+            onclick_fold = {ctx.link().callback(|_| Msg::TriggerFold)},
+            onclick_next = {ctx.link().callback(|_| Msg::NextMonth)},
+            week_iter = {week_iter.into_iter()},
+            cases_iter = {cases_iter.into_iter()},
+            is_folded = {self.folded},
         }
     }
 }
