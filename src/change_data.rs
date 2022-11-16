@@ -306,42 +306,20 @@ impl Component for ChangeDataPage {
             },
             Data::Email(_password, _email) => {redirect("agenda"); html! {}}
         };
-        
-        // Make the form using the custom part we just built
+
         let app_link = ctx.props().app_link.clone();
         let app_link2 = ctx.props().app_link.clone();
-        html! {
-            <>
-            <header>
-                <a id="header-logo" href="/agenda">
-                    <img src="/assets/logo/logo.svg" alt="INSAgenda logo"/> 
-                    <h1 id="header-name">{"INSAgenda"}</h1>
-                </a>
-                <button id="settings-button" onclick={move |_| app_link.send_message(AppMsg::SetPage(Page::Settings))}/>
-            </header>
-            <section class="section-page-title">
-                <h2 class="page-title">{self.data.h2()}</h2>
-                <div class="divider-bar"></div>
-            </section>
-            <main class="centred" id="auth">
-                <h3 class="login-title">{self.data.h3()}</h3>
-                <form class="centred">
-                    {inputs}
-                    if self.is_loading {
-                        <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
-                    } else {
-                        if self.message.is_some() {
-                            <span class="error-message">
-                                {self.message.clone().unwrap()}
-                            </span>
-                        }
-                        <br/><br/>
-                        <input type="button" class="primary-button" id="submit-button" value={t("Confirmer")} onclick={ctx.link().callback(|_| Msg::Submit) }/>
-                        <input type="button" class="secondary-button" value={t("Annuler")} onclick={move |_| app_link2.send_message(AppMsg::SetPage(Page::Settings))}/>
-                    }
-                </form>
-            </main>
-            </>
-        }
+        let link = ctx.link().clone();
+        template_html!(
+            "templates/change_data.html",
+            onclick_settings = {move |_| app_link.send_message(AppMsg::SetPage(Page::Settings))},
+            onclick_settings2 = {move |_| app_link2.send_message(AppMsg::SetPage(Page::Settings))},
+            onclick_submit = {move |_| link.send_message(Msg::Submit)},
+            is_loading = {self.is_loading},
+            h2 = {self.data.h2()},
+            h3 = {self.data.h3()},
+            opt_error_message = {&self.message},
+            ...
+        )
     }
 }
