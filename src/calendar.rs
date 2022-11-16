@@ -169,7 +169,6 @@ impl Component for Calendar {
                     <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::PreviousMonth)}></span>
                 });
             }
-
             for day in 1..=last_day.day() {
                 let month = self.selected_month;
                 let year = self.selected_year;
@@ -186,27 +185,25 @@ impl Component for Calendar {
                 }
                 
             }
-
             while calendar_cases.len() % 7 != 0 {
                 calendar_cases.push(html! {
                     <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::NextMonth)}></span>
                 });
             }
 
-            let mut weeks = Vec::new();
+            let mut week_iter = Vec::new();
+            let mut cases_iter = Vec::new();
             for week in 1..=calendar_cases.len()/7 {
-                weeks.push(html! {
-                    <div id={format!("week{}", week)} class="calendar-week">
-                        { calendar_cases.drain(0..7).collect::<Vec<_>>() }
-                    </div>
-                })
+                week_iter.push(week);
+                cases_iter.push(calendar_cases.drain(0..7).collect::<Vec<_>>());
             }
 
             template_html! {
                 "templates/components/calendar.html",
                 onclick_previous = {ctx.link().callback(|_| Msg::PreviousMonth)},
                 onclick_next = {ctx.link().callback(|_| Msg::NextMonth)},
-                ...
+                week_iter = {week_iter.into_iter()},
+                cases_iter = {cases_iter.into_iter()},
             }
         }
     }
