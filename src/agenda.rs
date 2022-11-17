@@ -240,7 +240,7 @@ impl Component for Agenda {
                         if announcement_range.contains(&(e.start_unixtime)) { // Check if the next event starts in the range
                             show_mobile_announcement = false;
                         } else {
-                            idx -= 1;
+                            idx = idx.overflowing_sub(1).0;
                             while let Some(e) = self.events.get(idx) { // Check if a few previous events end in the range
                                 if announcement_range.contains(&(e.end_unixtime)) {
                                     show_mobile_announcement = false;
@@ -249,7 +249,7 @@ impl Component for Agenda {
                                 if e.end_unixtime < announcement_start - 6*3600 { // Avoid backtracking too much, 6h is enough
                                     break;
                                 }
-                                idx -= 1;
+                                idx = idx.overflowing_sub(1).0;
                             }
                         }
                     }
