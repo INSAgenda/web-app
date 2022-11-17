@@ -75,9 +75,9 @@
 /* Top */
 
 #agenda-top {
-    width: 100%;
     height: 2rem;
     display: flex;
+    justify-content: space-around;
     text-align: center;
     font-size: 1.2rem;
     font-weight: bold;
@@ -85,6 +85,7 @@
 }
 
 #agenda-top>span {
+    width: 100%;
     margin: 0 5px;
 }
 
