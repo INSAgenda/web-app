@@ -74,7 +74,7 @@ impl Component for Calendar {
                 } else {
                     month -= 1;
                 }
-                let day = NaiveDate::from_ymd(ctx.props().year, (ctx.props().month % 12) + 1, 1).pred().day();
+                let day = NaiveDate::from_ymd(year, (month % 12) + 1, 1).pred().day();
                 ctx.props().agenda_link.send_message(AgendaMsg::Goto { day, month, year });
             },
             Msg::Next => {
