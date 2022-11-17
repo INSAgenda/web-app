@@ -15,7 +15,11 @@ pub struct EventCompProps {
 
 impl PartialEq for EventCompProps {
     fn eq(&self, other: &Self) -> bool {
-        !COLORS_CHANGED.load(Ordering::Relaxed) && self.event.start_unixtime == other.event.start_unixtime && self.event.end_unixtime == other.event.end_unixtime // TODO: add other fields
+        !COLORS_CHANGED.load(Ordering::Relaxed)
+            && self.event == other.event
+            && self.day_start == other.day_start
+            && self.show_announcement == other.show_announcement
+            && self.day_of_week == other.day_of_week
     }
 }
 

@@ -151,7 +151,9 @@ pub struct SettingsProps {
 }
 
 impl PartialEq for SettingsProps {
-    fn eq(&self, _other: &Self) -> bool { true }
+    fn eq(&self, other: &Self) -> bool { 
+        self.user_info == other.user_info
+    }
 }
 
 pub struct SettingsPage {

@@ -31,11 +31,14 @@ pub enum Msg {
     ApiFailure(ApiError),
     SetPage(Page),
     SilentSetPage(Page),
+    ScheduleSuccess(Vec<RawEvent>),
+    ScheduleFailure(ApiError),
 }
 
 pub struct App {
     groups: Rc<Vec<GroupDesc>>,
     user_info: Rc<Option<UserInfo>>,
+    events: Rc<Vec<RawEvent>>,
     page: Page,
 }
 
@@ -45,10 +48,10 @@ impl Component for App {
 
     fn create(ctx: &Context<Self>) -> Self {
         crash_handler::init();
-
         let now = chrono::Local::now();
         let now = now.with_timezone(&Paris);
 
+        // Redirections
         let link2 = ctx.link().clone();
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
             let state = e.state().as_string();
@@ -66,6 +69,7 @@ impl Component for App {
         closure.forget();
 
         // Update data
+        let events = init_events(now, ctx.link().clone());
         let user_info = init_user_info(now, ctx.link().clone());
         let groups = init_groups(now, ctx.link().clone());
 
@@ -84,6 +88,7 @@ impl Component for App {
         };
 
         Self {
+            events: Rc::new(events),
             groups: Rc::new(groups),
             page,
             user_info: Rc::new(user_info),
@@ -92,12 +97,29 @@ impl Component for App {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
+            AppMsg::ScheduleSuccess(events) => {
+                self.events = Rc::new(events);
+                true
+            },
+            AppMsg::ScheduleFailure(api_error) => {
+                api_error.handle_api_error();
+                match api_error {
+                    ApiError::Known(error) if error.kind == "counter_too_low" => {
+                        refresh_events(ctx.link().clone());
+                    }
+                    _ => {},
+                }
+                false
+            },
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
 
                 if let Some(old_user_info) = self.user_info.as_ref() {
                     if old_user_info.user_groups != user_info.user_groups {
+                        self.events = Rc::new(Vec::new());
+                        refresh_events(ctx.link().clone());
                         should_refresh = true;
+                        log!("refresh");
                     }
                 }
 
@@ -141,8 +163,9 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
             Page::Agenda => {
-                let user_info = self.user_info.as_ref().clone();
-                html!(<Agenda user_info={user_info} app_link={ ctx.link().clone()} />)
+                let user_info = Rc::clone(&self.user_info);
+                let events = Rc::clone(&self.events);
+                html!(<Agenda events={events} user_info={user_info} app_link={ctx.link().clone()} />)
             },
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
             Page::ChangePassword => html!(

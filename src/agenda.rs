@@ -16,17 +16,13 @@ fn format_day(day_name: Weekday, day: u32) -> String {
 
 pub struct Agenda {
     selected_day: Date<chrono_tz::Tz>,
-    events: Vec<RawEvent>,
     slider: Rc<RefCell<slider::SliderManager>>,
     announcements: Vec<AnnouncementDesc>,
     pub displayed_announcement: Option<AnnouncementDesc>,
     selected_event: Rc<Option<RawEvent>>,
-    user_info: Option<UserInfo>,
 }
 
 pub enum AgendaMsg {
-    ScheduleSuccess(Vec<RawEvent>),
-    ScheduleFailure(ApiError),
     Previous,
     Next,
     Goto {day: u32, month: u32, year: i32},
@@ -42,11 +38,14 @@ pub enum AgendaMsg {
 #[derive(Properties, Clone)]
 pub struct AgendaProps {
     pub app_link: Scope<App>,
-    pub user_info: Option<UserInfo>,
+    pub user_info: Rc<Option<UserInfo>>,
+    pub events: Rc<Vec<RawEvent>>,
 }
 
 impl PartialEq for AgendaProps {
-    fn eq(&self, _other: &Self) -> bool { true }
+    fn eq(&self, other: &Self) -> bool {
+        self.user_info == other.user_info && self.events == other.events
+    }
 }
 
 impl Component for Agenda {
@@ -58,7 +57,6 @@ impl Component for Agenda {
         let now = now.with_timezone(&Paris);
 
         // Update data
-        let events = init_events(now, ctx.link().clone());
         let announcements = init_announcements(now, ctx.link().clone());
         let displayed_announcement = select_announcement(&announcements, &ctx.props().user_info.clone());
 
@@ -86,7 +84,7 @@ impl Component for Agenda {
         // Switch to next day if it's late or to monday if it's weekend
         let weekday = now.weekday();
         let curr_day = now.naive_local().date().and_hms(0, 0, 0);
-        let has_event = has_event_on_day(&events, curr_day, Weekday::Sat);
+        let has_event = has_event_on_day(&ctx.props().events, curr_day, Weekday::Sat);
         if now.hour() >= 19 || weekday == Weekday::Sun || (weekday == Weekday::Sat && !has_event) {
             let link2 = ctx.link().clone();
             spawn_local(async move {
@@ -96,41 +94,16 @@ impl Component for Agenda {
         }
         
         Self {
-            events,
             selected_day: now.date(),
             slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
             announcements,
             displayed_announcement,
-            selected_event: Rc::new(None),
-            user_info: ctx.props().user_info.clone(),
-        }
-    }
-
-    fn changed(&mut self, ctx: &Context<Self>) -> bool {
-        if self.user_info == ctx.props().user_info {
-            false
-        } else {
-            self.user_info = ctx.props().user_info.clone();
-            true
+            selected_event: Rc::new(None)
         }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            AgendaMsg::ScheduleSuccess(events) => {
-                self.events = events;
-                true
-            },
-            AgendaMsg::ScheduleFailure(api_error) => {
-                api_error.handle_api_error();
-                match api_error {
-                    ApiError::Known(error) if error.kind == "counter_too_low" => {
-                        refresh_events(ctx.link().clone());
-                    }
-                    _ => {},
-                }
-                false
-            },
             AgendaMsg::AnnouncementsSuccess(announcements) => {
                 self.announcements = announcements;
                 false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
@@ -139,7 +112,7 @@ impl Component for Agenda {
                 let prev_week = NaiveDateTime::new(self.selected_day.naive_local(), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
                 if self.selected_day.weekday() != Weekday::Mon {
                     self.selected_day = self.selected_day.pred();
-                } else if self.selected_day.weekday() == Weekday::Mon && !has_event_on_day(&self.events, prev_week, Weekday::Sat) {
+                } else if self.selected_day.weekday() == Weekday::Mon && !has_event_on_day(&ctx.props().events, prev_week, Weekday::Sat) {
                     self.selected_day = self.selected_day.pred().pred().pred();
                 } else {
                     self.selected_day = self.selected_day.pred().pred();
@@ -153,7 +126,7 @@ impl Component for Agenda {
                     self.selected_day = self.selected_day.succ().succ();
                 } else if self.selected_day.weekday() != Weekday::Fri {
                     self.selected_day = self.selected_day.succ();
-                } else if self.selected_day.weekday() == Weekday::Fri && !has_event_on_day(&self.events, now, Weekday::Sat) {
+                } else if self.selected_day.weekday() == Weekday::Fri && !has_event_on_day(&ctx.props().events, now, Weekday::Sat) {
                     self.selected_day = self.selected_day.succ().succ().succ();
                 } else {
                     self.selected_day = self.selected_day.succ();
@@ -231,17 +204,17 @@ impl Component for Agenda {
             let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp() as u64;
             let announcement_range = announcement_start..=announcement_end;
 
-            match self.events.binary_search_by_key(&announcement_start, |e| e.start_unixtime) { // Check if an event starts exactly at that time.
+            match ctx.props().events.binary_search_by_key(&announcement_start, |e| e.start_unixtime) { // Check if an event starts exactly at that time.
                 Ok(_) => {
                     show_mobile_announcement = false;
                 },
                 Err(mut idx) => {
-                    if let Some(e) = self.events.get(idx) {
+                    if let Some(e) = ctx.props().events.get(idx) {
                         if announcement_range.contains(&(e.start_unixtime)) { // Check if the next event starts in the range
                             show_mobile_announcement = false;
                         } else {
                             idx = idx.overflowing_sub(1).0;
-                            while let Some(e) = self.events.get(idx) { // Check if a few previous events end in the range
+                            while let Some(e) = ctx.props().events.get(idx) { // Check if a few previous events end in the range
                                 if announcement_range.contains(&(e.end_unixtime)) {
                                     show_mobile_announcement = false;
                                     break;
@@ -267,11 +240,11 @@ impl Component for Agenda {
 
             // Iterate over events, starting from the first one that starts during the current day
             let day_start = current_day.and_hms(0,0,0).timestamp() as u64;
-            let mut idx = match self.events.binary_search_by_key(&day_start, |e| e.start_unixtime) {
+            let mut idx = match ctx.props().events.binary_search_by_key(&day_start, |e| e.start_unixtime) {
                 Ok(idx) => idx,
                 Err(idx) => idx,
             };
-            while let Some(e) = self.events.get(idx) {
+            while let Some(e) = ctx.props().events.get(idx) {
                 if e.start_unixtime > day_start + 24*3600 {
                     break;
                 }

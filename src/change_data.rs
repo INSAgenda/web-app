@@ -48,7 +48,11 @@ pub struct ChangeDataProps {
     pub user_info: Rc<Option<UserInfo>>,
 }
 impl PartialEq for ChangeDataProps {
-    fn eq(&self, _other: &Self) -> bool { true }
+    fn eq(&self, other: &Self) -> bool {
+        self.kind == other.kind
+            && self.groups == other.groups
+            && self.user_info == other.user_info
+    }
 }
 
 /// The `ChangeDataPage` component
