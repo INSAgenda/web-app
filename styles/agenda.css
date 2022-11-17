@@ -58,7 +58,7 @@
         height: 4rem;
         flex-shrink: 0;
         position: relative;
-        bottom: 1.5rem;
+        bottom: 1.3rem;
     }
     
     #agenda-arrow-left>div, #agenda-arrow-right>div {
@@ -75,20 +75,17 @@
 /* Top */
 
 #agenda-top {
-    display: flex;
+    width: 100%;
     height: 2rem;
+    display: flex;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text);
 }
 
 #agenda-top>span {
-    width: 100%;
-    font-size: 1.2rem;
-    display: flex;
-    justify-content: center;
     margin: 0 5px;
-    text-align: center;
-    align-items: center;
-    font-weight: bold;
-    color: var(--text);
 }
 
 /* Days */
