@@ -64,16 +64,16 @@ async fn load_events() -> Result<Vec<RawEvent>, ApiError> {
     Ok(events)
 }
 
-pub fn refresh_events(agenda_link: Scope<App>) {
+pub fn refresh_events(app_link: Scope<App>) {
     wasm_bindgen_futures::spawn_local(async move {
         match load_events().await {
-            Ok(events) => agenda_link.send_message(AppMsg::ScheduleSuccess(events)),
-            Err(e) => agenda_link.send_message(AppMsg::ScheduleFailure(e)),
+            Ok(events) => app_link.send_message(AppMsg::ScheduleSuccess(events)),
+            Err(e) => app_link.send_message(AppMsg::ScheduleFailure(e)),
         }
     });
 }
 
-pub fn init_events(now: DateTime<chrono_tz::Tz>, agenda_link: Scope<App>) -> Vec<RawEvent> {
+pub fn init_events(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) -> Vec<RawEvent> {
     // Get cached
     let mut events = Vec::new();
     if let Some((last_updated, cached)) = load_cached_events() {
@@ -84,7 +84,7 @@ pub fn init_events(now: DateTime<chrono_tz::Tz>, agenda_link: Scope<App>) -> Vec
     }
 
     // Update from server
-    refresh_events(agenda_link);
+    refresh_events(app_link);
 
     events
 }
