@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, slider::width};
 
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
@@ -163,6 +163,9 @@ impl Component for Calendar {
             week_iter.push(week);
             cases_iter.push(calendar_cases.drain(0..7).collect::<Vec<_>>());
         }
+
+        let mobile = width() <= 1000;
+        let show_arrows = !mobile || !self.folded;
 
         template_html! {
             "templates/components/calendar.html",
