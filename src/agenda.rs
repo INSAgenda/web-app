@@ -281,7 +281,7 @@ impl Component for Agenda {
                         event={e.clone()}
                         day_start={current_day.and_hms(0,0,0).timestamp() as u64}
                         agenda_link={ctx.link().clone()}
-                        show_announcement={false}>
+                        show_announcement={show_mobile_announcement}>
                     </EventComp>
                 });
                 idx += 1;
