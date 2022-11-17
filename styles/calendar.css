@@ -12,18 +12,15 @@
     height: 4rem;
     display: flex;
     align-items: center;
-}
-
-#calendar-header > button, #calendar-header > div > * {
-    margin: 0 0.4rem;
-}
-
-#calendar-title {
     font-size: 1.5rem;
     cursor: pointer;
     user-select: none;
     overflow: visible;
     white-space: nowrap;
+}
+
+#calendar-header > button, #calendar-header > div > * {
+    margin: 0 0.4rem;
 }
 
 .calendar-arrow {
@@ -45,17 +42,14 @@
     justify-content: space-around;
     margin-bottom: .5rem;
     color: var(--text);
-    font-weight: 500;
+    font-weight: bold;
 }
 
-#calendar-days>span {
+#calendar-days>span, .calendar-case {
     width: calc(100% / 7);
-    max-width: 2.5rem;
+    max-width: 2rem;
+    margin: 0.25rem;
     text-align: center;
-}
-
-#open-calendar {
-    cursor: pointer;
 }
 
 /* Grid */
@@ -87,11 +81,6 @@
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border-bottom: var(--closer-background) solid 1px;
-}
-
-.calendar-week:last-child {
-    border: none;
 }
 
 @media screen and (min-width: 24rem) {
@@ -103,8 +92,6 @@
 /* Case */
 
 .calendar-case {
-    width: calc(100% / 7);
-    max-width: 2.5rem;
     aspect-ratio: 1 / 1;
     border-radius: 50%;
 
@@ -119,19 +106,14 @@
 }
 
 .disabled {
-    color: var(--);
     cursor: not-allowed;
 }
 
 .calendar-case:hover {
-    background-color: var(--dp24);
+    background-color: var(--background);
 }
 
 #selected-calendar-case {
     background-color: var(--primary);
     color: var(--text);
-}
-
-#calendar-arrow-right {
-    transform: rotate(180deg);
 }
