@@ -119,7 +119,6 @@ impl Component for App {
                         self.events = Rc::new(Vec::new());
                         refresh_events(ctx.link().clone());
                         should_refresh = true;
-                        log!("refresh");
                     }
                 }
 
