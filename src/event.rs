@@ -29,9 +29,7 @@ impl Component for EventComp {
     type Message = ();
     type Properties = EventCompProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self {}
-    }
+    fn create(_ctx: &Context<Self>) -> Self { Self {} }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Format title
@@ -81,6 +79,7 @@ impl Component for EventComp {
         }
         let percent_height = 100.0 / day_sec_count * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;
 
+        // Render
         let event1 = ctx.props().event.clone();
         template_html!(
             "templates/components/event.html",
