@@ -58,33 +58,35 @@
         height: 4rem;
         flex-shrink: 0;
         position: relative;
-        bottom: 1.5rem;
+        bottom: 1.3rem;
     }
     
     #agenda-arrow-left>div, #agenda-arrow-right>div {
         background: url(/assets/elements/arrow.svg) center no-repeat;
-        filter: invert(79%) sepia(71%) saturate(5902%) hue-rotate(241deg) brightness(97%) contrast(85%) ; 
         width: 100%;
         height: 100%;
+    }
+
+    .header-agenda {
+        display: none;
     }
 }
 
 /* Top */
 
 #agenda-top {
-    display: flex;
     height: 2rem;
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--text);
 }
 
 #agenda-top>span {
     width: 100%;
-    display: flex;
-    justify-content: center;
     margin: 0 5px;
-    text-align: center;
-    align-items: center;
-    font-weight: bold;
-    color: var(--text);
 }
 
 /* Days */
@@ -103,22 +105,14 @@
 
 .day {
     height: 100%;
-    width: 19%;
+    width: calc(100% / 6 - 1%);
     margin: 0 .5%;
     border-radius: 0.3rem;
     background-color: var(--day);
 }
 
-#settings-button{
-    background-image: url('/agenda/images/settings.svg');
-    background-size: 100%;
-    background-color: transparent;
-    margin-right: 2rem;
-    width: 2rem;
-    height: 2rem;
-    border: none;
-    cursor: pointer;
-}
-:root[data-theme="dark"] #settings-button{
-    filter: invert(1);
+@media screen and (max-width: 1000px) {
+    .day {
+        width: 19%;
+    }
 }

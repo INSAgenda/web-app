@@ -15,23 +15,21 @@ pub struct SliderManager {
 }
 
 impl SliderManager {
-    pub fn init(link: Scope<App>, day_offset: i32) -> Rc<RefCell<SliderManager>> {
+    pub fn init(link: Scope<Agenda>, day_offset: i32) -> Rc<RefCell<SliderManager>> {
         // Create callbacks
-
         let days_offset = Rc::new(Cell::new(day_offset));
 
         let link2 = link.clone();
         let swift_next_callback = Closure::wrap(Box::new(move || {
-            link2.send_message(AppMsg::Next);
+            link2.send_message(AgendaMsg::Next);
         }) as Box<dyn FnMut()>);
 
         let link2 = link.clone();
         let swift_prev_callback = Closure::wrap(Box::new(move || {
-            link2.send_message(AppMsg::Previous);
+            link2.send_message(AgendaMsg::Previous);
         }) as Box<dyn FnMut()>);
 
         // Create slider
-
         let slider = Rc::new(RefCell::new(SliderManager {
             enabled: false,
             start_pos: None,
@@ -58,11 +56,11 @@ impl SliderManager {
             };
             match slider.enabled {
                 true if width() > 1000 => {
-                    link2.send_message(AppMsg::Refresh);
+                    link2.send_message(AgendaMsg::Refresh);
                     slider.disable();
                 }
                 false if width() <= 1000 => {
-                    link2.send_message(AppMsg::Refresh);
+                    link2.send_message(AgendaMsg::Refresh);
                     slider.enable();
                 },
                 _ => (),
@@ -181,20 +179,15 @@ impl SliderManager {
     }
     
     pub fn enable(&mut self) {
-        self.enabled = true;
+        self.enabled = width() <= 1000;
         self.start_pos = None;
+        self.update_right();
     }
 
     pub fn disable(&mut self) {
         self.enabled = false;
         self.start_pos = None;
-
-        let doc = window().doc();
-        if let Some(day_container) = doc.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()) {
-            if width() <= 1000 {
-                day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
-            }
-        }
+        self.update_right();
     }
 
     fn get_cached_day_container(&mut self) -> Option<HtmlElement> {
@@ -210,6 +203,11 @@ impl SliderManager {
     }
 
     fn touch_start(&mut self, mouse_x: i32, mouse_y: i32) {
+        if !self.enabled {
+            self.update_right();
+            return;
+        }
+
         let doc = window().doc();
         self.day_container = doc.get_element_by_id("day-container").map(|e| e.dyn_into().unwrap());
         self.start_pos = None;
@@ -227,6 +225,11 @@ impl SliderManager {
     }
 
     fn touch_move(&mut self, mouse_x: i32) {
+        if !self.enabled {
+            self.update_right();
+            return;
+        }
+
         let day_container = match self.get_cached_day_container() {
             Some(day_container) => day_container,
             None => return,
@@ -237,19 +240,19 @@ impl SliderManager {
         };
         self.has_moved = true;
         let offset = mouse_x - start_pos;
-
-        day_container.style().remove_property("transform").unwrap();
+        
         day_container.style().set_property("position", "relative").unwrap();
         day_container.style().set_property("right", &format!("calc({}% + {}px)", self.days_offset.get().abs()*5, -offset)).unwrap();
     }
 
     fn touch_end(&mut self, mouse_x: i32) {
+        if !self.enabled {
+            self.update_right();
+            return;
+        }
+
         let start_pos = match self.start_pos.take() {
             Some(start_pos) => start_pos,
-            None => return,
-        };
-        let day_container = match self.get_cached_day_container() {
-            Some(day_container) => day_container,
             None => return,
         };
 
@@ -257,25 +260,24 @@ impl SliderManager {
         if !self.has_moved{
             return;
         }
+        self.update_right();
         if offset > 90 {
-            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
             window().set_timeout_with_callback(self.swift_prev_callback.as_ref().unchecked_ref()).unwrap();
         } else if offset < -90 {
-            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
             window().set_timeout_with_callback(self.swift_next_callback.as_ref().unchecked_ref()).unwrap();
-        } else {
-            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
         }
     }
 
     pub fn set_offset(&mut self, offset: i32) {
-        if self.enabled {
-            self.days_offset.set(offset);
-            let day_container = match self.get_cached_day_container() {
-                Some(day_container) => day_container,
-                None => return,
-            };
-            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
+        self.days_offset.set(offset);
+        self.update_right();
+    }
+
+    fn update_right(&mut self) {
+        let Some(day_container) = self.get_cached_day_container() else {return};
+        match width() <= 1000 {
+            true => {day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();},
+            false => {day_container.style().remove_property("right").unwrap();},
         }
     }
 }

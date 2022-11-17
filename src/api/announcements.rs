@@ -57,7 +57,7 @@ async fn load_announcements() -> Result<Vec<AnnouncementDesc>, ApiError> {
     Ok(events)
 }
 
-pub fn init_announcements(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) -> Vec<AnnouncementDesc> {
+pub fn init_announcements(now: DateTime<chrono_tz::Tz>, agenda_link: Scope<Agenda>) -> Vec<AnnouncementDesc> {
     // Get cached
     let mut announcements = Vec::new();
     if let Some((last_updated, cached)) = load_cached_announcements() {
@@ -70,7 +70,7 @@ pub fn init_announcements(now: DateTime<chrono_tz::Tz>, app_link: Scope<App>) ->
     // Update from server
     wasm_bindgen_futures::spawn_local(async move {
         match load_announcements().await {
-            Ok(announcements) => app_link.send_message(AppMsg::AnnouncementsSuccess(announcements)),
+            Ok(announcements) => agenda_link.send_message(AgendaMsg::AnnouncementsSuccess(announcements)),
             Err(e) => e.handle_api_error(),
         }
     });

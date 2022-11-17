@@ -4,6 +4,31 @@ header {
     height: 4rem;
 }
 
+#header-logo {
+    aspect-ratio: 1 / 1;
+}
+
+@media screen and (max-width: 420px) and (min-width: 400px) {
+    #calendar-header>div>span {
+        font-size: 1.25rem !important;
+    }
+}
+@media screen and (max-width: 400px) {
+    #calendar-header>div>span {
+        font-size: 1rem !important;
+    }
+}
+@media screen and (max-width: 360px) {
+    #calendar-header>div>img {
+        display: none;
+    }
+}
+@media screen and (max-width: 300px) {
+    #header-logo:first-child {
+        display: none;
+    }
+}
+
 /* Main section */
 
 body {
@@ -54,6 +79,12 @@ body {
     width: 48px;
     border-radius: 3px;
     margin-top: 3px;
+}
+
+/* Misc */
+
+:root[data-theme="dark"] .invert-when-dark {
+    filter: invert(1);
 }
 
 /* For mobile */

@@ -1,0 +1,28 @@
+<header>
+    <a id="header-logo" href="/agenda">
+        <img src="/assets/logo/logo.svg" alt="INSAgenda logo" /> 
+        <h1 id="header-name" class="header-agenda">INSAgenda</h1>
+    </a>
+    <a id="header-logo" class="invert-when-dark" style="justify-content: center;" onclick=[onclick_settings]>
+        <img style="height: 70%;" src="/agenda/images/settings.svg" alt="Settings" />
+    </a>
+</header>
+<section class="section-page-title">
+    <h2 class="page-title">[h2]</h2>
+    <div class="divider-bar"></div>
+</section>
+<main class="centred" id="auth">
+    <h3 class="login-title">[h3]</h3>
+    <form class="centred">
+        [inputs]
+        <div present-if=[is_loading] class="lds-ring"><div></div><div></div><div></div><div></div></div>
+        <virtual present-if=![is_loading]>
+            <span opt class="error-message">
+                [opt_error_message]
+            </span><br/>
+            <br/>
+            <input type="button" class="primary-button" value="Confirmer" onclick=[onclick_submit] id="submit-button" />
+            <input type="button" class="secondary-button" value="Annuler" onclick=[onclick_settings2] />
+        </virtual>
+    </form>
+</main>

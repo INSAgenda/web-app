@@ -6,6 +6,7 @@
     border-radius: 0.3rem;
     font-size: .95rem;
     transition: filter .2s ease;
+    position: absolute;
 }
 
 :root[data-theme="dark"] .event {
@@ -29,50 +30,60 @@
 
 /* Event details */
 
-.event-details {
-    width: calc(214px - 2.2rem); /* ALED */
+#event-details {
     font-size: 1rem;
-    position: relative;
-    top: -100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40%;
+    transform: translate(-50%, -50%);
     background-color: var(--closer-background);
     color: var(--text);
     border-radius: 1rem;
     box-shadow: 0px 0.8rem 0.8rem #00000029;
-    padding: 1.1rem;
+    padding: 2.1rem;
     color: var(--text);
     z-index: 4;
     cursor: auto;
     text-align: start;
 }
 
-.event-details h3 {
+#event-details h3 {
     font-size: 1.2rem;
     margin-bottom: 0;
     font-weight: bold;
-    text-align: center;
+    text-align: start;
 }
 
-.event-details > .divider-bar-option {
-    margin: 0.1rem auto;
+#event-details > .divider-bar-option {        
+    margin: 0.1rem;
 }
 
-.event-details span {
-    font-size: 1rem;
+#event-details span {
+    font-size: 1.1rem;
     font-weight: normal;
 }
 
-.event-details h4 {
+#event-details h4 {
    margin: 0.325rem 0;
+   display: inline;
+   margin-right: 0.4rem;
+   font-size: 1.2rem;
 }
 
-.event-details-content {
+#event-details h4::after {
+    content: " : ";
+ }
+ 
+
+#event-details-content {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
 }
 
 .info-block {
-    margin-top: .4rem;
+    margin-top: .9rem;
 }
 
 .hide {
@@ -91,9 +102,10 @@
 /* Mobile view */
 
 @media screen and (max-width: 1000px) {
-    .event-details {
+    #event-details {
         position: fixed;
         top: unset;
+        left: 50%;
         bottom: 0px;
         right: 0px !important;
         min-height: 30%;
@@ -101,14 +113,39 @@
         width: calc(100% - 2.8rem ); /* Remove padding width */
         border-radius: 0.6rem 0.6rem 0 0;
         box-shadow: 0px -0.8rem 0.8rem #00000029;
+        transform: translateX(-50%);
     }
 
-    .event-details h3 {
-        margin-top: 0.6rem;
+    #event-details > .divider-bar-option {        
+        margin: 0.1rem auto;
     }
-
     .event {
         width: 100%;
+    }
+    
+    #event-details h3 {
+        text-align: center;
+    }
+
+    #event-details h4 {
+        display: block;
+        margin-right: 0px;
+    }
+
+    #event-details h4::after {
+        content: "";
+     }
+
+    .info-block {
+        margin-top: .4rem;
+    }
+
+    #event-details span {
+        font-size: 1rem;
+    }
+
+    #event-details h3 {
+        font-size: 1.2rem;
     }
 
     .event:active {
