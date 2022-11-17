@@ -47,8 +47,8 @@
 
 #calendar-days>span, .calendar-case {
     width: calc(100% / 7);
-    max-width: 2rem;
-    margin: 0.25rem;
+    max-width: 2.2rem;
+    margin: 0.15rem;
     text-align: center;
 }
 
