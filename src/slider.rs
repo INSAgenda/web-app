@@ -181,18 +181,13 @@ impl SliderManager {
     pub fn enable(&mut self) {
         self.enabled = width() <= 1000;
         self.start_pos = None;
+        self.update_right();
     }
 
     pub fn disable(&mut self) {
         self.enabled = false;
         self.start_pos = None;
-
-        let doc = window().doc();
-        if let Some(day_container) = doc.get_element_by_id("day-container").map(|e| e.dyn_into::<HtmlElement>().unwrap()) {
-            if width() <= 1000 {
-                day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
-            }
-        }
+        self.update_right();
     }
 
     fn get_cached_day_container(&mut self) -> Option<HtmlElement> {
@@ -245,8 +240,7 @@ impl SliderManager {
         };
         self.has_moved = true;
         let offset = mouse_x - start_pos;
-
-        day_container.style().remove_property("transform").unwrap();
+        
         day_container.style().set_property("position", "relative").unwrap();
         day_container.style().set_property("right", &format!("calc({}% + {}px)", self.days_offset.get().abs()*5, -offset)).unwrap();
     }
@@ -281,6 +275,9 @@ impl SliderManager {
 
     fn update_right(&mut self) {
         let Some(day_container) = self.get_cached_day_container() else {return};
-        day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
+        match width() <= 1000 {
+            true => {day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();},
+            false => {day_container.style().remove_property("right").unwrap();},
+        }
     }
 }
