@@ -43,7 +43,7 @@
 #calendar-days {
     display: flex;
     justify-content: space-around;
-    margin: 2px 0 7px 0;
+    margin-bottom: .5rem;
     color: var(--text);
     font-weight: 500;
 }
@@ -63,6 +63,7 @@
     position: absolute;
     top: 4rem;
     background-color: var(--closer-background);
+    padding-bottom: .5rem;
     border-radius: 0 0 1rem 1rem;
 }
 
