@@ -57,12 +57,13 @@ impl HackTraitSelectedValueOnHtmlSelectElement for HtmlSelectElement {
     }
 }
 
-// Check if the user has an event the saturday
-pub fn has_event_on_day(events: &Vec<RawEvent>, current_day: NaiveDateTime, weekday: Weekday) -> bool {
-    let offset = weekday.num_days_from_monday() as i64 - current_day.weekday().number_from_monday() as i64 + 1;
-    let saturday_stamp = (current_day + chrono::Duration::days(offset)).timestamp() as u64;
-    let range = saturday_stamp..saturday_stamp + 3600*24;
-    if events.is_empty() { false } else { match events.binary_search_by(|e| e.start_unixtime.cmp(&saturday_stamp)) {
+// Check if there are events on the specified day of the current week
+pub fn has_event_on_day(events: &Vec<RawEvent>, current_day: NaiveDateTime, day_to_look: Weekday) -> bool {
+    let offset_to_saturday = day_to_look.num_days_from_monday() as i64 - current_day.weekday().number_from_monday() as i64 + 1;
+    let saturday_ts = (current_day + chrono::Duration::days(offset_to_saturday)).timestamp() as u64;
+    let range = saturday_ts..saturday_ts + 3600*24;
+    if events.is_empty() { return false }
+    match events.binary_search_by(|e| e.start_unixtime.cmp(&saturday_ts)) {
         Ok(_) => true,
         Err(i) => {
             if i < events.len() {
@@ -71,5 +72,5 @@ pub fn has_event_on_day(events: &Vec<RawEvent>, current_day: NaiveDateTime, week
                 false
             }
         },
-    }}
+    }
 }
