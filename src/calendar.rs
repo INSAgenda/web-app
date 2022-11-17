@@ -135,8 +135,7 @@ impl Component for Calendar {
             });
         }
         for day in 1..=last_day.day() {
-            let month = ctx.props().month;
-            let year = ctx.props().year;
+            let (month, year) = (ctx.props().month, ctx.props().year);
             let date = NaiveDate::from_ymd(year, month, day);
             let id = if day==ctx.props().day {Some("calendar-case-selected")} else if date==today {Some("calendar-case-today")} else {None};
             calendar_cases.push(html! {
