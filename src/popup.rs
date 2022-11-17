@@ -59,7 +59,6 @@ impl Component for Popup {
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        log!("Event selected: {:?}", ctx.props().event);
         match msg {
             PopupMsg::SaveColors => {
                 if let Some(event) = &ctx.props().event.as_ref() {

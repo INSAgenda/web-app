@@ -36,8 +36,7 @@ pub enum AgendaMsg {
     Refresh,
     FetchColors(HashMap<String, String>),
     ApiFailure(ApiError),
-    PushColors(),
-    SetSliderState(bool),
+    PushColors()
 }
 
 #[derive(Properties, Clone)]
@@ -159,7 +158,6 @@ impl Component for Agenda {
                 } else {
                     self.selected_day = self.selected_day.succ();
                 }
-                    
                 self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
                 
                 true
@@ -209,14 +207,6 @@ impl Component for Agenda {
             AgendaMsg::ApiFailure(api_error) => {
                 api_error.handle_api_error();
                 false
-            },
-            AgendaMsg::SetSliderState(state) => {
-                if state {
-                    self.slider.borrow_mut().enable();
-                } else {
-                    self.slider.borrow_mut().disable();
-                }
-                true
             },
         }
     }

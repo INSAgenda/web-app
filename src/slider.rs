@@ -208,6 +208,11 @@ impl SliderManager {
     }
 
     fn touch_start(&mut self, mouse_x: i32, mouse_y: i32) {
+        if !self.enabled {
+            self.update_right();
+            return;
+        }
+
         let doc = window().doc();
         self.day_container = doc.get_element_by_id("day-container").map(|e| e.dyn_into().unwrap());
         self.start_pos = None;
@@ -225,6 +230,11 @@ impl SliderManager {
     }
 
     fn touch_move(&mut self, mouse_x: i32) {
+        if !self.enabled {
+            self.update_right();
+            return;
+        }
+
         let day_container = match self.get_cached_day_container() {
             Some(day_container) => day_container,
             None => return,
@@ -242,12 +252,13 @@ impl SliderManager {
     }
 
     fn touch_end(&mut self, mouse_x: i32) {
+        if !self.enabled {
+            self.update_right();
+            return;
+        }
+
         let start_pos = match self.start_pos.take() {
             Some(start_pos) => start_pos,
-            None => return,
-        };
-        let day_container = match self.get_cached_day_container() {
-            Some(day_container) => day_container,
             None => return,
         };
 
@@ -255,24 +266,21 @@ impl SliderManager {
         if !self.has_moved{
             return;
         }
+        self.update_right();
         if offset > 90 {
-            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
             window().set_timeout_with_callback(self.swift_prev_callback.as_ref().unchecked_ref()).unwrap();
         } else if offset < -90 {
-            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
             window().set_timeout_with_callback(self.swift_next_callback.as_ref().unchecked_ref()).unwrap();
-        } else {
-            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
         }
     }
 
     pub fn set_offset(&mut self, offset: i32) {
+        self.days_offset.set(offset);
+        self.update_right();
+    }
+
+    fn update_right(&mut self) {
         let Some(day_container) = self.get_cached_day_container() else {return};
-
-        if self.enabled && width() <= 1000 {
-            self.days_offset.set(offset);
-
-            day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
-        } 
+        day_container.style().set_property("right", &format!("{}%", self.days_offset.get().abs()*5)).unwrap();
     }
 }
