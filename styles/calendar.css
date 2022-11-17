@@ -59,6 +59,9 @@
     z-index: 1;
     position: absolute;
     top: 4rem;
+    left: 0;
+    width: 24.5rem;
+    margin: 0 calc((100% - 24.5rem) / 2);
     background-color: var(--closer-background);
     padding-bottom: .5rem;
     border-radius: 0 0 1rem 1rem;
@@ -70,10 +73,8 @@
 
 @media screen and (max-width: 1000px) {
     #calendar-content {
-        position: absolute;
-        top: 4rem;
-        left: 0;
         width: 100%;
+        margin: 0;
     }
 }
 
