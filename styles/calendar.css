@@ -47,7 +47,7 @@
 
 #calendar-days>span, .calendar-case {
     width: calc(100% / 7);
-    max-width: calc(3.7rem - 2px);
+    max-width: calc(3.2rem - 2px);
     margin: 0.15rem;
     text-align: center;
     border: 1px solid transparent;
@@ -84,7 +84,7 @@
     align-items: center;
 }
 
-@media screen and (min-width: 28rem) {
+@media screen and (min-width: 24.5rem) {
     .calendar-week, #calendar-days {
         justify-content: center;
     }
