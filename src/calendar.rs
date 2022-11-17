@@ -9,7 +9,9 @@ pub struct CalendarProps {
 }
 
 impl PartialEq for CalendarProps {
-    fn eq(&self, _other: &Self) -> bool { true }
+    fn eq(&self, other: &Self) -> bool {
+        self.day == other.day && self.month == other.month && self.year == other.year
+    }
 }
 
 pub enum Msg {
@@ -20,9 +22,6 @@ pub enum Msg {
 }
 
 pub struct Calendar {
-    selected_day: u32,
-    selected_month: u32,
-    selected_year: i32,
     folded: bool,
     on_click: Closure<dyn FnMut(web_sys::MouseEvent)>,
 }
@@ -48,9 +47,6 @@ impl Component for Calendar {
             link.send_message(Msg::TriggerFold);
         }) as Box<dyn FnMut(_)>);
         Calendar {
-            selected_day: ctx.props().day,
-            selected_month: ctx.props().month,
-            selected_year: ctx.props().year as i32,
             folded: true,
             on_click,
         }
@@ -59,54 +55,45 @@ impl Component for Calendar {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Next if !self.folded => {
-                if self.selected_month == 12 {
-                    self.selected_month = 1;
-                    self.selected_year += 1;
+                let mut month = ctx.props().month;
+                let mut year = ctx.props().year;
+                if month == 12 {
+                    month = 1;
+                    year += 1;
                 } else {
-                    self.selected_month += 1;
+                    month += 1;
                 }
-                self.selected_day = 1;
-                ctx.props().agenda_link.send_message(AgendaMsg::Goto {
-                    day: self.selected_day,
-                    month: self.selected_month,
-                    year: self.selected_year
-                });
+                ctx.props().agenda_link.send_message(AgendaMsg::Goto { day: 1, month, year });
             },
             Msg::Previous if !self.folded => {
-                if self.selected_month == 1 {
-                    self.selected_month = 12;
-                    self.selected_year -= 1;
+                let mut month = ctx.props().month;
+                let mut year = ctx.props().year;
+                if month == 1 {
+                    month = 12;
+                    year -= 1;
                 } else {
-                    self.selected_month -= 1;
+                    month -= 1;
                 }
-                let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
-                self.selected_day = last_day.day();
-                ctx.props().agenda_link.send_message(AgendaMsg::Goto {
-                    day: self.selected_day,
-                    month: self.selected_month,
-                    year: self.selected_year
-                });
+                let day = NaiveDate::from_ymd(ctx.props().year, (ctx.props().month % 12) + 1, 1).pred().day();
+                ctx.props().agenda_link.send_message(AgendaMsg::Goto { day, month, year });
             },
             Msg::Next => {
-                let next_week = NaiveDateTime::new(NaiveDate::from_ymd(self.selected_year, self.selected_month, self.selected_day), NaiveTime::from_hms(0, 0, 0)) + chrono::Duration::days(7);
-                ctx.link().send_message(Msg::Goto {
+                let next_week = NaiveDateTime::new(NaiveDate::from_ymd(ctx.props().year, ctx.props().month, ctx.props().day), NaiveTime::from_hms(0, 0, 0)) + chrono::Duration::days(7);
+                ctx.props().agenda_link.send_message(AgendaMsg::Goto {
                     day: next_week.day(),
                     month: next_week.month(),
-                    year: next_week.year() as i32
+                    year: next_week.year()
                 });
             },
             Msg::Previous => {
-                let previous_week = NaiveDateTime::new(NaiveDate::from_ymd(self.selected_year, self.selected_month, self.selected_day), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
-                ctx.link().send_message(Msg::Goto {
+                let previous_week = NaiveDateTime::new(NaiveDate::from_ymd(ctx.props().year, ctx.props().month, ctx.props().day), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
+                ctx.props().agenda_link.send_message(AgendaMsg::Goto {
                     day: previous_week.day(),
                     month: previous_week.month(),
-                    year: previous_week.year() as i32
+                    year: previous_week.year()
                 });
             }
             Msg::Goto { day, month, year } => {
-                self.selected_day = day;
-                self.selected_month = month;
-                self.selected_year = year;
                 ctx.props().agenda_link.send_message(AgendaMsg::Goto {day, month,year});
             },
             Msg::TriggerFold => {
@@ -115,13 +102,13 @@ impl Component for Calendar {
                     true => window().remove_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap(),
                     false => window().add_event_listener_with_callback("click", self.on_click.as_ref().unchecked_ref()).unwrap(),
                 };
-            } 
+            }
         }
         true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let display_month = format!("{} {}", t(match self.selected_month {
+        let display_month = format!("{} {}", t(match ctx.props().month {
             1 => "Janvier",
             2 => "Février",
             3 => "Mars",
@@ -135,10 +122,10 @@ impl Component for Calendar {
             11 => "Novembre",
             12 => "Décembre",
             _ => unreachable!(),
-        }), self.selected_year);
+        }), ctx.props().year);
 
-        let first_day = NaiveDate::from_ymd(self.selected_year, self.selected_month, 1);
-        let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
+        let first_day = NaiveDate::from_ymd(ctx.props().year, ctx.props().month, 1);
+        let last_day = NaiveDate::from_ymd(ctx.props().year, (ctx.props().month % 12) + 1, 1).pred();
         let today = Local::today().naive_local();
 
         let mut calendar_cases = Vec::new();
@@ -148,10 +135,10 @@ impl Component for Calendar {
             });
         }
         for day in 1..=last_day.day() {
-            let month = self.selected_month;
-            let year = self.selected_year;
+            let month = ctx.props().month;
+            let year = ctx.props().year;
             let date = NaiveDate::from_ymd(year, month, day);
-            let id = if day==self.selected_day {Some("calendar-case-selected")} else if date==today {Some("calendar-case-today")} else {None};
+            let id = if day==ctx.props().day {Some("calendar-case-selected")} else if date==today {Some("calendar-case-today")} else {None};
             if date.weekday() == Weekday::Sun {
                 let day_to_go = day - 1;
                 calendar_cases.push(html! {
