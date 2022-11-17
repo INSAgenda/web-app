@@ -15,7 +15,7 @@ mod prelude;
 mod translation;
 mod popup;
 
-use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage, slider::width};
+use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 pub enum Page {
     Settings,

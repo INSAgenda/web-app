@@ -138,7 +138,6 @@ impl SettingStore {
 pub enum Msg {
     Confirm,
     Cancel,
-    BuildingNamingChange(usize),
     ThemeChange(usize),
     LogOut,
     LanguageChange(usize),
@@ -186,10 +185,6 @@ impl Component for SettingsPage {
                 SETTINGS.set_theme(self.clone_storage.theme.load(Ordering::Relaxed));
                 SETTINGS.set_lang(self.clone_storage.lang.load(Ordering::Relaxed));
                 false
-            }
-            Msg::BuildingNamingChange(v) => {
-                SETTINGS.set_building_naming(v);
-                true
             }
             Msg::ThemeChange(v) => {
                 SETTINGS.set_theme(v);
