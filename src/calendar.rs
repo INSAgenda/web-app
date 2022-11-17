@@ -139,6 +139,7 @@ impl Component for Calendar {
 
         let first_day = NaiveDate::from_ymd(self.selected_year, self.selected_month, 1);
         let last_day = NaiveDate::from_ymd(self.selected_year, (self.selected_month % 12) + 1, 1).pred();
+        let today = Local::today().naive_local();
 
         let mut calendar_cases = Vec::new();
         for _ in 0..first_day.weekday().number_from_monday() - 1 {
@@ -150,14 +151,15 @@ impl Component for Calendar {
             let month = self.selected_month;
             let year = self.selected_year;
             let date = NaiveDate::from_ymd(year, month, day);
+            let id = if day==self.selected_day {Some("calendar-case-selected")} else if date==today {Some("calendar-case-today")} else {None};
             if date.weekday() == Weekday::Sun {
                 let day_to_go = day - 1;
                 calendar_cases.push(html! {
-                    <span class="calendar-case disabled" id={if day==self.selected_day {Some("selected-calendar-case")} else {None}} onclick={ctx.link().callback(move |_| Msg::Goto {day: day_to_go,month,year})}>{day.to_string()}</span>
+                    <span class="calendar-case calendar-case-disabled" id={id} onclick={ctx.link().callback(move |_| Msg::Goto {day: day_to_go,month,year})}>{day.to_string()}</span>
                 });
             } else {
                 calendar_cases.push(html! {
-                    <span class="calendar-case" id={if day==self.selected_day {Some("selected-calendar-case")} else {None}} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
+                    <span class="calendar-case" id={id} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
                 });
             }
             

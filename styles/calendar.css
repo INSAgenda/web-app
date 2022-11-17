@@ -47,9 +47,10 @@
 
 #calendar-days>span, .calendar-case {
     width: calc(100% / 7);
-    max-width: 2.2rem;
+    max-width: calc(2.2rem - 2px);
     margin: 0.15rem;
     text-align: center;
+    border: 1px solid transparent;
 }
 
 /* Grid */
@@ -105,7 +106,7 @@
     color: var(--text);
 }
 
-.disabled {
+.calendar-case-disabled {
     cursor: not-allowed;
 }
 
@@ -113,7 +114,13 @@
     background-color: var(--background);
 }
 
-#selected-calendar-case {
+#calendar-case-selected {
+    border: 1px solid var(--primary);
     background-color: var(--primary);
-    color: var(--text);
+    color: var(--light-text);
+}
+
+#calendar-case-today {
+    border: 1px solid var(--primary);
+    color: var(--primary);
 }
