@@ -139,17 +139,9 @@ impl Component for Calendar {
             let year = ctx.props().year;
             let date = NaiveDate::from_ymd(year, month, day);
             let id = if day==ctx.props().day {Some("calendar-case-selected")} else if date==today {Some("calendar-case-today")} else {None};
-            if date.weekday() == Weekday::Sun {
-                let day_to_go = day - 1;
-                calendar_cases.push(html! {
-                    <span class="calendar-case calendar-case-disabled" id={id} onclick={ctx.link().callback(move |_| Msg::Goto {day: day_to_go,month,year})}>{day.to_string()}</span>
-                });
-            } else {
-                calendar_cases.push(html! {
-                    <span class="calendar-case" id={id} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
-                });
-            }
-            
+            calendar_cases.push(html! {
+                <span class="calendar-case" id={id} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
+            });
         }
         while calendar_cases.len() % 7 != 0 {
             calendar_cases.push(html! {
