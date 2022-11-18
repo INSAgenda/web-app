@@ -19,14 +19,14 @@ pub struct Agenda {
     slider: Rc<RefCell<slider::SliderManager>>,
     announcements: Vec<AnnouncementDesc>,
     pub displayed_announcement: Option<AnnouncementDesc>,
-    selected_event: Rc<Option<RawEvent>>,
+    selected_event: Rc<Option<(u8, RawEvent)>>,
 }
 
 pub enum AgendaMsg {
     Previous,
     Next,
     Goto {day: u32, month: u32, year: i32},
-    SetSelectedEvent(Option<common::Event>),
+    SetSelectedEvent(Option<(u8, RawEvent)>),
     CloseAnnouncement,
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
     Refresh,
@@ -236,6 +236,7 @@ impl Component for Agenda {
         let mut days = Vec::new();
         let mut day_names = Vec::new();
         for d in 0..6 {
+            let selected_event_other_day = matches!(self.selected_event.as_ref(), Some((s,_)) if *s != d && !mobile);
             let mut events = Vec::new();
 
             // Iterate over events, starting from the first one that starts during the current day
@@ -260,13 +261,22 @@ impl Component for Agenda {
                 idx += 1;
             }
 
-            let day_style = match mobile {
-                true => format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20),
-                false => String::new(),
-            };
+            let mut day_style = String::new();
+            let mut day_name_style = String::new();
+            if mobile {
+                day_style.push_str(&format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20));
+            } else {
+                if selected_event_other_day {
+                    day_style.push_str("opacity: 0; pointer-events: none;");
+                    day_name_style.push_str("opacity: 0;");
+                }
+                if let Some((sd, _)) = self.selected_event.as_ref() {
+                    day_name_style.push_str(&format!("transform: translateX(calc(-100%*{sd} + -10px*{sd}))"));
+                }
+            }
 
             day_names.push(html! {
-                <span id={if current_day == self.selected_day {"selected-day"} else {""}}>
+                <span id={if current_day == self.selected_day {"selected-day"} else {""}} style={day_name_style}>
                     { format_day(current_day.weekday(), current_day.day()) }
                 </span>
             });
@@ -291,7 +301,13 @@ impl Component for Agenda {
                 event={self.selected_event.clone()}
                 agenda_link={ctx.link().clone()} />
         };
-        let day_container_style = if mobile {format!("position: relative; right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000))} else {String::new()};
+        let day_container_style = if mobile {
+            format!("right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000))
+        } else if let Some((day_idx, e)) = self.selected_event.as_ref() {
+            format!("right: calc((100%/6)*{day_idx}); sts: {}; ets: {};", e.start_unixtime, e.end_unixtime) // times are for a workarround for a bug in Yew
+        } else {
+            String::new()
+        };
         template_html!(
             "templates/agenda.html",
             onclick_settings = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings))},

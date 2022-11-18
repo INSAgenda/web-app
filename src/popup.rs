@@ -12,7 +12,7 @@ pub enum PopupMsg {
 
 #[derive(Properties, Clone)]
 pub struct PopupProps {
-    pub event: Rc<Option<RawEvent>>,
+    pub event: Rc<Option<(u8, RawEvent)>>,
     pub agenda_link: Scope<Agenda>,
 }
 
@@ -61,7 +61,7 @@ impl Component for Popup {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             PopupMsg::SaveColors => {
-                if let Some(event) = &ctx.props().event.as_ref() {
+                if let Some((_, event)) = &ctx.props().event.as_ref() {
                     let document = window().doc();
                     let background_color = match document.query_selector("#background-color-input").unwrap() {
                         Some(el) => el.dyn_into::<HtmlInputElement>().unwrap().value(),
@@ -95,7 +95,7 @@ impl Component for Popup {
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Format title
         let binding = &ctx.props().event;
-        let event = match binding.as_ref() {
+        let (day, event) = match binding.as_ref() {
             Some(e) => e,
             None => return html! {<div></div>},
         }; 

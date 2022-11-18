@@ -81,9 +81,10 @@ impl Component for EventComp {
 
         // Render
         let event1 = ctx.props().event.clone();
+        let day_of_week = ctx.props().day_of_week;
         template_html!(
             "templates/components/event.html",
-            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::SetSelectedEvent(Some(event1.clone()))) },
+            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::SetSelectedEvent(Some((day_of_week, event1.clone())))) },
             teachers = { ctx.props().event.teachers.join(", ")},
             opt_location = location, bg_color2 = bg_color, ...
         )
