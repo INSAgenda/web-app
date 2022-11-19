@@ -14,6 +14,7 @@ mod announcements;
 pub use announcements::*;
 mod colors;
 pub use colors::*;
+mod generic;
 
 use crate::prelude::*;
 
