@@ -172,6 +172,11 @@ impl Component for Agenda {
                     popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
                 }
                 self.popup = PopupState::Opened { week_day, event: Rc::new(event), popup_size };
+                spawn_local(async move {
+                    window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
+                    sleep(Duration::from_millis(500)).await;
+                    window().doc().body().unwrap().remove_attribute("style").unwrap();
+                });
                 true
             },
             AgendaMsg::ClosePopup => {
@@ -180,8 +185,10 @@ impl Component for Agenda {
                         self.popup = PopupState::Closing { week_day, event: Rc::clone(event), popup_size };
                         let link = ctx.link().clone();
                         spawn_local(async move {
+                            window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
                             sleep(Duration::from_millis(500)).await;
                             link.send_message(AgendaMsg::ClosePopup);
+                            window().doc().body().unwrap().remove_attribute("style").unwrap();
                         });
                     },
                     PopupState::Closing { .. } => {
@@ -331,8 +338,8 @@ impl Component for Agenda {
         let popup_container_style = match &self.popup {
             PopupState::Opened { popup_size, .. } => match mobile {
                 true => {
-                    let screen_height = window().inner_height().unwrap().as_f64().unwrap() as usize;
-                    format!("top: -{screen_height}px; height: {screen_height}px;")
+                    let body_height = window().doc().body().unwrap().client_height() as usize;
+                    format!("top: -{body_height}px; height: {body_height}px;")
                 }
                 false => match popup_size {
                     Some(popup_size) => format!("left: -{popup_size}px; width: {popup_size}px;"),

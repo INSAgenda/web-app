@@ -1,17 +1,36 @@
 <div id="popup">
     <div id="popup-header">
-      <svg  onclick=[onclick_close] xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="popup-close bi bi-chevron-left" viewBox="0 0 16 16">
-    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
-  </svg>
-  
-      <h2 id="popup-title">CM de C1</h2>
-      <div id="popup-header-separator"></div>
+        <svg  onclick=[onclick_close] xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="popup-close bi bi-chevron-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+        </svg>
+        <h2 id="popup-title">CM de C1</h2>
+        <div id="popup-header-separator"></div>
         <svg onclick=[onclick_close] xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="popup-close bi bi-x-lg" viewBox="0 0 16 16">
-      <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
-    </svg>
-  
-  
+            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+        </svg>
     </div>
-    
-  </div>
-  
+    <div id="popup-body">
+        <section>
+            <h4>Horaires</h4>
+            <p>[time]</p>
+        </section>
+        <section opt>
+            <h4>Emplacement</h4>
+            <p>[opt_location]</p>
+        </section>
+        <section>
+            <h4>Couleur</h4>
+            <p>Cliquez sur la prévisualisation ci-dessous pour changer la couleur de tous les cours de [summary].</p>
+            <div id="popup-color-picker">
+                <div style="background-color: [event_color]80; border-left: 0.3rem solid [event_color];">
+                    <div class="event-container">
+                        <span class="name">[name]</span>
+                        <span class="teacher">[teachers]</span>
+                        <span opt class="location">[opt_location]</span>
+                    </div>
+                </div>
+                <input type="color" id="popup-color-input" value=[event_color] oninput=[onclick_save] />
+            </div>
+        </section>
+    </div>
+</div>

@@ -19,7 +19,6 @@ impl PopupState {
 pub struct Popup {}
 
 pub enum PopupMsg {
-    Close,
     SaveColors,
 }
 
@@ -32,7 +31,7 @@ pub struct PopupProps {
 
 impl PartialEq for PopupProps {
     fn eq(&self, other: &Self) -> bool {
-        self.event == other.event
+        self.event == other.event && self.week_day == other.week_day
     }
 }
 
@@ -46,24 +45,40 @@ impl Component for Popup {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            PopupMsg::Close => {
-                ctx.props().agenda_link.send_message(AgendaMsg::ClosePopup);
-
-                false
-            }
             PopupMsg::SaveColors => {
-                //ctx.props().agenda_link.send_message(AgendaMsg::SaveColors);
-                false
+                let mobile = width() <= 1000;
+                let document = window().doc();
+                let el = document.get_element_by_id("popup-color-input").unwrap();
+                let background_color = el.dyn_into::<HtmlInputElement>().unwrap().value();
+
+                COLORS.set(&ctx.props().event.summary, background_color); 
+
+                // We need to set this so that other events know that they have to refresh
+                COLORS_CHANGED.store(true, Ordering::Relaxed);
+
+                if !mobile {
+                    ctx.props().agenda_link.send_message(AgendaMsg::Refresh);
+                }
+                
+                true
             }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let onclick_close = ctx.link().callback(|_| PopupMsg::Close);
+        let onclick_close = ctx.props().agenda_link.callback(|_| AgendaMsg::ClosePopup);
+        let mobile = width() <= 1000;
+        let event_color = COLORS.get(&ctx.props().event.summary);
+        let summary = &ctx.props().event.summary;
+        let name = ctx.props().event.format_name();
+        let opt_location = ctx.props().event.format_location();
         template_html!(
             "templates/components/popup.html",
             teachers = {ctx.props().event.teachers.join(", ")},
+            time = {ctx.props().event.format_time()},
             onclick_close = {onclick_close.clone()},
+            onclick_save = {ctx.link().callback(|_| PopupMsg::SaveColors)},
+            opt_location = {&opt_location},
         )
     }
 }

@@ -23,6 +23,46 @@ impl PartialEq for EventCompProps {
     }
 }
 
+pub trait HackTraitEventFormat {
+    fn format_name(&self) -> String;
+    fn format_location(&self) -> Option<String>;
+    fn format_time(&self) -> String;
+}
+impl HackTraitEventFormat for RawEvent {
+    fn format_name(&self) -> String {
+        let summary = &self.summary;
+        match self.kind {
+            Some(EventKind::Td) => format!("TD: {summary}"),
+            Some(EventKind::Tp) => format!("TP: {summary}"),
+            Some(EventKind::Cm) => format!("CM: {summary}"),
+            None => summary.clone(),
+        }
+    }
+
+    fn format_location(&self) -> Option<String> {
+        self.location.as_ref().map(|location| {
+            match location {
+                Location::Parsed { building, building_area, level, room_number } => {
+                    let building = match building {
+                        Building::Magellan => "Ma",
+                        Building::DumontDurville => "Du",
+                        Building::Bougainville => "Bo",
+                        Building::Darwin => "Da",
+                    };
+                    format!("{} - {} - {} - {}", building, building_area, level, room_number)
+                }
+                Location::Unparsed(location) => location.clone(),
+            }
+        })
+    }
+
+    fn format_time(&self) -> String {
+        let start = Paris.timestamp(self.start_unixtime as i64, 0);
+        let end = Paris.timestamp(self.end_unixtime as i64, 0);
+        format!("{} - {}", start.time().format("%Hh%M"), end.time().format("%Hh%M"))
+    }
+}
+
 pub struct EventComp {}
 
 impl Component for EventComp {
@@ -32,39 +72,9 @@ impl Component for EventComp {
     fn create(_ctx: &Context<Self>) -> Self { Self {} }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        // Format title
-        let summary = &ctx.props().event.summary;
-        let name = match &ctx.props().event.kind {
-            Some(EventKind::Td) => format!("TD: {summary}"),
-            Some(EventKind::Tp) => format!("TP: {summary}"),
-            Some(EventKind::Cm) => format!("CM: {summary}"),
-            None => summary.clone(),
-        };
+        let name = ctx.props().event.format_name();
+        let location = ctx.props().event.format_location();
         let bg_color = COLORS.get(&ctx.props().event.summary);
-        
-        // Format location
-        let location = ctx.props().event.location.as_ref().map(|location| {
-            match location {
-                Location::Parsed { building, building_area, level, room_number } => {
-                    let building = match SETTINGS.building_naming() {
-                        BuildingNaming::Short => match building {
-                            Building::Magellan => "Ma",
-                            Building::DumontDurville => "Du",
-                            Building::Bougainville => "Bo",
-                            Building::Darwin => "Da",
-                        },
-                        BuildingNaming::Long => match building {
-                            Building::Magellan => "Magellan",
-                            Building::DumontDurville => "Dumont Durville",
-                            Building::Bougainville => "Bougainville",
-                            Building::Darwin => "Darwin",
-                        },
-                    };
-                    format!("{} - {} - {} - {}", building, building_area, level, room_number)
-                }
-                Location::Unparsed(location) => location.clone(),
-            }
-        });
 
         // Calculate position
         let day_sec_count = match ctx.props().show_announcement {
