@@ -1,5 +1,28 @@
 use crate::{prelude::*, slider::width};
 
+pub enum PopupState {
+    Opened { week_day: u8, event: Rc<RawEvent>, popup_size: Option<usize> },
+    Closing { week_day: u8, event: Rc<RawEvent>, popup_size: Option<usize> },
+    Closed,
+}
+
+impl PopupState {
+    pub fn as_option(&self) -> Option<(u8, Rc<RawEvent>, Option<usize>)> {
+        match self {
+            PopupState::Opened { week_day, event, popup_size } => Some((*week_day, Rc::clone(&event), *popup_size)),
+            PopupState::Closing { week_day, event, popup_size } => Some((*week_day, Rc::clone(&event), *popup_size)),
+            PopupState::Closed => None,
+        }
+    }
+
+    pub fn opened_as_option(&self) -> Option<(u8, Rc<RawEvent>, Option<usize>)> {
+        match self {
+            PopupState::Opened { week_day, event, popup_size } => Some((*week_day, Rc::clone(&event), *popup_size)),
+            _ => None,
+        }
+    }
+}
+
 pub struct Popup {}
 
 pub enum PopupMsg {
@@ -31,14 +54,8 @@ impl Component for Popup {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             PopupMsg::Close => {
-                let agenda_link = ctx.props().agenda_link.clone();
-                spawn_local(async move {
-                    if let Some(popup_container) = window().doc().get_element_by_id("popup-container") {
-                        let _ = popup_container.remove_attribute("style");
-                        sleep(Duration::from_millis(500)).await;
-                    }
-                    agenda_link.send_message(AgendaMsg::ClosePopup);
-                });
+                ctx.props().agenda_link.send_message(AgendaMsg::ClosePopup);
+
                 false
             }
             PopupMsg::SaveColors => {
