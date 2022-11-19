@@ -1,5 +1,6 @@
 mod alert;
-mod announcements;
+#[path = "announcement/announcement.rs"]
+mod announcement;
 #[path = "event/event.rs"]
 mod event;
 #[path = "settings/settings.rs"]
