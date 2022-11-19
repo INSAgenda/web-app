@@ -6,6 +6,7 @@ mod settings;
 mod agenda;
 mod glider_selector;
 mod util;
+#[path = "calendar/calendar.rs"]
 mod calendar;
 mod slider;
 mod api;
