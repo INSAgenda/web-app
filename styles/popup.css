@@ -24,7 +24,7 @@
 
 #popup-header {
     width: calc(100% - 2px);
-    height: 2rem;
+    height: 3rem;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -33,7 +33,7 @@
 }
 
 #popup-title {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: normal;
     text-decoration: none;
 }
@@ -43,8 +43,9 @@
 }
 
 .popup-close {
-    margin: 0 .5rem;
-    transform: scale(1.3);
+    width: 2rem;
+    height: 2rem;
+    padding: 0.5rem;
     cursor: pointer;
 }
 
