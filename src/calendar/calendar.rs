@@ -159,7 +159,7 @@ impl Component for Calendar {
         let show_arrows = !mobile || !self.folded;
 
         template_html! {
-            "templates/components/calendar.html",
+            "src/calendar/calendar.html",
             onclick_previous = {ctx.link().callback(|_| Msg::Previous)},
             onclick_fold = {ctx.link().callback(|_| Msg::TriggerFold)},
             onclick_next = {ctx.link().callback(|_| Msg::Next)},

@@ -1,18 +1,28 @@
+#[path = "alert/alert.rs"]
 mod alert;
-mod announcements;
+#[path = "announcement/announcement.rs"]
+mod announcement;
+#[path = "event/event.rs"]
 mod event;
+#[path = "settings/settings.rs"]
 mod settings;
+#[path = "agenda/agenda.rs"]
 mod agenda;
+#[path = "glider_selector/glider_selector.rs"]
 mod glider_selector;
 mod util;
+#[path = "calendar/calendar.rs"]
 mod calendar;
 mod slider;
 mod api;
+#[path = "crash/crash_handler.rs"]
 mod crash_handler;
 mod colors;
+#[path = "change_data/change_data.rs"]
 mod change_data;
 mod prelude;
 mod translation;
+#[path ="popup/popup.rs"]
 mod popup;
 
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};

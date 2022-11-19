@@ -67,13 +67,12 @@ impl Component for Popup {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let onclick_close = ctx.props().agenda_link.callback(|_| AgendaMsg::ClosePopup);
-        let mobile = width() <= 1000;
         let event_color = COLORS.get(&ctx.props().event.summary);
         let summary = &ctx.props().event.summary;
         let name = ctx.props().event.format_name();
         let opt_location = ctx.props().event.format_location();
         template_html!(
-            "templates/components/popup.html",
+            "src/popup/popup.html",
             teachers = {ctx.props().event.teachers.join(", ")},
             time = {ctx.props().event.format_time()},
             name = {&name},
