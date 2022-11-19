@@ -1,4 +1,4 @@
-use crate::{prelude::*, slider};
+use crate::{prelude::*, slider::{self, width}};
 
 fn format_day(day_name: Weekday, day: u32) -> String {
     let day_name = t(match day_name {
@@ -19,14 +19,16 @@ pub struct Agenda {
     slider: Rc<RefCell<slider::SliderManager>>,
     announcements: Vec<AnnouncementDesc>,
     pub displayed_announcement: Option<AnnouncementDesc>,
-    selected_event: Rc<Option<RawEvent>>,
+    popup: PopupState,
+    counter: AtomicUsize,
 }
 
 pub enum AgendaMsg {
     Previous,
     Next,
-    Goto {day: u32, month: u32, year: i32},
-    SetSelectedEvent(Option<common::Event>),
+    Goto{ day: u32, month: u32, year: i32 },
+    OpenPopup{ week_day: u8, event: RawEvent },
+    ClosePopup,
     CloseAnnouncement,
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
     Refresh,
@@ -98,7 +100,8 @@ impl Component for Agenda {
             slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
             announcements,
             displayed_announcement,
-            selected_event: Rc::new(None)
+            popup: PopupState::Closed,
+            counter: AtomicUsize::new(0),
         }
     }
 
@@ -159,16 +162,44 @@ impl Component for Agenda {
                 true
             },
             AgendaMsg::CloseAnnouncement => update_close_announcement(self),
-            AgendaMsg::SetSelectedEvent(event) => {
-                if event.is_some() {
-                    self.slider.borrow_mut().disable();
-                } else {
-                    self.slider.borrow_mut().enable();
+            AgendaMsg::OpenPopup { week_day, event } => {
+                self.slider.borrow_mut().disable();
+                let mut popup_size = None;
+                if let PopupState::Opened { popup_size: Some(previous_size), .. } | PopupState::Closing { popup_size: Some(previous_size), .. } = self.popup {
+                    popup_size = Some(previous_size);
+                } else if let Some(day_el) = window().doc().get_element_by_id("day0") {
+                    let rect = day_el.get_bounding_client_rect();
+                    popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
                 }
-
-                self.selected_event = Rc::new(event);
+                self.popup = PopupState::Opened { week_day, event: Rc::new(event), popup_size };
+                spawn_local(async move {
+                    window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
+                    sleep(Duration::from_millis(500)).await;
+                    window().doc().body().unwrap().remove_attribute("style").unwrap();
+                });
                 true
             },
+            AgendaMsg::ClosePopup => {
+                match self.popup {
+                    PopupState::Opened { week_day, ref event, popup_size } => {
+                        self.popup = PopupState::Closing { week_day, event: Rc::clone(event), popup_size };
+                        let link = ctx.link().clone();
+                        spawn_local(async move {
+                            window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
+                            sleep(Duration::from_millis(500)).await;
+                            link.send_message(AgendaMsg::ClosePopup);
+                            window().doc().body().unwrap().remove_attribute("style").unwrap();
+                        });
+                        true
+                    },
+                    PopupState::Closing { .. } => {
+                        self.popup = PopupState::Closed;
+                        self.slider.borrow_mut().enable();
+                        true
+                    },
+                    PopupState::Closed => false,
+                }
+            }
             AgendaMsg::FetchColors(new_colors) => {
                 crate::COLORS.update_colors(new_colors);
                 true
@@ -185,7 +216,8 @@ impl Component for Agenda {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let mobile = crate::slider::width() <= 1000;
+        let screen_width = crate::slider::width();
+        let mobile = screen_width <= 1000;
         
         // Go on the first day of the week
         let mut current_day = self.selected_day;
@@ -236,6 +268,7 @@ impl Component for Agenda {
         let mut days = Vec::new();
         let mut day_names = Vec::new();
         for d in 0..6 {
+            let selected_event_other_day = matches!(self.popup, PopupState::Opened { week_day, .. } if week_day != d && !mobile);
             let mut events = Vec::new();
 
             // Iterate over events, starting from the first one that starts during the current day
@@ -250,7 +283,7 @@ impl Component for Agenda {
                 }
                 events.push(html!{
                     <EventComp
-                        day_of_week={d}
+                        week_day={d}
                         event={e.clone()}
                         day_start={current_day.and_hms(0,0,0).timestamp() as u64}
                         agenda_link={ctx.link().clone()}
@@ -260,18 +293,27 @@ impl Component for Agenda {
                 idx += 1;
             }
 
-            let day_style = match mobile {
-                true => format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20),
-                false => String::new(),
-            };
+            let mut day_style = String::new();
+            let mut day_name_style = String::new();
+            if mobile {
+                day_style.push_str(&format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20));
+            } else {
+                if selected_event_other_day {
+                    day_style.push_str("opacity: 0; pointer-events: none;");
+                    day_name_style.push_str("opacity: 0;");
+                }
+                if let PopupState::Opened { week_day, .. } = self.popup {
+                    day_name_style.push_str(&format!("transform: translateX(calc(-100%*{week_day} + -10px*{week_day}))"));
+                }
+            }
 
             day_names.push(html! {
-                <span id={if current_day == self.selected_day {"selected-day"} else {""}}>
+                <span id={if current_day == self.selected_day {"selected-day"} else {""}} style={day_name_style}>
                     { format_day(current_day.weekday(), current_day.day()) }
                 </span>
             });
             days.push(html! {
-                <div class="day" style={day_style}>
+                <div class="day" id={format!("day{d}")} style={day_style}>
                     { events }
                 </div>
             });
@@ -286,12 +328,46 @@ impl Component for Agenda {
                 month={self.selected_day.month()}
                 year={self.selected_day.year()} />
         };
-        let popup = html! {
-            <Popup
-                event={self.selected_event.clone()}
-                agenda_link={ctx.link().clone()} />
+        let opt_popup = self.popup.as_option().map(|(week_day, event, _)|
+            html! {
+                <Popup
+                    week_day = {week_day}
+                    event = {event}
+                    agenda_link = {ctx.link().clone()} />
+            }
+        );
+        let popup_container_style = match &self.popup {
+            PopupState::Opened { popup_size, .. } => match mobile {
+                true => {
+                    let body_height = window().doc().body().unwrap().client_height() as usize;
+                    format!("top: -{body_height}px; height: {body_height}px;")
+                }
+                false => match popup_size {
+                    Some(popup_size) => format!("left: -{popup_size}px; width: {popup_size}px;"),
+                    None => "left: -70vw; width: 70vw;".to_string(),
+                }
+            },
+            PopupState::Closing { popup_size, .. } => match mobile {
+                true => {
+                    let screen_height = window().inner_height().unwrap().as_f64().unwrap() as usize;
+                    format!("height: {screen_height}px;")
+                }
+                false => match popup_size {
+                    Some(popup_size) => format!("width: {popup_size}px;"),
+                    None => "width: 70vw;".to_string(),
+                }
+            },
+            PopupState::Closed => String::new(),
         };
-        let day_container_style = if mobile {format!("position: relative; right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000))} else {String::new()};
+        
+        let day_container_style = if mobile {
+            format!("right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000))
+        } else if let PopupState::Opened { week_day, .. } = self.popup {
+            let c = self.counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            format!("right: calc((100%/6)*{week_day}); c: {};", c) // c is a workarround for a bug in Yew
+        } else {
+            String::new()
+        };
         template_html!(
             "templates/agenda.html",
             onclick_settings = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings))},

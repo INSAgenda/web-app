@@ -10,7 +10,7 @@ pub struct EventCompProps {
     pub day_start: u64,
     pub show_announcement: bool,
     pub agenda_link: yew::html::Scope<Agenda>,
-    pub day_of_week: u8,
+    pub week_day: u8,
 }
 
 impl PartialEq for EventCompProps {
@@ -19,7 +19,47 @@ impl PartialEq for EventCompProps {
             && self.event == other.event
             && self.day_start == other.day_start
             && self.show_announcement == other.show_announcement
-            && self.day_of_week == other.day_of_week
+            && self.week_day == other.week_day
+    }
+}
+
+pub trait HackTraitEventFormat {
+    fn format_name(&self) -> String;
+    fn format_location(&self) -> Option<String>;
+    fn format_time(&self) -> String;
+}
+impl HackTraitEventFormat for RawEvent {
+    fn format_name(&self) -> String {
+        let summary = &self.summary;
+        match self.kind {
+            Some(EventKind::Td) => format!("TD: {summary}"),
+            Some(EventKind::Tp) => format!("TP: {summary}"),
+            Some(EventKind::Cm) => format!("CM: {summary}"),
+            None => summary.clone(),
+        }
+    }
+
+    fn format_location(&self) -> Option<String> {
+        self.location.as_ref().map(|location| {
+            match location {
+                Location::Parsed { building, building_area, level, room_number } => {
+                    let building = match building {
+                        Building::Magellan => "Ma",
+                        Building::DumontDurville => "Du",
+                        Building::Bougainville => "Bo",
+                        Building::Darwin => "Da",
+                    };
+                    format!("{} - {} - {} - {}", building, building_area, level, room_number)
+                }
+                Location::Unparsed(location) => location.clone(),
+            }
+        })
+    }
+
+    fn format_time(&self) -> String {
+        let start = Paris.timestamp(self.start_unixtime as i64, 0);
+        let end = Paris.timestamp(self.end_unixtime as i64, 0);
+        format!("{} - {}", start.time().format("%Hh%M"), end.time().format("%Hh%M"))
     }
 }
 
@@ -32,39 +72,9 @@ impl Component for EventComp {
     fn create(_ctx: &Context<Self>) -> Self { Self {} }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        // Format title
-        let summary = &ctx.props().event.summary;
-        let name = match &ctx.props().event.kind {
-            Some(EventKind::Td) => format!("TD: {summary}"),
-            Some(EventKind::Tp) => format!("TP: {summary}"),
-            Some(EventKind::Cm) => format!("CM: {summary}"),
-            None => summary.clone(),
-        };
+        let name = ctx.props().event.format_name();
+        let location = ctx.props().event.format_location();
         let bg_color = COLORS.get(&ctx.props().event.summary);
-        
-        // Format location
-        let location = ctx.props().event.location.as_ref().map(|location| {
-            match location {
-                Location::Parsed { building, building_area, level, room_number } => {
-                    let building = match SETTINGS.building_naming() {
-                        BuildingNaming::Short => match building {
-                            Building::Magellan => "Ma",
-                            Building::DumontDurville => "Du",
-                            Building::Bougainville => "Bo",
-                            Building::Darwin => "Da",
-                        },
-                        BuildingNaming::Long => match building {
-                            Building::Magellan => "Magellan",
-                            Building::DumontDurville => "Dumont Durville",
-                            Building::Bougainville => "Bougainville",
-                            Building::Darwin => "Darwin",
-                        },
-                    };
-                    format!("{} - {} - {} - {}", building, building_area, level, room_number)
-                }
-                Location::Unparsed(location) => location.clone(),
-            }
-        });
 
         // Calculate position
         let day_sec_count = match ctx.props().show_announcement {
@@ -81,9 +91,10 @@ impl Component for EventComp {
 
         // Render
         let event1 = ctx.props().event.clone();
+        let week_day = ctx.props().week_day;
         template_html!(
             "templates/components/event.html",
-            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::SetSelectedEvent(Some(event1.clone()))) },
+            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::OpenPopup { week_day, event: event1.clone() }) },
             teachers = { ctx.props().event.teachers.join(", ")},
             opt_location = location, bg_color2 = bg_color, ...
         )

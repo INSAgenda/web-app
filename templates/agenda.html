@@ -1,4 +1,4 @@
-<header>
+<header id="header">
     <a id="header-logo" href="/agenda">
         <img src="/assets/logo/logo.svg" alt="INSAgenda logo" /> 
         <h1 id="header-name" class="header-agenda">INSAgenda</h1>
@@ -36,6 +36,10 @@
         </div>
     </div>
 </div>
-[popup]
 <virtual present-if=[show_mobile_announcement] opt>[opt_announcement]</virtual>
+<div style="position: relative;">
+    <div id="popup-container" style=[popup_container_style]>
+        <virtual opt>[opt_popup]</virtual>
+    </div>
+</div>
 </main>
