@@ -32,18 +32,14 @@ pub trait CachedData: DeserializeOwned + Serialize {
         }
     
         // Update from server
-        wasm_bindgen_futures::spawn_local(async move {
-            let result = load::<Self>(now).await;
-            Self::on_load(result, app_link);
-        });
+        Self::refresh(app_link);
     
         default
     }
 
     fn refresh(app_link: Scope<App>) {
-        let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
         wasm_bindgen_futures::spawn_local(async move {
-            let result = load::<Self>(now).await;
+            let result = load::<Self>().await;
             Self::on_load(result, app_link);
         });
     }
@@ -60,9 +56,8 @@ fn load_cached<T: CachedData>() -> Option<(i64, T)> {
     Some((last_updated, cached))
 }
 
-async fn load<T: CachedData>(now: i64) -> Result<T, ApiError> {
+async fn load<T: CachedData>() -> Result<T, ApiError> {
     let (api_key, counter) = get_login_info();
-    let storage_key = T::storage_key();
 
     let request = Request::new_with_str(T::endpoint())?;
     request.headers().set(
@@ -133,8 +128,8 @@ impl CachedData for Vec<GroupDesc> {
 }
 
 impl CachedData for UserInfo {
-    fn storage_key() ->  &'static str { "groups" }
-    fn endpoint() ->  &'static str { "/config/groups.json" }
+    fn storage_key() ->  &'static str { "user_info" }
+    fn endpoint() ->  &'static str { "/api/user-info" }
     fn cache_duration() -> u64 { 3600*6 }
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
         match result {
