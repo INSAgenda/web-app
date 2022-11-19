@@ -9,6 +9,7 @@ pub trait CachedData: DeserializeOwned + Serialize {
     fn endpoint() -> &'static str;
     fn cache_duration() -> u64;
     fn force_reload(&self) -> bool { false }
+    fn on_cache(&mut self) {}
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>);
 
     fn save(&self) {
@@ -24,7 +25,8 @@ pub trait CachedData: DeserializeOwned + Serialize {
 
         // Get cached
         let mut default = None;
-        if let Some((last_updated, cached)) = load_cached::<Self>() {
+        if let Some((last_updated, mut cached)) = load_cached::<Self>() {
+            cached.on_cache();
             if last_updated > now - Self::cache_duration() as i64 && !cached.force_reload() {
                 return Some(cached);
             }
@@ -91,6 +93,7 @@ impl CachedData for Vec<RawEvent> {
     fn endpoint() ->  &'static str { "/api/schedule" }
     fn cache_duration() -> u64 { 3600*2 }
     fn force_reload(&self) -> bool { self.is_empty() }
+    fn on_cache(&mut self) { self.sort_by_key(|e| e.start_unixtime); }
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
         match result {
             Ok(mut events) => {
