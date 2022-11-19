@@ -8,6 +8,7 @@ mod event;
 mod settings;
 #[path = "agenda/agenda.rs"]
 mod agenda;
+#[path = "glider_selector/glider_selector.rs"]
 mod glider_selector;
 mod util;
 #[path = "calendar/calendar.rs"]
