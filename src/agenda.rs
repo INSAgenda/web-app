@@ -26,8 +26,9 @@ pub struct Agenda {
 pub enum AgendaMsg {
     Previous,
     Next,
-    Goto {day: u32, month: u32, year: i32},
-    SetSelectedEvent(Option<(u8, RawEvent)>),
+    Goto{ day: u32, month: u32, year: i32 },
+    OpenPopup{ week_day: u8, event: RawEvent },
+    ClosePopup,
     CloseAnnouncement,
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
     Refresh,
@@ -161,27 +162,23 @@ impl Component for Agenda {
                 true
             },
             AgendaMsg::CloseAnnouncement => update_close_announcement(self),
-            AgendaMsg::SetSelectedEvent(event) => {
-                match event {
-                    Some((week_day, event)) => {
-                        self.slider.borrow_mut().disable();
-                        let mut popup_width = None;
-                        if let Some((_,_,Some(previous_popup_width))) = self.selected_event {
-                            popup_width = Some(previous_popup_width);
-                        } else if let Some(day_el) = window().doc().get_element_by_id("day0") {
-                            let rect = day_el.get_bounding_client_rect();
-                            popup_width = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
-                        }
-                        
-                        self.selected_event = Some((week_day, Rc::new(event), popup_width));
-                    },
-                    None => {
-                        self.slider.borrow_mut().enable();
-                        self.selected_event = None;
-                    },
+            AgendaMsg::OpenPopup { week_day, event } => {
+                self.slider.borrow_mut().disable();
+                let mut popup_width = None;
+                if let Some((_,_,Some(previous_popup_width))) = self.selected_event {
+                    popup_width = Some(previous_popup_width);
+                } else if let Some(day_el) = window().doc().get_element_by_id("day0") {
+                    let rect = day_el.get_bounding_client_rect();
+                    popup_width = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
                 }
+                self.selected_event = Some((week_day, Rc::new(event), popup_width));
                 true
             },
+            AgendaMsg::ClosePopup => {
+                self.slider.borrow_mut().enable();
+                self.selected_event = None;
+                true
+            }
             AgendaMsg::FetchColors(new_colors) => {
                 crate::COLORS.update_colors(new_colors);
                 true
@@ -265,7 +262,7 @@ impl Component for Agenda {
                 }
                 events.push(html!{
                     <EventComp
-                        day_of_week={d}
+                        week_day={d}
                         event={e.clone()}
                         day_start={current_day.and_hms(0,0,0).timestamp() as u64}
                         agenda_link={ctx.link().clone()}

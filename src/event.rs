@@ -10,7 +10,7 @@ pub struct EventCompProps {
     pub day_start: u64,
     pub show_announcement: bool,
     pub agenda_link: yew::html::Scope<Agenda>,
-    pub day_of_week: u8,
+    pub week_day: u8,
 }
 
 impl PartialEq for EventCompProps {
@@ -19,7 +19,7 @@ impl PartialEq for EventCompProps {
             && self.event == other.event
             && self.day_start == other.day_start
             && self.show_announcement == other.show_announcement
-            && self.day_of_week == other.day_of_week
+            && self.week_day == other.week_day
     }
 }
 
@@ -81,10 +81,10 @@ impl Component for EventComp {
 
         // Render
         let event1 = ctx.props().event.clone();
-        let day_of_week = ctx.props().day_of_week;
+        let week_day = ctx.props().week_day;
         template_html!(
             "templates/components/event.html",
-            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::SetSelectedEvent(Some((day_of_week, event1.clone())))) },
+            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::OpenPopup { week_day, event: event1.clone() }) },
             teachers = { ctx.props().event.teachers.join(", ")},
             opt_location = location, bg_color2 = bg_color, ...
         )

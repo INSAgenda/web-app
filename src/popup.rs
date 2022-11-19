@@ -37,7 +37,7 @@ impl Component for Popup {
                         let _ = popup_container.remove_attribute("style");
                         sleep(Duration::from_millis(500)).await;
                     }
-                    agenda_link.send_message(AgendaMsg::SetSelectedEvent(None));
+                    agenda_link.send_message(AgendaMsg::ClosePopup);
                 });
                 false
             }
