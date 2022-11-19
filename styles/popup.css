@@ -75,7 +75,6 @@
 
 #popup-color-picker>div {
     min-height: 5rem;
-    cursor: pointer;
     border-radius: 0.3rem;
 }
 
@@ -85,6 +84,7 @@
     height: 100%;
     bottom: 0;
     opacity: 0;
+    cursor: pointer;
 }
 
 :root[data-theme="dark"] #popup-header, :root[data-theme="dark"] #popup {
