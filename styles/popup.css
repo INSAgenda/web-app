@@ -73,6 +73,7 @@
 
 #popup-color-picker>div {
     min-height: 5rem;
+    cursor: pointer;
     border-radius: 0.3rem;
 }
 
