@@ -98,7 +98,10 @@ impl CachedData for Vec<RawEvent> {
     fn force_reload(&self) -> bool { self.is_empty() }
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
         match result {
-            Ok(events) => app_link.send_message(AppMsg::ScheduleSuccess(events)),
+            Ok(mut events) => {
+                events.sort_by_key(|e| e.start_unixtime);
+                app_link.send_message(AppMsg::ScheduleSuccess(events));
+            },
             Err(e) => app_link.send_message(AppMsg::ScheduleFailure(e)),
         }
     }
