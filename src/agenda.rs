@@ -320,7 +320,7 @@ impl Component for Agenda {
                 month={self.selected_day.month()}
                 year={self.selected_day.year()} />
         };
-        let opt_popup = self.popup.as_option().map(|(week_day, event, _)|
+        let opt_popup = self.popup.not_closed().map(|(week_day, event, _)|
             html! {
                 <Popup
                     week_day = {week_day}
@@ -328,7 +328,7 @@ impl Component for Agenda {
                     agenda_link = {ctx.link().clone()} />
             }
         );
-        let popup_container_style = self.popup.opened_as_option().map(|(_, _, popup_size)| {
+        let popup_container_style = self.popup.opened().map(|(_, _, popup_size)| {
             match mobile {
                 true => {
                     let screen_height = window().inner_height().unwrap().as_f64().unwrap() as usize;
