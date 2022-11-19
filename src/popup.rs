@@ -31,7 +31,14 @@ impl Component for Popup {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             PopupMsg::Close => {
-                ctx.props().agenda_link.send_message(AgendaMsg::SetSelectedEvent(None));
+                let agenda_link = ctx.props().agenda_link.clone();
+                spawn_local(async move {
+                    if let Some(popup_container) = window().doc().get_element_by_id("popup-container") {
+                        let _ = popup_container.remove_attribute("style");
+                        sleep(Duration::from_millis(500)).await;
+                    }
+                    agenda_link.send_message(AgendaMsg::SetSelectedEvent(None));
+                });
                 false
             }
             PopupMsg::SaveColors => {

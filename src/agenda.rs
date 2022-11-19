@@ -319,9 +319,15 @@ impl Component for Agenda {
             }
         );
         let popup_container_style = self.selected_event.as_ref().map(|(_, _, popup_size)|
-            match popup_size {
-                Some(popup_size) => format!("right: 0; width: {popup_size}px;"),
-                None => "right: 0; width: 70vw;".to_string(),
+            match mobile {
+                true => {
+                    let screen_height = window().inner_height().unwrap().as_f64().unwrap() as usize;
+                    format!("top: -{screen_height}px; height: {screen_height}px;")
+                }
+                false => match popup_size {
+                    Some(popup_size) => format!("left: -{popup_size}px; width: {popup_size}px;"),
+                    None => "left: -70vw; width: 70vw;".to_string(),
+                }
             }
         );
         

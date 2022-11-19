@@ -1,8 +1,18 @@
 #popup-container {
     position: absolute;
-    right: -70vw;
+    left: 0;
     height: 100%;
-    transition: right .5s ease;
+    transition: left .5s ease;
+}
+
+@media all and (max-width: 1000px) {
+    #popup-container {
+        height: unset;
+        left: unset;
+        width: 100%;
+        top: 0;
+        transition: top .5s ease;
+    }
 }
 
 #popup {
