@@ -76,6 +76,7 @@ impl Component for Popup {
             "templates/components/popup.html",
             teachers = {ctx.props().event.teachers.join(", ")},
             time = {ctx.props().event.format_time()},
+            name = {&name},
             onclick_close = {onclick_close.clone()},
             onclick_save = {ctx.link().callback(|_| PopupMsg::SaveColors)},
             opt_location = {&opt_location},
