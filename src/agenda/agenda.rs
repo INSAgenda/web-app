@@ -17,7 +17,6 @@ fn format_day(day_name: Weekday, day: u32) -> String {
 pub struct Agenda {
     selected_day: Date<chrono_tz::Tz>,
     slider: Rc<RefCell<slider::SliderManager>>,
-    announcements: Vec<AnnouncementDesc>,
     pub displayed_announcement: Option<AnnouncementDesc>,
     popup: PopupState,
     counter: AtomicUsize,
@@ -30,11 +29,8 @@ pub enum AgendaMsg {
     OpenPopup{ week_day: u8, event: RawEvent },
     ClosePopup,
     CloseAnnouncement,
-    AnnouncementsSuccess(Vec<AnnouncementDesc>),
     Refresh,
-    FetchColors(HashMap<String, String>),
-    ApiFailure(ApiError),
-    PushColors()
+    PushColors
 }
 
 #[derive(Properties, Clone)]
@@ -42,11 +38,12 @@ pub struct AgendaProps {
     pub app_link: Scope<App>,
     pub user_info: Rc<Option<UserInfo>>,
     pub events: Rc<Vec<RawEvent>>,
+    pub announcements: Rc<Vec<AnnouncementDesc>>,
 }
 
 impl PartialEq for AgendaProps {
     fn eq(&self, other: &Self) -> bool {
-        self.user_info == other.user_info && self.events == other.events
+        !COLORS_CHANGED.load(Ordering::Relaxed) && self.user_info == other.user_info && self.events == other.events
     }
 }
 
@@ -58,25 +55,24 @@ impl Component for Agenda {
         let now = chrono::Local::now();
         let now = now.with_timezone(&Paris);
 
-        // Update data
-        let announcements = init_announcements(now, ctx.link().clone());
-        let displayed_announcement = select_announcement(&announcements, &ctx.props().user_info.clone());
+        // Select announcement
+        let displayed_announcement = select_announcement(&ctx.props().announcements, &ctx.props().user_info.clone());
 
         // Trigger color sync when page is closed
         let link = ctx.link().clone();
         let unload = Closure::wrap(Box::new(move |_: web_sys::Event| {
-            link.send_message(AgendaMsg::PushColors());
+            link.send_message(AgendaMsg::PushColors);
         }) as Box<dyn FnMut(_)>);
         window().add_event_listener_with_callback("unload", unload.as_ref().unchecked_ref()).unwrap();
         unload.forget();
 
         // Get colors
-        crate::COLORS.fetch_colors(ctx);
+        crate::COLORS.fetch_colors(ctx.props().app_link.clone());
 
         // Auto-push colors every 15s if needed
         let link = ctx.link().clone();
         let push_colors = Closure::wrap(Box::new(move || {
-            link.send_message(AgendaMsg::PushColors());
+            link.send_message(AgendaMsg::PushColors);
         }) as Box<dyn FnMut()>);
         if let Err(e) = window().set_interval_with_callback_and_timeout_and_arguments(push_colors.as_ref().unchecked_ref(), 1000*15, &Array::new()) {
             sentry_report(JsValue::from(&format!("Failed to set timeout: {:?}", e)));
@@ -98,7 +94,6 @@ impl Component for Agenda {
         Self {
             selected_day: now.date(),
             slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
-            announcements,
             displayed_announcement,
             popup: PopupState::Closed,
             counter: AtomicUsize::new(0),
@@ -107,10 +102,6 @@ impl Component for Agenda {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            AgendaMsg::AnnouncementsSuccess(announcements) => {
-                self.announcements = announcements;
-                false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
-            },
             AgendaMsg::Previous => {
                 let prev_week = NaiveDateTime::new(self.selected_day.naive_local(), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
                 if self.selected_day.weekday() != Weekday::Mon {
@@ -200,16 +191,8 @@ impl Component for Agenda {
                     PopupState::Closed => false,
                 }
             }
-            AgendaMsg::FetchColors(new_colors) => {
-                crate::COLORS.update_colors(new_colors);
-                true
-            },
-            AgendaMsg::PushColors() => {
+            AgendaMsg::PushColors => {
                 crate::COLORS.push_colors();
-                false
-            },
-            AgendaMsg::ApiFailure(api_error) => {
-                api_error.handle_api_error();
                 false
             },
         }
