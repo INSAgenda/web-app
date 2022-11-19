@@ -53,7 +53,7 @@
 }
 
 #popup-body>section {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 #popup-body>section>h4 {
@@ -61,13 +61,18 @@
     font-size: 1.2rem;
 }
 
+#popup-body>section>p {
+    margin: .4rem 0;
+}
+
 #popup-color-picker {
-    margin-top: .2rem;
+    margin-top: .7rem;
     background-color: var(--day);
     position: relative;
 }
 
 #popup-color-picker>div {
+    min-height: 5rem;
     border-radius: 0.3rem;
 }
 
