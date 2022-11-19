@@ -1,4 +1,4 @@
-const CRASH_PAGE: &str = include_str!("../templates/crash.html");
+const CRASH_PAGE: &str = include_str!("crash.html");
 
 use js_sys::{Reflect::get, Function};
 use crate::prelude::*;

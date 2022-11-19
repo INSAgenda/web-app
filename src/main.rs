@@ -12,6 +12,7 @@ mod util;
 mod calendar;
 mod slider;
 mod api;
+#[path = "crash/crash_handler.rs"]
 mod crash_handler;
 mod colors;
 #[path = "change_data/change_data.rs"]
