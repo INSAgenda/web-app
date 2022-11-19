@@ -320,7 +320,7 @@ impl Component for Agenda {
                 month={self.selected_day.month()}
                 year={self.selected_day.year()} />
         };
-        let opt_popup = self.popup.not_closed().map(|(week_day, event, _)|
+        let opt_popup = self.popup.as_option().map(|(week_day, event, _)|
             html! {
                 <Popup
                     week_day = {week_day}
