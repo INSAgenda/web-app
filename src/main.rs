@@ -58,8 +58,6 @@ impl Component for App {
 
     fn create(ctx: &Context<Self>) -> Self {
         crash_handler::init();
-        let now = chrono::Local::now();
-        let now = now.with_timezone(&Paris);
 
         // Redirections
         let link2 = ctx.link().clone();
@@ -79,9 +77,9 @@ impl Component for App {
         closure.forget();
 
         // Update data
-        let events = init_events(now, ctx.link().clone());
-        let user_info = init_user_info(now, ctx.link().clone());
-        let groups = init_groups(now, ctx.link().clone());
+        let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let user_info = CachedData::init(ctx.link().clone());
+        let groups = CachedData::init(ctx.link().clone()).unwrap_or_default();
 
         // Detect page
         let page = match window().location().hash() {
@@ -115,7 +113,7 @@ impl Component for App {
                 api_error.handle_api_error();
                 match api_error {
                     ApiError::Known(error) if error.kind == "counter_too_low" => {
-                        refresh_events(ctx.link().clone());
+                        <Vec<RawEvent>>::refresh(ctx.link().clone());
                     }
                     _ => {},
                 }
@@ -127,13 +125,13 @@ impl Component for App {
                 if let Some(old_user_info) = self.user_info.as_ref() {
                     if old_user_info.user_groups != user_info.user_groups {
                         self.events = Rc::new(Vec::new());
-                        refresh_events(ctx.link().clone());
+                        UserInfo::refresh(ctx.link().clone());
                         should_refresh = true;
                     }
                 }
 
                 // Update user info
-                api::save_user_info_cache(&user_info);
+                user_info.save();
                 self.user_info = Rc::new(Some(user_info));
 
                 should_refresh
