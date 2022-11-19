@@ -14,6 +14,7 @@ mod slider;
 mod api;
 mod crash_handler;
 mod colors;
+#[path = "change_data/change_data.rs"]
 mod change_data;
 mod prelude;
 mod translation;

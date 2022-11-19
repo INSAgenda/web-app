@@ -315,7 +315,7 @@ impl Component for ChangeDataPage {
         let app_link2 = ctx.props().app_link.clone();
         let link = ctx.link().clone();
         template_html!(
-            "templates/change_data.html",
+            "src/change_data/change_data.html",
             onclick_settings = {move |_| app_link.send_message(AppMsg::SetPage(Page::Settings))},
             onclick_settings2 = {move |_| app_link2.send_message(AppMsg::SetPage(Page::Settings))},
             onclick_submit = {move |_| link.send_message(Msg::Submit)},
