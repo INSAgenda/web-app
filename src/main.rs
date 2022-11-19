@@ -13,6 +13,7 @@ mod colors;
 mod change_data;
 mod prelude;
 mod translation;
+#[path ="popup/popup.rs"]
 mod popup;
 
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
