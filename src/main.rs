@@ -1,5 +1,6 @@
 mod alert;
 mod announcements;
+#[path = "event/event.rs"]
 mod event;
 mod settings;
 mod agenda;
