@@ -112,10 +112,10 @@ impl CachedData for Vec<AnnouncementDesc> {
     fn endpoint() ->  &'static str { "/api/announcements" }
     fn cache_duration() -> u64 { 3600 }
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
-        /*match result {
+        match result {
             Ok(announcements) => app_link.send_message(AppMsg::AnnouncementsSuccess(announcements)),
-            Err(e) => app_link.send_message(AppMsg::AnnouncementsFailure(e)),
-        }*/
+            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
+        }
     }
 }
 
