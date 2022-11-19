@@ -1,3 +1,4 @@
+#[path = "alert/alert.rs"]
 mod alert;
 #[path = "announcement/announcement.rs"]
 mod announcement;
