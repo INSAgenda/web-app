@@ -3,6 +3,7 @@ mod announcements;
 #[path = "event/event.rs"]
 mod event;
 mod settings;
+#[path = "agenda/agenda.rs"]
 mod agenda;
 mod glider_selector;
 mod util;
