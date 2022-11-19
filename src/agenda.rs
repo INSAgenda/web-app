@@ -190,14 +190,15 @@ impl Component for Agenda {
                             link.send_message(AgendaMsg::ClosePopup);
                             window().doc().body().unwrap().remove_attribute("style").unwrap();
                         });
+                        true
                     },
                     PopupState::Closing { .. } => {
                         self.popup = PopupState::Closed;
                         self.slider.borrow_mut().enable();
+                        true
                     },
-                    PopupState::Closed => {}
+                    PopupState::Closed => false,
                 }
-                true
             }
             AgendaMsg::FetchColors(new_colors) => {
                 crate::COLORS.update_colors(new_colors);
