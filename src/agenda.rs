@@ -328,8 +328,8 @@ impl Component for Agenda {
                     agenda_link = {ctx.link().clone()} />
             }
         );
-        let popup_container_style = self.popup.opened().map(|(_, _, popup_size)| {
-            match mobile {
+        let popup_container_style = match &self.popup {
+            PopupState::Opened { popup_size, .. } => match mobile {
                 true => {
                     let screen_height = window().inner_height().unwrap().as_f64().unwrap() as usize;
                     format!("top: -{screen_height}px; height: {screen_height}px;")
@@ -338,8 +338,19 @@ impl Component for Agenda {
                     Some(popup_size) => format!("left: -{popup_size}px; width: {popup_size}px;"),
                     None => "left: -70vw; width: 70vw;".to_string(),
                 }
-            }
-        });
+            },
+            PopupState::Closing { popup_size, .. } => match mobile {
+                true => {
+                    let screen_height = window().inner_height().unwrap().as_f64().unwrap() as usize;
+                    format!("height: {screen_height}px;")
+                }
+                false => match popup_size {
+                    Some(popup_size) => format!("width: {popup_size}px;"),
+                    None => "width: 70vw;".to_string(),
+                }
+            },
+            PopupState::Closed => String::new(),
+        };
         
         let day_container_style = if mobile {
             format!("right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000))
