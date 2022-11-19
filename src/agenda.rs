@@ -1,4 +1,4 @@
-use crate::{prelude::*, slider};
+use crate::{prelude::*, slider::{self, width}};
 
 fn format_day(day_name: Weekday, day: u32) -> String {
     let day_name = t(match day_name {
@@ -19,7 +19,8 @@ pub struct Agenda {
     slider: Rc<RefCell<slider::SliderManager>>,
     announcements: Vec<AnnouncementDesc>,
     pub displayed_announcement: Option<AnnouncementDesc>,
-    selected_event: Rc<Option<(u8, RawEvent)>>,
+    selected_event: Option<(u8, Rc<RawEvent>, Option<usize>)>,
+    counter: AtomicUsize,
 }
 
 pub enum AgendaMsg {
@@ -98,7 +99,8 @@ impl Component for Agenda {
             slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
             announcements,
             displayed_announcement,
-            selected_event: Rc::new(None)
+            selected_event: None,
+            counter: AtomicUsize::new(0),
         }
     }
 
@@ -160,13 +162,24 @@ impl Component for Agenda {
             },
             AgendaMsg::CloseAnnouncement => update_close_announcement(self),
             AgendaMsg::SetSelectedEvent(event) => {
-                if event.is_some() {
-                    self.slider.borrow_mut().disable();
-                } else {
-                    self.slider.borrow_mut().enable();
+                match event {
+                    Some((week_day, event)) => {
+                        self.slider.borrow_mut().disable();
+                        let mut popup_width = None;
+                        if let Some((_,_,Some(previous_popup_width))) = self.selected_event {
+                            popup_width = Some(previous_popup_width);
+                        } else if let Some(day_el) = window().doc().get_element_by_id("day0") {
+                            let rect = day_el.get_bounding_client_rect();
+                            popup_width = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
+                        }
+                        
+                        self.selected_event = Some((week_day, Rc::new(event), popup_width));
+                    },
+                    None => {
+                        self.slider.borrow_mut().enable();
+                        self.selected_event = None;
+                    },
                 }
-
-                self.selected_event = Rc::new(event);
                 true
             },
             AgendaMsg::FetchColors(new_colors) => {
@@ -185,7 +198,8 @@ impl Component for Agenda {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let mobile = crate::slider::width() <= 1000;
+        let screen_width = crate::slider::width();
+        let mobile = screen_width <= 1000;
         
         // Go on the first day of the week
         let mut current_day = self.selected_day;
@@ -236,7 +250,7 @@ impl Component for Agenda {
         let mut days = Vec::new();
         let mut day_names = Vec::new();
         for d in 0..6 {
-            let selected_event_other_day = matches!(self.selected_event.as_ref(), Some((s,_)) if *s != d && !mobile);
+            let selected_event_other_day = matches!(self.selected_event.as_ref(), Some((s,_,_)) if *s != d && !mobile);
             let mut events = Vec::new();
 
             // Iterate over events, starting from the first one that starts during the current day
@@ -270,7 +284,7 @@ impl Component for Agenda {
                     day_style.push_str("opacity: 0; pointer-events: none;");
                     day_name_style.push_str("opacity: 0;");
                 }
-                if let Some((sd, _)) = self.selected_event.as_ref() {
+                if let Some((sd, _,_)) = self.selected_event.as_ref() {
                     day_name_style.push_str(&format!("transform: translateX(calc(-100%*{sd} + -10px*{sd}))"));
                 }
             }
@@ -281,7 +295,7 @@ impl Component for Agenda {
                 </span>
             });
             days.push(html! {
-                <div class="day" style={day_style}>
+                <div class="day" id={format!("day{d}")} style={day_style}>
                     { events }
                 </div>
             });
@@ -296,15 +310,26 @@ impl Component for Agenda {
                 month={self.selected_day.month()}
                 year={self.selected_day.year()} />
         };
-        let popup = html! {
-            <Popup
-                event={self.selected_event.clone()}
-                agenda_link={ctx.link().clone()} />
-        };
+        let opt_popup = self.selected_event.as_ref().map(|(week_day, event, _)|
+            html! {
+                <Popup
+                    week_day = {*week_day}
+                    event = {event}
+                    agenda_link = {ctx.link().clone()} />
+            }
+        );
+        let popup_container_style = self.selected_event.as_ref().map(|(_, _, popup_size)|
+            match popup_size {
+                Some(popup_size) => format!("right: 0; width: {popup_size}px;"),
+                None => "right: 0; width: 70vw;".to_string(),
+            }
+        );
+        
         let day_container_style = if mobile {
             format!("right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000))
-        } else if let Some((day_idx, e)) = self.selected_event.as_ref() {
-            format!("right: calc((100%/6)*{day_idx}); sts: {}; ets: {};", e.start_unixtime, e.end_unixtime) // times are for a workarround for a bug in Yew
+        } else if let Some((week_day, _, _)) = self.selected_event.as_ref() {
+            let c = self.counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            format!("right: calc((100%/6)*{week_day}); c: {};", c) // c is a workarround for a bug in Yew
         } else {
             String::new()
         };
