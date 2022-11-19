@@ -9,15 +9,15 @@ pub enum PopupState {
 impl PopupState {
     pub fn not_closed(&self) -> Option<(u8, Rc<RawEvent>, Option<usize>)> {
         match self {
-            PopupState::Opened { week_day, event, popup_size } => Some((*week_day, Rc::clone(&event), *popup_size)),
-            PopupState::Closing { week_day, event, popup_size } => Some((*week_day, Rc::clone(&event), *popup_size)),
+            PopupState::Opened { week_day, event, popup_size } => Some((*week_day, Rc::clone(event), *popup_size)),
+            PopupState::Closing { week_day, event, popup_size } => Some((*week_day, Rc::clone(event), *popup_size)),
             PopupState::Closed => None,
         }
     }
 
     pub fn opened(&self) -> Option<(u8, Rc<RawEvent>, Option<usize>)> {
         match self {
-            PopupState::Opened { week_day, event, popup_size } => Some((*week_day, Rc::clone(&event), *popup_size)),
+            PopupState::Opened { week_day, event, popup_size } => Some((*week_day, Rc::clone(event), *popup_size)),
             _ => None,
         }
     }
