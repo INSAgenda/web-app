@@ -314,7 +314,7 @@ impl Component for SettingsPage {
         };
 
         template_html!(
-            "templates/settings.html",
+            "src/settings/settings.html",
             onclick_logout = {ctx.link().callback(move |_| Msg::LogOut)},
             onclick_confirm = {ctx.link().callback(move |_| Msg::Confirm)},
             onclick_delete = {ctx.link().callback(move |_| Msg::Delete)},
