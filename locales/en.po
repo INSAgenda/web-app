@@ -1,0 +1,280 @@
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[name]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[teachers]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[opt_location]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "INSAgenda"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Se déconnecter"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Paramètres"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Général"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Changer de mot de passe"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Votre mot de passe a été changé il y a [last_password_mod]."
+msgstr "Your password was changed [last_password_mod] ago."
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Modifier"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Ajouter un mot de passe"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Vous n'avez pas encore de mot de passe."
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Ajouter"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Changer de classe"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Vous êtes actuellement en [formatted_group]."
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Adresse mail"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Votre adresse actuelle est [email]. [verified_msg]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Affichage"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Thème"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Par défault, le thème est celui renseigné par votre navigateur."
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[theme_glider_selector]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Langue"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[language_message]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[language_glider_selector]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Valider"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Annuler"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[calendar]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "08:00"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "09:45"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "11:30"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "13:15"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "15:00"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "16:45"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "18:30"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[day_names]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[days]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[opt_announcement]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[opt_popup]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[display_month]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Lun"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Mar"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Mer"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Jeu"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Ven"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Sam"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Dim"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[cases_iter]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[h2]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[h3]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[inputs]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[opt_error_message]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Horaires"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "[time]"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Emplacement"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Couleur"
+msgstr ""
+
+#: src/unknown.rs:0
+msgctxt "context unknown"
+msgid "Cliquez sur la prévisualisation ci-dessous pour changer la couleur de tous les cours de [summary]."
+msgstr ""

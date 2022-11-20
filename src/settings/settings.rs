@@ -121,6 +121,13 @@ impl SettingStore {
         }
     }
 
+    pub fn locale(&self) -> &str {
+        match self.lang() {
+            Lang::French => "fr",
+            Lang::English => "en",
+        }
+    }
+
     fn set_lang(&self, lang: usize) {
         self.lang.store(lang, Ordering::Relaxed);
 
