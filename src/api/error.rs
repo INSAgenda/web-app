@@ -147,6 +147,10 @@ impl ApiError{
                 log!("Counter too low");
                 counter_to_the_moon();
             }
+            ApiError::Known(error) if error.kind == "counter_too_low" => {
+                log!("firewall_ban");
+                alert("Vous envoyez trop de requêtes! Veuillez réessayer plus tard.");
+            }
             ApiError::Known(error) => {
                 sentry_report(self);
                 log!("{}", error.to_string());

@@ -54,7 +54,7 @@ impl Colors {
         local_storage.set_item("colors", &serde_json::to_string(&self.local_colors.as_ref()).unwrap()).unwrap();
     }
 
-    pub fn fetch_colors(&self, ctx: &Context<Agenda>) {
+    pub fn fetch_colors(&self, app_link: Scope<App>) {
         let local_storage = window().local_storage().unwrap().unwrap();
 
         if let Some(time) = local_storage.get_item("last_colors_updated").unwrap() {
@@ -65,11 +65,10 @@ impl Colors {
             }   
         }
 
-        let link = ctx.link().clone();
         wasm_bindgen_futures::spawn_local(async move {
-            match crate::api::get_colors().await  {
-                Ok(events) => link.send_message(AgendaMsg::FetchColors(events)),
-                Err(e) => link.send_message(AgendaMsg::ApiFailure(e)),
+            match crate::api::get_colors().await {
+                Ok(events) => app_link.send_message(AppMsg::FetchColors(events)),
+                Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
             }
         });
     }
