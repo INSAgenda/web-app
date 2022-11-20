@@ -43,12 +43,15 @@ pub enum Msg {
     SilentSetPage(Page),
     ScheduleSuccess(Vec<RawEvent>),
     ScheduleFailure(ApiError),
+    AnnouncementsSuccess(Vec<AnnouncementDesc>),
+    FetchColors(HashMap<String, String>),
 }
 
 pub struct App {
     groups: Rc<Vec<GroupDesc>>,
     user_info: Rc<Option<UserInfo>>,
     events: Rc<Vec<RawEvent>>,
+    announcements: Rc<Vec<AnnouncementDesc>>,
     page: Page,
 }
 
@@ -58,8 +61,6 @@ impl Component for App {
 
     fn create(ctx: &Context<Self>) -> Self {
         crash_handler::init();
-        let now = chrono::Local::now();
-        let now = now.with_timezone(&Paris);
 
         // Redirections
         let link2 = ctx.link().clone();
@@ -79,9 +80,10 @@ impl Component for App {
         closure.forget();
 
         // Update data
-        let events = init_events(now, ctx.link().clone());
-        let user_info = init_user_info(now, ctx.link().clone());
-        let groups = init_groups(now, ctx.link().clone());
+        let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let user_info = CachedData::init(ctx.link().clone());
+        let announcement = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let groups = CachedData::init(ctx.link().clone()).unwrap_or_default();
 
         // Detect page
         let page = match window().location().hash() {
@@ -99,27 +101,22 @@ impl Component for App {
 
         Self {
             events: Rc::new(events),
+            user_info: Rc::new(user_info),
+            announcements: Rc::new(announcement),
             groups: Rc::new(groups),
             page,
-            user_info: Rc::new(user_info),
         }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
+            AppMsg::AnnouncementsSuccess(announcements) => {
+                self.announcements = Rc::new(announcements);
+                false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
+            },
             AppMsg::ScheduleSuccess(events) => {
                 self.events = Rc::new(events);
                 true
-            },
-            AppMsg::ScheduleFailure(api_error) => {
-                api_error.handle_api_error();
-                match api_error {
-                    ApiError::Known(error) if error.kind == "counter_too_low" => {
-                        refresh_events(ctx.link().clone());
-                    }
-                    _ => {},
-                }
-                false
             },
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
@@ -127,21 +124,28 @@ impl Component for App {
                 if let Some(old_user_info) = self.user_info.as_ref() {
                     if old_user_info.user_groups != user_info.user_groups {
                         self.events = Rc::new(Vec::new());
-                        refresh_events(ctx.link().clone());
+                        UserInfo::refresh(ctx.link().clone());
                         should_refresh = true;
                     }
                 }
 
                 // Update user info
-                api::save_user_info_cache(&user_info);
+                user_info.save();
                 self.user_info = Rc::new(Some(user_info));
 
                 should_refresh
-            }
+            },
             Msg::GroupsSuccess(groups) => {
                 self.groups = Rc::new(groups);
                 false
-            }
+            },
+            AppMsg::ScheduleFailure(api_error) => {
+                api_error.handle_api_error();
+                if self.events.is_empty() {
+                    alert("Failed to fetch schedule");
+                }
+                false
+            },
             Msg::ApiFailure(api_error) => {
                 api_error.handle_api_error();
                 false
@@ -162,6 +166,10 @@ impl Component for App {
                 self.page = page;
                 true
             },
+            Msg::FetchColors(new_colors) => {
+                crate::COLORS.update_colors(new_colors);
+                true
+            },
         }
     }
     
@@ -174,7 +182,8 @@ impl Component for App {
             Page::Agenda => {
                 let user_info = Rc::clone(&self.user_info);
                 let events = Rc::clone(&self.events);
-                html!(<Agenda events={events} user_info={user_info} app_link={ctx.link().clone()} />)
+                let announcements = Rc::clone(&self.announcements);
+                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} />)
             },
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
             Page::ChangePassword => html!(
