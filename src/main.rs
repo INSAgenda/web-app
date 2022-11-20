@@ -118,16 +118,6 @@ impl Component for App {
                 self.events = Rc::new(events);
                 true
             },
-            AppMsg::ScheduleFailure(api_error) => {
-                api_error.handle_api_error();
-                match api_error {
-                    ApiError::Known(error) if error.kind == "counter_too_low" => {
-                        <Vec<RawEvent>>::refresh(ctx.link().clone());
-                    }
-                    _ => {},
-                }
-                false
-            },
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
 
@@ -144,11 +134,18 @@ impl Component for App {
                 self.user_info = Rc::new(Some(user_info));
 
                 should_refresh
-            }
+            },
             Msg::GroupsSuccess(groups) => {
                 self.groups = Rc::new(groups);
                 false
-            }
+            },
+            AppMsg::ScheduleFailure(api_error) => {
+                api_error.handle_api_error();
+                if self.events.is_empty() {
+                    alert("Failed to fetch schedule");
+                }
+                false
+            },
             Msg::ApiFailure(api_error) => {
                 api_error.handle_api_error();
                 false

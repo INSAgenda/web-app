@@ -125,7 +125,7 @@ impl CachedData for Vec<GroupDesc> {
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
         match result {
             Ok(groups) => app_link.send_message(AppMsg::GroupsSuccess(groups)),
-            Err(e) => sentry_report(&e),
+            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
         }
     }
 }
