@@ -37,7 +37,7 @@ msgctxt "settings"
 msgid "Votre mot de passe a été changé il y a [last_password_mod]."
 msgstr "Your password was changed [last_password_mod] ago."
 
-#: src/settings/settings.html:35
+#: src/settings/settings.html:38
 msgctxt "settings"
 msgid "Modifier"
 msgstr "Edit"
@@ -72,37 +72,32 @@ msgctxt "settings"
 msgid "Adresse mail"
 msgstr "Email address"
 
-#: src/settings/settings.html:34
-msgctxt "settings"
-msgid "Votre adresse actuelle est [email]. [verified_msg]"
-msgstr "Your current email address is [email]. [verified_msg]"
-
-#: src/settings/settings.html:40
+#: src/settings/settings.html:43
 msgctxt "settings"
 msgid "Affichage"
 msgstr "Display"
 
-#: src/settings/settings.html:43
+#: src/settings/settings.html:46
 msgctxt "settings"
 msgid "Thème"
 msgstr "Theme"
 
-#: src/settings/settings.html:44
+#: src/settings/settings.html:47
 msgctxt "settings"
 msgid "Par défault, le thème est celui renseigné par votre navigateur."
 msgstr "The default theme is set by your browser."
 
-#: src/settings/settings.html:48
+#: src/settings/settings.html:51
 msgctxt "settings"
 msgid "Langue"
 msgstr "Language"
 
-#: src/settings/settings.html:56
+#: src/settings/settings.html:59
 msgctxt "settings"
 msgid "Valider"
 msgstr "Submit"
 
-#: src/settings/settings.html:57
+#: src/settings/settings.html:60
 msgctxt "settings"
 msgid "Annuler"
 msgstr "Cancel"
@@ -206,4 +201,14 @@ msgstr "Color"
 msgctxt "popup"
 msgid "Cliquez sur la prévisualisation ci-dessous pour changer la couleur de tous les cours de [summary]."
 msgstr "Click on the preview below to change the color of all your [summary] courses."
+
+#: src/settings/settings.html:35
+msgctxt "settings"
+msgid "Votre adresse actuelle est [email]."
+msgstr "Your current email address is [email]."
+
+#: src/settings/settings.html:36
+msgctxt "settings"
+msgid "Elle n'a pas encore été vérifiée."
+msgstr "It wasn't verified yet."
 
