@@ -9,7 +9,8 @@ fn alert_with_report(message: impl AsRef<str>, report: bool) {
     let doc = window().doc();
     let error_container = doc.get_element_by_id("errors").unwrap();
     let alert = doc.create_element("div").unwrap();
-    alert.set_inner_html(message.as_ref());
+    let alert: HtmlElement = alert.dyn_into().unwrap();
+    alert.set_inner_text(message.as_ref());
     alert.set_class_name("alert");
     
     error_container.append_child(&alert).unwrap();
