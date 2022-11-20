@@ -57,6 +57,38 @@ impl HackTraitSelectedValueOnHtmlSelectElement for HtmlSelectElement {
     }
 }
 
+pub trait HackTraitHtmlCollectionIter {
+    fn into_iter(self) -> HtmlCollectionIter;
+}
+
+impl HackTraitHtmlCollectionIter for HtmlCollection {
+    fn into_iter(self) -> HtmlCollectionIter {
+        HtmlCollectionIter {
+            values: self,
+            index: 0,
+        }
+    }
+}
+
+pub struct HtmlCollectionIter {
+    values: HtmlCollection,
+    index: u32,
+}
+
+impl Iterator for HtmlCollectionIter {
+    type Item = web_sys::Element;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.index < self.values.length() {
+            let value = self.values.item(self.index).unwrap();
+            self.index += 1;
+            Some(value)
+        } else {
+            None
+        }
+    }
+}
+
 // Check if there are events on the specified day of the current week
 pub fn has_event_on_day(events: &Vec<RawEvent>, current_day: NaiveDateTime, day_to_look: Weekday) -> bool {
     let offset_to_saturday = day_to_look.num_days_from_monday() as i64 - current_day.weekday().number_from_monday() as i64 + 1;
