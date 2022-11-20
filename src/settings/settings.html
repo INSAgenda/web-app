@@ -31,7 +31,10 @@
                 </div>
                 <div present-if=[has_password] class="setting">
                     <h4>Adresse mail</h4>
-                    <p>Votre adresse actuelle est [email]. [verified_msg]</p>
+                    <p>
+                        Votre adresse actuelle est [email].
+                        <span present-if=[email_not_verified]>&nbsp;Elle n'a pas encore été vérifiée.</span>
+                    </p>
                     <div class="primary-button" onclick=[onclick_change_email]>Modifier</div>
                 </div>
             </div>

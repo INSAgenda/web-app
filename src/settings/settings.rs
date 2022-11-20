@@ -240,13 +240,13 @@ impl Component for SettingsPage {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Compute variable messages
-        let mut verified_msg = String::new();
+        let mut email_not_verified = false;
         let mut email = String::from(t("[inconnue]"));
         let mut formatted_group = String::from(t("[inconnu]"));
         let mut last_password_mod_str = String::from(t("[indisponible]"));
         if let Some(user_info) = ctx.props().user_info.as_ref() {
             if !user_info.email.1 {
-                verified_msg = String::from(t(" Elle n'a pas encore été vérifiée."));
+                email_not_verified = true;
             }
             email = user_info.email.0.to_owned();
             if let Some(last_password_mod) = user_info.last_password_mod {
