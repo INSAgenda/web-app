@@ -315,10 +315,6 @@ impl Component for SettingsPage {
                 on_change = { ctx.link().callback(Msg::LanguageChange) }
                 selected = { SETTINGS.lang() as usize } />
         };
-        let language_message = match SETTINGS.lang() {
-            Lang::French => "Pour afficher l'interface dans langue de Molière.",
-            Lang::English => "To display the interface in Shakespeare's language.",
-        };
 
         template_html!(
             "src/settings/settings.html",
