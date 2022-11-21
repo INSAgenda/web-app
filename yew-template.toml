@@ -1,0 +1,12 @@
+# Whether to attempt to capture local variables instead of aborting when arguments required by the template are missing.
+auto_default = false
+
+# Where to look for templates (relative to crate root)
+template_directory = './'
+
+# Where to look for locales (relative to crate root)
+locale_directory = './locales/'
+
+# Rust code to evaluate as locale. Should evaluate to a &str.
+# If will be inserted in generated code like this: `match locale_code {`.
+locale_code = 'SETTINGS.locale()'

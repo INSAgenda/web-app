@@ -121,6 +121,13 @@ impl SettingStore {
         }
     }
 
+    pub fn locale(&self) -> &str {
+        match self.lang() {
+            Lang::French => "fr",
+            Lang::English => "en",
+        }
+    }
+
     fn set_lang(&self, lang: usize) {
         self.lang.store(lang, Ordering::Relaxed);
 
@@ -233,13 +240,13 @@ impl Component for SettingsPage {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Compute variable messages
-        let mut verified_msg = String::new();
+        let mut email_not_verified = false;
         let mut email = String::from(t("[inconnue]"));
         let mut formatted_group = String::from(t("[inconnu]"));
         let mut last_password_mod_str = String::from(t("[indisponible]"));
         if let Some(user_info) = ctx.props().user_info.as_ref() {
             if !user_info.email.1 {
-                verified_msg = String::from(t(" Elle n'a pas encore été vérifiée."));
+                email_not_verified = true;
             }
             email = user_info.email.0.to_owned();
             if let Some(last_password_mod) = user_info.last_password_mod {
@@ -307,10 +314,6 @@ impl Component for SettingsPage {
                 values = { vec!["Français", "English"] }
                 on_change = { ctx.link().callback(Msg::LanguageChange) }
                 selected = { SETTINGS.lang() as usize } />
-        };
-        let language_message = match SETTINGS.lang() {
-            Lang::French => "Pour afficher l'interface dans langue de Molière.",
-            Lang::English => "To display the interface in Shakespeare's language.",
         };
 
         template_html!(

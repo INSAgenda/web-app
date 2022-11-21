@@ -166,6 +166,7 @@ impl Component for Calendar {
             week_iter = {week_iter.into_iter()},
             cases_iter = {cases_iter.into_iter()},
             is_folded = {self.folded},
+            ...
         }
     }
 }
