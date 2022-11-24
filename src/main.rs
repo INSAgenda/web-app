@@ -124,7 +124,7 @@ impl Component for App {
                 if let Some(old_user_info) = self.user_info.as_ref() {
                     if old_user_info.user_groups != user_info.user_groups {
                         self.events = Rc::new(Vec::new());
-                        UserInfo::refresh(ctx.link().clone());
+                        <Vec<RawEvent>>::refresh(ctx.link().clone());
                         should_refresh = true;
                     }
                 }
