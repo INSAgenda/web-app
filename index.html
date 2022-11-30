@@ -57,12 +57,35 @@
     </script>
     <script>
         // Checks that the WASM app runs correctly
+        const quotes = [
+            {
+                text: "We are all Satoshi.",
+                author: "Satoshi"
+            },
+            {
+                text: "Never gonna give you up. Never gonna let you down.",
+                author: "Rick"
+            },
+            {
+                text: "Soutenir que l'on ne se préoccupe pas de la vie privée car on n'a rien à cacher, c'est comme soutenir que l'on ne se préoccupe pas de la liberté d'expression parce qu'on n'a rien à dire.",
+                author: "Edward Snowden"
+            },
+            {
+                text: "Piètre disciple qui ne dépasse pas son maître.",
+                author: "Léonard de Vinci"
+            },
+            {
+                text: "FTX va bien.",
+                author: "Sam Bankman-Fried"
+            }
+        ];
         window.localStorage.setItem("wasm-running-status", "waiting");
         setTimeout(() => {
             if (window.localStorage.getItem("wasm-running-status") === "waiting") {
                 const waiting_screen = document.getElementById("waiting-screen");
                 const quote = document.getElementById("waiting-screen-quote");
                 const quote_text = document.getElementById("waiting-screen-quote-text");
+                const quote_author = document.getElementById("waiting-screen-quote-author");
                 if (!waiting_screen || !quote || !quote_text) { return }
                 
                 waiting_screen.style.opacity = "1";
@@ -72,13 +95,15 @@
                     if (window.localStorage.getItem("wasm-running-status") === "waiting") {
                         quote.style.opacity = "0";
                         setTimeout(() => {
-                            quote.style.opacity = "1"; 
-                            quote_text.textContent = "We are all Satoshi.";
+                            quote.style.opacity = "1";
+                            let quote_index = Math.floor(Math.random() * quotes.length);
+                            quote_text.innerText = quotes[quote_index].text;
+                            quote_author.innerText = quotes[quote_index].author;
                         }, 400);
                     } else {
                         clearInterval(interval);
                     }
-                }, 7000);
+                }, 9000);
             }
         }, 250);
     </script>
