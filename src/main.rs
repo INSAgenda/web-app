@@ -217,14 +217,22 @@ fn redirect(page: &str){
     log!("Redirecting to {page}");
 }
 
+/// Set status to running
+fn confirm_running(window: &web_sys::Window) {
+    let local_storage = window.local_storage().unwrap().unwrap();
+    local_storage.set_item("wasm-running-status", "running").unwrap();
+}
+
 /// Prevent webdrivers from accessing the page
 fn stop_bots(window: &web_sys::Window) {
     if js_sys::Reflect::get(&window.navigator(), &"webdriver".to_string().into()).unwrap().as_bool().unwrap_or(false) {
         panic!("Your browser failed load this page");
     }
 }
+
 fn main() {
     let window = web_sys::window().expect("Please run the program in a browser context");
+    confirm_running(&window);
     stop_bots(&window);
     let doc = window.doc();
     let element = doc.get_element_by_id("render").unwrap();
