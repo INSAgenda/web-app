@@ -24,6 +24,8 @@ mod prelude;
 mod translation;
 #[path ="popup/popup.rs"]
 mod popup;
+#[path = "survey/survey.rs"]
+mod survey;
 
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
@@ -33,6 +35,7 @@ pub enum Page {
     ChangeEmail,
     ChangeGroup,
     Agenda,
+    Survey(Rc<Survey>),
 }
 
 pub enum Msg {
@@ -42,6 +45,7 @@ pub enum Msg {
     SetPage(Page),
     SilentSetPage(Page),
     ScheduleSuccess(Vec<RawEvent>),
+    SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
     ScheduleFailure(ApiError),
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
     FetchColors(HashMap<String, String>),
@@ -52,6 +56,7 @@ pub struct App {
     user_info: Rc<Option<UserInfo>>,
     events: Rc<Vec<RawEvent>>,
     announcements: Rc<Vec<AnnouncementDesc>>,
+    surveys: Vec<Survey>,
     page: Page,
 }
 
@@ -84,6 +89,42 @@ impl Component for App {
         let user_info = CachedData::init(ctx.link().clone());
         let announcement = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let groups = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let mut surveys = survey_response.surveys;
+        let survey_answers = survey_response.my_answers;
+        
+        // Testing
+        surveys.insert(0, Survey {
+            id: String::from("id"),
+            title: String::from("Survey de Noël"),
+            description: vec![(String::new(), String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."))].into_iter().collect(),
+            questions: vec![
+                Question {
+                    question: vec![(String::new(), String::from("Que pensez-vous des oiseaux ?"))].into_iter().collect(),
+                    possible_answer: PossibleAnswer::Input { max_length: 256 },
+                    editable: true
+                },
+                Question {
+                    question: vec![(String::new(), String::from("Aimeriez-vous voler ?"))].into_iter().collect(),
+                    possible_answer: PossibleAnswer::Checkbox,
+                    editable: false,
+                },
+                Question {
+                    question: vec![(String::new(), String::from("Quel est votre oiseau préféré ?"))].into_iter().collect(),
+                    possible_answer: PossibleAnswer::OneChoice(vec![
+                        vec![(String::new(), String::from("Aigle"))].into_iter().collect(),
+                        vec![(String::new(), String::from("Pigeon"))].into_iter().collect(),
+                        vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
+                        vec![(String::new(), String::from("Poule"))].into_iter().collect(),
+                    ]),
+                    editable: false,
+                },
+            ],
+            start_ts: 0,
+            end_ts: i64::MAX,
+            target: GroupFilter::All(vec![]),
+            required: false,
+        });
 
         // Detect page
         let page = match window().location().hash() {
@@ -99,11 +140,17 @@ impl Component for App {
             _ => Page::Agenda,
         };
 
+        // Open survey if one is available
+        if !surveys.is_empty() {
+            ctx.link().send_message(Msg::SetPage(Page::Survey(Rc::new(surveys[0].clone()))));
+        }
+
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
             announcements: Rc::new(announcement),
             groups: Rc::new(groups),
+            surveys,
             page,
         }
     }
@@ -116,6 +163,12 @@ impl Component for App {
             },
             AppMsg::ScheduleSuccess(events) => {
                 self.events = Rc::new(events);
+                true
+            },
+            AppMsg::SurveysSuccess(surveys, survey_answers) => {
+                log!("success {:?}", surveys);
+                self.surveys = surveys;
+                ctx.link().send_message(AppMsg::SetPage(Page::Survey(Rc::new(self.surveys[0].clone()))));
                 true
             },
             Msg::UserInfoSuccess(user_info) => {
@@ -155,6 +208,7 @@ impl Component for App {
                 match &page {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#settings")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
+                    Page::Survey(survey) => history.push_state_with_url(&JsValue::from_str("survey"), "Survey", Some(&format!("#survey-{}", survey.id))).unwrap(),
                     Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("#change-password")).unwrap(),
                     Page::ChangeEmail => history.push_state_with_url(&JsValue::from_str("change-email"), "Change email", Some("#change-email")).unwrap(),
                     Page::ChangeGroup => history.push_state_with_url(&JsValue::from_str("change-group"), "Change group", Some("#change-group")).unwrap(),
@@ -207,6 +261,7 @@ impl Component for App {
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
             ),
+            Page::Survey(survey) => html!(<SurveyComp survey={survey} /*app_link={ctx.link().clone()}*/ />),
         }
     }
 }
@@ -223,6 +278,7 @@ fn stop_bots(window: &web_sys::Window) {
         panic!("Your browser failed load this page");
     }
 }
+
 fn main() {
     let window = web_sys::window().expect("Please run the program in a browser context");
     stop_bots(&window);
