@@ -1,0 +1,28 @@
+#waiting-screen {
+    font-size: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 30vh;
+}
+
+#waiting-screen>p {
+    margin-top: .5rem;
+}
+
+#waiting-screen, #waiting-screen-quote {
+    transition: opacity .4s ease;
+}
+
+#waiting-screen-quote {
+    margin-top: 3rem;
+}
+
+#waiting-screen-quote-author {
+    margin-top: .5rem;
+    text-align: right;
+}
+
+#waiting-screen-quote-author::before {
+    content: "— ";
+}
