@@ -62,10 +62,11 @@ impl Component for SurveyComp {
                 },
                 PossibleAnswer::Checkbox => html! {
                     <div class="survey-slide">
-                        <label>
-                            <input type="checkbox" />
-                            <span>{question.unwrap_or_default()}</span>
-                        </label>
+                        <div class="survey-checkbox">
+                            <input type="checkbox" id="checkbox" />
+                            <label for="checkbox" class="survey-checkbox-box"></label>
+                            <label for="checkbox">{question.unwrap_or_default()}</label>
+                        </div>
                     </div>
                 },
                 PossibleAnswer::MultipleChoice(ref options) => {
