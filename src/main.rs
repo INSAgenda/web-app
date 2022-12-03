@@ -26,6 +26,8 @@ mod translation;
 mod popup;
 #[path = "survey/survey.rs"]
 mod survey;
+#[path = "checkbox/checkbox.rs"]
+mod checkbox;
 
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
