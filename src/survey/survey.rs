@@ -114,9 +114,25 @@ impl Component for SurveyComp {
                         </div>
                     }
                 },
-                _ => html! {
-                    <div class="survey-slide"></div>
-                }
+                PossibleAnswer::Priority(ref items) => {
+                    let items = items.iter().map(|item| {
+                        let item = item.get_localized(l);
+                        html! {
+                            <label class="survey-radio">
+                                <input type="radio" name="survey-radio" />
+                                <div>{item.unwrap_or_default()}</div>
+                            </label>
+                        }
+                    }).collect::<Html>();
+                    html! {
+                        <div class="survey-slide">
+                            if let Some(question) = question {
+                                <h2>{question}</h2>
+                            }
+                            {items}
+                        </div>
+                    }
+                },
             };
             slides.push(content);
         }

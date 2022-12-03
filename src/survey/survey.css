@@ -3,7 +3,7 @@
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
-    --border-color: #bbb;
+    --border-color: #aaa;
 }
 
 :root[data-theme="dark"] #survey {
