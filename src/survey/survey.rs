@@ -89,9 +89,9 @@ impl Component for SurveyComp {
                     let options = options.iter().map(|option| {
                         let option = option.get_localized(l);
                         html! {
-                            <label>
+                            <label class="survey-radio">
                                 <input type="radio" name="survey-radio" />
-                                <span>{option.unwrap_or_default()}</span>
+                                <div>{option.unwrap_or_default()}</div>
                             </label>
                         }
                     }).collect::<Html>();

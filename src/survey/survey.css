@@ -3,13 +3,18 @@
     flex-direction: column;
     height: 100vh;
     overflow: hidden;
+    --border-color: #bbb;
+}
+
+:root[data-theme="dark"] #survey {
+    --border-color: #666;
 }
 
 .survey-line {
     width: 92%;
     height: 1px;
     margin: 0 4%;
-    background-color: #bbb;
+    background-color: var(--border-color);
 }
 
 #survey-top {
@@ -66,6 +71,7 @@
     border-radius: .3rem;
     background-color: var(--day);
     color: var(--text);
+    border: 1px solid var(--border-color);
 }
 
 /* Checkbox */
@@ -145,6 +151,29 @@
 		-webkit-transform: scale(1, 1);
 		transform: scale(1, 1);
 	}
+}
+
+/* Survey select */
+
+.survey-radio>input {
+    display: none;
+}
+
+.survey-radio {
+    display: block;
+}
+
+.survey-radio>div {
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.5rem;
+    margin: 0.5rem 0;
+    border-radius: 0.25rem;
+}
+
+.survey-radio>input:checked ~ div {
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    font-weight: bold;
 }
 
 /* Survey footer */
