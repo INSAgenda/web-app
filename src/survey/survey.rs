@@ -104,6 +104,7 @@ impl Component for SurveyComp {
                         if let Err(e) = api_post(answers, &format!("survey/{id}")).await {
                             link.send_message(AppMsg::ApiFailure(e))
                         }
+                        // TODO: if success we should cache the answers
                     });
                     ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                 }
