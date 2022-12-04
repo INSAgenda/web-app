@@ -34,14 +34,16 @@ impl Component for Sortable {
         let doc = w.doc();
         let link2 = ctx.link().clone();
         let release_drag = move || {
-            if let Some((i, _y, mut rects)) = currently_dragged2.borrow_mut().take() {
-                let fid = format!("sortable-{id}-{i}");
-                let el = doc.get_element_by_id(&fid).unwrap();
-                let rect = el.get_bounding_client_rect();
-                rects[i] = rect;
-                let mut identified_rects = rects.into_iter().enumerate().collect::<Vec<_>>();
-                identified_rects.sort_by_key(|(_, rect)| (rect.top() as i32 + rect.height() as i32) / 2);
-                let new_order = identified_rects.into_iter().map(|(i, _)| i).collect::<Vec<_>>();
+            if currently_dragged2.borrow_mut().take().is_some() {
+                let mut rects = Vec::new();
+                for i in 0..item_count {
+                    let fid = format!("sortable-{id}-{i}");
+                    let el = doc.get_element_by_id(&fid).unwrap();
+                    let rect = el.get_bounding_client_rect();
+                    rects.push((i, rect));
+                }
+                rects.sort_by_key(|(_, rect)| (rect.top() as i32 + rect.height() as i32) / 2);
+                let new_order = rects.into_iter().map(|(i, _)| i).collect::<Vec<_>>();
                 link2.send_message(SortableMsg::ChangeOrder(new_order));
             }
         };
@@ -88,13 +90,14 @@ impl Component for Sortable {
 
                 let position = ordered2.borrow().deref().iter().position(|&x| x == *i).unwrap();
                 for other in 0..item_count {
-                    if other == position { continue; }
+                    let other_position = ordered2.borrow().deref().iter().position(|&x| x == other).unwrap();
+                    if other_position == position { continue; }
                     let other_item_el = doc.get_element_by_id(&format!("sortable-{id}-{other}")).unwrap();
                     let rect = rects.get(other).unwrap();
                     let center = (rect.top() + rect.bottom()) / 2.0;
-                    if other > position && bottom > center {
+                    if other_position > position && bottom > center {
                         other_item_el.set_attribute("style", &format!("top: calc(-{height}px - 0.5rem);")).unwrap();
-                    } else if other < position && top < center {
+                    } else if other_position < position && top < center {
                         other_item_el.set_attribute("style", &format!("top: calc({height}px + 0.5rem);")).unwrap();
                     } else {
                         other_item_el.set_attribute("style", "top: 0px;").unwrap();
