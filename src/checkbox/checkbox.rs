@@ -18,7 +18,7 @@ impl Component for Checkbox {
     type Properties = CheckboxProps;
 
     fn create(_ctx: &Context<Self>) -> Self {
-        let id = js_sys::Math::random() as usize;
+        let id = (js_sys::Math::random() * 1_000_000.0) as usize;
 
         Self { id }
     }

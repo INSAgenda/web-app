@@ -28,6 +28,8 @@ mod popup;
 mod survey;
 #[path = "checkbox/checkbox.rs"]
 mod checkbox;
+#[path = "sortable/sortable.rs"]
+mod sortable;
 
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
