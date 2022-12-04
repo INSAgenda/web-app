@@ -95,7 +95,7 @@ _Tip: Make yourself a script with the code above to increase your productivity._
 
 ## Contributing
 
-### Recommandations
+### Recommendations
 
 Unwraps are ok on many web_sys methods, but you have to be absolutely sure it will not panic on any modern browser.  
   
