@@ -92,6 +92,7 @@
 
 .survey-radio>div, #survey .sortable-item {
     border: 1px solid var(--border-color);
+    background-color: var(--background);
 }
 
 .survey-radio>input:checked ~ div {

@@ -104,7 +104,7 @@ impl Component for Sortable {
                 let dy = y - start_y;
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
-                el.set_attribute("style", &format!("transition: unset; top: {dy}px;")).unwrap();
+                el.set_attribute("style", &format!("transition: scale .2s ease; top: {dy}px; scale: 1.05; z-index: 999;")).unwrap();
 
                 let rect = el.get_bounding_client_rect();
                 let top = rect.top() as i32;
