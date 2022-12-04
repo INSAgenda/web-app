@@ -7,7 +7,8 @@ pub struct SortableProps {
 
 pub struct Sortable {
     id: usize,
-    ordered: Rc<RefCell<Vec<usize>>>,
+    order: Rc<RefCell<Vec<usize>>>,
+    reload_id: usize,
     currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<web_sys::DomRect>)>>>,
     on_mouse_down: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
     on_mouse_move: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
@@ -15,8 +16,7 @@ pub struct Sortable {
 }
 
 pub enum SortableMsg {
-    Reload,
-    //DragStart(usize,)
+    ChangeOrder(Vec<usize>),
 }
 
 impl Component for Sortable {
@@ -27,16 +27,22 @@ impl Component for Sortable {
         let id = (js_sys::Math::random() * 1_000_000.0) as usize;
         let w = window();
         let item_count = ctx.props().items.len();
-        let ordered: Rc<RefCell<Vec<usize>>> = Rc::new(RefCell::new((0..item_count).collect()));
+        let order: Rc<RefCell<Vec<usize>>> = Rc::new(RefCell::new((0..item_count).collect()));
         let currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<_>)>>> = Rc::new(RefCell::new(None));
 
         let currently_dragged2 = currently_dragged.clone();
         let doc = w.doc();
+        let link2 = ctx.link().clone();
         let release_drag = move || {
-            if let Some((i, _y, _rects)) = currently_dragged2.borrow_mut().take() {
+            if let Some((i, _y, mut rects)) = currently_dragged2.borrow_mut().take() {
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
-                el.set_attribute("style", "top: 0px;").unwrap();
+                let rect = el.get_bounding_client_rect();
+                rects[i] = rect;
+                let mut identified_rects = rects.into_iter().enumerate().collect::<Vec<_>>();
+                identified_rects.sort_by_key(|(_, rect)| (rect.top() as i32 + rect.height() as i32) / 2);
+                let new_order = identified_rects.into_iter().map(|(i, _)| i).collect::<Vec<_>>();
+                link2.send_message(SortableMsg::ChangeOrder(new_order));
             }
         };
         
@@ -68,7 +74,7 @@ impl Component for Sortable {
 
         let doc = w.doc();
         let currently_dragged2 = currently_dragged.clone();
-        let ordered2 = ordered.clone();
+        let ordered2 = order.clone();
         let on_mouse_move = Closure::wrap(Box::new(move |e: web_sys::MouseEvent| {
             if let Some((i, y, rects)) = currently_dragged2.borrow().as_ref() {
                 let dy = e.client_y() - y;
@@ -101,10 +107,12 @@ impl Component for Sortable {
         let on_mouse_up = Closure::wrap(Box::new(move |_: web_sys::Event| {
             release_drag();
         }) as Box<dyn FnMut(_)>);
+        w.add_event_listener_with_callback("mouseup", on_mouse_up.as_ref().unchecked_ref()).unwrap();
 
         Self {
             id,
-            ordered,
+            order,
+            reload_id: 0,
             currently_dragged,
             on_mouse_down,
             on_mouse_move,
@@ -114,7 +122,9 @@ impl Component for Sortable {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            SortableMsg::Reload => {
+            SortableMsg::ChangeOrder(order) => {
+                self.order.replace(order);
+                self.reload_id += 1;
                 true
             }
         }
@@ -126,11 +136,11 @@ impl Component for Sortable {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let items = self.ordered.borrow().iter().map(|i| {
+        let items = self.order.borrow().iter().map(|i| {
             let item = ctx.props().items.get(*i).unwrap();
             let fid = format!("sortable-{}-{}", self.id, i);
             html! {
-                <div class="sortable-item" id={fid}>
+                <div class="sortable-item" id={fid} style={format!("top: 0px; transition: unset; reload-id: {};", self.reload_id)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M2 11h16v2H2zm0-4h16v2H2zm8 11l3-3H7l3 3zm0-16L7 5h6l-3-3z"/></svg>
                     {item}
                 </div>

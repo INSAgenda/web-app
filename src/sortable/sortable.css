@@ -15,6 +15,7 @@
     position: relative;
     top: 0px;
     transition: top 0.2s ease;
+    user-select: none;
 }
 
 .sortable-item>svg {
