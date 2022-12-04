@@ -5,7 +5,7 @@ pub struct SortableProps {
     pub items: Vec<String>,
 }
 
-
+#[derive(Debug)]
 struct Positions {
     width_max: usize,
     y_min: usize,
@@ -16,6 +16,9 @@ pub struct Sortable {
     id: usize,
     positions: Option<Positions>,
     ordered: Vec<usize>,
+    on_mouse_down: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
+    on_mouse_move: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::Event)>,
+    on_mouse_up: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::Event)>,
 }
 
 pub enum SortableMsg {
@@ -29,11 +32,43 @@ impl Component for Sortable {
 
     fn create(ctx: &Context<Self>) -> Self {
         let id = (js_sys::Math::random() * 1_000_000.0) as usize;
+        let w = window();
+        let item_count = ctx.props().items.len();
+        
+        let doc = w.doc();
+        let on_mouse_down = Closure::wrap(Box::new(move |e: web_sys::MouseEvent| {
+            log!("mouse down");
+            let x = e.client_x();
+            let y = e.client_y();
+
+            for i in 0..item_count {
+                let fid = format!("sortable-{id}-{i}");
+                let el = doc.get_element_by_id(&fid).unwrap();
+                let rect = el.get_bounding_client_rect();
+                if x >= rect.left() as i32 && x <= rect.right() as i32 && y >= rect.top() as i32 && y <= rect.bottom() as i32 {
+                    log!("{i} is dragged");
+                    return;
+                }
+            }
+        }) as Box<dyn FnMut(_)>);
+        w.add_event_listener_with_callback("mousedown", on_mouse_down.as_ref().unchecked_ref()).unwrap();
+
+        let on_mouse_move = Closure::wrap(Box::new(move |_: web_sys::Event| {
+            log!("mouse move");
+        }) as Box<dyn FnMut(_)>);
+        w.add_event_listener_with_callback("mousemove", on_mouse_move.as_ref().unchecked_ref()).unwrap();
+
+        let on_mouse_up = Closure::wrap(Box::new(move |_: web_sys::Event| {
+            log!("mouse up");
+        }) as Box<dyn FnMut(_)>);
 
         Self {
             id,
             positions: None,
             ordered: (0..ctx.props().items.len()).collect(),
+            on_mouse_down,
+            on_mouse_move,
+            on_mouse_up,
         }
     }
 
@@ -88,7 +123,7 @@ impl Component for Sortable {
                     let style = format!("position: absolute; top: {y}px; width: {width}px;");
                     style
                 },
-                None => String::new(),
+                _ => String::new(),
             };
             html! {
                 <div class="sortable-item" id={fid} style={style}>
@@ -103,5 +138,14 @@ impl Component for Sortable {
                 {items}
             </div>
         }
+    }
+}
+
+impl Drop for Sortable {
+    fn drop(&mut self) {
+        let w = window();
+        let _ = w.remove_event_listener_with_callback("mousedown", self.on_mouse_down.as_ref().unchecked_ref());
+        let _ = w.remove_event_listener_with_callback("mousemove", self.on_mouse_move.as_ref().unchecked_ref());
+        let _ = w.remove_event_listener_with_callback("mouseup", self.on_mouse_up.as_ref().unchecked_ref());
     }
 }
