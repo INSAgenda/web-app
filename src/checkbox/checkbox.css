@@ -1,0 +1,76 @@
+.checkbox {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.checkbox input {
+    display: none;
+}
+
+.checkbox label {
+    display: block;
+}
+
+.checkbox .checkbox-box {
+    width: 1rem;
+    height: 1rem;
+    margin-right: .5rem;
+    border-radius: 2px;
+    border: 2px solid var(--primary);
+    position: relative;
+}
+
+.checkbox .checkbox-box:after {
+    width: .35rem;
+    height: 0.7rem;
+    box-sizing: border-box;
+    position: absolute;
+    top: 1px;
+    left: 0.3rem;
+    content: '';
+    transform: rotate(45deg) scale(0);
+    transition: transform .3s ease;
+    border-bottom: 2px solid var(--background);
+    border-right: 2px solid var(--background);
+}
+
+.checkbox input[type=checkbox]:checked ~ .checkbox-box {
+    background-color: var(--primary);
+    animation: 400ms ease 3.71747ms 1 normal none running wiggle;
+}
+
+.checkbox input[type=checkbox]:checked ~ .checkbox-box:after {
+    transform: rotate(45deg) scale(1);
+}
+
+@keyframes wiggle {
+	from {
+		-webkit-transform: scale(1, 1);
+		transform: scale(1, 1);
+	}
+	30% {
+		-webkit-transform: scale(1.25, .75);
+		transform: scale(1.25, .75);
+	}
+	40% {
+		-webkit-transform: scale(.75, 1.25);
+		transform: scale(.75, 1.25);
+	}
+	50% {
+		-webkit-transform: scale(1.15, .85);
+		transform: scale(1.15, .85);
+	}
+	65% {
+		-webkit-transform: scale(.95, 1.05);
+		transform: scale(.95, 1.05);
+	}
+	75% {
+		-webkit-transform: scale(1.05, .95);
+		transform: scale(1.05, .95);
+	}
+	to {
+		-webkit-transform: scale(1, 1);
+		transform: scale(1, 1);
+	}
+}

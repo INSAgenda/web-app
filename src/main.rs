@@ -24,6 +24,12 @@ mod prelude;
 mod translation;
 #[path ="popup/popup.rs"]
 mod popup;
+#[path = "survey/survey.rs"]
+mod survey;
+#[path = "checkbox/checkbox.rs"]
+mod checkbox;
+#[path = "sortable/sortable.rs"]
+mod sortable;
 
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
@@ -33,6 +39,7 @@ pub enum Page {
     ChangeEmail,
     ChangeGroup,
     Agenda,
+    Survey(Survey, Option<Vec<Option<Answer>>>),
 }
 
 pub enum Msg {
@@ -42,6 +49,7 @@ pub enum Msg {
     SetPage(Page),
     SilentSetPage(Page),
     ScheduleSuccess(Vec<RawEvent>),
+    SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
     ScheduleFailure(ApiError),
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
     FetchColors(HashMap<String, String>),
@@ -52,6 +60,7 @@ pub struct App {
     user_info: Rc<Option<UserInfo>>,
     events: Rc<Vec<RawEvent>>,
     announcements: Rc<Vec<AnnouncementDesc>>,
+    surveys: Vec<Survey>,
     page: Page,
 }
 
@@ -72,6 +81,7 @@ impl Component for App {
                 Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
                 Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
+                // TODO survey
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
             }
@@ -82,8 +92,14 @@ impl Component for App {
         // Update data
         let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let user_info = CachedData::init(ctx.link().clone());
-        let announcement = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let groups = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let surveys = survey_response.surveys;
+        let survey_answers = survey_response.my_answers;
+        if window().navigator().on_line() { // temporary
+            announcements.append(&mut surveys_to_announcements(&surveys, &survey_answers));
+        }
 
         // Detect page
         let page = match window().location().hash() {
@@ -91,6 +107,11 @@ impl Component for App {
             Ok(hash) if hash == "#change-password" => Page::ChangePassword,
             Ok(hash) if hash == "#change-email" => Page::ChangeEmail,
             Ok(hash) if hash == "#change-group" => Page::ChangeGroup,
+            Ok(hash) if hash.starts_with("#survey-") => {
+                let id = hash[8..].to_string();
+                let answers = survey_answers.iter().find(|a| a.id == id).map(|a| a.answers.to_owned());
+                surveys.iter().find(|s| s.id == id).map(|s| Page::Survey(s.clone(), answers)).unwrap_or(Page::Agenda)
+            }
             Ok(hash) if hash.is_empty() => Page::Agenda,
             Ok(hash) => {
                 alert(format!("Page {hash} not found"));
@@ -99,11 +120,21 @@ impl Component for App {
             _ => Page::Agenda,
         };
 
+        // Open survey if one is available and required
+        if window().navigator().on_line() { // temporary
+            let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+            if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
+                let answers = survey_answers.iter().find(|a| a.id == survey_to_open.id).map(|a| a.answers.to_owned());
+                ctx.link().send_message(Msg::SetPage(Page::Survey(survey_to_open.clone(), answers)));
+            }
+        }
+
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
-            announcements: Rc::new(announcement),
+            announcements: Rc::new(announcements),
             groups: Rc::new(groups),
+            surveys,
             page,
         }
     }
@@ -116,6 +147,14 @@ impl Component for App {
             },
             AppMsg::ScheduleSuccess(events) => {
                 self.events = Rc::new(events);
+                true
+            },
+            AppMsg::SurveysSuccess(surveys, survey_answers) => {
+                self.surveys = surveys;
+                if !self.surveys.is_empty() {
+                    let answers = survey_answers.iter().find(|a| a.id == self.surveys[0].id).map(|a| a.answers.to_owned());
+                    ctx.link().send_message(AppMsg::SetPage(Page::Survey(self.surveys[0].clone(), answers)));
+                }
                 true
             },
             Msg::UserInfoSuccess(user_info) => {
@@ -155,6 +194,7 @@ impl Component for App {
                 match &page {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#settings")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
+                    Page::Survey(survey, _) => history.push_state_with_url(&JsValue::from_str("survey"), "Survey", Some(&format!("#survey-{}", survey.id))).unwrap(),
                     Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("#change-password")).unwrap(),
                     Page::ChangeEmail => history.push_state_with_url(&JsValue::from_str("change-email"), "Change email", Some("#change-email")).unwrap(),
                     Page::ChangeGroup => history.push_state_with_url(&JsValue::from_str("change-group"), "Change group", Some("#change-group")).unwrap(),
@@ -207,6 +247,7 @@ impl Component for App {
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
             ),
+            Page::Survey(survey, answers) => html!(<SurveyComp survey={survey.clone()} answers={answers.clone()} app_link={ctx.link().clone()} />),
         }
     }
 }

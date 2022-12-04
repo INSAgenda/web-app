@@ -134,6 +134,7 @@ pub fn view_announcement(a: &AnnouncementDesc, ctx: &Context<Agenda>) -> Html {
                         .doc()
                         .create_element("div")
                         .unwrap();
+                    div.set_attribute("style", "width: 100%; height: 100%;").unwrap();
                     match SETTINGS.lang() {
                         Lang::French => div.set_inner_html(a.content_fr.as_deref().unwrap_or_default()),
                         Lang::English => div.set_inner_html(a.content_en.as_deref().unwrap_or_default()),
