@@ -113,7 +113,7 @@ impl Component for App {
                 SurveyQuestion {
                     question: vec![(String::new(), String::from("Aimeriez-vous voler ?"))].into_iter().collect(),
                     possible_answer: PossibleAnswer::Boolean { default: false },
-                    required: false,
+                    required: true,
                 },
                 SurveyQuestion {
                     question: vec![(String::new(), String::from("Quel est votre oiseau préféré ?"))].into_iter().collect(),
@@ -123,7 +123,7 @@ impl Component for App {
                         vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
                         vec![(String::new(), String::from("Poule"))].into_iter().collect(),
                     ]),
-                    required: false,
+                    required: true,
                 },
                 SurveyQuestion {
                     question: vec![(String::new(), String::from("Quels oiseaux sont gris ?"))].into_iter().collect(),
@@ -133,7 +133,7 @@ impl Component for App {
                         vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
                         vec![(String::new(), String::from("Poule"))].into_iter().collect(),
                     ]),
-                    required: false,
+                    required: true,
                 },
                 SurveyQuestion {
                     question: vec![(String::new(), String::from("Trier les oiseaux par vitesse de vol"))].into_iter().collect(),
@@ -143,7 +143,7 @@ impl Component for App {
                         vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
                         vec![(String::new(), String::from("Poule"))].into_iter().collect(),
                     ]),
-                    required: false,
+                    required: true,
                 }
             ],
             start_ts: 0,
