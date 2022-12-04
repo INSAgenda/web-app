@@ -81,6 +81,7 @@ impl Component for App {
                 Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
                 Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
+                // TODO survey
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
             }
@@ -100,40 +101,41 @@ impl Component for App {
         // Testing
         surveys.insert(0, Survey {
             id: String::from("id"),
+            author: 0,
             title: String::from("Survey de Noël"),
             description: vec![(String::new(), String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."))].into_iter().collect(),
             questions: vec![
-                Question {
+                SurveyQuestion {
                     question: vec![(String::new(), String::from("Que pensez-vous des oiseaux ?"))].into_iter().collect(),
-                    possible_answer: PossibleAnswer::Input { max_length: 256 },
-                    editable: true
+                    possible_answer: PossibleAnswer::Input { max_length: 256, placeholder: String::from("Réponse") },
+                    required: true,
                 },
-                Question {
+                SurveyQuestion {
                     question: vec![(String::new(), String::from("Aimeriez-vous voler ?"))].into_iter().collect(),
-                    possible_answer: PossibleAnswer::Checkbox,
-                    editable: false,
+                    possible_answer: PossibleAnswer::Boolean { default: false },
+                    required: false,
                 },
-                Question {
+                SurveyQuestion {
                     question: vec![(String::new(), String::from("Quel est votre oiseau préféré ?"))].into_iter().collect(),
-                    possible_answer: PossibleAnswer::OneChoice(vec![
+                    possible_answer: PossibleAnswer::Radio(vec![
                         vec![(String::new(), String::from("Aigle"))].into_iter().collect(),
                         vec![(String::new(), String::from("Pigeon"))].into_iter().collect(),
                         vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
                         vec![(String::new(), String::from("Poule"))].into_iter().collect(),
                     ]),
-                    editable: false,
+                    required: false,
                 },
-                Question {
+                SurveyQuestion {
                     question: vec![(String::new(), String::from("Quels oiseaux sont gris ?"))].into_iter().collect(),
-                    possible_answer: PossibleAnswer::MultipleChoice(vec![
+                    possible_answer: PossibleAnswer::Select(vec![
                         vec![(String::new(), String::from("Aigle"))].into_iter().collect(),
                         vec![(String::new(), String::from("Pigeon"))].into_iter().collect(),
                         vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
                         vec![(String::new(), String::from("Poule"))].into_iter().collect(),
                     ]),
-                    editable: false,
+                    required: false,
                 },
-                Question {
+                SurveyQuestion {
                     question: vec![(String::new(), String::from("Trier les oiseaux par vitesse de vol"))].into_iter().collect(),
                     possible_answer: PossibleAnswer::Priority(vec![
                         vec![(String::new(), String::from("Aigle"))].into_iter().collect(),
@@ -141,7 +143,7 @@ impl Component for App {
                         vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
                         vec![(String::new(), String::from("Poule"))].into_iter().collect(),
                     ]),
-                    editable: false
+                    required: false,
                 }
             ],
             start_ts: 0,

@@ -68,20 +68,20 @@ impl Component for SurveyComp {
         for survey_question in &ctx.props().survey.questions {
             let question = survey_question.question.get_localized(l);
             let content = match survey_question.possible_answer {
-                PossibleAnswer::Input { max_length } => html! {
+                PossibleAnswer::Input { max_length, ref placeholder } => html! {
                     <div class="survey-slide">
                         if let Some(question) = question {
                             <h2>{question}</h2>
                         }
-                        <textarea class="survey-input" rows="4" maxlength={max_length.to_string()}></textarea>
+                        <textarea class="survey-input" rows="4" maxlength={max_length.to_string()} placeholder={placeholder.to_string()}></textarea>
                     </div>
                 },
-                PossibleAnswer::Checkbox => html! {
+                PossibleAnswer::Boolean { default: checked } => html! {
                     <div class="survey-slide">
-                        <Checkbox message={question.unwrap_or_default()} checked={false} />
+                        <Checkbox message={question.unwrap_or_default()} checked={checked} />
                     </div>
                 },
-                PossibleAnswer::MultipleChoice(ref options) => {
+                PossibleAnswer::Radio(ref options) => {
                     let checkboxes = options.iter().map(|proposal| {
                         let proposal = proposal.get_localized(l);
                         html! {
@@ -97,7 +97,7 @@ impl Component for SurveyComp {
                         </div>
                     }
                 },
-                PossibleAnswer::OneChoice(ref options) => {
+                PossibleAnswer::Select(ref options) => {
                     let options = options.iter().map(|option| {
                         let option = option.get_localized(l);
                         html! {
