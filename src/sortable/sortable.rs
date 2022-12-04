@@ -7,8 +7,8 @@ pub struct SortableProps {
 
 pub struct Sortable {
     id: usize,
-    ordered: Vec<usize>,
-    currently_dragged: Rc<RefCell<Option<(usize, i32)>>>,
+    ordered: Rc<RefCell<Vec<usize>>>,
+    currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<web_sys::DomRect>)>>>,
     on_mouse_down: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
     on_mouse_move: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
     on_mouse_up: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::Event)>,
@@ -27,13 +27,13 @@ impl Component for Sortable {
         let id = (js_sys::Math::random() * 1_000_000.0) as usize;
         let w = window();
         let item_count = ctx.props().items.len();
-
-        let currently_dragged = Rc::new(RefCell::new(None));
+        let ordered: Rc<RefCell<Vec<usize>>> = Rc::new(RefCell::new((0..item_count).collect()));
+        let currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<_>)>>> = Rc::new(RefCell::new(None));
 
         let currently_dragged2 = currently_dragged.clone();
         let doc = w.doc();
         let release_drag = move || {
-            if let Some((i, _y)) = currently_dragged2.borrow_mut().take() {
+            if let Some((i, _y, _rects)) = currently_dragged2.borrow_mut().take() {
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
                 el.set_attribute("style", "top: 0px;").unwrap();
@@ -45,31 +45,55 @@ impl Component for Sortable {
         let release_drag2 = release_drag.clone();
         let on_mouse_down = Closure::wrap(Box::new(move |e: web_sys::MouseEvent| {
             release_drag2();
-            
+
             let x = e.client_x();
             let y = e.client_y();
 
+            let mut rects = Vec::new(); // TODO centers instead
+            let mut dragged = None;
             for i in 0..item_count {
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
                 let rect = el.get_bounding_client_rect();
                 if x >= rect.left() as i32 && x <= rect.right() as i32 && y >= rect.top() as i32 && y <= rect.bottom() as i32 {
-                    log!("{i} is dragged");
-                    currently_dragged2.borrow_mut().replace((i, y));
-                    return;
+                    dragged = Some(i);
                 }
+                rects.push(rect);
+            }
+            if let Some(dragged) = dragged {
+                currently_dragged2.borrow_mut().replace((dragged, y, rects));
             }
         }) as Box<dyn FnMut(_)>);
         w.add_event_listener_with_callback("mousedown", on_mouse_down.as_ref().unchecked_ref()).unwrap();
 
         let doc = w.doc();
         let currently_dragged2 = currently_dragged.clone();
+        let ordered2 = ordered.clone();
         let on_mouse_move = Closure::wrap(Box::new(move |e: web_sys::MouseEvent| {
-            if let Some((i, y)) = currently_dragged2.borrow().as_ref() {
+            if let Some((i, y, rects)) = currently_dragged2.borrow().as_ref() {
                 let dy = e.client_y() - y;
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
                 el.set_attribute("style", &format!("top: {dy}px;")).unwrap();
+                let rect = el.get_bounding_client_rect();
+                let top = rect.top();
+                let bottom = rect.bottom();
+                let height = bottom - top;
+
+                let position = ordered2.borrow().deref().iter().position(|&x| x == *i).unwrap();
+                for other in 0..item_count {
+                    if other == position { continue; }
+                    let other_item_el = doc.get_element_by_id(&format!("sortable-{id}-{other}")).unwrap();
+                    let rect = rects.get(other).unwrap();
+                    let center = (rect.top() + rect.bottom()) / 2.0;
+                    if other > position && bottom > center {
+                        other_item_el.set_attribute("style", &format!("top: calc(-{height}px - 0.5rem);")).unwrap();
+                    } else if other < position && top < center {
+                        other_item_el.set_attribute("style", &format!("top: calc({height}px + 0.5rem);")).unwrap();
+                    } else {
+                        other_item_el.set_attribute("style", "top: 0px;").unwrap();
+                    }
+                }
             }
         }) as Box<dyn FnMut(_)>);
         w.add_event_listener_with_callback("mousemove", on_mouse_move.as_ref().unchecked_ref()).unwrap();
@@ -80,7 +104,7 @@ impl Component for Sortable {
 
         Self {
             id,
-            ordered: (0..ctx.props().items.len()).collect(),
+            ordered,
             currently_dragged,
             on_mouse_down,
             on_mouse_move,
@@ -102,7 +126,7 @@ impl Component for Sortable {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let items = self.ordered.iter().map(|i| {
+        let items = self.ordered.borrow().iter().map(|i| {
             let item = ctx.props().items.get(*i).unwrap();
             let fid = format!("sortable-{}-{}", self.id, i);
             html! {
