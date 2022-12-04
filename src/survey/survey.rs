@@ -1,21 +1,25 @@
 use crate::prelude::*;
 
 pub fn surveys_to_announcements(surveys: &[Survey], answers: &[SurveyAnswers]) -> Vec<AnnouncementDesc> {
-    surveys.iter().map(|survey| {
+    surveys.iter().filter_map(|survey| {
         let code = include_str!("survey_announcement.html").replace("{{survey_id}}", &survey.id).replace("{{survey_title}}", &survey.title);
-        AnnouncementDesc {
+        let has_answers = answers.iter().any(|a| a.id == survey.id);
+        if has_answers {
+            return None;
+        }
+        Some(AnnouncementDesc {
             title: survey.title.clone(),
             id: format!("auto-survey-{}", survey.id),
             start_ts: survey.start_ts as u64,
             end_ts: survey.end_ts as u64,
             target: Some(survey.target.clone()),
             max_impressions: None,
-            closable: !survey.required || answers.iter().any(|a| a.id == survey.id),
+            closable: !survey.required || has_answers,
             ty: ContentType::Html,
             content_fr: Some(code.clone()),
             content_en: Some(code),
             script: Some(include_str!("survey_announcement.js").to_string()),
-        }
+        })
     }).collect()
 }
 
