@@ -7,9 +7,9 @@ pub struct SortableProps {
 
 
 struct Positions {
-    width: usize,
-    ys: Vec<usize>,
-    heights: Vec<usize>,
+    width_max: usize,
+    y_min: usize,
+    rects: Vec<web_sys::DomRect>,
 }
 
 pub struct Sortable {
@@ -53,27 +53,21 @@ impl Component for Sortable {
     fn rendered(&mut self, ctx: &Context<Self>, _first_render: bool) {
         if self.positions.is_some() { return }
         
-        let mut heights = Vec::new();
-        let mut ys = Vec::new();
-        let mut width = 0;
+        let mut rects = Vec::new();
         let document = window().doc();
         for i in 0..self.ordered.len() {
             let item = document.get_element_by_id(&format!("sortable-{}-{i}", self.id)).unwrap();
-            let rect = item.get_bounding_client_rect();
-            heights.push(rect.height() as usize);
-            ys.push(rect.y() as usize);
-            width = width.max(rect.width() as usize);
+            rects.push(item.get_bounding_client_rect());
         }
 
-        let mut y_min = ys[0];
-        for y in ys.iter() {
-            y_min = y_min.min(*y);
-        }
-        for y in ys.iter_mut() {
-            *y -= y_min;
+        let mut y_min = usize::MAX;
+        let mut width_max = usize::MIN;
+        for rect in &rects {
+            y_min = y_min.min(rect.y() as usize);
+            width_max = width_max.max(rect.width() as usize);
         }
         
-        self.positions = Some(Positions { ys, width, heights });
+        self.positions = Some(Positions { y_min, width_max, rects });
         
         let link = ctx.link().clone();
         wasm_bindgen_futures::spawn_local(async move {
@@ -83,15 +77,15 @@ impl Component for Sortable {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let mut offset = 0;
         let items = self.ordered.iter().map(|i| {
             let item = ctx.props().items.get(*i).unwrap();
             let fid = format!("sortable-{}-{}", self.id, i);
             let style = match &self.positions {
-                Some(Positions { ys, width, heights }) => {
-                    let y = ys[*i];
+                Some(Positions { y_min, width_max: _, rects }) => {
+                    let rect = rects.get(*i).unwrap();
+                    let y = rect.y() as usize - y_min;
+                    let width = rect.width() as usize;
                     let style = format!("position: absolute; top: {y}px; width: {width}px;");
-                    offset += heights.get(*i).unwrap();
                     style
                 },
                 None => String::new(),
