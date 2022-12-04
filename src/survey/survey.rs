@@ -50,6 +50,7 @@ impl Component for SurveyComp {
             progress: 0,
             answers: ctx.props().survey.questions.iter().map(|s| match s.possible_answer {
                 PossibleAnswer::Boolean { default } => Some(Answer::Boolean(default)),
+                PossibleAnswer::Select(_) => Some(Answer::Select(Vec::new())), 
                 _ => None // TODO: should priority have their default?
             }).collect(),
         }
