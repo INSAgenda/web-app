@@ -1,5 +1,37 @@
 use crate::prelude::*;
 
+pub fn surveys_to_announcements(surveys: &[Survey], answers: &[SurveyAnswers]) -> Vec<AnnouncementDesc> {
+    surveys.iter().map(|survey| {
+        let code = include_str!("survey_announcement.html").replace("{{survey_id}}", &survey.id).replace("{{survey_title}}", &survey.title);
+        AnnouncementDesc {
+            title: survey.title.clone(),
+            id: format!("auto-survey-{}", survey.id),
+            start_ts: survey.start_ts as u64,
+            end_ts: survey.end_ts as u64,
+            target: Some(survey.target.clone()),
+            max_impressions: None,
+            closable: !survey.required || answers.iter().any(|a| a.id == survey.id),
+            ty: ContentType::Html,
+            content_fr: Some(code.clone()),
+            content_en: Some(code),
+            script: Some(include_str!("survey_announcement.js").to_string()),
+        }
+    }).collect()
+}
+
+trait HackTraitGetLocalizedText {
+    fn get_localized(&self, lang: &str) -> Option<String>;
+}
+
+impl HackTraitGetLocalizedText for HashMap<String, String> {
+    fn get_localized(&self, lang: &str) -> Option<String> {
+        if let Some(best) = self.get(lang).cloned() { return Some(best) }
+        if let Some(default) = self.get("").cloned() { return Some(default) }
+        if let Some(random_key) = self.keys().next() { return self.get(random_key).cloned() }
+        None
+    }
+}
+
 pub struct SurveyComp {
     progress: usize,
     answers: Vec<Option<Answer>>,
@@ -25,19 +57,6 @@ pub struct SurveyProps {
 impl PartialEq for SurveyProps {
     fn eq(&self, other: &Self) -> bool {
         self.survey.id == other.survey.id
-    }
-}
-
-trait HackTraitGetLocalizedText {
-    fn get_localized(&self, lang: &str) -> Option<String>;
-}
-
-impl HackTraitGetLocalizedText for HashMap<String, String> {
-    fn get_localized(&self, lang: &str) -> Option<String> {
-        if let Some(best) = self.get(lang).cloned() { return Some(best) }
-        if let Some(default) = self.get("").cloned() { return Some(default) }
-        if let Some(random_key) = self.keys().next() { return self.get(random_key).cloned() }
-        None
     }
 }
 

@@ -92,11 +92,12 @@ impl Component for App {
         // Update data
         let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let user_info = CachedData::init(ctx.link().clone());
-        let announcement = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let groups = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
+        announcements.append(&mut surveys_to_announcements(&surveys, &survey_answers));
 
         // Detect page
         let page = match window().location().hash() {
@@ -105,7 +106,7 @@ impl Component for App {
             Ok(hash) if hash == "#change-email" => Page::ChangeEmail,
             Ok(hash) if hash == "#change-group" => Page::ChangeGroup,
             Ok(hash) if hash.starts_with("#survey-") => {
-                let id = hash[9..].to_string();
+                let id = hash[8..].to_string();
                 surveys.iter().find(|s| s.id == id).map(|s| Page::Survey(Rc::new(s.clone()))).unwrap_or(Page::Agenda)
             }
             Ok(hash) if hash.is_empty() => Page::Agenda,
@@ -125,7 +126,7 @@ impl Component for App {
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
-            announcements: Rc::new(announcement),
+            announcements: Rc::new(announcements),
             groups: Rc::new(groups),
             surveys,
             page,
