@@ -66,10 +66,10 @@ impl Component for SurveyComp {
                     </div>
                 },
                 PossibleAnswer::MultipleChoice(ref options) => {
-                    let options = options.iter().map(|option| {
-                        let option = option.get_localized(l);
+                    let checkboxes = options.iter().map(|proposal| {
+                        let proposal = proposal.get_localized(l);
                         html! {
-                            <option>{option.unwrap_or_default()}</option>
+                            <Checkbox message={proposal.unwrap_or_default()} checked={false} />
                         }
                     }).collect::<Html>();
                     html! {
@@ -77,7 +77,7 @@ impl Component for SurveyComp {
                             if let Some(question) = question {
                                 <h2>{question}</h2>
                             }
-                            <select class="survey-input">{options}</select>
+                            {checkboxes}
                         </div>
                     }
                 },

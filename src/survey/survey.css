@@ -100,6 +100,13 @@
     font-weight: bold;
 }
 
+/* Checkboxes */
+
+#survey .checkbox {
+    padding: 0.25rem 0.5rem;
+    margin: 0.5rem 0;
+}
+
 /* Survey footer */
 
 #survey-bottom {

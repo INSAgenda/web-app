@@ -124,6 +124,16 @@ impl Component for App {
                     editable: false,
                 },
                 Question {
+                    question: vec![(String::new(), String::from("Quels oiseaux sont gris ?"))].into_iter().collect(),
+                    possible_answer: PossibleAnswer::MultipleChoice(vec![
+                        vec![(String::new(), String::from("Aigle"))].into_iter().collect(),
+                        vec![(String::new(), String::from("Pigeon"))].into_iter().collect(),
+                        vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
+                        vec![(String::new(), String::from("Poule"))].into_iter().collect(),
+                    ]),
+                    editable: false,
+                },
+                Question {
                     question: vec![(String::new(), String::from("Trier les oiseaux par vitesse de vol"))].into_iter().collect(),
                     possible_answer: PossibleAnswer::Priority(vec![
                         vec![(String::new(), String::from("Aigle"))].into_iter().collect(),
