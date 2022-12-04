@@ -188,7 +188,7 @@ impl Component for SurveyComp {
                             <textarea
                                 class="survey-input"
                                 value={value}
-                                rows="4"
+                                rows="4" // TODO: compute from max_length
                                 maxlength={max_length.to_string()}
                                 placeholder={placeholder.to_string()}
                                 oninput={ctx.link().callback(SurveyMsg::TextInput)}
@@ -300,6 +300,7 @@ impl Component for SurveyComp {
         let opt_description = ctx.props().survey.description.get_localized(l);
         let survey_lenght = slides.len() + 1;
 
+        // TODO: Translations
         let back_msg = if self.progress == 0 { "Fermer" } else { "Précédent" };
         let next_msg = if self.progress == 0 { "Commencer" } else if self.progress == survey_lenght - 1 { "Terminer" } else { "Suivant" };
 
