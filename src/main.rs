@@ -149,7 +149,7 @@ impl Component for App {
             start_ts: 0,
             end_ts: i64::MAX,
             target: GroupFilter::All(vec![]),
-            required: false,
+            required: true,
         });
 
         // Detect page

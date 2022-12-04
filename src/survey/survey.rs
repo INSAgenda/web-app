@@ -55,6 +55,9 @@ impl Component for SurveyComp {
                 true
             }
             SurveyMsg::Next => {
+                if self.progress == ctx.props().survey.questions.len() {
+                    ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
+                }
                 self.progress += 1;
                 true
             }

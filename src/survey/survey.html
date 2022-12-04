@@ -2,7 +2,7 @@
     <div id="survey-top">
         <h1>{{title}}</h1>
         <div id="survey-progress-bar">
-            <div style="width: calc(100% * {{survey_progress}} / {{survey_lenght}});"></div>
+            <div style="width: calc(100% * {{survey_progress}} / ({{survey_lenght}} - 1));"></div>
         </div>
     </div>
     <div class="survey-line"></div>
@@ -13,11 +13,8 @@
         <virtual iter>
             {{slide_iter}}
         </virtual>
-        <div class="survey-slide">
-            <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
-        </div>
     </div>
-    <div class="survey-line"></div>
+    <div class="survey-line"></div> 
     <div id="survey-bottom">
         <button class="secondary-button" onclick={{onclick_back}}>{{back_msg}}</button>
         <button class="primary-button" onclick={{onclick_next}}>{{next_msg}}</button>
