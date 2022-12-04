@@ -50,13 +50,15 @@ pub enum SurveyMsg {
 
 #[derive(Properties)]
 pub struct SurveyProps {
-    pub survey: Rc<Survey>,
+    pub survey: Survey,
     pub app_link: Scope<App>,
+    #[prop_or_default]
+    pub answers: Option<Vec<Option<Answer>>>,
 }
 
 impl PartialEq for SurveyProps {
     fn eq(&self, other: &Self) -> bool {
-        self.survey.id == other.survey.id
+        self.survey.id == other.survey.id && self.answers == other.answers
     }
 }
 
@@ -65,13 +67,17 @@ impl Component for SurveyComp {
     type Properties = SurveyProps;
 
     fn create(ctx: &Context<Self>) -> Self {
-        Self {
-            progress: 0,
-            answers: ctx.props().survey.questions.iter().map(|s| match s.possible_answer {
+        let answers = match &ctx.props().answers {
+            Some(answers) if ctx.props().survey.questions.len() == answers.len() => answers.to_owned(),
+            _ => ctx.props().survey.questions.iter().map(|s| match s.possible_answer {
                 PossibleAnswer::Boolean { default } => Some(Answer::Boolean(default)),
                 PossibleAnswer::Select(_) => Some(Answer::Select(Vec::new())), 
                 _ => None // TODO: should priority have their default?
             }).collect(),
+        };
+        Self {
+            progress: 0,
+            answers,
         }
     }
 

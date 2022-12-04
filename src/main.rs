@@ -39,7 +39,7 @@ pub enum Page {
     ChangeEmail,
     ChangeGroup,
     Agenda,
-    Survey(Rc<Survey>),
+    Survey(Survey, Option<Vec<Option<Answer>>>),
 }
 
 pub enum Msg {
@@ -109,7 +109,8 @@ impl Component for App {
             Ok(hash) if hash == "#change-group" => Page::ChangeGroup,
             Ok(hash) if hash.starts_with("#survey-") => {
                 let id = hash[8..].to_string();
-                surveys.iter().find(|s| s.id == id).map(|s| Page::Survey(Rc::new(s.clone()))).unwrap_or(Page::Agenda)
+                let answers = survey_answers.iter().find(|a| a.id == id).map(|a| a.answers.to_owned());
+                surveys.iter().find(|s| s.id == id).map(|s| Page::Survey(s.clone(), answers)).unwrap_or(Page::Agenda)
             }
             Ok(hash) if hash.is_empty() => Page::Agenda,
             Ok(hash) => {
@@ -123,7 +124,8 @@ impl Component for App {
         if window().navigator().on_line() { // temporary
             let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
             if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
-                ctx.link().send_message(Msg::SetPage(Page::Survey(Rc::new(survey_to_open.clone()))));
+                let answers = survey_answers.iter().find(|a| a.id == survey_to_open.id).map(|a| a.answers.to_owned());
+                ctx.link().send_message(Msg::SetPage(Page::Survey(survey_to_open.clone(), answers)));
             }
         }
 
@@ -150,7 +152,8 @@ impl Component for App {
             AppMsg::SurveysSuccess(surveys, survey_answers) => {
                 self.surveys = surveys;
                 if !self.surveys.is_empty() {
-                    ctx.link().send_message(AppMsg::SetPage(Page::Survey(Rc::new(self.surveys[0].clone()))));
+                    let answers = survey_answers.iter().find(|a| a.id == self.surveys[0].id).map(|a| a.answers.to_owned());
+                    ctx.link().send_message(AppMsg::SetPage(Page::Survey(self.surveys[0].clone(), answers)));
                 }
                 true
             },
@@ -191,7 +194,7 @@ impl Component for App {
                 match &page {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#settings")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
-                    Page::Survey(survey) => history.push_state_with_url(&JsValue::from_str("survey"), "Survey", Some(&format!("#survey-{}", survey.id))).unwrap(),
+                    Page::Survey(survey, _) => history.push_state_with_url(&JsValue::from_str("survey"), "Survey", Some(&format!("#survey-{}", survey.id))).unwrap(),
                     Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("#change-password")).unwrap(),
                     Page::ChangeEmail => history.push_state_with_url(&JsValue::from_str("change-email"), "Change email", Some("#change-email")).unwrap(),
                     Page::ChangeGroup => history.push_state_with_url(&JsValue::from_str("change-group"), "Change group", Some("#change-group")).unwrap(),
@@ -244,7 +247,7 @@ impl Component for App {
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
             ),
-            Page::Survey(survey) => html!(<SurveyComp survey={survey} app_link={ctx.link().clone()} />),
+            Page::Survey(survey, answers) => html!(<SurveyComp survey={survey.clone()} answers={answers.clone()} app_link={ctx.link().clone()} />),
         }
     }
 }
