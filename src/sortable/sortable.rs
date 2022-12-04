@@ -7,8 +7,8 @@ pub struct SortableProps {
 
 
 struct Positions {
-    start_y: usize,
     width: usize,
+    ys: Vec<usize>,
     heights: Vec<usize>,
 }
 
@@ -19,7 +19,8 @@ pub struct Sortable {
 }
 
 pub enum SortableMsg {
-    Reload
+    Reload,
+    //DragStart(usize,)
 }
 
 impl Component for Sortable {
@@ -53,18 +54,26 @@ impl Component for Sortable {
         if self.positions.is_some() { return }
         
         let mut heights = Vec::new();
-        let mut start_y = usize::MAX;
+        let mut ys = Vec::new();
         let mut width = 0;
         let document = window().doc();
         for i in 0..self.ordered.len() {
             let item = document.get_element_by_id(&format!("sortable-{}-{i}", self.id)).unwrap();
             let rect = item.get_bounding_client_rect();
             heights.push(rect.height() as usize);
-            start_y = start_y.min(rect.x() as usize);
+            ys.push(rect.y() as usize);
             width = width.max(rect.width() as usize);
         }
+
+        let mut y_min = ys[0];
+        for y in ys.iter() {
+            y_min = y_min.min(*y);
+        }
+        for y in ys.iter_mut() {
+            *y -= y_min;
+        }
         
-        self.positions = Some(Positions { start_y, width, heights });
+        self.positions = Some(Positions { ys, width, heights });
         
         let link = ctx.link().clone();
         wasm_bindgen_futures::spawn_local(async move {
@@ -79,8 +88,9 @@ impl Component for Sortable {
             let item = ctx.props().items.get(*i).unwrap();
             let fid = format!("sortable-{}-{}", self.id, i);
             let style = match &self.positions {
-                Some(Positions { start_y: _, width, heights }) => {
-                    let style = format!("position: absolute; top: calc({offset}px + {i} * .5rem); width: calc({width}px - 1rem);");
+                Some(Positions { ys, width, heights }) => {
+                    let y = ys[*i];
+                    let style = format!("position: absolute; top: {y}px; width: {width}px;");
                     offset += heights.get(*i).unwrap();
                     style
                 },
