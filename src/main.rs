@@ -197,9 +197,10 @@ impl Component for App {
                 true
             },
             AppMsg::SurveysSuccess(surveys, survey_answers) => {
-                log!("success {:?}", surveys);
                 self.surveys = surveys;
-                ctx.link().send_message(AppMsg::SetPage(Page::Survey(Rc::new(self.surveys[0].clone()))));
+                if !self.surveys.is_empty() {
+                    ctx.link().send_message(AppMsg::SetPage(Page::Survey(Rc::new(self.surveys[0].clone()))));
+                }
                 true
             },
             Msg::UserInfoSuccess(user_info) => {

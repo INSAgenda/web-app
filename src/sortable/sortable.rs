@@ -1,8 +1,16 @@
 use crate::prelude::*;
 
-#[derive(Properties, PartialEq, Eq)]
+#[derive(Properties)]
 pub struct SortableProps {
     pub items: Vec<String>,
+    #[prop_or_default]
+    pub onchange: Option<Callback<Vec<usize>>>,
+}
+
+impl PartialEq for SortableProps {
+    fn eq(&self, other: &Self) -> bool {
+        self.items == other.items
+    }
 }
 
 pub struct Sortable {
@@ -159,9 +167,12 @@ impl Component for Sortable {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             SortableMsg::ChangeOrder(order) => {
+                if let Some(onchange) = ctx.props().onchange.as_ref() {
+                    onchange.emit(order.clone());
+                }
                 self.order.replace(order);
                 self.reload_id += 1;
                 true

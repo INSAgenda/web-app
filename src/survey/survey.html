@@ -7,8 +7,8 @@
     </div>
     <div class="survey-line"></div>
     <div id="survey-content" style="width: calc(100% * {{survey_lenght}}); right: calc(100% * {{survey_progress}});">
-        <div opt class="survey-slide">
-            <p>{{opt_description}}</p>
+        <div class="survey-slide">
+            <p opt>{{opt_description}}</p>
         </div>
         <virtual iter>
             {{slide_iter}}
@@ -17,6 +17,6 @@
     <div class="survey-line"></div> 
     <div id="survey-bottom">
         <button class="secondary-button" onclick={{onclick_back}}>{{back_msg}}</button>
-        <button class="primary-button" onclick={{onclick_next}}>{{next_msg}}</button>
+        <button class="primary-button" onclick={{onclick_next}} disabled={{next_disabled}}>{{next_msg}}</button>
     </div>
 </main>

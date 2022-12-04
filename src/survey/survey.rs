@@ -2,11 +2,18 @@ use crate::prelude::*;
 
 pub struct SurveyComp {
     progress: usize,
+    answers: Vec<Option<Answer>>,
 }
 
 pub enum SurveyMsg {
     Back,
     Next,
+    TextInput(InputEvent),
+    CheckboxChange(bool),
+    SelectChange(bool, usize),
+    RadioChange(web_sys::Event, usize),
+    ValueChange(web_sys::Event),
+    PriorityChange(Vec<usize>),
 }
 
 #[derive(Properties)]
@@ -38,9 +45,13 @@ impl Component for SurveyComp {
     type Message = SurveyMsg;
     type Properties = SurveyProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
         Self {
             progress: 0,
+            answers: ctx.props().survey.questions.iter().map(|s| match s.possible_answer {
+                PossibleAnswer::Boolean { default } => Some(Answer::Boolean(default)),
+                _ => None // TODO: should priority have their default?
+            }).collect(),
         }
     }
 
@@ -61,6 +72,59 @@ impl Component for SurveyComp {
                 self.progress += 1;
                 true
             }
+            SurveyMsg::TextInput(e) => {
+                let target = e.target().unwrap();
+                let target = target.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
+                let value = target.value();
+
+                let was_some = self.answers[self.progress - 1].is_some(); // TODO also check max lenght
+                if value.is_empty() {
+                    self.answers[self.progress - 1] = None;
+                    was_some
+                } else {
+                    self.answers[self.progress - 1] = Some(Answer::Input(value));
+                    !was_some
+                }
+            }
+            SurveyMsg::CheckboxChange(checked) => {
+                self.answers[self.progress - 1] = Some(Answer::Boolean(checked));
+                false
+            }
+            SurveyMsg::SelectChange(checked, i) => {
+                let (was_none, mut values) = match self.answers[self.progress - 1].clone() {
+                    Some(Answer::Select(old_values)) => (false, old_values),
+                    _ => (true, Vec::new())
+                };
+                match checked {
+                    true => values.push(i as u16),
+                    false => values.retain(|oi| *oi != i as u16),
+                }
+                self.answers[self.progress - 1] = Some(Answer::Select(values));
+                was_none
+            }
+            SurveyMsg::RadioChange(e, i) => {
+                let target = e.target().unwrap();
+                let target = target.dyn_into::<web_sys::HtmlInputElement>().unwrap();
+                if target.checked() {
+                    self.answers[self.progress - 1].replace(Answer::Radio(i as u16)).is_none()
+                } else {
+                    false
+                }
+            }
+            SurveyMsg::ValueChange(e) => {
+                let target = e.target().unwrap();
+                let target = target.dyn_into::<web_sys::HtmlInputElement>().unwrap();
+                let value = target.value();
+                if let Ok(value) = value.parse() {
+                    self.answers[self.progress - 1].replace(Answer::Value(value)).is_none()
+                } else {
+                    false
+                }
+            }
+            SurveyMsg::PriorityChange(order) => {
+                let order = order.into_iter().map(|i| i as u16).collect();
+                self.answers[self.progress - 1].replace(Answer::Priority(order)).is_none()
+            }
         }
     }
 
@@ -76,19 +140,25 @@ impl Component for SurveyComp {
                         if let Some(question) = question {
                             <h2>{question}</h2>
                         }
-                        <textarea class="survey-input" rows="4" maxlength={max_length.to_string()} placeholder={placeholder.to_string()}></textarea>
+                        <textarea
+                            class="survey-input"
+                            rows="4"
+                            maxlength={max_length.to_string()}
+                            placeholder={placeholder.to_string()}
+                            oninput={ctx.link().callback(SurveyMsg::TextInput)}
+                        ></textarea>
                     </div>
                 },
                 PossibleAnswer::Boolean { default: checked } => html! {
                     <div class="survey-slide">
-                        <Checkbox message={question.unwrap_or_default()} checked={checked} />
+                        <Checkbox message={question.unwrap_or_default()} checked={checked} onchange={ctx.link().callback(SurveyMsg::CheckboxChange)} />
                     </div>
                 },
-                PossibleAnswer::Radio(ref options) => {
-                    let checkboxes = options.iter().map(|proposal| {
+                PossibleAnswer::Select(ref options) => {
+                    let checkboxes = options.iter().enumerate().map(|(i, proposal)| {
                         let proposal = proposal.get_localized(l);
                         html! {
-                            <Checkbox message={proposal.unwrap_or_default()} checked={false} />
+                            <Checkbox message={proposal.unwrap_or_default()} checked={false} onchange={ctx.link().callback(move |v| SurveyMsg::SelectChange(v, i))} />
                         }
                     }).collect::<Html>();
                     html! {
@@ -100,12 +170,12 @@ impl Component for SurveyComp {
                         </div>
                     }
                 },
-                PossibleAnswer::Select(ref options) => {
-                    let options = options.iter().map(|option| {
+                PossibleAnswer::Radio(ref options) => {
+                    let options = options.iter().enumerate().map(|(i, option)| {
                         let option = option.get_localized(l);
                         html! {
                             <label class="survey-radio">
-                                <input type="radio" name="survey-radio" />
+                                <input type="radio" name="survey-radio" onchange={ctx.link().callback(move |v| SurveyMsg::RadioChange(v, i))} />
                                 <div>{option.unwrap_or_default()}</div>
                             </label>
                         }
@@ -125,7 +195,7 @@ impl Component for SurveyComp {
                             if let Some(question) = question {
                                 <h2>{question}</h2>
                             }
-                            <input type="range" min={min.to_string()} max={max.to_string()} step={step.to_string()} />
+                            <input type="range" min={min.to_string()} max={max.to_string()} step={step.to_string()} onchange={ctx.link().callback(SurveyMsg::ValueChange)} />
                         </div>
                     }
                 },
@@ -137,7 +207,7 @@ impl Component for SurveyComp {
                             if let Some(question) = question {
                                 <h2>{question}</h2>
                             }
-                            <Sortable items={items} />
+                            <Sortable items={items} onchange={ctx.link().callback(SurveyMsg::PriorityChange)} />
                         </div>
                     }
                 },
@@ -146,10 +216,16 @@ impl Component for SurveyComp {
         }
 
         let opt_description = ctx.props().survey.description.get_localized(l);
-        let survey_lenght = slides.len() + opt_description.is_some() as usize;
+        let survey_lenght = slides.len() + 1;
 
         let back_msg = if self.progress == 0 { "Fermer" } else { "Précédent" };
         let next_msg = if self.progress == 0 { "Commencer" } else if self.progress == survey_lenght - 1 { "Terminer" } else { "Suivant" };
+
+        let next_disabled = (1..survey_lenght).contains(&self.progress) && ctx.props().survey.questions[self.progress - 1].required && match self.answers[self.progress - 1] {
+            Some(Answer::Input(ref data)) => data.is_empty(),
+            Some(_) => false,
+            None => true,
+        };
 
         template_html!(
             "src/survey/survey.html",

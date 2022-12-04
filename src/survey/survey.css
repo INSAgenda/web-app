@@ -108,6 +108,23 @@
     margin: 0.5rem 0;
 }
 
+/* Disabled button */
+
+#survey .primary-button {
+    transition: all .2 ease;
+}
+
+#survey .primary-button:disabled {
+    background-color: var(--border-color);
+    border-color: var(--border-color);
+    cursor: not-allowed;
+}
+
+#survey .primary-button:disabled:active, #survey .primary-button:disabled:hover {
+    transform: unset;
+    box-shadow: unset;
+}
+
 /* Survey footer */
 
 #survey-bottom {
