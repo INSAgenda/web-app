@@ -3,12 +3,12 @@
         <img src="/assets/logo/logo.svg" alt="INSAgenda logo" /> 
         <h1 id="header-name" class="header-agenda">INSAgenda</h1>
     </a>
-    [calendar]
-    <a id="header-logo" class="invert-when-dark" style="justify-content: center;" onclick=[onclick_settings]>
+    {{calendar}}
+    <a id="header-logo" class="invert-when-dark" style="justify-content: center;" onclick={{onclick_settings}}>
         <img style="height: 70%;" src="/agenda/images/settings.svg" alt="Settings" />
     </a>
 </header>
-<main id="agenda-main" class=[agenda_class]>
+<main id="agenda-main" class={{agenda_class}}>
 <div id="agenda">
     <div id="agenda-hours">
         <span>08:00</span>
@@ -17,29 +17,29 @@
         <span>13:15</span>
         <span>15:00</span>
         <span>16:45</span>
-        <span present-if=![show_mobile_announcement]>18:30</span>
+        <span present-if=!{{show_mobile_announcement}}>18:30</span>
     </div>
     <div id="agenda-main-part">
         <div id="agenda-top">
-            <a id="agenda-arrow-left" onclick=[onclick_previous]>
+            <a id="agenda-arrow-left" onclick={{onclick_previous}}>
                 <div></div>
             </a>
-            [day_names]
-            <a id="agenda-arrow-right" onclick=[onclick_next]>
+            {{day_names}}
+            <a id="agenda-arrow-right" onclick={{onclick_next}}>
                 <div></div>
             </a>
         </div>
         <div id="day-container-scope">
-            <div id="day-container" style=[day_container_style]>
-                [days]
+            <div id="day-container" style={{day_container_style}}>
+                {{days}}
             </div>
         </div>
     </div>
 </div>
-<virtual present-if=[show_mobile_announcement] opt>[opt_announcement]</virtual>
+<virtual present-if={{show_mobile_announcement}} opt>{{opt_announcement}}</virtual>
 <div style="position: relative;">
-    <div id="popup-container" style=[popup_container_style]>
-        <virtual opt>[opt_popup]</virtual>
+    <div id="popup-container" style={{popup_container_style}}>
+        <virtual opt>{{opt_popup}}</virtual>
     </div>
 </div>
 </main>

@@ -1,31 +1,31 @@
 <div id="popup">
     <div id="popup-header">
-        <img onclick=[onclick_close] class="popup-close" src="/agenda/images/chevron-left.svg" alt="Retour" />
-        <h2 id="popup-title">[name]</h2>
+        <img onclick={{onclick_close}} class="popup-close" src="/agenda/images/chevron-left.svg" alt="Retour" />
+        <h2 id="popup-title">{{name}}</h2>
         <div id="popup-header-separator"></div>
-        <img onclick=[onclick_close] class="popup-close" src="/agenda/images/x.svg" alt="Fermer" />
+        <img onclick={{onclick_close}} class="popup-close" src="/agenda/images/x.svg" alt="Fermer" />
     </div>
     <div id="popup-body">
         <section>
             <h4>Horaires</h4>
-            <p>[time]</p>
+            <p>{{time}}</p>
         </section>
         <section opt>
             <h4>Emplacement</h4>
-            <p>[opt_location]</p>
+            <p>{{opt_location}}</p>
         </section>
         <section>
             <h4>Couleur</h4>
-            <p>Cliquez sur la prévisualisation ci-dessous pour changer la couleur de tous les cours de [summary].</p>
+            <p>Cliquez sur la prévisualisation ci-dessous pour changer la couleur de tous les cours de {{summary}}.</p>
             <div id="popup-color-picker">
-                <div style="background-color: [event_color]80; border-left: 0.3rem solid [event_color];">
+                <div style="background-color: {{event_color}}80; border-left: 0.3rem solid {{event_color}};">
                     <div class="event-container">
-                        <span class="name">[name]</span>
-                        <span class="teacher">[teachers]</span>
-                        <span opt class="location">[opt_location]</span>
+                        <span class="name">{{name}}</span>
+                        <span class="teacher">{{teachers}}</span>
+                        <span opt class="location">{{opt_location}}</span>
                     </div>
                 </div>
-                <input type="color" id="popup-color-input" value=[event_color] oninput=[onclick_save] />
+                <input type="color" id="popup-color-input" value={{event_color}} oninput={{onclick_save}} />
             </div>
         </section>
     </div>

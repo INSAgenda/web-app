@@ -79,6 +79,7 @@ impl Component for Popup {
             onclick_close = {onclick_close.clone()},
             onclick_save = {ctx.link().callback(|_| PopupMsg::SaveColors)},
             opt_location = {&opt_location},
+            event_color = {event_color.clone()},
             ...
         )
     }
