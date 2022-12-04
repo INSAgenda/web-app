@@ -156,6 +156,10 @@ impl Component for App {
             Ok(hash) if hash == "#change-password" => Page::ChangePassword,
             Ok(hash) if hash == "#change-email" => Page::ChangeEmail,
             Ok(hash) if hash == "#change-group" => Page::ChangeGroup,
+            Ok(hash) if hash.starts_with("#survey-") => {
+                let id = hash[9..].to_string();
+                surveys.iter().find(|s| s.id == id).map(|s| Page::Survey(Rc::new(s.clone()))).unwrap_or(Page::Agenda)
+            }
             Ok(hash) if hash.is_empty() => Page::Agenda,
             Ok(hash) => {
                 alert(format!("Page {hash} not found"));
@@ -285,7 +289,7 @@ impl Component for App {
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
             ),
-            Page::Survey(survey) => html!(<SurveyComp survey={survey} /*app_link={ctx.link().clone()}*/ />),
+            Page::Survey(survey) => html!(<SurveyComp survey={survey} app_link={ctx.link().clone()} />),
         }
     }
 }

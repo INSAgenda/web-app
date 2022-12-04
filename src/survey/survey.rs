@@ -5,12 +5,20 @@ pub struct SurveyComp {
 }
 
 pub enum SurveyMsg {
+    Back,
     Next,
 }
 
-#[derive(Properties, PartialEq)]
+#[derive(Properties)]
 pub struct SurveyProps {
     pub survey: Rc<Survey>,
+    pub app_link: Scope<App>,
+}
+
+impl PartialEq for SurveyProps {
+    fn eq(&self, other: &Self) -> bool {
+        self.survey.id == other.survey.id
+    }
 }
 
 trait HackTraitGetLocalizedText {
@@ -36,8 +44,16 @@ impl Component for SurveyComp {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
+            SurveyMsg::Back => {
+                if self.progress == 0 {
+                    ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
+                    return false;
+                }
+                self.progress -= 1;
+                true
+            }
             SurveyMsg::Next => {
                 self.progress += 1;
                 true
@@ -128,6 +144,10 @@ impl Component for SurveyComp {
 
         let opt_description = ctx.props().survey.description.get_localized(l);
         let survey_lenght = slides.len() + opt_description.is_some() as usize;
+
+        let back_msg = if self.progress == 0 { "Fermer" } else { "Précédent" };
+        let next_msg = if self.progress == 0 { "Commencer" } else if self.progress == survey_lenght - 1 { "Terminer" } else { "Suivant" };
+
         template_html!(
             "src/survey/survey.html",
             title = {ctx.props().survey.title.as_str()},
@@ -135,6 +155,7 @@ impl Component for SurveyComp {
             survey_progress = {self.progress.to_string()},
             slide_iter = {slides.into_iter()},
             onclick_next = {ctx.link().callback(|_| SurveyMsg::Next)},
+            onclick_back = {ctx.link().callback(|_| SurveyMsg::Back)},
             ...
         )
     }
