@@ -32,7 +32,8 @@ pub fn counter_to_the_moon() {
     local_storage.set("counter", &(counter + 111).to_string()).unwrap();
 }
 
-pub async fn api_post_str(body: String, endpoint: &str) -> Result<(), ApiError> {
+pub async fn api_post<T: Serialize>(data: T, endpoint: &str) -> Result<(), ApiError> {
+    let body = serde_json::to_string(&data).unwrap();
     let (api_key, counter) = get_login_info();
 
     let mut req_init = web_sys::RequestInit::new();
@@ -44,6 +45,7 @@ pub async fn api_post_str(body: String, endpoint: &str) -> Result<(), ApiError> 
         "Api-Key",
         &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
     )?;
+    request.headers().set("Content-Type", "application/json")?;
 
     let response = JsFuture::from(window().fetch_with_request(&request)).await?;
     let response: web_sys::Response = response.clone().dyn_into().unwrap();
@@ -56,12 +58,6 @@ pub async fn api_post_str(body: String, endpoint: &str) -> Result<(), ApiError> 
         },
         _ => Err(ApiError::Unknown(response.into()))
     }
-}
-
-
-pub async fn api_post<T: Serialize>(data: T, endpoint: &str) -> Result<(), ApiError> {
-    let body = serde_json::to_string(&data).unwrap();
-    api_post_str(body, endpoint).await
 }
 
 /// Send a POST request to the API and update the counter

@@ -87,6 +87,14 @@ impl Component for SurveyComp {
             }
             SurveyMsg::Next => {
                 if self.progress == ctx.props().survey.questions.len() {
+                    let id = ctx.props().survey.id.clone();
+                    let answers = std::mem::take(&mut self.answers);
+                    let link = ctx.props().app_link.clone();
+                    wasm_bindgen_futures::spawn_local(async move {
+                        if let Err(e) = api_post(answers, &format!("survey/{id}")).await {
+                            link.send_message(AppMsg::ApiFailure(e))
+                        }
+                    });
                     ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                 }
                 self.progress += 1;
