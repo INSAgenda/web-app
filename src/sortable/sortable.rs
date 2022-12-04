@@ -11,7 +11,9 @@ pub struct Sortable {
     reload_id: usize,
     currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<i32>)>>>,
     on_mouse_down: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
+    on_touch_start: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::TouchEvent)>,
     on_mouse_move: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
+    on_touch_move: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::TouchEvent)>,
     on_mouse_up: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::Event)>,
 }
 
@@ -48,14 +50,12 @@ impl Component for Sortable {
             }
         };
         
+        // On press (dragging starts)
         let doc = w.doc();
         let currently_dragged2 = currently_dragged.clone();
         let release_drag2 = release_drag.clone();
-        let on_mouse_down = Closure::wrap(Box::new(move |e: web_sys::MouseEvent| {
+        let on_drag = move |x: i32, y: i32| {
             release_drag2();
-
-            let x = e.client_x();
-            let y = e.client_y();
 
             let mut centers = Vec::new();
             let mut dragged = None;
@@ -73,15 +73,25 @@ impl Component for Sortable {
             if let Some(dragged) = dragged {
                 currently_dragged2.borrow_mut().replace((dragged, y, centers));
             }
+        };
+        let on_drag2 = on_drag.clone();
+        let on_mouse_down = Closure::wrap(Box::new(move |e: web_sys::MouseEvent| {
+            on_drag2(e.client_x(), e.client_y());
         }) as Box<dyn FnMut(_)>);
         w.add_event_listener_with_callback("mousedown", on_mouse_down.as_ref().unchecked_ref()).unwrap();
+        let on_touch_start = Closure::wrap(Box::new(move |e: web_sys::TouchEvent| {
+            let touch = e.touches().get(0).unwrap();
+            on_drag(touch.client_x(), touch.client_y());
+        }) as Box<dyn FnMut(_)>);
+        w.add_event_listener_with_callback("touchstart", on_touch_start.as_ref().unchecked_ref()).unwrap();
 
+        // On move events (dragging)
         let doc = w.doc();
         let currently_dragged2 = currently_dragged.clone();
         let ordered2 = order.clone();
-        let on_mouse_move = Closure::wrap(Box::new(move |e: web_sys::MouseEvent| {
-            if let Some((i, y, centers)) = currently_dragged2.borrow().as_ref() {
-                let dy = e.client_y() - y;
+        let on_move = move |y: i32| {
+            if let Some((i, start_y, centers)) = currently_dragged2.borrow().as_ref() {
+                let dy = y - start_y;
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
                 el.set_attribute("style", &format!("transition: unset; top: {dy}px;")).unwrap();
@@ -105,13 +115,24 @@ impl Component for Sortable {
                     }
                 }
             }
+        };
+        let on_move2 = on_move.clone();
+        let on_mouse_move = Closure::wrap(Box::new(move |e: web_sys::MouseEvent| {
+            on_move2(e.client_y());
         }) as Box<dyn FnMut(_)>);
         w.add_event_listener_with_callback("mousemove", on_mouse_move.as_ref().unchecked_ref()).unwrap();
+        let on_touch_move = Closure::wrap(Box::new(move |e: web_sys::TouchEvent| {
+            on_move(e.touches().get(0).unwrap().client_y());
+        }) as Box<dyn FnMut(_)>);
+        w.add_event_listener_with_callback("touchmove", on_touch_move.as_ref().unchecked_ref()).unwrap();
 
+        // On release events (dragging stops)
         let on_mouse_up = Closure::wrap(Box::new(move |_: web_sys::Event| {
             release_drag();
         }) as Box<dyn FnMut(_)>);
         w.add_event_listener_with_callback("mouseup", on_mouse_up.as_ref().unchecked_ref()).unwrap();
+        w.add_event_listener_with_callback("mouseleave", on_mouse_up.as_ref().unchecked_ref()).unwrap();
+        w.add_event_listener_with_callback("touchend", on_mouse_up.as_ref().unchecked_ref()).unwrap();
 
         Self {
             id,
@@ -119,7 +140,9 @@ impl Component for Sortable {
             reload_id: 0,
             currently_dragged,
             on_mouse_down,
+            on_touch_start,
             on_mouse_move,
+            on_touch_move,
             on_mouse_up,
         }
     }
@@ -163,7 +186,11 @@ impl Drop for Sortable {
     fn drop(&mut self) {
         let w = window();
         let _ = w.remove_event_listener_with_callback("mousedown", self.on_mouse_down.as_ref().unchecked_ref());
+        let _ = w.remove_event_listener_with_callback("touchstart", self.on_touch_start.as_ref().unchecked_ref());
         let _ = w.remove_event_listener_with_callback("mousemove", self.on_mouse_move.as_ref().unchecked_ref());
+        let _ = w.remove_event_listener_with_callback("touchmove", self.on_touch_move.as_ref().unchecked_ref());
         let _ = w.remove_event_listener_with_callback("mouseup", self.on_mouse_up.as_ref().unchecked_ref());
+        let _ = w.remove_event_listener_with_callback("mouseleave", self.on_mouse_up.as_ref().unchecked_ref());
+        let _ = w.remove_event_listener_with_callback("touchend", self.on_mouse_up.as_ref().unchecked_ref());
     }
 }
