@@ -9,7 +9,6 @@ pub struct Sortable {
     id: usize,
     order: Rc<RefCell<Vec<usize>>>,
     reload_id: usize,
-    currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<i32>)>>>,
     on_mouse_down: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
     on_touch_start: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::TouchEvent)>,
     on_mouse_move: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
@@ -30,7 +29,7 @@ impl Component for Sortable {
         let w = window();
         let item_count = ctx.props().items.len();
         let order: Rc<RefCell<Vec<usize>>> = Rc::new(RefCell::new((0..item_count).collect()));
-        let currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<i32>)>>> = Rc::new(RefCell::new(None));
+        let currently_dragged = Rc::new(RefCell::new(None));
 
         let currently_dragged2 = currently_dragged.clone();
         let doc = w.doc();
@@ -87,10 +86,9 @@ impl Component for Sortable {
 
         // On move events (dragging)
         let doc = w.doc();
-        let currently_dragged2 = currently_dragged.clone();
         let ordered2 = order.clone();
         let on_move = move |y: i32| {
-            if let Some((i, start_y, centers)) = currently_dragged2.borrow().as_ref() {
+            if let Some((i, start_y, centers)) = currently_dragged.borrow().as_ref() {
                 let dy = y - start_y;
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
@@ -138,7 +136,6 @@ impl Component for Sortable {
             id,
             order,
             reload_id: 0,
-            currently_dragged,
             on_mouse_down,
             on_touch_start,
             on_mouse_move,
