@@ -74,7 +74,7 @@ impl Component for Sortable {
                 let dy = e.client_y() - y;
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
-                el.set_attribute("style", &format!("top: {dy}px;")).unwrap();
+                el.set_attribute("style", &format!("transition: unset; top: {dy}px;")).unwrap();
                 let rect = el.get_bounding_client_rect();
                 let top = rect.top();
                 let bottom = rect.bottom();

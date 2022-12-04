@@ -4,8 +4,6 @@
 
 .sortable-item {
     box-sizing: border-box;
-    position: relative;
-    top: 0px;
     border: 1px solid var(--text);
     padding: 0.25rem 0.5rem;
     margin: 0.5rem 0;
@@ -14,6 +12,9 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    position: relative;
+    top: 0px;
+    transition: top 0.2s ease;
 }
 
 .sortable-item>svg {
