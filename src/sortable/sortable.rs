@@ -6,9 +6,16 @@ pub struct SortableProps {
 }
 
 pub struct Sortable {
-    id: usize,
+    /// The order indexes of items in properties.
     order: Rc<RefCell<Vec<usize>>>,
+    
+    /// Unique ID of this component
+    id: usize,
+    
+    /// Yew doesn't update elements when it thinks they're the same. Except we modify the style property by hand so we need to add a key that changes every time we want yew to update the element.
     reload_id: usize,
+
+    // Event handlers
     on_mouse_down: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
     on_touch_start: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::TouchEvent)>,
     on_mouse_move: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
@@ -31,6 +38,7 @@ impl Component for Sortable {
         let order: Rc<RefCell<Vec<usize>>> = Rc::new(RefCell::new((0..item_count).collect()));
         let currently_dragged = Rc::new(RefCell::new(None));
 
+        // Closure to release the currently dragged item
         let currently_dragged2 = currently_dragged.clone();
         let doc = w.doc();
         let link2 = ctx.link().clone();
@@ -56,6 +64,7 @@ impl Component for Sortable {
         let on_drag = move |x: i32, y: i32| {
             release_drag2();
 
+            // Create a snapshot of element positions when dragging starts
             let mut centers = Vec::new();
             let mut dragged = None;
             for i in 0..item_count {
@@ -64,10 +73,12 @@ impl Component for Sortable {
                 let rect = el.get_bounding_client_rect();
                 let top = rect.top() as i32;
                 let bottom = rect.bottom() as i32;
+                centers.push((bottom + top) / 2);
+
+                // Detect which element has been dragged
                 if x >= rect.left() as i32 && x <= rect.right() as i32 && y >= top && y <= bottom {
                     dragged = Some(i);
                 }
-                centers.push((bottom + top) / 2);
             }
             if let Some(dragged) = dragged {
                 currently_dragged2.borrow_mut().replace((dragged, y, centers));
@@ -89,21 +100,25 @@ impl Component for Sortable {
         let ordered2 = order.clone();
         let on_move = move |y: i32| {
             if let Some((i, start_y, centers)) = currently_dragged.borrow().as_ref() {
+                // Offset the dragged element by how much the cursor has moved
                 let dy = y - start_y;
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
                 el.set_attribute("style", &format!("transition: unset; top: {dy}px;")).unwrap();
+
                 let rect = el.get_bounding_client_rect();
                 let top = rect.top() as i32;
                 let bottom = rect.bottom() as i32;
                 let height = bottom - top;
 
+                // Offset all other elements depending on if the dragged element has moved above or below them
                 let position = ordered2.borrow().deref().iter().position(|&x| x == *i).unwrap();
                 for other in 0..item_count {
                     let other_position = ordered2.borrow().deref().iter().position(|&x| x == other).unwrap();
                     if other_position == position { continue; }
                     let other_item_el = doc.get_element_by_id(&format!("sortable-{id}-{other}")).unwrap();
                     let center = centers.get(other).unwrap();
+
                     if other_position > position && bottom > *center {
                         other_item_el.set_attribute("style", &format!("top: calc(-{height}px - 0.5rem);")).unwrap();
                     } else if other_position < position && top < *center {
@@ -144,7 +159,7 @@ impl Component for Sortable {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             SortableMsg::ChangeOrder(order) => {
                 self.order.replace(order);
