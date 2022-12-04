@@ -97,7 +97,9 @@ impl Component for App {
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
-        announcements.append(&mut surveys_to_announcements(&surveys, &survey_answers));
+        if window().navigator().on_line() { // temporary
+            announcements.append(&mut surveys_to_announcements(&surveys, &survey_answers));
+        }
 
         // Detect page
         let page = match window().location().hash() {
@@ -118,9 +120,11 @@ impl Component for App {
         };
 
         // Open survey if one is available and required
-        let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
-        if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
-            ctx.link().send_message(Msg::SetPage(Page::Survey(Rc::new(survey_to_open.clone()))));
+        if window().navigator().on_line() { // temporary
+            let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+            if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
+                ctx.link().send_message(Msg::SetPage(Page::Survey(Rc::new(survey_to_open.clone()))));
+            }
         }
 
         Self {
