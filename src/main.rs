@@ -168,9 +168,10 @@ impl Component for App {
             _ => Page::Agenda,
         };
 
-        // Open survey if one is available
-        if !surveys.is_empty() {
-            ctx.link().send_message(Msg::SetPage(Page::Survey(Rc::new(surveys[0].clone()))));
+        // Open survey if one is available and required
+        let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+        if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
+            ctx.link().send_message(Msg::SetPage(Page::Survey(Rc::new(survey_to_open.clone()))));
         }
 
         Self {
