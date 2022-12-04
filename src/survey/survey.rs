@@ -107,6 +107,7 @@ impl Component for SurveyComp {
                         // TODO: if success we should cache the answers
                     });
                     ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
+                    return false;
                 }
                 self.progress += 1;
                 true
