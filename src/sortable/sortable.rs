@@ -9,7 +9,7 @@ pub struct Sortable {
     id: usize,
     order: Rc<RefCell<Vec<usize>>>,
     reload_id: usize,
-    currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<web_sys::DomRect>)>>>,
+    currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<i32>)>>>,
     on_mouse_down: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
     on_mouse_move: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::MouseEvent)>,
     on_mouse_up: wasm_bindgen::prelude::Closure<dyn std::ops::FnMut(web_sys::Event)>,
@@ -28,7 +28,7 @@ impl Component for Sortable {
         let w = window();
         let item_count = ctx.props().items.len();
         let order: Rc<RefCell<Vec<usize>>> = Rc::new(RefCell::new((0..item_count).collect()));
-        let currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<_>)>>> = Rc::new(RefCell::new(None));
+        let currently_dragged: Rc<RefCell<Option<(usize, i32, Vec<i32>)>>> = Rc::new(RefCell::new(None));
 
         let currently_dragged2 = currently_dragged.clone();
         let doc = w.doc();
@@ -57,19 +57,21 @@ impl Component for Sortable {
             let x = e.client_x();
             let y = e.client_y();
 
-            let mut rects = Vec::new(); // TODO centers instead
+            let mut centers = Vec::new();
             let mut dragged = None;
             for i in 0..item_count {
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
                 let rect = el.get_bounding_client_rect();
-                if x >= rect.left() as i32 && x <= rect.right() as i32 && y >= rect.top() as i32 && y <= rect.bottom() as i32 {
+                let top = rect.top() as i32;
+                let bottom = rect.bottom() as i32;
+                if x >= rect.left() as i32 && x <= rect.right() as i32 && y >= top && y <= bottom {
                     dragged = Some(i);
                 }
-                rects.push(rect);
+                centers.push((bottom + top) / 2);
             }
             if let Some(dragged) = dragged {
-                currently_dragged2.borrow_mut().replace((dragged, y, rects));
+                currently_dragged2.borrow_mut().replace((dragged, y, centers));
             }
         }) as Box<dyn FnMut(_)>);
         w.add_event_listener_with_callback("mousedown", on_mouse_down.as_ref().unchecked_ref()).unwrap();
@@ -78,14 +80,14 @@ impl Component for Sortable {
         let currently_dragged2 = currently_dragged.clone();
         let ordered2 = order.clone();
         let on_mouse_move = Closure::wrap(Box::new(move |e: web_sys::MouseEvent| {
-            if let Some((i, y, rects)) = currently_dragged2.borrow().as_ref() {
+            if let Some((i, y, centers)) = currently_dragged2.borrow().as_ref() {
                 let dy = e.client_y() - y;
                 let fid = format!("sortable-{id}-{i}");
                 let el = doc.get_element_by_id(&fid).unwrap();
                 el.set_attribute("style", &format!("transition: unset; top: {dy}px;")).unwrap();
                 let rect = el.get_bounding_client_rect();
-                let top = rect.top();
-                let bottom = rect.bottom();
+                let top = rect.top() as i32;
+                let bottom = rect.bottom() as i32;
                 let height = bottom - top;
 
                 let position = ordered2.borrow().deref().iter().position(|&x| x == *i).unwrap();
@@ -93,11 +95,10 @@ impl Component for Sortable {
                     let other_position = ordered2.borrow().deref().iter().position(|&x| x == other).unwrap();
                     if other_position == position { continue; }
                     let other_item_el = doc.get_element_by_id(&format!("sortable-{id}-{other}")).unwrap();
-                    let rect = rects.get(other).unwrap();
-                    let center = (rect.top() + rect.bottom()) / 2.0;
-                    if other_position > position && bottom > center {
+                    let center = centers.get(other).unwrap();
+                    if other_position > position && bottom > *center {
                         other_item_el.set_attribute("style", &format!("top: calc(-{height}px - 0.5rem);")).unwrap();
-                    } else if other_position < position && top < center {
+                    } else if other_position < position && top < *center {
                         other_item_el.set_attribute("style", &format!("top: calc({height}px + 0.5rem);")).unwrap();
                     } else {
                         other_item_el.set_attribute("style", "top: 0px;").unwrap();
