@@ -4,12 +4,14 @@ use crate::prelude::*;
 pub struct SortableProps {
     pub items: Vec<String>,
     #[prop_or_default]
+    pub order: Option<Vec<usize>>,
+    #[prop_or_default]
     pub onchange: Option<Callback<Vec<usize>>>,
 }
 
 impl PartialEq for SortableProps {
     fn eq(&self, other: &Self) -> bool {
-        self.items == other.items
+        self.items == other.items && self.order == other.order
     }
 }
 
@@ -43,7 +45,10 @@ impl Component for Sortable {
         let id = (js_sys::Math::random() * 1_000_000.0) as usize;
         let w = window();
         let item_count = ctx.props().items.len();
-        let order: Rc<RefCell<Vec<usize>>> = Rc::new(RefCell::new((0..item_count).collect()));
+        let order: Rc<RefCell<Vec<usize>>> = Rc::new(RefCell::new(match &ctx.props().order {
+            Some(order) if order.len() == item_count => order.to_owned(),
+            _ => (0..item_count).collect()
+        }));
         let currently_dragged = Rc::new(RefCell::new(None));
 
         // Closure to release the currently dragged item

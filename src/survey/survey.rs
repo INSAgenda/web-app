@@ -232,14 +232,25 @@ impl Component for SurveyComp {
                     }
                 },
                 PossibleAnswer::Priority(ref items) => {
-                    // TODO retrieve old order
+                    let order = match self.answers.get(self.progress.saturating_sub(1)).as_ref() {
+                        Some(Some(Answer::Priority(order))) => order.iter().map(|c| *c as usize).collect(),
+                        _ => {
+                            let mut indexes = (0..items.len()).collect::<Vec<_>>();
+                            let mut order = Vec::new();
+                            while !indexes.is_empty() {
+                                let i = js_sys::Math::random() * (indexes.len()-1) as f64;
+                                order.push(indexes.remove(i.round() as usize));
+                            }
+                            order
+                        },
+                    };
                     let items: Vec<_> = items.iter().map(|i| { i.get_localized(l).unwrap_or_default() }).collect();
                     html! {
                         <div class="survey-slide">
                             if let Some(question) = question {
                                 <h2>{question}</h2>
                             }
-                            <Sortable items={items} onchange={ctx.link().callback(SurveyMsg::PriorityChange)} />
+                            <Sortable items={items} onchange={ctx.link().callback(SurveyMsg::PriorityChange)} order={order} />
                         </div>
                     }
                 },
