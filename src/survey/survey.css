@@ -17,6 +17,8 @@
     background-color: var(--border-color);
 }
 
+/* Header */
+
 #survey-top {
     width: 100%;
     padding: 1rem 0;
@@ -25,6 +27,7 @@
     flex-direction: column;
     justify-content: space-evenly;
     align-items: center;
+    text-align: center;
 }
 
 #survey-progress-bar {
@@ -43,6 +46,8 @@
     background-color: var(--primary);
     transition: width .3s ease;
 }
+
+/* Main */
 
 #survey-content {
     width: 100%;

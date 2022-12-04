@@ -32,7 +32,7 @@ pub async fn get_colors() -> Result<HashMap<String, String>, ApiError> {
     Ok(colors)
 }
 
-
+#[deprecated(note = "Use api_post instead")]
 pub async fn publish_colors(colors: &Vec<(String, String)>) -> Result<(), ApiError> {
     let mut init = web_sys::RequestInit::new();
     let body = serde_json::to_string(&colors).unwrap();

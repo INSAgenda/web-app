@@ -95,62 +95,8 @@ impl Component for App {
         let announcement = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let groups = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
-        let mut surveys = survey_response.surveys;
+        let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
-        
-        // Testing
-        surveys.insert(0, Survey {
-            id: String::from("id"),
-            author: 0,
-            title: String::from("Survey de Noël"),
-            description: vec![(String::new(), String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."))].into_iter().collect(),
-            questions: vec![
-                SurveyQuestion {
-                    question: vec![(String::new(), String::from("Que pensez-vous des oiseaux ?"))].into_iter().collect(),
-                    possible_answer: PossibleAnswer::Input { max_length: 256, placeholder: String::from("Réponse") },
-                    required: true,
-                },
-                SurveyQuestion {
-                    question: vec![(String::new(), String::from("Aimeriez-vous voler ?"))].into_iter().collect(),
-                    possible_answer: PossibleAnswer::Boolean { default: false },
-                    required: true,
-                },
-                SurveyQuestion {
-                    question: vec![(String::new(), String::from("Quel est votre oiseau préféré ?"))].into_iter().collect(),
-                    possible_answer: PossibleAnswer::Radio(vec![
-                        vec![(String::new(), String::from("Aigle"))].into_iter().collect(),
-                        vec![(String::new(), String::from("Pigeon"))].into_iter().collect(),
-                        vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
-                        vec![(String::new(), String::from("Poule"))].into_iter().collect(),
-                    ]),
-                    required: true,
-                },
-                SurveyQuestion {
-                    question: vec![(String::new(), String::from("Quels oiseaux sont gris ?"))].into_iter().collect(),
-                    possible_answer: PossibleAnswer::Select(vec![
-                        vec![(String::new(), String::from("Aigle"))].into_iter().collect(),
-                        vec![(String::new(), String::from("Pigeon"))].into_iter().collect(),
-                        vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
-                        vec![(String::new(), String::from("Poule"))].into_iter().collect(),
-                    ]),
-                    required: true,
-                },
-                SurveyQuestion {
-                    question: vec![(String::new(), String::from("Trier les oiseaux par vitesse de vol"))].into_iter().collect(),
-                    possible_answer: PossibleAnswer::Priority(vec![
-                        vec![(String::new(), String::from("Aigle"))].into_iter().collect(),
-                        vec![(String::new(), String::from("Pigeon"))].into_iter().collect(),
-                        vec![(String::new(), String::from("Pélican"))].into_iter().collect(),
-                        vec![(String::new(), String::from("Poule"))].into_iter().collect(),
-                    ]),
-                    required: true,
-                }
-            ],
-            start_ts: 0,
-            end_ts: i64::MAX,
-            target: GroupFilter::All(vec![]),
-            required: true,
-        });
 
         // Detect page
         let page = match window().location().hash() {
