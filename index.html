@@ -23,24 +23,93 @@
     <link data-trunk rel="css" href="src/survey/survey.css" />
     <link data-trunk rel="css" href="src/checkbox/checkbox.css" />
     <link data-trunk rel="css" href="src/sortable/sortable.css" />
+    <link data-trunk rel="css" href="styles/waiting-screen.css" />
     <link data-trunk rel="copy-dir" href="images" />
     <script common_code="head">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
 </head>
 <body>
     <div id="render">
+        <div id="waiting-screen" style="opacity: 0;">
+            <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+            <p>Chargement...</p>
+            <div id="waiting-screen-quote" style="opacity: 0;">
+                <p>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="1rem" height="1rem" fill="currentColor" class="bi bi-quote" viewBox="0 0 16 16"><path d="M12 12a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1h-1.388c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 9 7.558V11a1 1 0 0 0 1 1h2Zm-6 0a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1H4.612c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 3 7.558V11a1 1 0 0 0 1 1h2Z"/></svg>
+                    <span id="waiting-screen-quote-text">We are all Satoshi.</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="1rem" height="1rem" style="transform: scaleX(-1);" fill="currentColor" class="bi bi-quote" viewBox="0 0 16 16"><path d="M12 12a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1h-1.388c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 9 7.558V11a1 1 0 0 0 1 1h2Zm-6 0a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1H4.612c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 3 7.558V11a1 1 0 0 0 1 1h2Z"/></svg>
+                </p>
+                <div id="waiting-screen-quote-author">
+                    Anonymous
+                </div>
+            </div>
+        </div>
     </div>
     <div id="errors">
     </div>
     <script>
+        // Detect unsupported browsers
         if (!(typeof WebAssembly === "object" && typeof WebAssembly.instantiate === "function")) {
             window.location.href = "/unsupported";
         }
     </script>
-    <script common_code="manifest-script">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
     <script>
+        // Register service worker
         if (typeof navigator.serviceWorker !== 'undefined') {
-          navigator.serviceWorker.register('sw.js')
+            navigator.serviceWorker.register('sw.js')
         }
     </script>
+    <script>
+        // Checks that the WASM app runs correctly
+        const quotes = [
+            {
+                text: "We are all Satoshi.",
+                author: "Satoshi"
+            },
+            {
+                text: "Never gonna give you up. Never gonna let you down.",
+                author: "Rick"
+            },
+            {
+                text: "Soutenir que l'on ne se préoccupe pas de la vie privée car on n'a rien à cacher, c'est comme soutenir que l'on ne se préoccupe pas de la liberté d'expression parce qu'on n'a rien à dire.",
+                author: "Edward Snowden"
+            },
+            {
+                text: "Piètre disciple qui ne dépasse pas son maître.",
+                author: "Léonard de Vinci"
+            },
+            {
+                text: "FTX va bien.",
+                author: "SBF"
+            }
+        ];
+        window.localStorage.setItem("wasm-running-status", "waiting");
+        setTimeout(() => {
+            if (window.localStorage.getItem("wasm-running-status") === "waiting") {
+                const waiting_screen = document.getElementById("waiting-screen");
+                const quote = document.getElementById("waiting-screen-quote");
+                const quote_text = document.getElementById("waiting-screen-quote-text");
+                const quote_author = document.getElementById("waiting-screen-quote-author");
+                if (!waiting_screen || !quote || !quote_text) { return }
+                
+                waiting_screen.style.opacity = "1";
+
+                // Each 9 seconds, change the displayed quote
+                const interval = setInterval(() => {
+                    if (window.localStorage.getItem("wasm-running-status") === "waiting") {
+                        quote.style.opacity = "0";
+                        setTimeout(() => {
+                            quote.style.opacity = "1";
+                            let quote_index = Math.floor(Math.random() * quotes.length);
+                            quote_text.innerText = quotes[quote_index].text;
+                            quote_author.innerText = quotes[quote_index].author;
+                        }, 400);
+                    } else {
+                        clearInterval(interval);
+                    }
+                }, 9000);
+            }
+        }, 250);
+    </script>
+    <script common_code="manifest-script">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
 </body>
 </html>

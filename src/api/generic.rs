@@ -1,9 +1,7 @@
 use serde::de::DeserializeOwned;
-use async_trait::async_trait;
 use crate::prelude::*;
 use super::*;
 
-#[async_trait]
 pub trait CachedData: DeserializeOwned + Serialize {
     fn storage_key() -> &'static str;
     fn endpoint() -> &'static str;
