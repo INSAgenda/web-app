@@ -154,12 +154,14 @@ impl Component for App {
                 true
             },
             AppMsg::SurveysSuccess(surveys, survey_answers) => {
-                self.surveys = surveys;
                 if !self.surveys.is_empty() {
-                    let answers = survey_answers.iter().find(|a| a.id == self.surveys[0].id).map(|a| a.answers.to_owned());
-                    ctx.link().send_message(AppMsg::SetPage(Page::Survey(self.surveys[0].clone(), answers)));
+                    // TODO sort surveys by required
+                    if !survey_answers.iter().any(|a| a.id == surveys[0].id) {
+                        ctx.link().send_message(Msg::SetPage(Page::Survey(surveys[0].clone(), None)));
+                    }
                 }
-                true
+                self.surveys = surveys;
+                false
             },
             AppMsg::SaveSurveyAnswer(answers) => {
                 self.survey_answers.retain(|s| s.id != answers.id);
