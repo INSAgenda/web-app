@@ -71,6 +71,9 @@ impl Component for SurveyComp {
     type Properties = SurveyProps;
 
     fn create(ctx: &Context<Self>) -> Self {
+        let body = window().doc().body().unwrap();
+        body.style().set_property("overscroll-behavior-y", "contain").unwrap();
+
         let answers = match &ctx.props().answers {
             Some(answers) if ctx.props().survey.questions.len() == answers.len() => answers.to_owned(),
             _ => ctx.props().survey.questions.iter().map(|s| match s.possible_answer {
@@ -89,6 +92,8 @@ impl Component for SurveyComp {
         match msg {
             SurveyMsg::Back => {
                 if self.progress == 0 {
+                    let body = window().doc().body().unwrap();
+                    body.style().remove_property("overscroll-behavior-y").unwrap();            
                     ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                     return false;
                 }
@@ -102,6 +107,8 @@ impl Component for SurveyComp {
                     let link = ctx.props().app_link.clone();
                     wasm_bindgen_futures::spawn_local(async move {
                         if let Err(e) = api_post(answers, &format!("survey/{id}")).await {
+                            let body = window().doc().body().unwrap();
+                            body.style().remove_property("overscroll-behavior-y").unwrap();
                             link.send_message(AppMsg::ApiFailure(e))
                         }
                         // TODO: if success we should cache the answers
