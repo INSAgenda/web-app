@@ -22,3 +22,7 @@
 .sortable-item>svg {
     margin-right: 0.5rem;
 }
+
+:root[data-theme="dark"] .sortable-item>svg {
+    filter: invert(1);
+}
