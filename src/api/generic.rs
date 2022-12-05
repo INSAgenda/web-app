@@ -72,14 +72,14 @@ async fn load<T: CachedData>() -> Result<T, ApiError> {
     if resp.status() == 400 || resp.status() == 500 {
         let error: KnownApiError = match serde_wasm_bindgen::from_value(json) {
             Ok(error) => error,
-            _ => return Err(ApiError::Unknown(JsValue::from("Invalid JSON of error"))),
+            Err(e) => return Err(ApiError::Unknown(JsValue::from(format!("Invalid JSON in error: {e:?}")))),
         };
         return Err(error.into());
     }
 
     let value: T = match serde_wasm_bindgen::from_value(json) {
         Ok(value) => value,
-        _ => return Err(ApiError::Unknown(JsValue::from("Invalid JSON"))),
+        Err(e) => return Err(ApiError::Unknown(JsValue::from(format!("Invalid JSON: {e:?}")))),
     };
     value.save();
 
