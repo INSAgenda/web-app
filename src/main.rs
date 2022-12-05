@@ -53,6 +53,7 @@ pub enum Msg {
     ScheduleFailure(ApiError),
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
     FetchColors(HashMap<String, String>),
+    SaveSurveyAnswer(SurveyAnswers),
 }
 
 pub struct App {
@@ -61,6 +62,7 @@ pub struct App {
     events: Rc<Vec<RawEvent>>,
     announcements: Rc<Vec<AnnouncementDesc>>,
     surveys: Vec<Survey>,
+    survey_answers: Vec<SurveyAnswers>,
     page: Page,
 }
 
@@ -135,6 +137,7 @@ impl Component for App {
             announcements: Rc::new(announcements),
             groups: Rc::new(groups),
             surveys,
+            survey_answers,
             page,
         }
     }
@@ -157,6 +160,16 @@ impl Component for App {
                 }
                 true
             },
+            AppMsg::SaveSurveyAnswer(answers) => {
+                self.survey_answers.retain(|s| s.id != answers.id);
+                self.survey_answers.push(answers);
+                let to_save = SurveyResponse {
+                    surveys: self.surveys.clone(),
+                    my_answers: self.survey_answers.clone(),
+                };
+                to_save.save();
+                false
+            }
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
 

@@ -106,12 +106,12 @@ impl Component for SurveyComp {
                     let answers = std::mem::take(&mut self.answers);
                     let link = ctx.props().app_link.clone();
                     wasm_bindgen_futures::spawn_local(async move {
+                        link.send_message(AppMsg::SaveSurveyAnswer(SurveyAnswers { id: id.clone(), answers: answers.clone(), last_mod: now_ts() }));
                         if let Err(e) = api_post(answers, &format!("survey/{id}")).await {
                             let body = window().doc().body().unwrap();
                             body.style().remove_property("overscroll-behavior-y").unwrap();
                             link.send_message(AppMsg::ApiFailure(e))
                         }
-                        // TODO: if success we should cache the answers
                     });
                     ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                     return false;
