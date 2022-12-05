@@ -59,6 +59,13 @@
         }
     </script>
     <script>
+        // Check that ressources are loading correctly
+        function on_load_error() {
+            let waiting_screen_message = document.getElementById("waiting-screen-message");
+            waiting_screen_message.innerText = "Something is wrong";
+            window.location.reload();
+        }
+
         // Checks that the WASM app runs correctly
         const quotes = [
             {
@@ -109,13 +116,6 @@
                 }, 9000);
             }
         }, 250);
-    </script>
-    <script>
-        function on_load_error() {
-            let waiting_screen_message = document.getElementById("waiting-screen-message");
-            waiting_screen_message.innerText = "Something is wrong";
-            window.location.reload();
-        }
     </script>
     <script>
         /* https://css-tricks.com/the-trick-to-viewport-units-on-mobile/#css-custom-properties-the-trick-to-correct-sizing */
