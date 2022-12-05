@@ -126,8 +126,9 @@ impl Component for App {
         if window().navigator().on_line() { // temporary
             let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
             if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
-                let answers = survey_answers.iter().find(|a| a.id == survey_to_open.id).map(|a| a.answers.to_owned());
-                ctx.link().send_message(Msg::SetPage(Page::Survey(survey_to_open.clone(), answers)));
+                if !survey_answers.iter().any(|a| a.id == survey_to_open.id) {
+                    ctx.link().send_message(Msg::SetPage(Page::Survey(survey_to_open.clone(), None)));
+                }
             }
         }
 
