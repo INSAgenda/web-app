@@ -10,7 +10,7 @@
     }
 
     #survey-announcement>h2 {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: normal;
         text-decoration: none;
     }
@@ -18,10 +18,10 @@
     #survey-announcement>.primary-button {
         margin: unset;
         width: calc(100% - 9rem - 4px);
-        scale: 0.8;
+        scale: 0.9;
     }
 </style>
 <div id="survey-announcement">
     <h2>{{survey_title}}</h2>
-    <button class="primary-button" data-survey="{{survey_id}}" id="survey-announcement-button">Répondre</button>
+    <button class="primary-button" data-survey="{{survey_id}}" id="survey-announcement-button">{{cta_message}}</button>
 </div>
