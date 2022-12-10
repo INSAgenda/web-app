@@ -154,13 +154,14 @@ impl Component for App {
                 true
             },
             AppMsg::SurveysSuccess(surveys, survey_answers) => {
+                self.surveys = surveys;
+                self.survey_answers = survey_answers;
                 if !self.surveys.is_empty() {
                     // TODO sort surveys by required
-                    if !survey_answers.iter().any(|a| a.id == surveys[0].id) {
-                        ctx.link().send_message(Msg::SetPage(Page::Survey(surveys[0].clone(), None)));
+                    if !self.survey_answers.iter().any(|a| a.id == self.surveys[0].id) {
+                        ctx.link().send_message(Msg::SetPage(Page::Survey(self.surveys[0].clone(), None)));
                     }
                 }
-                self.surveys = surveys;
                 false
             },
             AppMsg::SaveSurveyAnswer(answers) => {
