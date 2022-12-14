@@ -294,5 +294,5 @@ fn main() {
     stop_bots(&window);
     let doc = window.doc();
     let element = doc.get_element_by_id("render").unwrap();
-    yew::start_app_in_element::<App>(element);
+    yew::Renderer::<App>::with_root(element).render();
 }

@@ -66,7 +66,7 @@ impl Component for GliderSelector {
         }
     }
 
-    fn changed(&mut self, ctx: &Context<Self>) -> bool {
+    fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
         if self.old_values != ctx.props().values {
             self.sizes.clear();
         }
