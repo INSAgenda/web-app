@@ -214,8 +214,8 @@ impl Component for Agenda {
         let announcement = self.displayed_announcement.as_ref();
         let mut show_mobile_announcement = mobile && announcement.is_some();
         if show_mobile_announcement {
-            let announcement_start = self.selected_day.and_hms_opt(18,30,0).unwrap().timestamp() as u64;
-            let announcement_end = self.selected_day.and_hms_opt(20,0,0).unwrap().timestamp() as u64;
+            let announcement_start = Paris.from_local_datetime(&self.selected_day.and_hms_opt(18,30,0).unwrap()).unwrap().timestamp() as u64;
+            let announcement_end = Paris.from_local_datetime(&self.selected_day.and_hms_opt(20,0,0).unwrap()).unwrap().timestamp() as u64;
             let announcement_range = announcement_start..=announcement_end;
 
             match ctx.props().events.binary_search_by_key(&announcement_start, |e| e.start_unixtime) { // Check if an event starts exactly at that time.
