@@ -254,7 +254,7 @@ impl Component for Agenda {
             let mut events = Vec::new();
 
             // Iterate over events, starting from the first one that starts during the current day
-            let day_start = current_day.and_hms_opt(0,0,0).unwrap().timestamp() as u64;
+            let day_start = Paris.from_local_datetime(&current_day.and_hms_opt(0,0,0).unwrap()).unwrap().timestamp() as u64;
             let mut idx = match ctx.props().events.binary_search_by_key(&day_start, |e| e.start_unixtime) {
                 Ok(idx) => idx,
                 Err(idx) => idx,
