@@ -74,11 +74,11 @@ impl Component for Calendar {
                 } else {
                     month -= 1;
                 }
-                let day = NaiveDate::from_ymd(year, (month % 12) + 1, 1).pred().day();
+                let day = NaiveDate::from_ymd_opt(year, (month % 12) + 1, 1).unwrap().pred_opt().unwrap().day();
                 ctx.props().agenda_link.send_message(AgendaMsg::Goto { day, month, year });
             },
             Msg::Next => {
-                let next_week = NaiveDateTime::new(NaiveDate::from_ymd(ctx.props().year, ctx.props().month, ctx.props().day), NaiveTime::from_hms(0, 0, 0)) + chrono::Duration::days(7);
+                let next_week = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).unwrap() + chrono::Duration::days(7);
                 ctx.props().agenda_link.send_message(AgendaMsg::Goto {
                     day: next_week.day(),
                     month: next_week.month(),
@@ -86,7 +86,7 @@ impl Component for Calendar {
                 });
             },
             Msg::Previous => {
-                let previous_week = NaiveDateTime::new(NaiveDate::from_ymd(ctx.props().year, ctx.props().month, ctx.props().day), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
+                let previous_week = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).unwrap() - chrono::Duration::days(7);
                 ctx.props().agenda_link.send_message(AgendaMsg::Goto {
                     day: previous_week.day(),
                     month: previous_week.month(),
@@ -94,7 +94,7 @@ impl Component for Calendar {
                 });
             }
             Msg::Goto { day, month, year } => {
-                ctx.props().agenda_link.send_message(AgendaMsg::Goto {day, month,year});
+                ctx.props().agenda_link.send_message(AgendaMsg::Goto {day, month, year});
             },
             Msg::TriggerFold => {
                 self.folded = !self.folded;
@@ -124,9 +124,9 @@ impl Component for Calendar {
             _ => unreachable!(),
         }), ctx.props().year);
 
-        let first_day = NaiveDate::from_ymd(ctx.props().year, ctx.props().month, 1);
-        let last_day = NaiveDate::from_ymd(ctx.props().year, (ctx.props().month % 12) + 1, 1).pred();
-        let today = Local::today().naive_local();
+        let first_day = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, 1).unwrap();
+        let last_day = NaiveDate::from_ymd_opt(ctx.props().year, (ctx.props().month % 12) + 1, 1).unwrap().pred_opt().unwrap();
+        let today = Local::now().date_naive();
 
         let mut calendar_cases = Vec::new();
         for _ in 0..first_day.weekday().number_from_monday() - 1 {
@@ -136,7 +136,7 @@ impl Component for Calendar {
         }
         for day in 1..=last_day.day() {
             let (month, year) = (ctx.props().month, ctx.props().year);
-            let date = NaiveDate::from_ymd(year, month, day);
+            let date = NaiveDate::from_ymd_opt(year, month, day).unwrap();
             let id = if day==ctx.props().day {Some("calendar-case-selected")} else if date==today {Some("calendar-case-today")} else {None};
             calendar_cases.push(html! {
                 <span class="calendar-case" id={id} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>

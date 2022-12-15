@@ -45,11 +45,6 @@ lazy_static::lazy_static!{
     };
 }
 
-pub enum BuildingNaming {
-    Short = 0,
-    Long,
-}
-
 pub enum Theme {
     Dark = 0,
     Light,
@@ -69,27 +64,6 @@ pub struct SettingStore {
 }
 
 impl SettingStore {
-    pub fn building_naming(&self) -> BuildingNaming {
-        match self.building_naming.load(Ordering::Relaxed) {
-            0 => BuildingNaming::Short,
-            1 => BuildingNaming::Long,
-            _ => unreachable!(),
-        }
-    }
-
-    fn set_building_naming(&self, building_naming: usize) {
-        self.building_naming.store(building_naming, Ordering::Relaxed);
-
-        let building_naming = match building_naming {
-            0 => "short",
-            1 => "long",
-            _ => unreachable!(),
-        };
-
-        let storage = window().local_storage().unwrap().unwrap();
-        storage.set_item("setting-building-naming", building_naming).unwrap();
-    }
-
     pub fn theme(&self) -> Theme {
         match self.theme.load(Ordering::Relaxed) {
             0 => Theme::Dark,
@@ -188,7 +162,6 @@ impl Component for SettingsPage {
             }
             Msg::Cancel => {
                 ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
-                SETTINGS.set_building_naming(self.clone_storage.building_naming.load(Ordering::Relaxed));
                 SETTINGS.set_theme(self.clone_storage.theme.load(Ordering::Relaxed));
                 SETTINGS.set_lang(self.clone_storage.lang.load(Ordering::Relaxed));
                 false
