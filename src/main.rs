@@ -1,3 +1,8 @@
+//! Welcome to the INSAgenda web app! This is the main file of the app.
+//! INSAgenda uses the [Yew](https://yew.rs) framework to build a single page web app.
+//! In this file, we define the main component of the app, which is the `App` component.
+//! The `App` component is charged of managing the page that is currently displayed, and stores data that is shared between pages.
+
 #[path = "alert/alert.rs"]
 mod alert;
 #[path = "announcement/announcement.rs"]
@@ -10,18 +15,12 @@ mod settings;
 mod agenda;
 #[path = "glider_selector/glider_selector.rs"]
 mod glider_selector;
-mod util;
 #[path = "calendar/calendar.rs"]
 mod calendar;
-mod slider;
-mod api;
 #[path = "crash/crash_handler.rs"]
 mod crash_handler;
-mod colors;
 #[path = "change_data/change_data.rs"]
 mod change_data;
-mod prelude;
-mod translation;
 #[path ="popup/popup.rs"]
 mod popup;
 #[path = "survey/survey.rs"]
@@ -30,9 +29,16 @@ mod survey;
 mod checkbox;
 #[path = "sortable/sortable.rs"]
 mod sortable;
+mod util;
+mod slider;
+mod api;
+mod prelude;
+mod translation;
+mod colors;
 
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
+/// The page that is currently displayed.
 pub enum Page {
     Settings,
     ChangePassword,
@@ -42,20 +48,27 @@ pub enum Page {
     Survey(Survey, Option<Vec<Option<Answer>>>),
 }
 
+/// A message that can be sent to the `App` component.
 pub enum Msg {
+    /// Switch page
+    SetPage(Page),
+    /// Switch page without saving it in the history
+    SilentSetPage(Page),
+    FetchColors(HashMap<String, String>),
+    SaveSurveyAnswer(SurveyAnswers),
+
+    // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
     GroupsSuccess(Vec<GroupDesc>),
     ApiFailure(ApiError),
-    SetPage(Page),
-    SilentSetPage(Page),
     ScheduleSuccess(Vec<RawEvent>),
     SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
     ScheduleFailure(ApiError),
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
-    FetchColors(HashMap<String, String>),
-    SaveSurveyAnswer(SurveyAnswers),
 }
 
+/// The main component of the app.
+/// Stores data that is shared between pages, as well as the page that is currently displayed.
 pub struct App {
     groups: Rc<Vec<GroupDesc>>,
     user_info: Rc<Option<UserInfo>>,
@@ -143,6 +156,7 @@ impl Component for App {
         }
     }
 
+    /// Most of the messages handled in the function are sent by the data loader to update the data or report an error.
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             AppMsg::AnnouncementsSuccess(announcements) => {
