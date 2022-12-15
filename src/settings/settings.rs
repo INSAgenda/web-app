@@ -8,12 +8,6 @@ lazy_static::lazy_static!{
             Some(theme) if theme == "light" => 1,
             _ => 2,
         };
-        let building_naming = match local_storage.get_item("setting-building-naming").unwrap() {
-            Some(building_naming) if building_naming == "short" => 0,
-            Some(building_naming) if building_naming == "long" => 1,
-            Some(building_naming) => {alert(format!("Invalid building naming {building_naming}")); 0},
-            None => 0,
-        };
         let lang = match local_storage.get_item("setting-lang").unwrap() {
             Some(lang) if lang == "french" => 0,
             Some(lang) if lang == "english" => 1,
@@ -38,7 +32,6 @@ lazy_static::lazy_static!{
         };
 
         SettingStore {
-            building_naming: AtomicUsize::new(building_naming),
             theme: AtomicUsize::new(theme),
             lang: AtomicUsize::new(lang),
         }
@@ -58,7 +51,6 @@ pub enum Lang {
 }
 
 pub struct SettingStore {
-    building_naming: AtomicUsize,
     theme: AtomicUsize,
     lang: AtomicUsize,
 }
@@ -147,7 +139,6 @@ impl Component for SettingsPage {
     fn create(_ctx: &Context<Self>) -> Self {
         Self {
             clone_storage: SettingStore {
-                building_naming: AtomicUsize::new(SETTINGS.building_naming.load(Ordering::Relaxed)),
                 theme: AtomicUsize::new(SETTINGS.theme.load(Ordering::Relaxed)),
                 lang: AtomicUsize::new(SETTINGS.lang.load(Ordering::Relaxed)),
             }
