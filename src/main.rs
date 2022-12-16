@@ -91,11 +91,11 @@ impl Component for App {
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
             let state = e.state().as_string();
             match state.as_deref() {
-                Some("/settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
-                Some("/agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
-                Some("/change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
-                Some("/change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
-                Some("/change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
+                Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
+                Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
+                Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
+                Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
+                Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
                 Some(survey) if survey.starts_with("survey/") => link2.send_message(Msg::SilentSetPage(Page::Survey { sid: survey[7..].to_string() })),
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
