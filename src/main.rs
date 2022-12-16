@@ -45,7 +45,7 @@ pub enum Page {
     ChangeEmail,
     ChangeGroup,
     Agenda,
-    Survey(Survey, Option<Vec<Option<Answer>>>),
+    Survey { sid: String },
 }
 
 /// A message that can be sent to the `App` component.
@@ -86,17 +86,17 @@ impl Component for App {
     fn create(ctx: &Context<Self>) -> Self {
         crash_handler::init();
 
-        // Redirections
+        // Handle popstate events (back browser button)
         let link2 = ctx.link().clone();
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
             let state = e.state().as_string();
             match state.as_deref() {
-                Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
-                Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
-                Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
-                Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
-                Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
-                // TODO survey
+                Some("/settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
+                Some("/agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
+                Some("/change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
+                Some("/change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
+                Some("/change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
+                Some(survey) if survey.starts_with("survey/") => link2.send_message(Msg::SilentSetPage(Page::Survey { sid: survey[7..].to_string() })),
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
             }
@@ -116,23 +116,30 @@ impl Component for App {
             announcements.append(&mut surveys_to_announcements(&surveys, &survey_answers));
         }
 
-        // Detect page
-        let page = match window().location().hash() {
-            Ok(hash) if hash == "#settings" => Page::Settings,
-            Ok(hash) if hash == "#change-password" => Page::ChangePassword,
-            Ok(hash) if hash == "#change-email" => Page::ChangeEmail,
-            Ok(hash) if hash == "#change-group" => Page::ChangeGroup,
-            Ok(hash) if hash.starts_with("#survey-") => {
-                let id = hash[8..].to_string();
-                let answers = survey_answers.iter().find(|a| a.id == id).map(|a| a.answers.to_owned());
-                surveys.iter().find(|s| s.id == id).map(|s| Page::Survey(s.clone(), answers)).unwrap_or(Page::Agenda)
+        // Open corresponding page
+        let page = match window().location().pathname().unwrap_or_default().as_str() {
+            "/settings" => Page::Settings,
+            "/change-password" => Page::ChangePassword,
+            "/change-email" => Page::ChangeEmail,
+            "/change-group" => Page::ChangeGroup,
+            survey if survey.starts_with("/survey/") => Page::Survey { sid: survey[8..].to_string() },
+            "/agenda" => match window().location().hash() { // For compatibility with old links
+                Ok(hash) if hash == "#settings" => Page::Settings,
+                Ok(hash) if hash == "#change-password" => Page::ChangePassword,
+                Ok(hash) if hash == "#change-email" => Page::ChangeEmail,
+                Ok(hash) if hash == "#change-group" => Page::ChangeGroup,
+                Ok(hash) if hash.starts_with("#survey-") => Page::Survey { sid: hash[8..].to_string() },
+                Ok(hash) if hash.is_empty() => Page::Agenda,
+                Ok(hash) => {
+                    alert(format!("Page {hash} not found"));
+                    Page::Agenda
+                },
+                _ => Page::Agenda,
             }
-            Ok(hash) if hash.is_empty() => Page::Agenda,
-            Ok(hash) => {
-                alert(format!("Page {hash} not found"));
+            pathname => {
+                alert(format!("Page {pathname} not found"));
                 Page::Agenda
-            },
-            _ => Page::Agenda,
+            }
         };
 
         // Open survey if one is available and required
@@ -140,7 +147,7 @@ impl Component for App {
             let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
             if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
                 if !survey_answers.iter().any(|a| a.id == survey_to_open.id) {
-                    ctx.link().send_message(Msg::SetPage(Page::Survey(survey_to_open.clone(), None)));
+                    ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey_to_open.id.clone() }));
                 }
             }
         }
@@ -173,7 +180,7 @@ impl Component for App {
                 if !self.surveys.is_empty() {
                     // TODO sort surveys by required
                     if !self.survey_answers.iter().any(|a| a.id == self.surveys[0].id) {
-                        ctx.link().send_message(Msg::SetPage(Page::Survey(self.surveys[0].clone(), None)));
+                        ctx.link().send_message(Msg::SetPage(Page::Survey { sid: self.surveys[0].id.clone() }));
                     }
                 }
                 false
@@ -223,12 +230,12 @@ impl Component for App {
             Msg::SetPage(page) => {
                 let history = window().history().expect("Failed to access history");                
                 match &page {
-                    Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#settings")).unwrap(),
+                    Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("/settings")).unwrap(),
+                    Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("/change-password")).unwrap(),
+                    Page::ChangeEmail => history.push_state_with_url(&JsValue::from_str("change-email"), "Change email", Some("/change-email")).unwrap(),
+                    Page::ChangeGroup => history.push_state_with_url(&JsValue::from_str("change-group"), "Change group", Some("/change-group")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
-                    Page::Survey(survey, _) => history.push_state_with_url(&JsValue::from_str("survey"), "Survey", Some(&format!("#survey-{}", survey.id))).unwrap(),
-                    Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("#change-password")).unwrap(),
-                    Page::ChangeEmail => history.push_state_with_url(&JsValue::from_str("change-email"), "Change email", Some("#change-email")).unwrap(),
-                    Page::ChangeGroup => history.push_state_with_url(&JsValue::from_str("change-group"), "Change group", Some("#change-group")).unwrap(),
+                    Page::Survey { sid } => history.push_state_with_url(&JsValue::from_str(&format!("survey/{sid}")), "Survey", Some(&format!("/survey/{sid}"))).unwrap(),
                 }
                 self.page = page;
                 true
@@ -278,13 +285,23 @@ impl Component for App {
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
             ),
-            Page::Survey(survey, answers) => html!(<SurveyComp survey={survey.clone()} answers={answers.clone()} app_link={ctx.link().clone()} />),
+            Page::Survey { sid } => {
+                let survey = match self.surveys.iter().find(|s| s.id == *sid) {
+                    Some(s) => s,
+                    None => {
+                        redirect("/agenda");
+                        return html!();
+                    }
+                };
+                let answers = self.survey_answers.iter().find(|s| s.id == *sid).map(|a| a.answers.to_owned());
+                html!(<SurveyComp survey={survey.clone()} answers={answers} app_link={ctx.link().clone()} />)
+            },
         }
     }
 }
 
 /// Redirect the user
-fn redirect(page: &str){
+fn redirect(page: &str) {
     let _ = window().location().set_href(page);
     log!("Redirecting to {page}");
 }
