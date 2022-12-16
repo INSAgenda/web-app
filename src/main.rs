@@ -39,13 +39,20 @@ mod colors;
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 /// The page that is currently displayed.
+#[derive(Clone, Routable, PartialEq)]
 pub enum Page {
+    #[at("/settings")]
     Settings,
+    #[at("/change-password")]
     ChangePassword,
+    #[at("/change-email")]
     ChangeEmail,
+    #[at("/change-group")]
     ChangeGroup,
+    #[at("/agenda")]
     Agenda,
-    Survey(Survey, Option<Vec<Option<Answer>>>),
+    #[at("/survey/:sid")]
+    Survey { sid: String },
 }
 
 /// A message that can be sent to the `App` component.
@@ -74,8 +81,8 @@ pub struct App {
     user_info: Rc<Option<UserInfo>>,
     events: Rc<Vec<RawEvent>>,
     announcements: Rc<Vec<AnnouncementDesc>>,
-    surveys: Vec<Survey>,
-    survey_answers: Vec<SurveyAnswers>,
+    surveys: Rc<Vec<Survey>>,
+    survey_answers: Rc<Vec<SurveyAnswers>>,
     page: Page,
 }
 
@@ -117,30 +124,14 @@ impl Component for App {
         }
 
         // Detect page
-        let page = match window().location().hash() {
-            Ok(hash) if hash == "#settings" => Page::Settings,
-            Ok(hash) if hash == "#change-password" => Page::ChangePassword,
-            Ok(hash) if hash == "#change-email" => Page::ChangeEmail,
-            Ok(hash) if hash == "#change-group" => Page::ChangeGroup,
-            Ok(hash) if hash.starts_with("#survey-") => {
-                let id = hash[8..].to_string();
-                let answers = survey_answers.iter().find(|a| a.id == id).map(|a| a.answers.to_owned());
-                surveys.iter().find(|s| s.id == id).map(|s| Page::Survey(s.clone(), answers)).unwrap_or(Page::Agenda)
-            }
-            Ok(hash) if hash.is_empty() => Page::Agenda,
-            Ok(hash) => {
-                alert(format!("Page {hash} not found"));
-                Page::Agenda
-            },
-            _ => Page::Agenda,
-        };
+        let page = Page::Agenda;
 
         // Open survey if one is available and required
         if window().navigator().on_line() { // temporary
             let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
             if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
                 if !survey_answers.iter().any(|a| a.id == survey_to_open.id) {
-                    ctx.link().send_message(Msg::SetPage(Page::Survey(survey_to_open.clone(), None)));
+                    ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey_to_open.id.clone() }));
                 }
             }
         }
@@ -150,8 +141,8 @@ impl Component for App {
             user_info: Rc::new(user_info),
             announcements: Rc::new(announcements),
             groups: Rc::new(groups),
-            surveys,
-            survey_answers,
+            surveys: Rc::new(surveys),
+            survey_answers: Rc::new(survey_answers),
             page,
         }
     }
@@ -168,23 +159,25 @@ impl Component for App {
                 true
             },
             AppMsg::SurveysSuccess(surveys, survey_answers) => {
-                self.surveys = surveys;
-                self.survey_answers = survey_answers;
+                self.surveys = Rc::new(surveys);
+                self.survey_answers = Rc::new(survey_answers);
                 if !self.surveys.is_empty() {
                     // TODO sort surveys by required
                     if !self.survey_answers.iter().any(|a| a.id == self.surveys[0].id) {
-                        ctx.link().send_message(Msg::SetPage(Page::Survey(self.surveys[0].clone(), None)));
+                        ctx.link().send_message(Msg::SetPage(Page::Survey {sid: self.surveys[0].id.clone() }));
                     }
                 }
                 false
             },
             AppMsg::SaveSurveyAnswer(answers) => {
-                self.survey_answers.retain(|s| s.id != answers.id);
-                self.survey_answers.push(answers);
+                let mut survey_answers = self.survey_answers.deref().to_owned();
+                survey_answers.retain(|s| s.id != answers.id);
+                survey_answers.push(answers);
                 let to_save = SurveyResponse {
-                    surveys: self.surveys.clone(),
-                    my_answers: self.survey_answers.clone(),
+                    surveys: self.surveys.deref().to_owned(),
+                    my_answers: survey_answers.clone(),
                 };
+                self.survey_answers = Rc::new(survey_answers);
                 to_save.save();
                 false
             }
@@ -221,14 +214,8 @@ impl Component for App {
                 false
             },
             Msg::SetPage(page) => {
-                let history = window().history().expect("Failed to access history");                
-                match &page {
-                    Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("#settings")).unwrap(),
-                    Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
-                    Page::Survey(survey, _) => history.push_state_with_url(&JsValue::from_str("survey"), "Survey", Some(&format!("#survey-{}", survey.id))).unwrap(),
-                    Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("#change-password")).unwrap(),
-                    Page::ChangeEmail => history.push_state_with_url(&JsValue::from_str("change-email"), "Change email", Some("#change-email")).unwrap(),
-                    Page::ChangeGroup => history.push_state_with_url(&JsValue::from_str("change-group"), "Change group", Some("#change-group")).unwrap(),
+                if let Some(navigator) = ctx.link().navigator() {
+                    navigator.push(&page);
                 }
                 self.page = page;
                 true
@@ -249,36 +236,69 @@ impl Component for App {
     }
     
     fn view(&self, ctx: &Context<Self>) -> Html {
-        match &self.page {
+        let user_info = Rc::clone(&self.user_info);
+        let events = Rc::clone(&self.events);
+        let announcements = Rc::clone(&self.announcements);
+        let groups = Rc::clone(&self.groups);
+        let surveys = Rc::clone(&self.surveys);
+        let survey_answers = Rc::clone(&self.survey_answers);
+        let app_link = ctx.link().clone();
+
+        let switch = move |page| match page {
             Page::Agenda => {
-                let user_info = Rc::clone(&self.user_info);
-                let events = Rc::clone(&self.events);
-                let announcements = Rc::clone(&self.announcements);
-                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} />)
+                let events = Rc::clone(&events);
+                let announcements = Rc::clone(&announcements);
+                let user_info = Rc::clone(&user_info);
+                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={app_link.clone()} />)
             },
-            Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangePassword => html!(
-                <ChangeDataPage
-                    kind="new_password"
-                    app_link={ ctx.link().clone() }
-                    user_info={Rc::clone(&self.user_info)}
-                    groups={Rc::clone(&self.groups)} />
-            ),
-            Page::ChangeEmail => html!(
-                <ChangeDataPage
-                    kind="email"
-                    app_link={ ctx.link().clone() }
-                    user_info={Rc::clone(&self.user_info)}
-                    groups={Rc::clone(&self.groups)} />
-            ),
-            Page::ChangeGroup => html!(
-                <ChangeDataPage
-                    kind="group"
-                    app_link={ ctx.link().clone() }
-                    user_info={Rc::clone(&self.user_info)}
-                    groups={Rc::clone(&self.groups)} />
-            ),
-            Page::Survey(survey, answers) => html!(<SurveyComp survey={survey.clone()} answers={answers.clone()} app_link={ctx.link().clone()} />),
+            Page::Settings => {
+                let user_info = Rc::clone(&user_info);
+                html!( <SettingsPage app_link={app_link.clone()} user_info={user_info} /> )
+            },
+            Page::ChangePassword => {
+                let user_info = Rc::clone(&user_info);
+                let groups = Rc::clone(&groups);
+                html!(
+                    <ChangeDataPage
+                        kind="new_password"
+                        app_link={ app_link.clone() }
+                        user_info={user_info}
+                        groups={groups} />
+                )
+            },
+            Page::ChangeEmail => {
+                let user_info = Rc::clone(&user_info);
+                let groups = Rc::clone(&groups);
+                html!(
+                    <ChangeDataPage
+                        kind="email"
+                        app_link={ app_link.clone() }
+                        user_info={user_info}
+                        groups={groups} />
+                )
+            },
+            Page::ChangeGroup => {
+                let user_info = Rc::clone(&user_info);
+                let groups = Rc::clone(&groups);
+                html!(
+                    <ChangeDataPage
+                        kind="group"
+                        app_link={ app_link.clone() }
+                        user_info={user_info}
+                        groups={groups} />
+                )
+            },
+            Page::Survey { sid } => {
+                let survey = surveys.iter().find(|s| s.id == *sid).unwrap(); // TODO unwrap
+                let answers = survey_answers.iter().find(|a| a.id == *sid).map(|s| s.answers.to_owned());
+                html!(<SurveyComp survey={survey.to_owned()} answers={answers} app_link={app_link.clone()} />)
+            },
+        };
+
+        html! {
+            <BrowserRouter>
+                <Switch<Page> render={switch} />
+            </BrowserRouter>
         }
     }
 }

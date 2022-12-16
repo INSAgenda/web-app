@@ -1,5 +1,6 @@
 pub use yew::{prelude::*, html::Scope};
 pub use yew_template::template_html;
+pub use yew_router::prelude::*;
 pub use common::{Event as RawEvent, *};
 pub use wasm_bindgen::{prelude::*, JsCast, JsValue};
 pub use std::{rc::Rc, cell::{Cell, RefCell}, sync::atomic::{AtomicUsize, Ordering}, time::Duration, collections::{HashMap, BTreeMap}, ops::Deref};

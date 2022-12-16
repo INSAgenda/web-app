@@ -42,7 +42,7 @@ impl HackTraitEventFormat for RawEvent {
     fn format_location(&self) -> Option<String> {
         self.location.as_ref().map(|location| {
             match location {
-                Location::Parsed { building, building_area, level, room_number } => {
+                common::Location::Parsed { building, building_area, level, room_number } => {
                     let building = match building {
                         Building::Magellan => "Ma",
                         Building::DumontDurville => "Du",
@@ -51,7 +51,7 @@ impl HackTraitEventFormat for RawEvent {
                     };
                     format!("{} - {} - {} - {}", building, building_area, level, room_number)
                 }
-                Location::Unparsed(location) => location.clone(),
+                common::Location::Unparsed(location) => location.clone(),
             }
         })
     }
