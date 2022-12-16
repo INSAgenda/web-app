@@ -28,7 +28,7 @@ pub(crate) async fn logout()-> Result<(), ApiError> {
     let json = JsFuture::from(resp.json()?).await?;
     
     if resp.status() != 200 {
-        let error: KnownApiError = match json.into_serde(){
+        let error: KnownApiError = match serde_wasm_bindgen::from_value(json.clone()) {
             Ok(error) => error,
             _ => return Err(ApiError::Unknown(json)),
         };

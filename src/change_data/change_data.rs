@@ -206,7 +206,7 @@ impl Component for ChangeDataPage {
                 let app_link = ctx.props().app_link.clone();
                 let link = ctx.link().clone();
                 spawn_local(async move   {
-                    match post_api_request("account", init, vec![("Content-Type", "application/json")]).await{
+                    match post_api_request("account", init, vec![("Content-Type", "application/json")]).await {
                         Ok(response) => {
                             let response: web_sys::Response = response.dyn_into().unwrap();
                             match response.status() {

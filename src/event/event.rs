@@ -57,8 +57,8 @@ impl HackTraitEventFormat for RawEvent {
     }
 
     fn format_time(&self) -> String {
-        let start = Paris.timestamp(self.start_unixtime as i64, 0);
-        let end = Paris.timestamp(self.end_unixtime as i64, 0);
+        let start = Paris.timestamp_opt(self.start_unixtime as i64, 0).unwrap();
+        let end = Paris.timestamp_opt(self.end_unixtime as i64, 0).unwrap();
         format!("{} - {}", start.time().format("%Hh%M"), end.time().format("%Hh%M"))
     }
 }

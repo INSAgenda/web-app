@@ -185,8 +185,8 @@ impl Component for Sortable {
         }
     }
 
-    fn changed(&mut self, ctx: &Context<Self>) -> bool {
-        *self = Self::create(ctx);
+    fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
+        *self = Component::create(ctx);
         true
     }
 

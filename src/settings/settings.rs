@@ -8,12 +8,6 @@ lazy_static::lazy_static!{
             Some(theme) if theme == "light" => 1,
             _ => 2,
         };
-        let building_naming = match local_storage.get_item("setting-building-naming").unwrap() {
-            Some(building_naming) if building_naming == "short" => 0,
-            Some(building_naming) if building_naming == "long" => 1,
-            Some(building_naming) => {alert(format!("Invalid building naming {building_naming}")); 0},
-            None => 0,
-        };
         let lang = match local_storage.get_item("setting-lang").unwrap() {
             Some(lang) if lang == "french" => 0,
             Some(lang) if lang == "english" => 1,
@@ -38,16 +32,10 @@ lazy_static::lazy_static!{
         };
 
         SettingStore {
-            building_naming: AtomicUsize::new(building_naming),
             theme: AtomicUsize::new(theme),
             lang: AtomicUsize::new(lang),
         }
     };
-}
-
-pub enum BuildingNaming {
-    Short = 0,
-    Long,
 }
 
 pub enum Theme {
@@ -63,33 +51,11 @@ pub enum Lang {
 }
 
 pub struct SettingStore {
-    building_naming: AtomicUsize,
     theme: AtomicUsize,
     lang: AtomicUsize,
 }
 
 impl SettingStore {
-    pub fn building_naming(&self) -> BuildingNaming {
-        match self.building_naming.load(Ordering::Relaxed) {
-            0 => BuildingNaming::Short,
-            1 => BuildingNaming::Long,
-            _ => unreachable!(),
-        }
-    }
-
-    fn set_building_naming(&self, building_naming: usize) {
-        self.building_naming.store(building_naming, Ordering::Relaxed);
-
-        let building_naming = match building_naming {
-            0 => "short",
-            1 => "long",
-            _ => unreachable!(),
-        };
-
-        let storage = window().local_storage().unwrap().unwrap();
-        storage.set_item("setting-building-naming", building_naming).unwrap();
-    }
-
     pub fn theme(&self) -> Theme {
         match self.theme.load(Ordering::Relaxed) {
             0 => Theme::Dark,
@@ -173,7 +139,6 @@ impl Component for SettingsPage {
     fn create(_ctx: &Context<Self>) -> Self {
         Self {
             clone_storage: SettingStore {
-                building_naming: AtomicUsize::new(SETTINGS.building_naming.load(Ordering::Relaxed)),
                 theme: AtomicUsize::new(SETTINGS.theme.load(Ordering::Relaxed)),
                 lang: AtomicUsize::new(SETTINGS.lang.load(Ordering::Relaxed)),
             }
@@ -188,7 +153,6 @@ impl Component for SettingsPage {
             }
             Msg::Cancel => {
                 ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
-                SETTINGS.set_building_naming(self.clone_storage.building_naming.load(Ordering::Relaxed));
                 SETTINGS.set_theme(self.clone_storage.theme.load(Ordering::Relaxed));
                 SETTINGS.set_lang(self.clone_storage.lang.load(Ordering::Relaxed));
                 false

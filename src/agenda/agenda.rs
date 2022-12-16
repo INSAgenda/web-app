@@ -15,7 +15,7 @@ fn format_day(day_name: Weekday, day: u32) -> String {
 }
 
 pub struct Agenda {
-    selected_day: Date<chrono_tz::Tz>,
+    selected_day: NaiveDate,
     slider: Rc<RefCell<slider::SliderManager>>,
     pub displayed_announcement: Option<AnnouncementDesc>,
     popup: PopupState,
@@ -81,8 +81,7 @@ impl Component for Agenda {
 
         // Switch to next day if it's late or to monday if it's weekend
         let weekday = now.weekday();
-        let curr_day = now.naive_local().date().and_hms(0, 0, 0);
-        let has_event = has_event_on_day(&ctx.props().events, curr_day, Weekday::Sat);
+        let has_event = has_event_on_day(&ctx.props().events, now.date_naive(), Weekday::Sat);
         if now.hour() >= 19 || weekday == Weekday::Sun || (weekday == Weekday::Sat && !has_event) {
             let link2 = ctx.link().clone();
             spawn_local(async move {
@@ -92,8 +91,8 @@ impl Component for Agenda {
         }
         
         Self {
-            selected_day: now.date(),
-            slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date().num_days_from_ce() - 730000)),
+            selected_day: now.date_naive(),
+            slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date_naive().num_days_from_ce() - 730000)),
             displayed_announcement,
             popup: PopupState::Closed,
             counter: AtomicUsize::new(0),
@@ -103,34 +102,34 @@ impl Component for Agenda {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             AgendaMsg::Previous => {
-                let prev_week = NaiveDateTime::new(self.selected_day.naive_local(), NaiveTime::from_hms(0, 0, 0)) - chrono::Duration::days(7);
+                let day_prev_week = self.selected_day - chrono::Duration::days(7);
                 if self.selected_day.weekday() != Weekday::Mon {
-                    self.selected_day = self.selected_day.pred();
-                } else if self.selected_day.weekday() == Weekday::Mon && !has_event_on_day(&ctx.props().events, prev_week, Weekday::Sat) {
-                    self.selected_day = self.selected_day.pred().pred().pred();
+                    self.selected_day -= chrono::Duration::days(1);
+                } else if self.selected_day.weekday() == Weekday::Mon && !has_event_on_day(&ctx.props().events, day_prev_week, Weekday::Sat) {
+                    self.selected_day -= chrono::Duration::days(3);
                 } else {
-                    self.selected_day = self.selected_day.pred().pred();
+                    self.selected_day -= chrono::Duration::days(2);
                 }
                 self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
                 true
             },
             AgendaMsg::Next => {
-                let now = NaiveDateTime::new(self.selected_day.naive_local(), NaiveTime::from_hms(0, 0, 0));
+                let day_this_week = self.selected_day;
                 if self.selected_day.weekday() == Weekday::Sat {
-                    self.selected_day = self.selected_day.succ().succ();
-                } else if self.selected_day.weekday() != Weekday::Fri {
-                    self.selected_day = self.selected_day.succ();
-                } else if self.selected_day.weekday() == Weekday::Fri && !has_event_on_day(&ctx.props().events, now, Weekday::Sat) {
-                    self.selected_day = self.selected_day.succ().succ().succ();
+                    self.selected_day += chrono::Duration::days(2);
+                } else if self.selected_day.weekday() == Weekday::Fri && !has_event_on_day(&ctx.props().events, day_this_week, Weekday::Sat) {
+                    self.selected_day += chrono::Duration::days(3);
                 } else {
-                    self.selected_day = self.selected_day.succ();
+                    self.selected_day += chrono::Duration::days(1);
                 }
                 self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
                 
                 true
             },
             AgendaMsg::Goto {day, month, year} => {
-                self.selected_day = Paris.ymd(year, month, day);
+                if let Some(new_selected_day) = NaiveDate::from_ymd_opt(year, month, day) {
+                    self.selected_day = new_selected_day;
+                }
                 self.slider.borrow_mut().set_offset(-20 * (self.selected_day.num_days_from_ce() - 730000));
                 true
             }
@@ -205,9 +204,9 @@ impl Component for Agenda {
         // Go on the first day of the week
         let mut current_day = self.selected_day;
         match mobile {
-            true => current_day = current_day.pred().pred(),
+            true => current_day -= chrono::Duration::days(2),
             false => for _ in 0..self.selected_day.weekday().num_days_from_monday() {
-                current_day = current_day.pred();
+                current_day -= chrono::Duration::days(1);
             },
         };
 
@@ -215,8 +214,8 @@ impl Component for Agenda {
         let announcement = self.displayed_announcement.as_ref();
         let mut show_mobile_announcement = mobile && announcement.is_some();
         if show_mobile_announcement {
-            let announcement_start = current_day.succ().succ().and_hms(18,30,0).timestamp() as u64;
-            let announcement_end = current_day.succ().succ().and_hms(20,0,0).timestamp() as u64;
+            let announcement_start = Paris.from_local_datetime(&self.selected_day.and_hms_opt(18,30,0).unwrap()).unwrap().timestamp() as u64;
+            let announcement_end = Paris.from_local_datetime(&self.selected_day.and_hms_opt(20,0,0).unwrap()).unwrap().timestamp() as u64;
             let announcement_range = announcement_start..=announcement_end;
 
             match ctx.props().events.binary_search_by_key(&announcement_start, |e| e.start_unixtime) { // Check if an event starts exactly at that time.
@@ -255,7 +254,7 @@ impl Component for Agenda {
             let mut events = Vec::new();
 
             // Iterate over events, starting from the first one that starts during the current day
-            let day_start = current_day.and_hms(0,0,0).timestamp() as u64;
+            let day_start = Paris.from_local_datetime(&current_day.and_hms_opt(0,0,0).unwrap()).unwrap().timestamp() as u64;
             let mut idx = match ctx.props().events.binary_search_by_key(&day_start, |e| e.start_unixtime) {
                 Ok(idx) => idx,
                 Err(idx) => idx,
@@ -268,7 +267,7 @@ impl Component for Agenda {
                     <EventComp
                         week_day={d}
                         event={e.clone()}
-                        day_start={current_day.and_hms(0,0,0).timestamp() as u64}
+                        day_start={day_start}
                         agenda_link={ctx.link().clone()}
                         show_announcement={show_mobile_announcement}>
                     </EventComp>
@@ -301,7 +300,7 @@ impl Component for Agenda {
                 </div>
             });
 
-            current_day = current_day.succ();
+            current_day += chrono::Duration::days(1);
         }
 
         let calendar = html! {

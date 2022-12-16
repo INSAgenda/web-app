@@ -88,7 +88,7 @@ impl SentryReportable for &ApiError {
         match self {
             ApiError::Known(e) => {
                 let KnownApiError { kind, origin, message_en, message_fr } = e;
-                let mut obj = Object::new();
+                let obj = Object::new();
                 Reflect::set(&obj, &"kind".into(), &kind.into()).unwrap();
                 Reflect::set(&obj, &"origin".into(), &origin.into()).unwrap();
                 Reflect::set(&obj, &"message_en".into(), &message_en.into()).unwrap();
