@@ -26,13 +26,12 @@ pub enum PopupMsg {
 #[derive(Properties, Clone)]
 pub struct PopupProps {
     pub event: RawEvent,
-    pub week_day: u8,
     pub agenda_link: Scope<Agenda>,
 }
 
 impl PartialEq for PopupProps {
     fn eq(&self, other: &Self) -> bool {
-        self.event == other.event && self.week_day == other.week_day
+        self.event == other.event
     }
 }
 
@@ -67,9 +66,7 @@ impl Component for Popup {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let week_day = ctx.props().week_day;
-        let event = ctx.props().event.clone();
-        let onclick_close = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Popup(PopupState::Closing { week_day, event: event.clone(), popup_size: None }))));
+        let onclick_close = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Agenda)));
         let event_color = COLORS.get(&ctx.props().event.summary);
         let summary = &ctx.props().event.summary;
         let name = ctx.props().event.format_name();

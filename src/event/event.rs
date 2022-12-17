@@ -90,11 +90,11 @@ impl Component for EventComp {
         let percent_height = 100.0 / day_sec_count * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;
 
         // Render
-        let event1 = ctx.props().event.clone();
+        let eid = ctx.props().event.start_unixtime;
         let week_day = ctx.props().week_day;
         template_html!(
             "src/event/event.html",
-            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Popup(PopupState::Opened{ week_day, event: event1.clone(), popup_size: None })))) },
+            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Event { eid } ))) },
             teachers = { ctx.props().event.teachers.join(", ")},
             opt_location = location,
             bg_color = {bg_color.clone()},
