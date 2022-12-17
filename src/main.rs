@@ -36,6 +36,8 @@ mod prelude;
 mod translation;
 mod colors;
 
+use slider::width;
+
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 /// The page that is currently displayed.
@@ -45,6 +47,7 @@ pub enum Page {
     ChangeEmail,
     ChangeGroup,
     Agenda,
+    Popup (PopupState),
     Survey { sid: String },
 }
 
@@ -56,6 +59,9 @@ pub enum Msg {
     SilentSetPage(Page),
     FetchColors(HashMap<String, String>),
     SaveSurveyAnswer(SurveyAnswers),
+
+    OpenPopup{ week_day: u8, event: RawEvent },
+    ClosePopup,
 
     // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
@@ -236,6 +242,7 @@ impl Component for App {
                     Page::ChangeGroup => history.push_state_with_url(&JsValue::from_str("change-group"), "Change group", Some("/change-group")).unwrap(),
                     Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
                     Page::Survey { sid } => history.push_state_with_url(&JsValue::from_str(&format!("survey/{sid}")), "Survey", Some(&format!("/survey/{sid}"))).unwrap(),
+                    Page::Popup(_) => history.push_state_with_url(&JsValue::from_str("popup"), "Popup", Some("/popup")).unwrap(),
                 }
                 self.page = page;
                 true
@@ -244,6 +251,44 @@ impl Component for App {
                 self.page = page;
                 true
             },
+            Msg::OpenPopup { week_day, event } => {
+                //self.slider.borrow_mut().disable();
+                let mut popup_size = None;
+                if let Page::Popup(PopupState::Opened { popup_size: Some(previous_size), .. }) | Page::Popup(PopupState::Closing { popup_size: Some(previous_size), .. }) = self.page {
+                    popup_size = Some(previous_size);
+                } else if let Some(day_el) = window().doc().get_element_by_id("day0") {
+                    let rect = day_el.get_bounding_client_rect();
+                    popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
+                }
+                self.page = Page::Popup(PopupState::Opened { week_day, event: Rc::new(event), popup_size });
+                spawn_local(async move {
+                    window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
+                    sleep(Duration::from_millis(500)).await;
+                    window().doc().body().unwrap().remove_attribute("style").unwrap();
+                });
+                true
+            },
+            Msg::ClosePopup => {
+                match self.page {
+                    Page::Popup(PopupState::Opened { week_day, ref event, popup_size }) => {
+                        self.page = Page::Popup(PopupState::Closing { week_day, event: Rc::clone(event), popup_size });
+                        let link = ctx.link().clone();
+                        spawn_local(async move {
+                            window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
+                            sleep(Duration::from_millis(500)).await;
+                            link.send_message(Msg::ClosePopup);
+                            window().doc().body().unwrap().remove_attribute("style").unwrap();
+                        });
+                        true
+                    },
+                    Page::Popup(PopupState::Closing { .. }) => {
+                        self.page = Page::Popup(PopupState::Closed);
+                        //self.slider.borrow_mut().enable();
+                        true
+                    },
+                    _ => false,
+                }
+            }
             Msg::FetchColors(new_colors) => {
                 crate::COLORS.update_colors(new_colors);
                 true
@@ -261,7 +306,13 @@ impl Component for App {
                 let user_info = Rc::clone(&self.user_info);
                 let events = Rc::clone(&self.events);
                 let announcements = Rc::clone(&self.announcements);
-                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} />)
+                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={PopupState::Closed} />)
+            },
+            Page::Popup(popup_state) => {
+                let user_info = Rc::clone(&self.user_info);
+                let events = Rc::clone(&self.events);
+                let announcements = Rc::clone(&self.announcements);
+                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={popup_state.clone()} />)
             },
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
             Page::ChangePassword => html!(

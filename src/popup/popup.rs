@@ -1,5 +1,6 @@
 use crate::{prelude::*, slider::width};
 
+#[derive(Clone, PartialEq)]
 pub enum PopupState {
     Opened { week_day: u8, event: Rc<RawEvent>, popup_size: Option<usize> },
     Closing { week_day: u8, event: Rc<RawEvent>, popup_size: Option<usize> },
@@ -66,7 +67,7 @@ impl Component for Popup {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let onclick_close = ctx.props().agenda_link.callback(|_| AgendaMsg::ClosePopup);
+        let onclick_close = ctx.props().agenda_link.callback(|_| AgendaMsg::AppMsg(AppMsg::ClosePopup));
         let event_color = COLORS.get(&ctx.props().event.summary);
         let summary = &ctx.props().event.summary;
         let name = ctx.props().event.format_name();
