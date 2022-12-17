@@ -67,7 +67,9 @@ impl Component for Popup {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let onclick_close = ctx.props().agenda_link.callback(|_| AgendaMsg::AppMsg(AppMsg::ClosePopup));
+        let week_day = ctx.props().week_day;
+        let event = ctx.props().event.clone();
+        let onclick_close = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Popup(PopupState::Closing { week_day, event: event.clone(), popup_size: None }))));
         let event_color = COLORS.get(&ctx.props().event.summary);
         let summary = &ctx.props().event.summary;
         let name = ctx.props().event.format_name();

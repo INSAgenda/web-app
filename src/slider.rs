@@ -47,7 +47,7 @@ impl SliderManager {
         let slider2 = Rc::clone(&slider);
         let link2 = link;
         let resize = Closure::wrap(Box::new(move |_: web_sys::Event| {
-            link2.send_message(AgendaMsg::AppMsg(AppMsg::ClosePopup));
+            // TODO link2.send_message(AgendaMsg::AppMsg(AppMsg::ClosePopup));
             let mut slider = match slider2.try_borrow_mut() {
                 Ok(slider) => slider,
                 Err(_) => {
