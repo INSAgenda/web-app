@@ -278,7 +278,7 @@ impl Component for Agenda {
             html! {
                 <Popup
                     week_day = {week_day}
-                    event = {event}
+                    event = {event.clone()}
                     agenda_link = {ctx.link().clone()} />
             }
         );

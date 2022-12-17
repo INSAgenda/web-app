@@ -94,7 +94,7 @@ impl Component for EventComp {
         let week_day = ctx.props().week_day;
         template_html!(
             "src/event/event.html",
-            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::OpenPopup { week_day, event: event1.clone() })) },
+            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Popup(PopupState::Opened{ week_day, event: event1.clone(), popup_size: None })))) },
             teachers = { ctx.props().event.teachers.join(", ")},
             opt_location = location,
             bg_color = {bg_color.clone()},

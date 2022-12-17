@@ -47,7 +47,7 @@ pub enum Page {
     ChangeEmail,
     ChangeGroup,
     Agenda,
-    Popup (PopupState),
+    Popup(PopupState),
     Survey { sid: String },
 }
 
@@ -60,7 +60,7 @@ pub enum Msg {
     FetchColors(HashMap<String, String>),
     SaveSurveyAnswer(SurveyAnswers),
 
-    OpenPopup{ week_day: u8, event: RawEvent },
+    //OpenPopup{ week_day: u8, event: RawEvent },
     ClosePopup,
 
     // Data updating messages sent by the loader in /src/api/generic.rs
@@ -233,8 +233,22 @@ impl Component for App {
                 api_error.handle_api_error();
                 false
             },
-            Msg::SetPage(page) => {
-                let history = window().history().expect("Failed to access history");                
+            Msg::SetPage(mut page) => {
+                let history = window().history().expect("Failed to access history");
+                if let Page::Popup(PopupState::Opened { popup_size, .. }) = &mut page {
+                    //self.slider.borrow_mut().disable();
+                    if let Page::Popup(PopupState::Opened { popup_size: Some(previous_size), .. }) | Page::Popup(PopupState::Closing { popup_size: Some(previous_size), .. }) = self.page {
+                        *popup_size = Some(previous_size);
+                    } else if let Some(day_el) = window().doc().get_element_by_id("day0") {
+                        let rect = day_el.get_bounding_client_rect();
+                        *popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
+                    }
+                    spawn_local(async move {
+                        window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
+                        sleep(Duration::from_millis(500)).await;
+                        window().doc().body().unwrap().remove_attribute("style").unwrap();
+                    });
+                }
                 match &page {
                     Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("/settings")).unwrap(),
                     Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("/change-password")).unwrap(),
@@ -251,7 +265,7 @@ impl Component for App {
                 self.page = page;
                 true
             },
-            Msg::OpenPopup { week_day, event } => {
+            /*Msg::OpenPopup { week_day, event } => {
                 //self.slider.borrow_mut().disable();
                 let mut popup_size = None;
                 if let Page::Popup(PopupState::Opened { popup_size: Some(previous_size), .. }) | Page::Popup(PopupState::Closing { popup_size: Some(previous_size), .. }) = self.page {
@@ -267,11 +281,11 @@ impl Component for App {
                     window().doc().body().unwrap().remove_attribute("style").unwrap();
                 });
                 true
-            },
+            },*/
             Msg::ClosePopup => {
                 match self.page {
                     Page::Popup(PopupState::Opened { week_day, ref event, popup_size }) => {
-                        self.page = Page::Popup(PopupState::Closing { week_day, event: Rc::clone(event), popup_size });
+                        self.page = Page::Popup(PopupState::Closing { week_day, event: event.to_owned(), popup_size });
                         let link = ctx.link().clone();
                         spawn_local(async move {
                             window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();

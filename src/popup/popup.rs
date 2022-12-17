@@ -2,16 +2,16 @@ use crate::{prelude::*, slider::width};
 
 #[derive(Clone, PartialEq)]
 pub enum PopupState {
-    Opened { week_day: u8, event: Rc<RawEvent>, popup_size: Option<usize> },
-    Closing { week_day: u8, event: Rc<RawEvent>, popup_size: Option<usize> },
+    Opened { week_day: u8, event: RawEvent, popup_size: Option<usize> },
+    Closing { week_day: u8, event: RawEvent, popup_size: Option<usize> },
     Closed,
 }
 
 impl PopupState {
-    pub fn as_option(&self) -> Option<(u8, Rc<RawEvent>, Option<usize>)> {
+    pub fn as_option(&self) -> Option<(u8, &RawEvent, Option<usize>)> {
         match self {
-            PopupState::Opened { week_day, event, popup_size } => Some((*week_day, Rc::clone(event), *popup_size)),
-            PopupState::Closing { week_day, event, popup_size } => Some((*week_day, Rc::clone(event), *popup_size)),
+            PopupState::Opened { week_day, event, popup_size } => Some((*week_day, event, *popup_size)),
+            PopupState::Closing { week_day, event, popup_size } => Some((*week_day, event, *popup_size)),
             PopupState::Closed => None,
         }
     }
@@ -25,7 +25,7 @@ pub enum PopupMsg {
 
 #[derive(Properties, Clone)]
 pub struct PopupProps {
-    pub event: Rc<RawEvent>,
+    pub event: RawEvent,
     pub week_day: u8,
     pub agenda_link: Scope<Agenda>,
 }
