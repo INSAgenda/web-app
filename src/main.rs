@@ -117,7 +117,8 @@ impl Component for App {
         }
 
         // Open corresponding page
-        let page = match window().location().pathname().unwrap_or_default().as_str() {
+        let path = window().location().pathname().unwrap_or_default();
+        let page = match path.as_str().trim_end_matches('/') {
             "/settings" => Page::Settings,
             "/change-password" => Page::ChangePassword,
             "/change-email" => Page::ChangeEmail,
