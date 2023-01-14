@@ -50,7 +50,7 @@ pub enum SurveyMsg {
     TextInput(InputEvent),
     CheckboxChange(bool),
     SelectChange(bool, usize),
-    RadioChange(web_sys::Event, usize),
+    RadioChange(web_sys::MouseEvent, usize),
     ValueChange(web_sys::Event),
     PriorityChange(Vec<usize>),
 }
@@ -182,7 +182,7 @@ impl Component for SurveyComp {
         let l = SETTINGS.locale();
         let mut slides = Vec::new();
 
-        for survey_question in &ctx.props().survey.questions {
+        for (i, survey_question) in ctx.props().survey.questions.iter().enumerate() {
             let question = survey_question.question.get_localized(l);
             let content = match survey_question.possible_answer {
                 PossibleAnswer::Input { max_length, ref placeholder } => {
@@ -238,15 +238,15 @@ impl Component for SurveyComp {
                     }
                 },
                 PossibleAnswer::Radio(ref options) => {
-                    let checked = match self.answers.get(self.progress.saturating_sub(1)).as_ref() {
+                    let checked = match self.answers.get(i).as_ref() {
                         Some(Some(Answer::Radio(value))) => Some(*value),
                         _ => None,
                     };
-                    let options = options.iter().enumerate().map(|(i, option)| {
+                    let options = options.iter().enumerate().map(|(j, option)| {
                         let option = option.get_localized(l);
                         html! {
                             <label class="survey-radio">
-                                <input type="radio" name="survey-radio" checked={Some(i as u16) == checked} onchange={ctx.link().callback(move |v| SurveyMsg::RadioChange(v, i))} />
+                                <input type="radio" name={format!("survey-radio{i}")} checked={Some(j as u16) == checked} checked_str={(Some(j as u16) == checked).to_string()} onclick={ctx.link().callback(move |v| SurveyMsg::RadioChange(v, j))} />
                                 <div>{option.unwrap_or_default()}</div>
                             </label>
                         }
