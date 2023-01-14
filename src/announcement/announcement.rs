@@ -59,6 +59,13 @@ pub fn update_close_announcement(agenda: &mut Agenda) -> bool {
 pub fn select_announcement(announcements: &[AnnouncementDesc], user_info: &Option<UserInfo>) -> Option<AnnouncementDesc> {
     let mut impressions = load_impressions().unwrap_or_default();
     let now = (js_sys::Date::new_0().get_time() / 1000.0) as u64;
+
+    // Sort by impressions so that it's not always the same announcement that is displayed
+    let mut announcements = announcements.to_vec();
+    announcements.sort_by_key(|a| {
+        let impression_data = impressions.get(&a.id).cloned().unwrap_or_default();
+        impression_data.count
+    });
     
     for a in announcements {
         if (a.start_ts..=a.end_ts).contains(&now) {
@@ -80,7 +87,7 @@ pub fn select_announcement(announcements: &[AnnouncementDesc], user_info: &Optio
             impression_data.count += 1;
             impressions.insert(a.id.clone(), impression_data);
             save_impressions(&impressions);
-            return Some(a.clone());
+            return Some(a);
         }
     }
 
