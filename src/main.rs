@@ -106,9 +106,9 @@ impl Component for App {
 
         // Update data
         let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
-        let user_info = CachedData::init(ctx.link().clone());
+        let user_info: Option<UserInfo> = CachedData::init(ctx.link().clone());
         let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
-        let groups = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let groups: Vec<GroupDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
@@ -150,6 +150,13 @@ impl Component for App {
                 if !survey_answers.iter().any(|a| a.id == survey_to_open.id) {
                     ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey_to_open.id.clone() }));
                 }
+            }
+        }
+
+        // Ask user to set new groups if they are outdated
+        if let Some(user_info) = &user_info {
+            if !groups.is_empty() && user_info.user_groups.needs_correction(&groups) {
+                ctx.link().send_message(Msg::SetPage(Page::ChangeGroup));
             }
         }
 
@@ -199,6 +206,7 @@ impl Component for App {
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
 
+                // Update events if user groups changed
                 if let Some(old_user_info) = self.user_info.as_ref() {
                     if old_user_info.user_groups != user_info.user_groups {
                         self.events = Rc::new(Vec::new());
@@ -207,13 +215,25 @@ impl Component for App {
                     }
                 }
 
-                // Update user info
+                // Ask correction if needed
+                if user_info.user_groups.needs_correction(&self.groups) {
+                    ctx.link().send_message(Msg::SetPage(Page::ChangeGroup));
+                }
+
+                // Set new user info
                 user_info.save();
                 self.user_info = Rc::new(Some(user_info));
 
                 should_refresh
             },
             Msg::GroupsSuccess(groups) => {
+                // Ask correction if needed
+                if let Some(user_info) = self.user_info.as_ref() {
+                    if user_info.user_groups.needs_correction(&groups) {
+                        ctx.link().send_message(Msg::SetPage(Page::ChangeGroup));
+                    }
+                }
+
                 self.groups = Rc::new(groups);
                 false
             },

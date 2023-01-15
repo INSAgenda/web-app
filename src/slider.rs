@@ -95,7 +95,7 @@ impl SliderManager {
                 },
             };
             if slider.enabled {
-                slider.touch_start(event.client_x() as i32, event.client_y() as i32);
+                slider.touch_start(event.client_x(), event.client_y());
             }
         }) as Box<dyn FnMut(_)>);
         w.add_event_listener_with_callback("mousedown", mouse_down.as_ref().unchecked_ref()).unwrap();
@@ -111,8 +111,8 @@ impl SliderManager {
                 },
             };
             if slider.enabled {
-                let mouse_x = event.touches().get(0).unwrap().client_x() as i32;
-                let mouse_y = event.touches().get(0).unwrap().client_y() as i32;
+                let mouse_x = event.touches().get(0).unwrap().client_x();
+                let mouse_y = event.touches().get(0).unwrap().client_y();
                 slider.touch_start(mouse_x, mouse_y);
             }
         }) as Box<dyn FnMut(_)>);
@@ -128,7 +128,7 @@ impl SliderManager {
             match slider2.try_borrow() {
                 Ok(slider) => {
                     if slider.can_move() {
-                        last_pos2.set(event.client_x() as i32);
+                        last_pos2.set(event.client_x());
                         window().request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
                     }
                 },
@@ -143,7 +143,7 @@ impl SliderManager {
         let move_animation2 = Rc::clone(&move_animation);
         let touch_move = Closure::wrap(Box::new(move |event: web_sys::TouchEvent| {
             if slider2.try_borrow().map(|s| s.can_move()).unwrap_or_default() {
-                let mouse_x = event.touches().get(0).unwrap().client_x() as i32;
+                let mouse_x = event.touches().get(0).unwrap().client_x();
                 last_pos2.set(mouse_x);
                 window().request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
             }
@@ -158,7 +158,7 @@ impl SliderManager {
         let end_animation2 = Rc::clone(&end_animation);
         let mouse_end = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
             if slider2.try_borrow().map(|s| s.can_move()).unwrap_or_default() {
-                last_pos2.set(event.client_x() as i32);
+                last_pos2.set(event.client_x());
                 window().request_animation_frame((*end_animation2).as_ref().unchecked_ref()).unwrap();
             }
         }) as Box<dyn FnMut(_)>);

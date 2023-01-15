@@ -91,6 +91,19 @@
     margin: 1.2rem auto;
 }
 
+/* /change-data tweaks (TODO: remove from here) */
+
+:root[data-theme="light"] #auth .dropdown-list>option[disabled="disabled"] {
+    color: #666;
+}
+:root[data-theme="dark"] #auth .dropdown-list>option[disabled="disabled"] {
+    color: #bbb;
+}
+
+#change-data-msg {
+    width: 100%;
+}
+
 @media all and (max-width: 800px){
     .settings-group {
         align-items: center;
