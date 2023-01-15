@@ -21,7 +21,7 @@ pub fn surveys_to_announcements(surveys: &[Survey], answers: &[SurveyAnswers]) -
             ty: ContentType::Html,
             content_fr: Some(code.clone()),
             content_en: Some(code),
-            script: Some(include_str!("survey_announcement.js").to_string()),
+            script: None,
         }
     }).collect()
 }
