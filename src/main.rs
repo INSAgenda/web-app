@@ -153,6 +153,13 @@ impl Component for App {
             }
         }
 
+        // Ask user to set new groups if they are outdated
+        if let (Some(user_info), Some(groups)) = (user_info.as_ref(), groups.as_ref()) {
+            if user_info.user_groups.needs_correction(&groups) {
+                ctx.link().send_message(Msg::SetPage(Page::ChangeGroup));
+            }
+        }
+
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
