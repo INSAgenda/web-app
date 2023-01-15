@@ -93,10 +93,10 @@
 
 /* /change-data tweaks (TODO: remove from here) */
 
-:root[data-theme="light"] #auth .dropdown-list>option[disabled="disabled"] {
+:root[data-theme="light"] #auth .dropdown-list-missing {
     color: #666;
 }
-:root[data-theme="dark"] #auth .dropdown-list>option[disabled="disabled"] {
+:root[data-theme="dark"] #auth .dropdown-list-missing {
     color: #bbb;
 }
 

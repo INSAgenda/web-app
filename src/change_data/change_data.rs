@@ -297,10 +297,12 @@ impl Component for ChangeDataPage {
                     let help = if SETTINGS.lang() == Lang::French { &help.0 } else { &help.1 };
                     let required = required_if.as_ref().map(|ri| input_user_groups.matches(ri)).unwrap_or(true);
                     let style = if required {"display: block;"} else {"display: none;"};
+                    let missing = input_user_groups.groups().get(id).is_none();
+                    let classes = if missing {"dropdown-list dropdown-list-missing"} else {"dropdown-list"};
                     html! {
                         <div class="dropdown-list-box" style={style}>
-                            <select required=true class="dropdown-list" name={id.clone()} onchange={ctx.link().callback(Msg::GroupSelectChanged)}>
-                                <option disabled=true selected={input_user_groups.groups().get(id).is_none()}>{name}</option>
+                            <select required=true class={classes} name={id.clone()} onchange={ctx.link().callback(Msg::GroupSelectChanged)}>
+                                <option disabled=true selected={missing}>{name}</option>
                                 {
                                     values
                                         .iter()
