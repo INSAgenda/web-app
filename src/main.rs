@@ -199,6 +199,7 @@ impl Component for App {
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
 
+                // Update events if user groups changed
                 if let Some(old_user_info) = self.user_info.as_ref() {
                     if old_user_info.user_groups != user_info.user_groups {
                         self.events = Rc::new(Vec::new());
@@ -207,13 +208,25 @@ impl Component for App {
                     }
                 }
 
-                // Update user info
+                // Ask correction if needed
+                if user_info.user_groups.needs_correction(&self.groups) {
+                    ctx.link().send_message(Msg::SetPage(Page::ChangeGroup));
+                }
+
+                // Set new user info
                 user_info.save();
                 self.user_info = Rc::new(Some(user_info));
 
                 should_refresh
             },
             Msg::GroupsSuccess(groups) => {
+                // Ask correction if needed
+                if let Some(user_info) = self.user_info.as_ref() {
+                    if user_info.user_groups.needs_correction(&groups) {
+                        ctx.link().send_message(Msg::SetPage(Page::ChangeGroup));
+                    }
+                }
+
                 self.groups = Rc::new(groups);
                 false
             },
