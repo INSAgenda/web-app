@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use yew::virtual_dom::VNode;
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 struct AnnouncementImpressions {
@@ -137,17 +138,11 @@ pub fn view_announcement(a: &AnnouncementDesc, ctx: &Context<Agenda>) -> Html {
                     </p>
                 </>},
                 ContentType::Html => {
-                    let div = window()
-                        .doc()
-                        .create_element("div")
-                        .unwrap();
-                    div.set_attribute("style", "width: 100%; height: 100%;").unwrap();
-                    match SETTINGS.lang() {
-                        Lang::French => div.set_inner_html(a.content_fr.as_deref().unwrap_or_default()),
-                        Lang::English => div.set_inner_html(a.content_en.as_deref().unwrap_or_default()),
-                    }
-                    let node = web_sys::Node::from(div);
-                    yew::virtual_dom::VNode::VRef(node)
+                    let content = match SETTINGS.lang() {
+                        Lang::French => a.content_fr.as_deref().unwrap_or_default(),
+                        Lang::English => a.content_en.as_deref().unwrap_or_default(),
+                    };
+                    VNode::from_html_unchecked(AttrValue::from(format!("<div style=\"width: 100%; height: 100%;\">{content}</div>")))
                 }
             }}
             if let Some(script) = script {
