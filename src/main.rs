@@ -106,9 +106,9 @@ impl Component for App {
 
         // Update data
         let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
-        let user_info = CachedData::init(ctx.link().clone());
+        let user_info: Option<UserInfo> = CachedData::init(ctx.link().clone());
         let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
-        let groups = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let groups: Vec<GroupDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
@@ -154,8 +154,8 @@ impl Component for App {
         }
 
         // Ask user to set new groups if they are outdated
-        if let (Some(user_info), Some(groups)) = (user_info.as_ref(), groups.as_ref()) {
-            if user_info.user_groups.needs_correction(&groups) {
+        if let Some(user_info) = &user_info {
+            if !groups.is_empty() && user_info.user_groups.needs_correction(&groups) {
                 ctx.link().send_message(Msg::SetPage(Page::ChangeGroup));
             }
         }
