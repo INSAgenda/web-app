@@ -248,6 +248,7 @@ impl Component for ChangeDataPage {
         // Build the custom part of the form
         let user_info = ctx.props().user_info.as_ref();
         let display_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(true);
+        let mut opt_msg = None;
         
         let inputs = match &self.data {
             Data::NewPassword(password, new_password, confirm_password) => html! {<>    
@@ -281,6 +282,13 @@ impl Component for ChangeDataPage {
             Data::Group(input_user_groups) => {
                 if ctx.props().groups.is_empty() {
                     return html! {<>{t("Page indisponible, veuillez réessayer plus tard.")}</>};
+                }
+
+                // Display a message if the current groups are invalid
+                if let Some(user_info) = user_info.as_ref() {
+                    if user_info.user_groups.needs_correction(&ctx.props().groups) {
+                        opt_msg = Some("Votre groupe actuel n'est plus valide, veuillez rentrer les informations manquantes.");
+                    }
                 }
 
                 ctx.props().groups.iter().map(|group| {
