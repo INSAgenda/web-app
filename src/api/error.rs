@@ -18,9 +18,8 @@ pub struct KnownApiError {
 impl std::fmt::Display for KnownApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let KnownApiError { kind, messages, .. } = self;
-        let message = messages.get(&SETTINGS.lang().locale()).unwrap_or(&kind);
-        write!(f, "{message} of type: {kind}");
-        Ok(())
+        let message = messages.get(SETTINGS.locale()).unwrap_or(&kind);
+        write!(f, "{message} of type: {kind}")
     }
 }
 
@@ -97,7 +96,7 @@ impl SentryReportable for &ApiError {
                 let KnownApiError { kind, messages, .. } = e;
                 let obj = Object::new();
                 Reflect::set(&obj, &"kind".into(), &kind.into()).unwrap();
-                Reflect::set(&obj, &"messages".into(), &messages.into()).unwrap();
+                Reflect::set(&obj, &"messages".into(), &messages.get("en").unwrap_or(&kind).into()).unwrap();
                 obj.into()
             }
             ApiError::Unknown(e) => e.to_owned(),
