@@ -6,28 +6,37 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 pub struct KnownApiError {
     pub kind: String, 
-    messages: HashMap<String, String>,
-    #[serde(skip_deserializing)]
-    message_en: String,
-    #[serde(skip_deserializing)]
-    message_fr: String,
-    #[serde(skip_deserializing)]
-    origin: String,
+    messages: Option<HashMap<String, String>>,
+    message_en: Option<String>,
+    message_fr: Option<String>,
+    origin: Option<String>,
 }
 
 impl std::fmt::Display for KnownApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let KnownApiError { kind, messages, .. } = self;
-        let message = messages.get(SETTINGS.locale()).unwrap_or(&kind);
-        write!(f, "{message} of type: {kind}")
+        let KnownApiError { kind, messages, message_en, message_fr, .. } = self;
+        if let Some(messages) = messages {
+            let msg = messages.get(SETTINGS.locale()).unwrap_or(&kind);
+            write!(f, "{msg} of type: {kind}")    
+        } else if let (Some(msg_fr), Some(msg_en)) = (message_fr.as_ref(), message_en.as_ref()) {
+            let msg = if SETTINGS.locale() == "fr" { msg_fr } else { msg_en };
+            write!(f, "{msg} of type: {kind}")    
+        } else {
+            write!(f, "{kind}")
+        }
     }
 }
 
 impl KnownApiError {
     fn to_string_en(&self) -> String {
-        let KnownApiError { kind, messages, ..} = self;
-        let message_en = messages.get("en").unwrap_or(&kind);
-        format!("{message_en} of type: {kind}")
+        let KnownApiError { kind, messages, message_en, ..} = self;
+        if let Some(msg) = message_en {
+            return format!("{msg} of type: {kind}")
+        } else if let Some(messages) = messages {
+            let msg = messages.get("en").unwrap_or(&kind);
+            return format!("{msg} of type: {kind}")
+        }
+        format!("{kind}")
     }
 }
 
@@ -93,10 +102,17 @@ impl SentryReportable for &ApiError {
     fn to_sentry_js_value(self) -> JsValue {
         match self {
             ApiError::Known(e) => {
-                let KnownApiError { kind, messages, .. } = e;
+                let KnownApiError { kind, messages, message_en, .. } = e;
                 let obj = Object::new();
                 Reflect::set(&obj, &"kind".into(), &kind.into()).unwrap();
-                Reflect::set(&obj, &"messages".into(), &messages.get("en").unwrap_or(&kind).into()).unwrap();
+                let messages = if let Some(msg) = messages {
+                    msg.get("en").unwrap_or(&kind)
+                } else if let Some(msg) = message_en {
+                    msg
+                } else {
+                    kind
+                };
+                Reflect::set(&obj, &"messages".into(), &messages.into()).unwrap();
                 obj.into()
             }
             ApiError::Unknown(e) => e.to_owned(),
