@@ -5,23 +5,30 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct KnownApiError {
-    pub kind: String, origin: String, pub message_en: String, pub message_fr: String
+    pub kind: String, 
+    messages: HashMap<String, String>,
+    #[serde(skip_deserializing)]
+    message_en: String,
+    #[serde(skip_deserializing)]
+    message_fr: String,
+    #[serde(skip_deserializing)]
+    origin: String,
 }
 
 impl std::fmt::Display for KnownApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let KnownApiError { kind, origin, message_en, message_fr } = self;
-        match SETTINGS.lang() {
-            Lang::French => write!(f, "{message_fr} ({kind} in {origin})"),
-            Lang::English => write!(f, "{message_en} ({kind} in {origin})"),
-        }
+        let KnownApiError { kind, messages, .. } = self;
+        let message = messages.get(&SETTINGS.lang().locale()).unwrap_or(&kind);
+        write!(f, "{message} of type: {kind}");
+        Ok(())
     }
 }
 
 impl KnownApiError {
     fn to_string_en(&self) -> String {
-        let KnownApiError { kind, origin, message_en, message_fr: _ } = self;
-        format!("{message_en} ({kind} in {origin})")
+        let KnownApiError { kind, messages, ..} = self;
+        let message_en = messages.get("en").unwrap_or(&kind);
+        format!("{message_en} of type: {kind}")
     }
 }
 
@@ -87,12 +94,10 @@ impl SentryReportable for &ApiError {
     fn to_sentry_js_value(self) -> JsValue {
         match self {
             ApiError::Known(e) => {
-                let KnownApiError { kind, origin, message_en, message_fr } = e;
+                let KnownApiError { kind, messages, .. } = e;
                 let obj = Object::new();
                 Reflect::set(&obj, &"kind".into(), &kind.into()).unwrap();
-                Reflect::set(&obj, &"origin".into(), &origin.into()).unwrap();
-                Reflect::set(&obj, &"message_en".into(), &message_en.into()).unwrap();
-                Reflect::set(&obj, &"message_fr".into(), &message_fr.into()).unwrap();
+                Reflect::set(&obj, &"messages".into(), &messages.into()).unwrap();
                 obj.into()
             }
             ApiError::Unknown(e) => e.to_owned(),
