@@ -175,7 +175,7 @@ impl ApiError{
                 sentry_report(self);
                 log!("{}", error.to_string());
                 alert_no_reporting(error.to_string());
-                if error.kind == "invalid_api_key" || error.kind == "authentification_required" || error.kind == "api_key_does_not_exist" {
+                if error.kind == "invalid_api_key" || error.kind == "authentification_required" || error.kind == "api_key_does_not_exist" || error.kind == "api_key_expired" {
                     redirect("/login");
                 }
             }
