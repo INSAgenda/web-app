@@ -43,6 +43,7 @@ use slider::width;
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 /// The page that is currently displayed.
+#[derive(Clone)]
 pub enum Page {
     Settings,
     ChangePassword,
@@ -336,7 +337,7 @@ impl Component for App {
                 let announcements = Rc::clone(&self.announcements);
                 html!(<>
                     <Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={None} />
-                    <TabBar app_link={ctx.link().clone()} />
+                    <TabBar app_link={ctx.link()} page={self.page.clone()} />
                 </>)
             },
             Page::Event { eid } => {
@@ -346,7 +347,7 @@ impl Component for App {
                 let event = events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
                 html!(<>
                     <Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />
-                    <TabBar app_link={ctx.link().clone()} />
+                    <TabBar app_link={ctx.link()} page={self.page.clone()} />
                 </>)
             },
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
