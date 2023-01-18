@@ -1,0 +1,20 @@
+<header id="header">
+    <a id="header-logo" href="/agenda">
+        <img height="35" width="35" src="/assets/logo/logo.svg" alt="Insagenda logo"/> 
+        <h1 id="header-name">INSAgenda</h1>
+    </a>
+</header>
+<main id="notifications">
+    <div iter class="unseen-notification notification">
+        <div class="notification-point"></div>
+        <img src={{unseen_src_iter}} alt={{unseen_alt_iter}} />
+        <p>{{unseen_text_iter}}</p>
+        <!-- <button opt>{{button_opt_iter}}</button> --> {{unseen_button_iter}}
+    </div>
+    <div iter class="notification">
+        <div class="notification-point"></div>
+        <img src={{src_iter}} alt={{alt_iter}} />
+        <p>{{text_iter}}</p>
+        <!-- <button opt>{{button_opt_iter}}</button> --> {{button_iter}}
+    </div>
+</main>

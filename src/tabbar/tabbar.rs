@@ -29,8 +29,8 @@ impl Component for TabBar {
         let home_class = if matches!(page, Page::Agenda) {"tabbar-selected"} else {"tabbar-not-selected"};
         let onclick_friends = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Friends));
         let friends_class = if matches!(page, Page::Friends) {"tabbar-selected"} else {"tabbar-not-selected"};
-        let onclick_notifications = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda));
-        let notifications_class = "tabbar-not-selected";
+        let onclick_notifications = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Notifications));
+        let notifications_class = if matches!(page, Page::Notifications) {"tabbar-selected"} else {"tabbar-not-selected"};
         let onclick_settings = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings));
         let settings_class = if matches!(page, Page::Settings | Page::ChangeEmail | Page::ChangeGroup | Page::ChangePassword) {"tabbar-selected"} else {"tabbar-not-selected"};
         

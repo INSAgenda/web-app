@@ -33,6 +33,8 @@ mod sortable;
 mod tabbar;
 #[path = "friends/friends.rs"]
 mod friends;
+#[path = "notifications/notifications.rs"]
+mod notifications;
 mod util;
 mod slider;
 mod api;
@@ -53,6 +55,7 @@ pub enum Page {
     ChangeGroup,
     Agenda,
     Friends,
+    Notifications,
     Event { eid: u64 /* For now this is the start timestamp */ },
     Survey { sid: String },
 }
@@ -109,6 +112,7 @@ impl Component for App {
                 Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
+                Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].parse().unwrap_or_default();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -141,6 +145,7 @@ impl Component for App {
             "/change-email" => Page::ChangeEmail,
             "/change-group" => Page::ChangeGroup,
             "/friends" => Page::Friends,
+            "/notifications" => Page::Notifications,
             event if event.starts_with("/event/") => {
                 let eid = event[7..].parse().unwrap_or_default();
                 let link2 = ctx.link().clone();
@@ -312,6 +317,7 @@ impl Component for App {
                     Page::ChangeGroup => (String::from("change-group"), "Change group"),
                     Page::Agenda => (String::from("agenda"), "Agenda"),
                     Page::Friends => (String::from("friends"), "Friends"),
+                    Page::Notifications => (String::from("notifications"), "Notifications"),
                     Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
                     Page::Event { eid } => (format!("event/{eid}"), "Event"),
                 };
@@ -358,6 +364,10 @@ impl Component for App {
             },
             Page::Friends => html!(<>
                 <FriendsPage />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+            </>),
+            Page::Notifications => html!(<>
+                <NotificationsPage />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} />
             </>),
             Page::Settings => html!(<>
