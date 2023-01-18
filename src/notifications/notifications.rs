@@ -1,5 +1,12 @@
 pub use crate::prelude::*;
 
+pub struct Notification {
+    text: String,
+    image_src: String,
+    image_alt: String,
+    button_target: Option<String>,
+}
+
 pub struct NotificationsPage;
 
 pub enum NotificationsMsg {

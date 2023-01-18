@@ -1,4 +1,4 @@
-use crate::{prelude::*, slider::{self, width}};
+use crate::{prelude::*, slider};
 
 fn format_day(day_name: Weekday, day: u32) -> String {
     let day_name = t(match day_name {
@@ -17,7 +17,6 @@ fn format_day(day_name: Weekday, day: u32) -> String {
 pub struct Agenda {
     selected_day: NaiveDate,
     slider: Rc<RefCell<slider::SliderManager>>,
-    pub displayed_announcement: Option<AnnouncementDesc>,
     counter: AtomicUsize,
 }
 
@@ -25,7 +24,6 @@ pub enum AgendaMsg {
     Previous,
     Next,
     Goto{ day: u32, month: u32, year: i32 },
-    CloseAnnouncement,
     Refresh,
     PushColors,
     AppMsg(AppMsg),
@@ -36,13 +34,12 @@ pub struct AgendaProps {
     pub app_link: Scope<App>,
     pub user_info: Rc<Option<UserInfo>>,
     pub events: Rc<Vec<RawEvent>>,
-    pub announcements: Rc<Vec<AnnouncementDesc>>,
     pub popup: Option<(RawEvent, bool, Option<usize>)>,
 }
 
 impl PartialEq for AgendaProps {
     fn eq(&self, other: &Self) -> bool {
-        !COLORS_CHANGED.load(Ordering::Relaxed) && self.user_info == other.user_info && self.events == other.events && self.announcements == other.announcements && self.popup == other.popup
+        !COLORS_CHANGED.load(Ordering::Relaxed) && self.user_info == other.user_info && self.events == other.events && self.popup == other.popup
     }
 }
 
@@ -53,9 +50,6 @@ impl Component for Agenda {
     fn create(ctx: &Context<Self>) -> Self {
         let now = chrono::Local::now();
         let now = now.with_timezone(&Paris);
-
-        // Select announcement
-        let displayed_announcement = /*select_announcement(&ctx.props().announcements, &ctx.props().user_info.clone())*/ None;
 
         // Trigger color sync when page is closed
         let link = ctx.link().clone();
@@ -98,7 +92,6 @@ impl Component for Agenda {
         Self {
             selected_day: now.date_naive(),
             slider,
-            displayed_announcement,
             counter: AtomicUsize::new(0),
         }
     }
@@ -155,7 +148,6 @@ impl Component for Agenda {
                 }
                 true
             },
-            AgendaMsg::CloseAnnouncement => update_close_announcement(self),
             AgendaMsg::PushColors => {
                 crate::COLORS.push_colors();
                 false
@@ -189,42 +181,6 @@ impl Component for Agenda {
             },
         };
 
-        // Check if there is room for the announcement on mobile
-        let announcement = self.displayed_announcement.as_ref();
-        let mut show_mobile_announcement = mobile && announcement.is_some();
-        if show_mobile_announcement {
-            let announcement_start = Paris.from_local_datetime(&self.selected_day.and_hms_opt(18,30,0).unwrap()).unwrap().timestamp() as u64;
-            let announcement_end = Paris.from_local_datetime(&self.selected_day.and_hms_opt(20,0,0).unwrap()).unwrap().timestamp() as u64;
-            let announcement_range = announcement_start..=announcement_end;
-
-            match ctx.props().events.binary_search_by_key(&announcement_start, |e| e.start_unixtime) { // Check if an event starts exactly at that time.
-                Ok(_) => {
-                    show_mobile_announcement = false;
-                },
-                Err(mut idx) => {
-                    if let Some(e) = ctx.props().events.get(idx) {
-                        if announcement_range.contains(&(e.start_unixtime)) { // Check if the next event starts in the range
-                            show_mobile_announcement = false;
-                        } else {
-                            idx = idx.overflowing_sub(1).0;
-                            while let Some(e) = ctx.props().events.get(idx) { // Check if a few previous events end in the range
-                                if announcement_range.contains(&(e.end_unixtime)) {
-                                    show_mobile_announcement = false;
-                                    break;
-                                }
-                                if e.end_unixtime < announcement_start - 6*3600 { // Avoid backtracking too much, 6h is enough
-                                    break;
-                                }
-                                idx = idx.overflowing_sub(1).0;
-                            }
-                        }
-                    }
-                },
-            };
-        }
-        let agenda_class = if show_mobile_announcement { "show-announcement" } else { "" };
-        let announcement = announcement.map(|a| view_announcement(a, ctx));
-
         // Build each day and put events in them
         let mut days = Vec::new();
         let mut day_names = Vec::new();
@@ -247,8 +203,7 @@ impl Component for Agenda {
                         week_day={d}
                         event={e.clone()}
                         day_start={day_start}
-                        agenda_link={ctx.link().clone()}
-                        show_announcement={show_mobile_announcement}>
+                        agenda_link={ctx.link().clone()}>
                     </EventComp>
                 });
                 idx += 1;
@@ -332,7 +287,6 @@ impl Component for Agenda {
             "src/agenda/agenda.html",
             onclick_previous = {ctx.link().callback(|_| AgendaMsg::Previous)},
             onclick_next = {ctx.link().callback(|_| AgendaMsg::Next)},
-            opt_announcement = announcement,
             ...
         )
     }

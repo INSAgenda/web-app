@@ -5,8 +5,6 @@
 
 #[path = "alert/alert.rs"]
 mod alert;
-#[path = "announcement/announcement.rs"]
-mod announcement;
 #[path = "event/event.rs"]
 mod event;
 #[path = "settings/settings.rs"]
@@ -128,14 +126,11 @@ impl Component for App {
         // Update data
         let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let user_info: Option<UserInfo> = CachedData::init(ctx.link().clone());
-        let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let groups: Vec<GroupDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
-        if window().navigator().on_line() { // temporary
-            announcements.append(&mut surveys_to_announcements(&surveys, &survey_answers));
-        }
 
         // Open corresponding page
         let path = window().location().pathname().unwrap_or_default();
@@ -346,19 +341,17 @@ impl Component for App {
             Page::Agenda => {
                 let user_info = Rc::clone(&self.user_info);
                 let events = Rc::clone(&self.events);
-                let announcements = Rc::clone(&self.announcements);
                 html!(<>
-                    <Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={None} />
+                    <Agenda events={events} user_info={user_info} app_link={ctx.link().clone()} popup={None} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} />
                 </>)
             },
             Page::Event { eid } => {
                 let user_info = Rc::clone(&self.user_info);
                 let events = Rc::clone(&self.events);
-                let announcements = Rc::clone(&self.announcements);
                 let event = events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
                 html!(<>
-                    <Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />
+                    <Agenda events={events} user_info={user_info} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} />
                 </>)
             },

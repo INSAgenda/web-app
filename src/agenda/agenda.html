@@ -6,7 +6,7 @@
     {{calendar}}
     <div style="height: 70%; aspect-ratio: 1 / 1;"><!-- Just so that flexbox alignment works for elements above --></div>
 </header>
-<main id="agenda-main" class={{agenda_class}}>
+<main id="agenda-main">
 <div id="agenda">
     <div id="agenda-hours">
         <span>08:00</span>
@@ -15,7 +15,7 @@
         <span>13:15</span>
         <span>15:00</span>
         <span>16:45</span>
-        <span present-if=!{{show_mobile_announcement}}>18:30</span>
+        <span>18:30</span>
     </div>
     <div id="agenda-main-part">
         <div id="agenda-top">
@@ -34,7 +34,6 @@
         </div>
     </div>
 </div>
-<virtual present-if={{show_mobile_announcement}} opt>{{opt_announcement}}</virtual>
 <div style="position: relative;">
     <div id="popup-container" style={{popup_container_style}}>
         <virtual opt>{{opt_popup}}</virtual>
