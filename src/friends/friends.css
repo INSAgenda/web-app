@@ -18,16 +18,16 @@
     border-radius: .25rem;
 }
 
-.friend-list {
-    border-bottom: none !important;
-}
-
 .friend-list>div {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: .3rem .5rem;
     border-bottom: 1px solid var(--border-color);
+}
+
+.friend-list>div:last-child {
+    border-bottom: none;
 }
 
 .friend-list>div>div>img {
@@ -41,7 +41,7 @@
     align-items: center;
 }
 
-.friends-agenda-button {
+.friends-agenda-button, .friends-cancel-button {
     all: unset;
     border: 1px solid var(--primary);
     color: var(--primary);
@@ -50,6 +50,11 @@
     padding-bottom: 0.2rem;
     font-size: .9rem;
     border-radius: 0.3rem;
+}
+
+.friends-cancel-button {
+    border: 1px solid var(--border-color);
+    color: var(--border-color);
 }
 
 .friends-deny-button, .friends-accept-button {

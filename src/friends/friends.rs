@@ -24,6 +24,11 @@ impl Component for FriendsPage {
         let in_alt_iter = in_names.iter().map(|name| format!("Avatar of {name}"));
         let in_name_iter = in_names.iter();
 
+        let out_names = vec!["Tyler Durden", "Walter White", "Gordon Freeman"];
+        let out_picture_iter = out_names.iter().map(|name| format!("https://api.dicebear.com/5.x/micah/svg?seed={name}", name = name.replace(" ", "+")));
+        let out_alt_iter = out_names.iter().map(|name| format!("Avatar of {name}"));
+        let out_name_iter = out_names.iter();
+
         template_html!("src/friends/friends.html", ...)
     }
 }
