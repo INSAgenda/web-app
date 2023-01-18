@@ -252,7 +252,6 @@ impl Component for App {
                 let history = window().history().expect("Failed to access history");
                 let document = window().doc();
                 if let Page::Event { .. } = &page {
-                    //self.slider.borrow_mut().disable();
                     if let Some(day_el) = document.get_element_by_id("day0") {
                         let rect = day_el.get_bounding_client_rect();
                         self.event_popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
@@ -275,7 +274,6 @@ impl Component for App {
                     return true;
                 }
                 if matches!(&page, Page::Agenda) {
-                    //self.slider.borrow_mut().enable();
                     self.event_closing = false;
                 }
                 let (data, title) = match &page {

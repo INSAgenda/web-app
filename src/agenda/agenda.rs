@@ -89,9 +89,15 @@ impl Component for Agenda {
             });
         }
         
+        // Disable slider if popup is open
+        let slider = slider::SliderManager::init(ctx.link().clone(), -20 * (now.date_naive().num_days_from_ce() - 730000));
+        if ctx.props().popup.is_some() {
+            slider.borrow_mut().disable();
+        }
+
         Self {
             selected_day: now.date_naive(),
-            slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date_naive().num_days_from_ce() - 730000)),
+            slider,
             displayed_announcement,
             counter: AtomicUsize::new(0),
         }
@@ -159,6 +165,15 @@ impl Component for Agenda {
                 false
             }
         }
+    }
+
+    fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
+        if ctx.props().popup.is_some() {
+            self.slider.borrow_mut().disable();
+        } else {
+            self.slider.borrow_mut().enable();
+        }
+        true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
