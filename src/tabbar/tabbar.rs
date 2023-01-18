@@ -9,7 +9,7 @@ pub struct TabBarProps {
 }
 
 impl PartialEq for TabBarProps {
-    fn eq(&self, _: &Self) -> bool { true }
+    fn eq(&self, other: &Self) -> bool { self.page.eq(&other.page) }
 }
 
 pub enum TabBarMsg {
@@ -32,7 +32,7 @@ impl Component for TabBar {
         let onclick_notifications = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda));
         let notifications = false;
         let onclick_settings = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings));
-        let settings = matches!(page, Page::Settings);
+        let settings = matches!(page, Page::Settings | Page::ChangeEmail | Page::ChangeGroup | Page::ChangePassword);
         
         template_html!("src/tabbar/tabbar.html", ...)
     }

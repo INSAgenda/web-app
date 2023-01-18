@@ -43,7 +43,7 @@ use slider::width;
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 /// The page that is currently displayed.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Page {
     Settings,
     ChangePassword,
@@ -350,28 +350,34 @@ impl Component for App {
                     <TabBar app_link={ctx.link()} page={self.page.clone()} />
                 </>)
             },
-            Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangePassword => html!(
+            Page::Settings => html!(<>
+                <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+            </>),
+            Page::ChangePassword => html!(<>
                 <ChangeDataPage
                     kind="new_password"
                     app_link={ ctx.link().clone() }
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
-            ),
-            Page::ChangeEmail => html!(
+                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+            </>),
+            Page::ChangeEmail => html!(<>
                 <ChangeDataPage
                     kind="email"
                     app_link={ ctx.link().clone() }
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
-            ),
-            Page::ChangeGroup => html!(
+                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+            </>),
+            Page::ChangeGroup => html!(<>
                 <ChangeDataPage
                     kind="group"
                     app_link={ ctx.link().clone() }
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
-            ),
+                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+            </>),
             Page::Survey { sid } => {
                 let survey = match self.surveys.iter().find(|s| s.id == *sid) {
                     Some(s) => s,
