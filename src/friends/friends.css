@@ -1,0 +1,53 @@
+#friends {
+    width: calc(100% - 2rem);
+    margin: 0 1rem;
+    --border-color: #aaa; /* cf surveys.css */
+}
+
+:root[data-theme="dark"] #survey {
+    --border-color: #666;
+}
+
+#friends>section {
+    margin: 1rem 0;
+}
+
+#friends>section>div {
+    background-color: var(--day);
+    border: 1px solid var(--border-color);
+    border-radius: .25rem;
+}
+
+#friend-list {
+    border-bottom: none !important;
+}
+
+#friend-list>div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .3rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#friend-list>div img {
+    width: 2rem;
+    height: 2rem;
+    margin-right: .3rem;
+}
+
+#friend-list>div>div {
+    display: flex;
+    align-items: center;
+}
+
+#friend-list>div>button {
+    all: unset;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    cursor: pointer;
+    padding: 0.3rem;
+    padding-bottom: 0.2rem;
+    font-size: .9rem;
+    border-radius: 0.3rem;
+}
