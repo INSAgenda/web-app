@@ -29,6 +29,9 @@ impl Component for FriendsPage {
         let out_alt_iter = out_names.iter().map(|name| format!("Avatar of {name}"));
         let out_name_iter = out_names.iter();
 
+        let del_name_iter = names.iter().rev();
+        let del_value_iter = names.iter().rev().map(|name| name.replace(" ", "+"));
+
         template_html!("src/friends/friends.html", ...)
     }
 }

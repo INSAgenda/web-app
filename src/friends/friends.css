@@ -19,7 +19,7 @@
     font-weight: 500;
 }
 
-#friends>section>div {
+.friend-list {
     background-color: var(--day);
     border: 1px solid var(--border-color);
     border-radius: .25rem;
@@ -93,6 +93,36 @@
 .friends-deny-button>img {
     width: 60%;
     padding: 20%;
+}
+
+.friends-unstyled-section {
+    border: unset;
+    background: unset;
+}
+
+.friend-input {
+    all: unset;
+    background-color: var(--day);
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: .3rem;
+    padding: .3rem .5rem;
+    line-height: 2rem;
+}
+
+.friends-select-arrow {
+    position: relative;
+}
+
+.friends-select-arrow>div {
+    position: absolute;
+    bottom: calc(1px + 2.6rem / 2 - .6rem / 2);
+    right: .5rem;
+    height: .6rem;
+    width: 1rem;
+    background-color: var(--border-color);
+    clip-path: polygon(100% 0%, 0 0%, 50% 100%);
 }
 
 /* For desktop */

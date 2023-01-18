@@ -44,4 +44,18 @@
             </div>
         </div>
     </section>
+    <section>
+        <h3>Ajouter un ami&nbsp;:</h3>
+        <input type="text" class="friend-input" placeholder="prenom.nom@insa-rouen.fr"/>
+        <button class="primary-button">Demander</button>
+    </section>
+    <section>
+        <h3>Retirer un ami&nbsp;:</h3>
+        <select name="friend-select" class="friend-input">
+            <option disabled selected>Sélectionnez un ami</option>
+            <option iter value={{del_value_iter}}>{{del_name_iter}}</option>
+        </select>
+        <div class="friends-select-arrow"><div></div></div>
+        <button class="primary-button">Retirer</button>
+    </section>
 </main>
