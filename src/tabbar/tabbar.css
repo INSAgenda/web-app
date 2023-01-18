@@ -1,0 +1,26 @@
+#tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 4rem;
+    width: 100%;
+    background-color: var(--closer-background);
+    display: flex;
+}
+
+#tabbar-space {
+    height: 4rem;
+}
+
+#tabbar>button {
+    all: unset;
+    display: block;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+#tabbar>button>img {
+    width: 2rem;
+    aspect-ratio: 1 / 1;
+}

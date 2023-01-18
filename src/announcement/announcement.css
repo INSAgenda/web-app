@@ -14,20 +14,14 @@
     flex-grow: 1;
 }
 
-/* Desktop only */
-
-#option > #announcement {
-    margin-top: 2rem;
-}
-
 /* Text announcement on mobile and desktop */
 
-.show-announcement .text-announcement, #option .text-announcement {
+.show-announcement .text-announcement {
     padding: .5rem 1rem;
     overflow-y: auto;
 }
 
-.show-announcement .text-announcement>div, #option .text-announcement>div {
+.show-announcement .text-announcement>div {
     font-size: 1.1rem;
     font-weight: bold;
 }

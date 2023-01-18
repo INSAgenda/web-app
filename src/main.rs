@@ -29,6 +29,8 @@ mod survey;
 mod checkbox;
 #[path = "sortable/sortable.rs"]
 mod sortable;
+#[path = "tabbar/tabbar.rs"]
+mod tabbar;
 mod util;
 mod slider;
 mod api;
@@ -332,14 +334,20 @@ impl Component for App {
                 let user_info = Rc::clone(&self.user_info);
                 let events = Rc::clone(&self.events);
                 let announcements = Rc::clone(&self.announcements);
-                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={None} />)
+                html!(<>
+                    <Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={None} />
+                    <TabBar app_link={ctx.link().clone()} />
+                </>)
             },
             Page::Event { eid } => {
                 let user_info = Rc::clone(&self.user_info);
                 let events = Rc::clone(&self.events);
                 let announcements = Rc::clone(&self.announcements);
                 let event = events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
-                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />)
+                html!(<>
+                    <Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />
+                    <TabBar app_link={ctx.link().clone()} />
+                </>)
             },
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
             Page::ChangePassword => html!(

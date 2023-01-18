@@ -55,7 +55,7 @@ impl Component for Agenda {
         let now = now.with_timezone(&Paris);
 
         // Select announcement
-        let displayed_announcement = select_announcement(&ctx.props().announcements, &ctx.props().user_info.clone());
+        let displayed_announcement = /*select_announcement(&ctx.props().announcements, &ctx.props().user_info.clone())*/ None;
 
         // Trigger color sync when page is closed
         let link = ctx.link().clone();
@@ -299,7 +299,7 @@ impl Component for Agenda {
             Some((_, false, popup_size)) => match mobile {
                 true => {
                     let body_height = window().doc().body().unwrap().client_height() as usize;
-                    format!("top: -{body_height}px; height: {body_height}px;")
+                    format!("top: calc(-{body_height}px + 4rem); height: calc({body_height}px - 4rem);") // 4rem is the height of the tabbar
                 }
                 false => match popup_size {
                     Some(popup_size) => format!("left: -{popup_size}px; width: {popup_size}px;"),
