@@ -18,30 +18,30 @@
     border-radius: .25rem;
 }
 
-#friend-list {
+#friend-list, #in-friend-list {
     border-bottom: none !important;
 }
 
-#friend-list>div {
+#friend-list>div, #in-friend-list>div {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: .3rem;
+    padding: .3rem .5rem;
     border-bottom: 1px solid var(--border-color);
 }
 
-#friend-list>div img {
+#friend-list>div>div>img, #in-friend-list>div>div>img  {
     width: 2rem;
     height: 2rem;
     margin-right: .3rem;
 }
 
-#friend-list>div>div {
+#friend-list>div>div, #in-friend-list>div>div {
     display: flex;
     align-items: center;
 }
 
-#friend-list>div>button {
+#friend-list button {
     all: unset;
     border: 1px solid var(--primary);
     color: var(--primary);
@@ -50,4 +50,36 @@
     padding-bottom: 0.2rem;
     font-size: .9rem;
     border-radius: 0.3rem;
+}
+
+#in-friend-list button {
+    all: unset;
+    cursor: pointer;
+    width: 1.7rem;
+    height: 1.7rem;
+    box-sizing: border-box;
+    border-radius: 0.85rem;
+}
+
+#in-friend-list button>img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+#in-friend-list button:last-child {
+    margin-left: .5rem;
+    border: 1px solid #4caf50;
+}
+
+#in-friend-list button:first-child {
+    border: 1px solid #f44336;
+}
+
+#in-friend-list button:first-child>img {
+    width: 60%;
+    padding: 20%;
+}
+#in-friend-list button:last-child>img {
+    width: 80%;
+    padding: 10%;
 }
