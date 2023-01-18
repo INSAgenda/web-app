@@ -1,19 +1,19 @@
 <div id="tabbar-space"> <!-- This is to add space before the fixed-position tabbar so that it doesn't hide anything below --> </div>
 <div id="tabbar">
-    <button onclick={{onclick_home}}>
-        <img present-if={{home}} src="/agenda/images/home-fill.svg" alt="Home"/>
-        <img present-if=!{{home}} src="/agenda/images/home.svg" alt="Home"/>
+    <button onclick={{onclick_home}} class={{home_class}}>
+        <img src="/agenda/images/home-fill.svg" alt="Home"/>
+        <img src="/agenda/images/home.svg" alt="Home"/>
     </button>
-    <button onclick={{onclick_friends}}>
-        <img present-if={{friends}} src="/agenda/images/people-fill.svg" alt="Friends"/>
-        <img present-if=!{{friends}} src="/agenda/images/people.svg" alt="Friends"/>
+    <button onclick={{onclick_friends}} class={{friends_class}}>
+        <img src="/agenda/images/people-fill.svg" alt="Friends"/>
+        <img src="/agenda/images/people.svg" alt="Friends"/>
     </button>
-    <button onclick={{onclick_notifications}}>
-        <img present-if={{notifications}} src="/agenda/images/bell-fill.svg" alt="Notifications"/>
-        <img present-if=!{{notifications}} src="/agenda/images/bell.svg" alt="Notifications"/>
+    <button onclick={{onclick_notifications}} class={{notifications_class}}>
+        <img src="/agenda/images/bell-fill.svg" alt="Notifications"/>
+        <img src="/agenda/images/bell.svg" alt="Notifications"/>
     </button>
-    <button onclick={{onclick_settings}}>
-        <img present-if={{settings}} src="/agenda/images/gear-fill.svg" alt="Settings"/>
-        <img present-if=!{{settings}} src="/agenda/images/gear.svg" alt="Settings"/>
+    <button onclick={{onclick_settings}} class={{settings_class}}>
+        <img src="/agenda/images/gear-fill.svg" alt="Settings"/>
+        <img src="/agenda/images/gear.svg" alt="Settings"/>
     </button>
 </div>

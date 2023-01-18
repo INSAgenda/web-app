@@ -6,10 +6,19 @@
     width: 100%;
     background-color: var(--closer-background);
     display: flex;
+    z-index: 999;
 }
 
 #tabbar-space {
     height: 4rem;
+}
+
+.tabbar-selected>img:last-child {
+    display: none;
+}
+
+.tabbar-not-selected>img:first-child {
+    display: none;
 }
 
 #tabbar>button {

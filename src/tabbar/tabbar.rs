@@ -26,13 +26,13 @@ impl Component for TabBar {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let page = &ctx.props().page;
         let onclick_home = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda));
-        let home = matches!(page, Page::Agenda);
+        let home_class = if matches!(page, Page::Agenda) {"tabbar-selected"} else {"tabbar-not-selected"};
         let onclick_friends = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda));
-        let friends = false;
+        let friends_class = "tabbar-not-selected";
         let onclick_notifications = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda));
-        let notifications = false;
+        let notifications_class = "tabbar-not-selected";
         let onclick_settings = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings));
-        let settings = matches!(page, Page::Settings | Page::ChangeEmail | Page::ChangeGroup | Page::ChangePassword);
+        let settings_class = if matches!(page, Page::Settings | Page::ChangeEmail | Page::ChangeGroup | Page::ChangePassword) {"tabbar-selected"} else {"tabbar-not-selected"};
         
         template_html!("src/tabbar/tabbar.html", ...)
     }
