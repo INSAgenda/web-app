@@ -31,6 +31,8 @@ mod checkbox;
 mod sortable;
 #[path = "tabbar/tabbar.rs"]
 mod tabbar;
+#[path = "friends/friends.rs"]
+mod friends;
 mod util;
 mod slider;
 mod api;
@@ -50,6 +52,7 @@ pub enum Page {
     ChangeEmail,
     ChangeGroup,
     Agenda,
+    Friends,
     Event { eid: u64 /* For now this is the start timestamp */ },
     Survey { sid: String },
 }
@@ -105,6 +108,7 @@ impl Component for App {
                 Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
                 Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
+                Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].parse().unwrap_or_default();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -136,6 +140,7 @@ impl Component for App {
             "/change-password" => Page::ChangePassword,
             "/change-email" => Page::ChangeEmail,
             "/change-group" => Page::ChangeGroup,
+            "/friends" => Page::Friends,
             event if event.starts_with("/event/") => {
                 let eid = event[7..].parse().unwrap_or_default();
                 let link2 = ctx.link().clone();
@@ -306,6 +311,7 @@ impl Component for App {
                     Page::ChangeEmail => (String::from("change-email"), "Change email"),
                     Page::ChangeGroup => (String::from("change-group"), "Change group"),
                     Page::Agenda => (String::from("agenda"), "Agenda"),
+                    Page::Friends => (String::from("friends"), "Friends"),
                     Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
                     Page::Event { eid } => (format!("event/{eid}"), "Event"),
                 };
@@ -350,6 +356,10 @@ impl Component for App {
                     <TabBar app_link={ctx.link()} page={self.page.clone()} />
                 </>)
             },
+            Page::Friends => html!(<>
+                <FriendsPage />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+            </>),
             Page::Settings => html!(<>
                 <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} />

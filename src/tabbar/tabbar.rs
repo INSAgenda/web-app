@@ -19,7 +19,7 @@ impl Component for TabBar {
     type Message = TabBarMsg;
     type Properties = TabBarProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         Self
     }
 
@@ -27,8 +27,8 @@ impl Component for TabBar {
         let page = &ctx.props().page;
         let onclick_home = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda));
         let home_class = if matches!(page, Page::Agenda) {"tabbar-selected"} else {"tabbar-not-selected"};
-        let onclick_friends = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda));
-        let friends_class = "tabbar-not-selected";
+        let onclick_friends = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Friends));
+        let friends_class = if matches!(page, Page::Friends) {"tabbar-selected"} else {"tabbar-not-selected"};
         let onclick_notifications = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Agenda));
         let notifications_class = "tabbar-not-selected";
         let onclick_settings = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings));
