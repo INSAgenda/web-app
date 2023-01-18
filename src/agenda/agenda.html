@@ -4,9 +4,7 @@
         <h1 id="header-name" class="header-agenda">INSAgenda</h1>
     </a>
     {{calendar}}
-    <a id="header-logo" class="invert-when-dark" style="justify-content: center;" onclick={{onclick_settings}}>
-        <img style="height: 70%;" src="/agenda/images/settings.svg" alt="Settings" />
-    </a>
+    <div style="height: 70%; aspect-ratio: 1 / 1;"><!-- Just so that flexbox alignment works for elements above --></div>
 </header>
 <main id="agenda-main" class={{agenda_class}}>
 <div id="agenda">

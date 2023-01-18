@@ -21,6 +21,10 @@
     display: none;
 }
 
+:root[data-theme="dark"] .tabbar-not-selected>img:last-child {
+    filter: invert(1);
+}
+
 #tabbar>button {
     all: unset;
     display: block;
