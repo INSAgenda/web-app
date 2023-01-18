@@ -42,7 +42,7 @@ body {
 #agenda-main {
     display: flex;
     justify-content: space-around;
-    height: calc(100vh - 8rem);
+    height: calc(100vh - 4rem); /* Desktop only, cf below */
     min-height: 30rem;
 }
 
@@ -69,6 +69,7 @@ body {
     #agenda-main {
         flex-direction: column;
         justify-content: flex-start;
+        height: calc(100vh - 8rem);
     }
     
     #agenda-top {

@@ -7,6 +7,7 @@
     background-color: var(--closer-background);
     display: flex;
     z-index: 999;
+    align-items: center;
 }
 
 #tabbar-space {
@@ -36,4 +37,38 @@
 #tabbar>button>img {
     width: 2rem;
     aspect-ratio: 1 / 1;
+}
+
+/* For desktop */
+
+@media screen and (min-width: 1000px) {
+    #render {
+        position: relative;
+        left: 4rem;
+        width: calc(100% - 4rem);
+    }
+
+    header {
+        position: relative;
+        right: 4rem;
+        width: calc(100% + 4rem);
+        padding-left: 4rem;
+    }
+
+    #tabbar {
+        top: 0;
+        width: 4rem;
+        height: 100%;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    #tabbar-space {
+        display: none;
+    }
+
+    #tabbar>button {
+        flex-grow: unset;
+        padding: 1rem;
+    }
 }
