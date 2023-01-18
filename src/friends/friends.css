@@ -94,3 +94,11 @@
     width: 60%;
     padding: 20%;
 }
+
+/* For desktop */
+
+@media screen and (min-width: 1000px) {
+    #friends {
+        width: 50%;
+    }
+}
