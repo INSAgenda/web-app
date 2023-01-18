@@ -7,27 +7,27 @@
 <main id="friends">
     <section>
         <h3>Mes amis&nbsp;:</h3>
-        <div id="friend-list">
+        <div class="friend-list">
             <div iter>
                 <div>
                     <img src={{picture_iter}} alt={{alt_iter}} />
                     <div>{{name_iter}}</div>
                 </div>
-                <button>Voir l'agenda</button>
+                <button class="friends-agenda-button">Voir l'agenda</button>
             </div>
         </div>
     </section>
     <section>
         <h3>Demandes reçues&nbsp;:</h3>
-        <div id="in-friend-list">
+        <div class="friend-list">
             <div iter>
                 <div>
                     <img src={{in_picture_iter}} alt={{in_alt_iter}} />
                     <div>{{in_name_iter}}</div>
                 </div>
                 <div>
-                    <button><img src="/agenda/images/deny.svg" alt="Refuser"/></button>
-                    <button><img src="/agenda/images/accept.svg" alt="Accepter"/></button>
+                    <button class="friends-deny-button"><img src="/agenda/images/deny.svg" alt="Refuser"/></button>
+                    <button class="friends-accept-button"><img src="/agenda/images/accept.svg" alt="Accepter"/></button>
                 </div>
             </div>
         </div>
