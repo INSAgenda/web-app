@@ -31,7 +31,11 @@
     margin-right: 0.5rem;
 }
 
-.notification>p {
+.notification>div:last-child {
     flex-grow: 1;
     padding: .5rem 0;
+}
+
+.notification>div>button {
+    margin-top: .2rem;
 }

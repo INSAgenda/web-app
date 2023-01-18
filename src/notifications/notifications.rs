@@ -14,11 +14,11 @@ impl Component for NotificationsPage {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let unseen_texts = vec!["I will write some great placeholder calling for a total and complete shutdown of ", "et cela"];
+        let unseen_texts = vec!["I will write some great placeholder calling for a total and complete shutdown of ", "Sondage hivernal"];
         let unseen_text_iter = unseen_texts.iter();
         let unseen_src_iter = unseen_texts.iter().map(|text| format!("https://api.dicebear.com/5.x/micah/svg?seed={text}", text = text.replace(" ", "+")));
         let unseen_alt_iter = unseen_texts.iter().map(|text| format!("Avatar of {text}"));
-        let unseen_button_iter = unseen_texts.iter().map(|text| if 1 == 2 {Some(format!("Voir {text}", text = text))} else {None});
+        let unseen_button_iter = unseen_texts.iter().map(|_| html!(<button class="friends-agenda-button">{"Participer"}</button>));
 
         let texts = vec!["I will write some great placeholder calling for a total and complete shutdown of ", "et cela"];
         let text_iter = texts.iter();
