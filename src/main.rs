@@ -36,6 +36,8 @@ mod prelude;
 mod translation;
 mod colors;
 
+use slider::width;
+
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 /// The page that is currently displayed.
@@ -45,6 +47,7 @@ pub enum Page {
     ChangeEmail,
     ChangeGroup,
     Agenda,
+    Event { eid: u64 /* For now this is the start timestamp */ },
     Survey { sid: String },
 }
 
@@ -77,6 +80,9 @@ pub struct App {
     surveys: Vec<Survey>,
     survey_answers: Vec<SurveyAnswers>,
     page: Page,
+
+    event_closing: bool,
+    event_popup_size: Option<usize>,
 }
 
 impl Component for App {
@@ -96,6 +102,10 @@ impl Component for App {
                 Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
                 Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
+                Some(event) if event.starts_with("event/") => {
+                    let eid = event[6..].parse().unwrap_or_default();
+                    link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
+                }
                 Some(survey) if survey.starts_with("survey/") => link2.send_message(Msg::SilentSetPage(Page::Survey { sid: survey[7..].to_string() })),
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
@@ -123,6 +133,15 @@ impl Component for App {
             "/change-password" => Page::ChangePassword,
             "/change-email" => Page::ChangeEmail,
             "/change-group" => Page::ChangeGroup,
+            event if event.starts_with("/event/") => {
+                let eid = event[7..].parse().unwrap_or_default();
+                let link2 = ctx.link().clone();
+                wasm_bindgen_futures::spawn_local(async move {
+                    sleep(Duration::from_millis(100)).await;
+                    link2.send_message(Msg::SetPage(Page::Event { eid }));
+                });
+                Page::Agenda
+            }
             survey if survey.starts_with("/survey/") => Page::Survey { sid: survey[8..].to_string() },
             "/agenda" => match window().location().hash() { // For compatibility with old links
                 Ok(hash) if hash == "#settings" => Page::Settings,
@@ -168,6 +187,8 @@ impl Component for App {
             surveys,
             survey_answers,
             page,
+            event_closing: false,
+            event_popup_size: None,
         }
     }
 
@@ -249,15 +270,44 @@ impl Component for App {
                 false
             },
             Msg::SetPage(page) => {
-                let history = window().history().expect("Failed to access history");                
-                match &page {
-                    Page::Settings => history.push_state_with_url(&JsValue::from_str("settings"), "Settings", Some("/settings")).unwrap(),
-                    Page::ChangePassword => history.push_state_with_url(&JsValue::from_str("change-password"), "Change password", Some("/change-password")).unwrap(),
-                    Page::ChangeEmail => history.push_state_with_url(&JsValue::from_str("change-email"), "Change email", Some("/change-email")).unwrap(),
-                    Page::ChangeGroup => history.push_state_with_url(&JsValue::from_str("change-group"), "Change group", Some("/change-group")).unwrap(),
-                    Page::Agenda => history.push_state_with_url(&JsValue::from_str("agenda"), "Agenda", Some("/agenda")).unwrap(),
-                    Page::Survey { sid } => history.push_state_with_url(&JsValue::from_str(&format!("survey/{sid}")), "Survey", Some(&format!("/survey/{sid}"))).unwrap(),
+                let history = window().history().expect("Failed to access history");
+                let document = window().doc();
+                if let Page::Event { .. } = &page {
+                    if let Some(day_el) = document.get_element_by_id("day0") {
+                        let rect = day_el.get_bounding_client_rect();
+                        self.event_popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
+                    }
+                    spawn_local(async move {
+                        window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
+                        sleep(Duration::from_millis(500)).await;
+                        window().doc().body().unwrap().remove_attribute("style").unwrap();
+                    });
                 }
+                if matches!((&self.page, &page), (Page::Event { .. }, Page::Agenda)) && !self.event_closing {
+                    self.event_closing = true;
+                    let link = ctx.link().clone();
+                    spawn_local(async move {
+                        window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
+                        sleep(Duration::from_millis(500)).await;
+                        link.send_message(Msg::SetPage(Page::Agenda));
+                        window().doc().body().unwrap().remove_attribute("style").unwrap();
+                    });
+                    return true;
+                }
+                if matches!(&page, Page::Agenda) {
+                    self.event_closing = false;
+                }
+                let (data, title) = match &page {
+                    Page::Settings => (String::from("settings"), "Settings"),
+                    Page::ChangePassword => (String::from("change-password"), "Change password"),
+                    Page::ChangeEmail => (String::from("change-email"), "Change email"),
+                    Page::ChangeGroup => (String::from("change-group"), "Change group"),
+                    Page::Agenda => (String::from("agenda"), "Agenda"),
+                    Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
+                    Page::Event { eid } => (format!("event/{eid}"), "Event"),
+                };
+                history.push_state_with_url(&JsValue::from_str(&data), title, Some(&format!("/{data}"))).unwrap();
+                document.set_title(&format!("{}", title));
                 self.page = page;
                 true
             },
@@ -282,7 +332,14 @@ impl Component for App {
                 let user_info = Rc::clone(&self.user_info);
                 let events = Rc::clone(&self.events);
                 let announcements = Rc::clone(&self.announcements);
-                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} />)
+                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={None} />)
+            },
+            Page::Event { eid } => {
+                let user_info = Rc::clone(&self.user_info);
+                let events = Rc::clone(&self.events);
+                let announcements = Rc::clone(&self.announcements);
+                let event = events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
+                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />)
             },
             Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
             Page::ChangePassword => html!(

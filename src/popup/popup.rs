@@ -1,21 +1,5 @@
 use crate::{prelude::*, slider::width};
 
-pub enum PopupState {
-    Opened { week_day: u8, event: Rc<RawEvent>, popup_size: Option<usize> },
-    Closing { week_day: u8, event: Rc<RawEvent>, popup_size: Option<usize> },
-    Closed,
-}
-
-impl PopupState {
-    pub fn as_option(&self) -> Option<(u8, Rc<RawEvent>, Option<usize>)> {
-        match self {
-            PopupState::Opened { week_day, event, popup_size } => Some((*week_day, Rc::clone(event), *popup_size)),
-            PopupState::Closing { week_day, event, popup_size } => Some((*week_day, Rc::clone(event), *popup_size)),
-            PopupState::Closed => None,
-        }
-    }
-}
-
 pub struct Popup {}
 
 pub enum PopupMsg {
@@ -24,14 +8,13 @@ pub enum PopupMsg {
 
 #[derive(Properties, Clone)]
 pub struct PopupProps {
-    pub event: Rc<RawEvent>,
-    pub week_day: u8,
+    pub event: RawEvent,
     pub agenda_link: Scope<Agenda>,
 }
 
 impl PartialEq for PopupProps {
     fn eq(&self, other: &Self) -> bool {
-        self.event == other.event && self.week_day == other.week_day
+        self.event == other.event
     }
 }
 
@@ -66,7 +49,7 @@ impl Component for Popup {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let onclick_close = ctx.props().agenda_link.callback(|_| AgendaMsg::ClosePopup);
+        let onclick_close = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Agenda)));
         let event_color = COLORS.get(&ctx.props().event.summary);
         let summary = &ctx.props().event.summary;
         let name = ctx.props().event.format_name();
