@@ -63,7 +63,7 @@ impl LocalNotificationTracker {
                     image_src: String::from("/agenda/images/survey.svg"),
                     image_alt: String::from("Survey"),
                     ts: survey.start_ts as u64,
-                    button_target: Some(format!("/survey/{}", survey.id)),
+                    button_target: Some((format!("/survey/{}", survey.id), String::from("Participer"))),
                 }));
             }
         }
@@ -92,7 +92,7 @@ pub struct Notification {
     image_src: String,
     image_alt: String,
     ts: u64,
-    button_target: Option<String>,
+    button_target: Option<(String, String)>,
 }
 
 pub struct NotificationsPage;
@@ -121,12 +121,12 @@ impl Component for NotificationsPage {
         let unseen_text_iter = ctx.props().notifications.unseen().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
         let unseen_src_iter = ctx.props().notifications.unseen().map(|n| n.image_src.clone());
         let unseen_alt_iter = ctx.props().notifications.unseen().map(|n| n.image_alt.clone());
-        let unseen_button_iter = ctx.props().notifications.unseen().map(|n| n.button_target.as_ref().map(|t| html!(<button class="friends-agenda-button">{t}</button>)));
+        let unseen_button_iter = ctx.props().notifications.unseen().map(|n| n.button_target.as_ref().map(|(uri,text)| html!(<a class="friends-agenda-button" href={uri.to_owned()}>{text}</a>)));
 
         let text_iter = ctx.props().notifications.seen().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
         let src_iter = ctx.props().notifications.seen().map(|n| n.image_src.clone());
         let alt_iter = ctx.props().notifications.seen().map(|n| n.image_alt.clone());
-        let button_iter = ctx.props().notifications.seen().map(|n| n.button_target.as_ref().map(|t| html!(<button class="friends-agenda-button">{t}</button>)));
+        let button_iter = ctx.props().notifications.seen().map(|n| n.button_target.as_ref().map(|(uri,text)| html!(<a class="friends-agenda-button" href={uri.to_owned()}>{text}</a>)));
 
         template_html!("src/notifications/notifications.html", ...)
     }

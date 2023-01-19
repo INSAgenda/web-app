@@ -36,6 +36,7 @@
     padding: .5rem .5rem .5rem 0;
 }
 
-.notification>div>button {
+.notification>div>a {
+    display: inline-block;
     margin-top: .2rem;
 }
