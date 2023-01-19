@@ -84,6 +84,7 @@ pub struct App {
     user_info: Rc<Option<UserInfo>>,
     events: Rc<Vec<RawEvent>>,
     announcements: Rc<Vec<AnnouncementDesc>>,
+    notifications: Rc<LocalNotificationTracker>,
     surveys: Vec<Survey>,
     survey_answers: Vec<SurveyAnswers>,
     page: Page,
@@ -126,11 +127,18 @@ impl Component for App {
         // Update data
         let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let user_info: Option<UserInfo> = CachedData::init(ctx.link().clone());
-        let announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let groups: Vec<GroupDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
+        let announcements = match &user_info {
+            Some(user_info) => {
+                let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
+                announcements.retain(|a| a.target.as_ref().map(|t| user_info.user_groups.matches(t)).unwrap_or(true));
+                announcements
+            }
+            None => Vec::new(),
+        };
 
         // Open corresponding page
         let path = window().location().pathname().unwrap_or_default();
@@ -187,10 +195,16 @@ impl Component for App {
             }
         }
 
+        // Get notification tracker
+        let mut notifications = LocalNotificationTracker::load();
+        notifications.add_announcements(&announcements);
+        notifications.add_surveys(&surveys);
+
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
             announcements: Rc::new(announcements),
+            notifications: Rc::new(notifications),
             groups: Rc::new(groups),
             surveys,
             survey_answers,
@@ -360,7 +374,7 @@ impl Component for App {
                 <TabBar app_link={ctx.link()} page={self.page.clone()} />
             </>),
             Page::Notifications => html!(<>
-                <NotificationsPage />
+                <NotificationsPage notifications={Rc::clone(&self.notifications)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} />
             </>),
             Page::Settings => html!(<>

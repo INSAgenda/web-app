@@ -2,7 +2,7 @@ pub use crate::prelude::*;
 
 #[derive(Serialize, Deserialize)]
 pub struct LocalNotificationTracker {
-    notifications: HashMap<String, (bool, Notification)>,
+    pub(self) notifications: HashMap<String, (bool, Notification)>,
 }
 
 impl LocalNotificationTracker {
@@ -71,7 +71,11 @@ impl LocalNotificationTracker {
     }
 
     pub fn unseen(&self) -> impl Iterator<Item = &Notification> {
-        self.notifications.values().filter(|(seen, _)| !seen).map(|(id, notification)| notification)
+        self.notifications.values().filter(|(seen, _)| !seen).map(|(_, notification)| notification)
+    }
+
+    pub fn seen(&self) -> impl Iterator<Item = &Notification> {
+        self.notifications.values().filter(|(seen, _)| *seen).map(|(_, notification)| notification)
     }
 
     pub fn mark_seen(&mut self, id: &str) {
@@ -93,29 +97,36 @@ pub struct Notification {
 
 pub struct NotificationsPage;
 
+#[derive(Clone, Properties)]
+pub struct NotificationsProps {
+    pub notifications: Rc<LocalNotificationTracker>,
+}
+
+impl PartialEq for NotificationsProps {
+    fn eq(&self, other: &Self) -> bool { self.notifications.notifications.len() == other.notifications.notifications.len() }
+}
+
 pub enum NotificationsMsg {
 }
 
 impl Component for NotificationsPage {
     type Message = NotificationsMsg;
-    type Properties = ();
+    type Properties = NotificationsProps;
 
     fn create(ctx: &Context<Self>) -> Self {
         Self
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let unseen_texts = vec!["I will write some great placeholder calling for a total and complete shutdown of ", "Sondage hivernal"];
-        let unseen_text_iter = unseen_texts.iter();
-        let unseen_src_iter = unseen_texts.iter().map(|text| format!("https://api.dicebear.com/5.x/micah/svg?seed={text}", text = text.replace(" ", "+")));
-        let unseen_alt_iter = unseen_texts.iter().map(|text| format!("Avatar of {text}"));
-        let unseen_button_iter = unseen_texts.iter().map(|_| html!(<button class="friends-agenda-button">{"Participer"}</button>));
+        let unseen_text_iter = ctx.props().notifications.unseen().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
+        let unseen_src_iter = ctx.props().notifications.unseen().map(|n| n.image_src.clone());
+        let unseen_alt_iter = ctx.props().notifications.unseen().map(|n| n.image_alt.clone());
+        let unseen_button_iter = ctx.props().notifications.unseen().map(|n| n.button_target.as_ref().map(|t| html!(<button class="friends-agenda-button">{t}</button>)));
 
-        let texts = vec!["I will write some great placeholder calling for a total and complete shutdown of ", "et cela"];
-        let text_iter = texts.iter();
-        let src_iter = texts.iter().map(|text| format!("https://api.dicebear.com/5.x/micah/svg?seed={text}", text = text.replace(" ", "+")));
-        let alt_iter = texts.iter().map(|text| format!("Avatar of {text}"));
-        let button_iter = texts.iter().map(|text| if 1 == 2 {Some(format!("Voir {text}", text = text))} else {None});
+        let text_iter = ctx.props().notifications.seen().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
+        let src_iter = ctx.props().notifications.seen().map(|n| n.image_src.clone());
+        let alt_iter = ctx.props().notifications.seen().map(|n| n.image_alt.clone());
+        let button_iter = ctx.props().notifications.seen().map(|n| n.button_target.as_ref().map(|t| html!(<button class="friends-agenda-button">{t}</button>)));
 
         template_html!("src/notifications/notifications.html", ...)
     }
