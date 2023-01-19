@@ -87,6 +87,7 @@ pub struct App {
     notifications: Rc<LocalNotificationTracker>,
     surveys: Vec<Survey>,
     survey_answers: Vec<SurveyAnswers>,
+    tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
 
     event_closing: bool,
@@ -208,6 +209,7 @@ impl Component for App {
             groups: Rc::new(groups),
             surveys,
             survey_answers,
+            tabbar_bait_points: (false, false, false, false), // TODO: set bait points
             page,
             event_closing: false,
             event_popup_size: None,
@@ -292,6 +294,15 @@ impl Component for App {
                 false
             },
             Msg::SetPage(page) => {
+                // Remove bait points
+                match page {
+                    Page::Agenda => self.tabbar_bait_points.0 = false,
+                    Page::Friends => self.tabbar_bait_points.1 = false,
+                    Page::Notifications => self.tabbar_bait_points.2 = false,
+                    Page::Settings => self.tabbar_bait_points.3 = false,
+                    _ => (),
+                }
+
                 let history = window().history().expect("Failed to access history");
                 let document = window().doc();
                 if let Page::Event { .. } = &page {
@@ -357,7 +368,7 @@ impl Component for App {
                 let events = Rc::clone(&self.events);
                 html!(<>
                     <Agenda events={events} user_info={user_info} app_link={ctx.link().clone()} popup={None} />
-                    <TabBar app_link={ctx.link()} page={self.page.clone()} />
+                    <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
             Page::Event { eid } => {
@@ -366,20 +377,20 @@ impl Component for App {
                 let event = events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
                 html!(<>
                     <Agenda events={events} user_info={user_info} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />
-                    <TabBar app_link={ctx.link()} page={self.page.clone()} />
+                    <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
             Page::Friends => html!(<>
                 <FriendsPage />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Notifications => html!(<>
                 <NotificationsPage notifications={Rc::clone(&self.notifications)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Settings => html!(<>
                 <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::ChangePassword => html!(<>
                 <ChangeDataPage
@@ -387,7 +398,7 @@ impl Component for App {
                     app_link={ ctx.link().clone() }
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::ChangeEmail => html!(<>
                 <ChangeDataPage
@@ -395,7 +406,7 @@ impl Component for App {
                     app_link={ ctx.link().clone() }
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::ChangeGroup => html!(<>
                 <ChangeDataPage
@@ -403,7 +414,7 @@ impl Component for App {
                     app_link={ ctx.link().clone() }
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Survey { sid } => {
                 let survey = match self.surveys.iter().find(|s| s.id == *sid) {
