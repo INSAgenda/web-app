@@ -27,8 +27,13 @@
 }
 
 .notification>img {
-    width: 3rem;
+    width: 2.5rem;
     margin-right: .5rem;
+    flex-shrink: 0;
+}
+
+:root[data-theme="dark"] .notification>img {
+    filter: invert(1);
 }
 
 .notification>div:last-child {
