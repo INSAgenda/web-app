@@ -2,7 +2,7 @@ pub use crate::prelude::*;
 
 #[derive(Serialize, Deserialize)]
 pub struct LocalNotificationTracker {
-    pub(self) notifications: HashMap<String, (bool, Notification)>,
+    pub(self) notifications: Vec<(String, bool, Notification)>,
 }
 
 impl LocalNotificationTracker {
@@ -14,7 +14,7 @@ impl LocalNotificationTracker {
 
     pub fn load() -> Self {
         Self::try_load().unwrap_or_else(|| Self {
-            notifications: HashMap::new(),
+            notifications: Vec::new(),
         })
     }
 
@@ -27,7 +27,7 @@ impl LocalNotificationTracker {
     pub fn add_announcements(&mut self, announcements: &[AnnouncementDesc]) {
         for announcement in announcements {
             let id = format!("announcement:{}", announcement.id);
-            if !self.notifications.contains_key(&id) {
+            if !self.notifications.iter().any(|(i,_,_)| i == &id) {
                 let mut text = HashMap::new();
                 if announcement.ty == ContentType::Text {
                     if let Some(content_fr) = &announcement.content_fr {
@@ -39,7 +39,7 @@ impl LocalNotificationTracker {
                 } else {
                     continue;
                 }
-                self.notifications.insert(id, (false, Notification {
+                self.notifications.push((id, false, Notification {
                     text,
                     image_src: String::from("/agenda/images/info.svg"),
                     image_alt: String::from("Information"),
@@ -48,17 +48,18 @@ impl LocalNotificationTracker {
                 }));
             }
         }
+        self.notifications.sort_by_key(|(_,_,n)| u64::MAX - n.ts);
         self.save()
     }
 
     pub fn add_surveys(&mut self, surveys: &[Survey]) {
         for survey in surveys {
             let id = format!("survey:{}", survey.id);
-            if !self.notifications.contains_key(&id) {
+            if !self.notifications.iter().any(|(i,_,_)| i == &id) {
                 let mut text = HashMap::new();
                 text.insert(String::from("fr"), format!("Un nouveau sondage a été publié: {}", survey.title));
                 text.insert(String::from("en"), format!("A new survey has been published: {}", survey.title));
-                self.notifications.insert(id, (false, Notification {
+                self.notifications.push((id, false, Notification {
                     text,
                     image_src: String::from("/agenda/images/survey.svg"),
                     image_alt: String::from("Survey"),
@@ -67,21 +68,20 @@ impl LocalNotificationTracker {
                 }));
             }
         }
+        self.notifications.sort_by_key(|(_,_,n)| u64::MAX - n.ts);
         self.save()
     }
 
     pub fn unseen(&self) -> impl Iterator<Item = &Notification> {
-        self.notifications.values().filter(|(seen, _)| !seen).map(|(_, notification)| notification)
+        self.notifications.iter().filter(|(_,seen, _)| !seen).map(|(_,_,notification)| notification)
     }
 
     pub fn seen(&self) -> impl Iterator<Item = &Notification> {
-        self.notifications.values().filter(|(seen, _)| *seen).map(|(_, notification)| notification)
+        self.notifications.iter().filter(|(_,seen, _)| *seen).map(|(_,_,notification)| notification)
     }
 
-    pub fn mark_seen(&mut self, id: &str) {
-        if let Some((seen, _)) = self.notifications.get_mut(id) {
-            *seen = true;
-        }
+    pub fn mark_seen(&mut self) {
+        self.notifications.iter_mut().for_each(|(_,seen, _)| *seen = true);
         self.save()
     }
 }
@@ -113,7 +113,7 @@ impl Component for NotificationsPage {
     type Message = NotificationsMsg;
     type Properties = NotificationsProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         Self
     }
 
