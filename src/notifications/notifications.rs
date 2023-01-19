@@ -2,7 +2,7 @@ pub use crate::prelude::*;
 
 #[derive(Serialize, Deserialize)]
 pub struct LocalNotificationTracker {
-    pub(self) notifications: Vec<(String, bool, Notification)>,
+    pub(self) notifications: Vec<(String, bool, NotificationSource)>,
 }
 
 impl LocalNotificationTracker {
@@ -28,6 +28,55 @@ impl LocalNotificationTracker {
         for announcement in announcements {
             let id = format!("announcement:{}", announcement.id);
             if !self.notifications.iter().any(|(i,_,_)| i == &id) {
+                self.notifications.push((id, false, NotificationSource::Announcement(announcement.clone())));
+            }
+        }
+        self.notifications.sort_by_key(|(_,_,n)| u64::MAX - n.ts());
+        self.save()
+    }
+
+    pub fn add_surveys(&mut self, surveys: &[Survey]) {
+        for survey in surveys {
+            let id = format!("survey:{}", survey.id);
+            if !self.notifications.iter().any(|(i,_,_)| i == &id) {
+                self.notifications.push((id, false, NotificationSource::Survey(survey.clone())));
+            }
+        }
+        self.notifications.sort_by_key(|(_,_,n)| u64::MAX - n.ts());
+        self.save()
+    }
+
+    pub fn unseen(&self) -> impl Iterator<Item = &NotificationSource> {
+        self.notifications.iter().filter(|(_,seen, _)| !seen).map(|(_,_,source)| source)
+    }
+
+    pub fn seen(&self) -> impl Iterator<Item = &NotificationSource> {
+        self.notifications.iter().filter(|(_,seen, _)| *seen).map(|(_,_,source)| source)
+    }
+
+    pub fn mark_seen(&mut self) {
+        self.notifications.iter_mut().for_each(|(_,seen, _)| *seen = true);
+        self.save()
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum NotificationSource {
+    Announcement(AnnouncementDesc),
+    Survey(Survey),
+}
+
+impl NotificationSource {
+    fn ts(&self) -> u64 {
+        match self {
+            NotificationSource::Announcement(announcement) => announcement.start_ts,
+            NotificationSource::Survey(survey) => survey.start_ts as u64,
+        }
+    }
+
+    fn into_notification(&self, now: u64) -> Notification {
+        match self {
+            NotificationSource::Announcement(announcement) => {
                 let mut text = HashMap::new();
                 if announcement.ty == ContentType::Text {
                     if let Some(content_fr) = &announcement.content_fr {
@@ -36,53 +85,32 @@ impl LocalNotificationTracker {
                     if let Some(content_en) = &announcement.content_en {
                         text.insert(String::from("en"), content_en.clone());
                     }
-                } else {
-                    continue;
                 }
-                self.notifications.push((id, false, Notification {
+                Notification {
                     text,
                     image_src: String::from("/agenda/images/info.svg"),
                     image_alt: String::from("Information"),
                     ts: announcement.start_ts,
                     button_target: None,
-                }));
-            }
-        }
-        self.notifications.sort_by_key(|(_,_,n)| u64::MAX - n.ts);
-        self.save()
-    }
-
-    pub fn add_surveys(&mut self, surveys: &[Survey]) {
-        for survey in surveys {
-            let id = format!("survey:{}", survey.id);
-            if !self.notifications.iter().any(|(i,_,_)| i == &id) {
+                }
+            },
+            NotificationSource::Survey(survey) => {
                 let mut text = HashMap::new();
                 text.insert(String::from("fr"), format!("Un nouveau sondage a été publié: {}", survey.title));
                 text.insert(String::from("en"), format!("A new survey has been published: {}", survey.title));
-                self.notifications.push((id, false, Notification {
+                let mut button_target = None;
+                if survey.start_ts as u64 <= now && survey.end_ts as u64 >= now {
+                    button_target = Some((format!("/survey/{}", survey.id), String::from("Participer")));
+                }
+                Notification {
                     text,
                     image_src: String::from("/agenda/images/survey.svg"),
                     image_alt: String::from("Survey"),
                     ts: survey.start_ts as u64,
-                    button_target: Some((format!("/survey/{}", survey.id), String::from("Participer"))),
-                }));
-            }
+                    button_target,
+                }
+            },
         }
-        self.notifications.sort_by_key(|(_,_,n)| u64::MAX - n.ts);
-        self.save()
-    }
-
-    pub fn unseen(&self) -> impl Iterator<Item = &Notification> {
-        self.notifications.iter().filter(|(_,seen, _)| !seen).map(|(_,_,notification)| notification)
-    }
-
-    pub fn seen(&self) -> impl Iterator<Item = &Notification> {
-        self.notifications.iter().filter(|(_,seen, _)| *seen).map(|(_,_,notification)| notification)
-    }
-
-    pub fn mark_seen(&mut self) {
-        self.notifications.iter_mut().for_each(|(_,seen, _)| *seen = true);
-        self.save()
     }
 }
 
@@ -118,15 +146,19 @@ impl Component for NotificationsPage {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let unseen_text_iter = ctx.props().notifications.unseen().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
-        let unseen_src_iter = ctx.props().notifications.unseen().map(|n| n.image_src.clone());
-        let unseen_alt_iter = ctx.props().notifications.unseen().map(|n| n.image_alt.clone());
-        let unseen_button_iter = ctx.props().notifications.unseen().map(|n| n.button_target.as_ref().map(|(uri,text)| html!(<a class="friends-agenda-button" href={uri.to_owned()}>{text}</a>)));
+        let now = js_sys::Date::now() as u64;
 
-        let text_iter = ctx.props().notifications.seen().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
-        let src_iter = ctx.props().notifications.seen().map(|n| n.image_src.clone());
-        let alt_iter = ctx.props().notifications.seen().map(|n| n.image_alt.clone());
-        let button_iter = ctx.props().notifications.seen().map(|n| n.button_target.as_ref().map(|(uri,text)| html!(<a class="friends-agenda-button" href={uri.to_owned()}>{text}</a>)));
+        let unseen = ctx.props().notifications.unseen().map(|source| source.into_notification(now)).collect::<Vec<_>>();
+        let unseen_text_iter = unseen.iter().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
+        let unseen_src_iter = unseen.iter().map(|n| n.image_src.clone());
+        let unseen_alt_iter = unseen.iter().map(|n| n.image_alt.clone());
+        let unseen_button_iter = unseen.iter().map(|n| n.button_target.as_ref().map(|(uri,text)| html!(<a class="friends-agenda-button" href={uri.to_owned()}>{text}</a>)));
+
+        let seen = ctx.props().notifications.seen().map(|source| source.into_notification(now)).collect::<Vec<_>>();
+        let text_iter = seen.iter().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
+        let src_iter = seen.iter().map(|n| n.image_src.clone());
+        let alt_iter = seen.iter().map(|n| n.image_alt.clone());
+        let button_iter = seen.iter().map(|n| n.button_target.as_ref().map(|(uri,text)| html!(<a class="friends-agenda-button" href={uri.to_owned()}>{text}</a>)));
 
         template_html!("src/notifications/notifications.html", ...)
     }
