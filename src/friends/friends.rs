@@ -1,6 +1,8 @@
 use crate::prelude::*;
 
-pub struct FriendsPage;
+pub struct FriendsPage {
+    request_error: Option<String>,
+}
 
 #[derive(Clone, Properties)]
 pub struct FriendsProps {
@@ -13,7 +15,8 @@ impl PartialEq for FriendsProps {
 }
 
 pub enum FriendsMsg {
-    RequestFriend
+    RequestFriend,
+    RequestError(String),
 }
 
 impl Component for FriendsPage {
@@ -21,7 +24,9 @@ impl Component for FriendsPage {
     type Properties = FriendsProps;
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Self
+        Self {
+            request_error: None,
+        }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -38,6 +43,7 @@ impl Component for FriendsPage {
                 }
 
                 let app_link2 = ctx.props().app_link.clone();
+                let link2 = ctx.link().clone();
                 spawn_local(async move {
                     match request_friend(email).await {
                         Ok(()) => {
@@ -46,10 +52,15 @@ impl Component for FriendsPage {
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
                         Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
-                        Err(error) => alert(error.to_string()), // TODO errors
+                        Err(ApiError::Known(e)) => link2.send_message(FriendsMsg::RequestError(e.to_string())),
+                        Err(error) => alert(error.to_string()),
                     }
                 });
 
+                true
+            }
+            FriendsMsg::RequestError(err) => {
+                self.request_error = Some(err);
                 true
             }
         }
@@ -80,6 +91,7 @@ impl Component for FriendsPage {
         let out_name_iter = out_names.iter();
 
         let onclick_request = ctx.link().callback(|_| FriendsMsg::RequestFriend);
+        let request_error_opt = self.request_error.as_ref();
 
         let del_name_iter = names.iter().rev();
         let del_value_iter = names.iter().rev().map(|name| name.replace(" ", "+"));

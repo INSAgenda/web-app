@@ -125,6 +125,12 @@
     clip-path: polygon(100% 0%, 0 0%, 50% 100%);
 }
 
+.friend-request-error {
+    color: #f44336;
+    font-size: .9rem;
+    margin-top: .2rem;
+}
+
 /* For desktop */
 
 @media screen and (min-width: 1000px) {
