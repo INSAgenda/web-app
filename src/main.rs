@@ -70,6 +70,7 @@ pub enum Msg {
     // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
     GroupsSuccess(Vec<GroupDesc>),
+    FriendsSuccess(FriendsLists),
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
     SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
@@ -80,11 +81,12 @@ pub enum Msg {
 /// The main component of the app.
 /// Stores data that is shared between pages, as well as the page that is currently displayed.
 pub struct App {
-    groups: Rc<Vec<GroupDesc>>,
     user_info: Rc<Option<UserInfo>>,
     events: Rc<Vec<RawEvent>>,
     announcements: Rc<Vec<AnnouncementDesc>>,
     notifications: Rc<LocalNotificationTracker>,
+    groups: Rc<Vec<GroupDesc>>,
+    friends: Rc<Option<FriendsLists>>,
     surveys: Vec<Survey>,
     survey_answers: Vec<SurveyAnswers>,
     tabbar_bait_points: (bool, bool, bool, bool),
@@ -129,6 +131,7 @@ impl Component for App {
         let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let user_info: Option<UserInfo> = CachedData::init(ctx.link().clone());
         let groups: Vec<GroupDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let friends = CachedData::init(ctx.link().clone());
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
@@ -207,6 +210,7 @@ impl Component for App {
             announcements: Rc::new(announcements),
             notifications: Rc::new(notifications),
             groups: Rc::new(groups),
+            friends: Rc::new(friends),
             surveys,
             survey_answers,
             tabbar_bait_points: (false, false, false, false), // TODO: set bait points
@@ -280,7 +284,11 @@ impl Component for App {
                 }
 
                 self.groups = Rc::new(groups);
-                false
+                matches!(self.page, Page::ChangeGroup)
+            },
+            Msg::FriendsSuccess(friends) => {
+                self.friends = Rc::new(Some(friends));
+                matches!(self.page, Page::Friends)
             },
             AppMsg::ScheduleFailure(api_error) => {
                 api_error.handle_api_error();
@@ -381,7 +389,7 @@ impl Component for App {
                 </>)
             },
             Page::Friends => html!(<>
-                <FriendsPage />
+                <FriendsPage friends={Rc::clone(&self.friends)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Notifications => html!(<>

@@ -9,7 +9,7 @@ pub use crate::{util::*, api::*, notifications::*, friends::*, checkbox::*, tabb
 pub use web_sys::{HtmlElement, HtmlInputElement, RequestInit, Request};
 pub use wasm_bindgen_futures::{JsFuture, spawn_local};
 pub use lazy_static::lazy_static;
-pub use serde::{Serialize, Deserialize};
+pub use serde::{Serialize, Deserialize, de::DeserializeOwned};
 pub use js_sys::{Reflect, Function, Array};
 
 pub type AppLink = yew::html::Scope<crate::App>;
