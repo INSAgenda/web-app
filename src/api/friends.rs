@@ -61,8 +61,9 @@ impl FriendsEvents {
         })
     }
 
-    pub fn insert(&mut self, uid: i64, events: Vec<RawEvent>) {
+    pub fn insert(&mut self, uid: i64, mut events: Vec<RawEvent>) {
         let now = (js_sys::Date::new_0().get_time() / 1000.0) as u64;
+        events.sort_by_key(|event| event.start_unixtime);
         self.events.insert(uid, (now, Rc::new(events)));
         self.save();
     }
