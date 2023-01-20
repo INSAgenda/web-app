@@ -21,6 +21,7 @@ pub enum FriendsMsg {
     Accept(MouseEvent),
     Decline(MouseEvent),
     Cancel(MouseEvent),
+    Agenda(MouseEvent),
     Remove,
 }
 
@@ -137,6 +138,13 @@ impl Component for FriendsPage {
 
                 false
             },
+            FriendsMsg::Agenda(event) => {
+                let target = event.target().unwrap();
+                let el = target.dyn_into::<web_sys::Element>().unwrap();
+                let uid: i64 = el.get_attribute("data-uid").unwrap().parse().unwrap();
+                ctx.props().app_link.send_message(AppMsg::SetPage(Page::FriendAgenda { uid }));
+                false
+            },
             FriendsMsg::Remove => {
                 let el = window().doc().get_element_by_id("friend-remove-input").unwrap();
                 let input = el.dyn_into::<web_sys::HtmlSelectElement>().unwrap();
@@ -180,6 +188,7 @@ impl Component for FriendsPage {
         let picture_iter = names.iter().map(|name| format!("https://api.dicebear.com/5.x/micah/svg?seed={name}", name = name.replace(" ", "+")));
         let alt_iter = names.iter().map(|name| format!("Avatar of {name}"));
         let name_iter = names.iter();
+        let friend_uid_iter = friends.friends_list.iter().map(|friend| friend.0.uid.to_string());
 
         let has_incoming = friends.friend_requests_incoming.len() > 0;
         let in_names = friends.friend_requests_incoming.iter().map(|req| &req.from.0.email).collect::<Vec<_>>();
@@ -204,9 +213,10 @@ impl Component for FriendsPage {
 
         template_html!(
             "src/friends/friends.html",
-            onclick_decline = { ctx.link().callback(|id| FriendsMsg::Decline(id)) },
-            onclick_accept = { ctx.link().callback(|id| FriendsMsg::Accept(id)) },
-            onclick_cancel = { ctx.link().callback(|id| FriendsMsg::Cancel(id)) },
+            onclick_decline = { ctx.link().callback(|e| FriendsMsg::Decline(e)) },
+            onclick_accept = { ctx.link().callback(|e| FriendsMsg::Accept(e)) },
+            onclick_cancel = { ctx.link().callback(|e| FriendsMsg::Cancel(e)) },
+            onclick_agenda = { ctx.link().callback(|e| FriendsMsg::Agenda(e)) },
             ...
         )
     }

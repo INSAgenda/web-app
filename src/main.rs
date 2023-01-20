@@ -55,6 +55,7 @@ pub enum Page {
     ChangeGroup,
     Agenda,
     Friends,
+    FriendAgenda { uid: i64 },
     Notifications,
     EmailVerification { feature: &'static str },
     Event { eid: u64 /* For now this is the start timestamp */ },
@@ -75,6 +76,7 @@ pub enum Msg {
     UserInfoSuccess(UserInfo),
     GroupsSuccess(Vec<GroupDesc>),
     FriendsSuccess(FriendsLists),
+    FriendsEventsSuccess{ uid: i64, events: Vec<RawEvent> },
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
     SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
@@ -91,6 +93,7 @@ pub struct App {
     notifications: Rc<LocalNotificationTracker>,
     groups: Rc<Vec<GroupDesc>>,
     friends: Rc<Option<FriendsLists>>,
+    friends_events: FriendsEvents,
     surveys: Vec<Survey>,
     survey_answers: Vec<SurveyAnswers>,
     tabbar_bait_points: (bool, bool, bool, bool),
@@ -125,6 +128,7 @@ impl Component for App {
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
                 }
                 Some(survey) if survey.starts_with("survey/") => link2.send_message(Msg::SilentSetPage(Page::Survey { sid: survey[7..].to_string() })),
+                Some(agenda) if agenda.starts_with("friend-agenda/") => link2.send_message(Msg::SilentSetPage(Page::FriendAgenda { uid: agenda[14..].parse().unwrap_or_default() })), // TODO unwrap
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
             }
@@ -137,6 +141,7 @@ impl Component for App {
         let user_info: Option<UserInfo> = CachedData::init(ctx.link().clone());
         let groups: Vec<GroupDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let friends = CachedData::init(ctx.link().clone());
+        let friends_events = FriendsEvents::init();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
@@ -169,6 +174,10 @@ impl Component for App {
                 Page::Agenda
             }
             survey if survey.starts_with("/survey/") => Page::Survey { sid: survey[8..].to_string() },
+            friend_agenda if friend_agenda.starts_with("/friend-agenda/") => {
+                let uid = friend_agenda[15..].parse().unwrap_or_default(); // TODO unwrap
+                Page::FriendAgenda { uid }
+            }
             "/agenda" => match window().location().hash() { // For compatibility with old links
                 Ok(hash) if hash == "#settings" => Page::Settings,
                 Ok(hash) if hash == "#change-password" => Page::ChangePassword,
@@ -217,6 +226,7 @@ impl Component for App {
             notifications: Rc::new(notifications),
             groups: Rc::new(groups),
             friends: Rc::new(friends),
+            friends_events,
             surveys,
             survey_answers,
             tabbar_bait_points: (false, false, false, false), // TODO: set bait points
@@ -233,6 +243,10 @@ impl Component for App {
                 friends.save();
                 self.friends = Rc::new(Some(friends));
                 true
+            },
+            AppMsg::FriendsEventsSuccess { uid, events } => {
+                self.friends_events.insert(uid, events);
+                matches!(self.page, Page::FriendAgenda { .. } )
             },
             AppMsg::AnnouncementsSuccess(announcements) => {
                 self.announcements = Rc::new(announcements); // TODO notifications
@@ -354,9 +368,10 @@ impl Component for App {
                     Page::ChangePassword => (String::from("change-password"), "Change password"),
                     Page::ChangeEmail => (String::from("change-email"), "Change email"),
                     Page::ChangeGroup => (String::from("change-group"), "Change group"),
-                    Page::EmailVerification { feature } => (format!("email-verification"), "Email verification"),
+                    Page::EmailVerification { .. } => (format!("email-verification"), "Email verification"),
                     Page::Agenda => (String::from("agenda"), "Agenda"),
                     Page::Friends => (String::from("friends"), "Friends"),
+                    Page::FriendAgenda { uid } => (format!("friend-agenda/{uid}"), "Friend agenda"),
                     Page::Notifications => (String::from("notifications"), "Notifications"),
                     Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
                     Page::Event { eid } => (format!("event/{eid}"), "Event"),
@@ -398,6 +413,13 @@ impl Component for App {
                 <FriendsPage friends={Rc::clone(&self.friends)} app_link={ctx.link().clone()} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
+            Page::FriendAgenda { uid } => {
+                let events = self.friends_events.get_events(*uid, ctx.link().clone()).unwrap_or(Rc::new(Vec::new()));
+                html!(<>
+                    <Agenda events={events} app_link={ctx.link().clone()} popup={None} />
+                    <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+                </>)
+            },
             Page::Notifications => html!(<>
                 <NotificationsPage notifications={Rc::clone(&self.notifications)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />

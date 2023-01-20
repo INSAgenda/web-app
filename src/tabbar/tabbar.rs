@@ -32,7 +32,7 @@ impl Component for TabBar {
         if ctx.props().bait_points.0 { home_classes.push_str(" tabbar-with-bait"); }
 
         let onclick_friends = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Friends));
-        let mut friends_classes = String::from(if matches!(page, Page::Friends) {"tabbar-selected"} else {"tabbar-not-selected"});
+        let mut friends_classes = String::from(if matches!(page, Page::Friends | Page::FriendAgenda { .. }) {"tabbar-selected"} else {"tabbar-not-selected"});
         if ctx.props().bait_points.1 { friends_classes.push_str(" tabbar-with-bait"); }
 
         let onclick_notifications = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Notifications));
