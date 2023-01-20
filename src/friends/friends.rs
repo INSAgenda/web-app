@@ -24,16 +24,19 @@ impl Component for FriendsPage {
             None => return html! {}
         };
 
+        let has_friends = friends.friends_list.len() > 0;
         let names = friends.friends_list.iter().map(|friend| &friend.email).collect::<Vec<_>>();
         let picture_iter = names.iter().map(|name| format!("https://api.dicebear.com/5.x/micah/svg?seed={name}", name = name.replace(" ", "+")));
         let alt_iter = names.iter().map(|name| format!("Avatar of {name}"));
         let name_iter = names.iter();
 
+        let has_incoming = friends.friend_requests_incoming.len() > 0;
         let in_names = friends.friend_requests_incoming.iter().map(|friend| &friend.from.email).collect::<Vec<_>>();
         let in_picture_iter = in_names.iter().map(|name| format!("https://api.dicebear.com/5.x/micah/svg?seed={name}", name = name.replace(" ", "+")));
         let in_alt_iter = in_names.iter().map(|name| format!("Avatar of {name}"));
         let in_name_iter = in_names.iter();
 
+        let has_outgoing = friends.friend_requests_outgoing.len() > 0;
         let out_names = friends.friend_requests_outgoing.iter().map(|friend| &friend.to.email).collect::<Vec<_>>();
         let out_picture_iter = out_names.iter().map(|name| format!("https://api.dicebear.com/5.x/micah/svg?seed={name}", name = name.replace(" ", "+")));
         let out_alt_iter = out_names.iter().map(|name| format!("Avatar of {name}"));

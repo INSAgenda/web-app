@@ -5,7 +5,7 @@
     </a>
 </header>
 <main id="friends">
-    <section>
+    <section present-if={{has_friends}}>
         <h3>Mes amis&nbsp;:</h3>
         <div class="friend-list">
             <div iter>
@@ -17,7 +17,7 @@
             </div>
         </div>
     </section>
-    <section>
+    <section present-if={{has_incoming}}>
         <h3>Demandes reçues&nbsp;:</h3>
         <div class="friend-list">
             <div iter>
@@ -32,7 +32,7 @@
             </div>
         </div>
     </section>
-    <section>
+    <section present-if={{has_outgoing}}>
         <h3>Demandes envoyées&nbsp;:</h3>
         <div class="friend-list">
             <div iter>
@@ -49,7 +49,7 @@
         <input type="text" class="friend-input" placeholder="prenom.nom@insa-rouen.fr"/>
         <button class="primary-button">Demander</button>
     </section>
-    <section>
+    <section present-if={{has_friends}}>
         <h3>Retirer un ami&nbsp;:</h3>
         <select name="friend-select" class="friend-input">
             <option disabled selected>Sélectionnez un ami</option>
