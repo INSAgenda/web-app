@@ -20,6 +20,7 @@ pub enum FriendsMsg {
     RequestError(String),
     Accept(MouseEvent),
     Decline(MouseEvent),
+    Cancel(MouseEvent),
     Remove,
 }
 
@@ -118,6 +119,24 @@ impl Component for FriendsPage {
 
                 false
             },
+            FriendsMsg::Cancel(event) => {
+                let target = event.target().unwrap();
+                let el = target.dyn_into::<web_sys::Element>().unwrap();
+                let uid: i64 = el.get_attribute("data-uid").unwrap().parse().unwrap();
+
+                let app_link2 = ctx.props().app_link.clone();
+                spawn_local(async move {
+                    match remove_friend(uid).await {
+                        Ok(()) => {
+                            let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            app_link2.send_message(AppMsg::UpdateFriends(new_friends));
+                        }
+                        Err(error) => alert(error.to_string()),
+                    }
+                });
+
+                false
+            },
             FriendsMsg::Remove => {
                 let el = window().doc().get_element_by_id("friend-remove-input").unwrap();
                 let input = el.dyn_into::<web_sys::HtmlSelectElement>().unwrap();
@@ -174,6 +193,7 @@ impl Component for FriendsPage {
         let out_picture_iter = out_names.iter().map(|name| format!("https://api.dicebear.com/5.x/micah/svg?seed={name}", name = name.replace(" ", "+")));
         let out_alt_iter = out_names.iter().map(|name| format!("Avatar of {name}"));
         let out_name_iter = out_names.iter();
+        let out_uid_iter = friends.friend_requests_outgoing.iter().map(|req| req.to.0.uid.to_string());
 
         let onclick_request = ctx.link().callback(|_| FriendsMsg::Request);
         let request_error_opt = self.request_error.as_ref();
@@ -186,6 +206,7 @@ impl Component for FriendsPage {
             "src/friends/friends.html",
             onclick_decline = { ctx.link().callback(|id| FriendsMsg::Decline(id)) },
             onclick_accept = { ctx.link().callback(|id| FriendsMsg::Accept(id)) },
+            onclick_cancel = { ctx.link().callback(|id| FriendsMsg::Cancel(id)) },
             ...
         )
     }
