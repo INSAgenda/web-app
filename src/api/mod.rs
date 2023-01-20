@@ -8,6 +8,8 @@ mod colors;
 pub use colors::*;
 mod generic;
 pub use generic::*;
+mod friends;
+pub use friends::*;
 
 use crate::prelude::*;
 
@@ -55,6 +57,64 @@ pub async fn api_post<T: Serialize>(data: T, endpoint: &str) -> Result<(), ApiEr
         400 | 500 => {
             let json = JsFuture::from(response.json()?).await?;
             Err(ApiError::from(json))
+        },
+        _ => Err(ApiError::Unknown(response.into()))
+    }
+}
+
+pub async fn api_post_form(body: &str, endpoint: &str) -> Result<(), ApiError> {
+    let (api_key, counter) = get_login_info();
+
+    let mut req_init = web_sys::RequestInit::new();
+    req_init.method("POST");
+    req_init.body(Some(&JsValue::from_str(&body)));
+
+    let request = Request::new_with_str_and_init(&format!("/api/{endpoint}"), &req_init).unwrap();
+    request.headers().set(
+        "Api-Key",
+        &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
+    )?;
+    request.headers().set("Content-Type", "application/x-www-form-urlencoded")?;
+
+    let response = JsFuture::from(window().fetch_with_request(&request)).await?;
+    let response: web_sys::Response = response.clone().dyn_into().unwrap();
+
+    match response.status() {
+        200 => Ok(()),
+        400 | 500 => {
+            let json = JsFuture::from(response.json()?).await?;
+            Err(ApiError::from(json))
+        },
+        _ => Err(ApiError::Unknown(response.into()))
+    }
+}
+
+pub async fn api_get<T: DeserializeOwned>(endpoint: &str) -> Result<T, ApiError> {
+    let (api_key, counter) = get_login_info();
+
+    let mut req_init = web_sys::RequestInit::new();
+    req_init.method("GET");
+
+    let request = Request::new_with_str_and_init(&format!("/api/{endpoint}"), &req_init).unwrap();
+    request.headers().set(
+        "Api-Key",
+        &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
+    )?;
+    request.headers().set("Content-Type", "application/json")?;
+
+    let response = JsFuture::from(window().fetch_with_request(&request)).await?;
+    let response: web_sys::Response = response.clone().dyn_into().unwrap();
+
+    match response.status() {
+        200 => {
+            let text = JsFuture::from(response.text()?).await?;
+            let text: String = text.as_string().unwrap();
+            Ok(serde_json::from_str(&text).unwrap())
+        }
+        400 | 500 => {
+            let text = JsFuture::from(response.text()?).await?;
+            let text: String = text.as_string().unwrap();
+            Err(ApiError::Known(serde_json::from_str(&text).unwrap()))
         },
         _ => Err(ApiError::Unknown(response.into()))
     }

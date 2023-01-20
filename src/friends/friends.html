@@ -46,8 +46,8 @@
     </section>
     <section>
         <h3>Ajouter un ami&nbsp;:</h3>
-        <input type="text" class="friend-input" placeholder="prenom.nom@insa-rouen.fr"/>
-        <button class="primary-button">Demander</button>
+        <input type="text" class="friend-input" placeholder="prenom.nom@insa-rouen.fr" id="friend-request-input"/>
+        <button class="primary-button" onclick={{onclick_request}}>Demander</button>
     </section>
     <section present-if={{has_friends}}>
         <h3>Retirer un ami&nbsp;:</h3>

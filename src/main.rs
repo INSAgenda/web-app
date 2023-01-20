@@ -66,6 +66,7 @@ pub enum Msg {
     SilentSetPage(Page),
     FetchColors(HashMap<String, String>),
     SaveSurveyAnswer(SurveyAnswers),
+    UpdateFriends(FriendsLists),
 
     // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
@@ -223,6 +224,10 @@ impl Component for App {
     /// Most of the messages handled in the function are sent by the data loader to update the data or report an error.
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
+            AppMsg::UpdateFriends(friends) => {
+                self.friends = Rc::new(Some(friends));
+                true
+            },
             AppMsg::AnnouncementsSuccess(announcements) => {
                 self.announcements = Rc::new(announcements);
                 false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
@@ -389,7 +394,7 @@ impl Component for App {
                 </>)
             },
             Page::Friends => html!(<>
-                <FriendsPage friends={Rc::clone(&self.friends)} />
+                <FriendsPage friends={Rc::clone(&self.friends)} app_link={ctx.link().clone()} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Notifications => html!(<>

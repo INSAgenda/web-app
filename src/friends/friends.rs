@@ -2,12 +2,18 @@ use crate::prelude::*;
 
 pub struct FriendsPage;
 
-#[derive(Clone, PartialEq, Properties)]
+#[derive(Clone, Properties)]
 pub struct FriendsProps {
-    pub friends: Rc<Option<FriendsLists>>
+    pub friends: Rc<Option<FriendsLists>>,
+    pub app_link: AppLink,
+}
+
+impl PartialEq for FriendsProps {
+    fn eq(&self, other: &Self) -> bool { self.friends == other.friends }
 }
 
 pub enum FriendsMsg {
+    RequestFriend
 }
 
 impl Component for FriendsPage {
@@ -16,6 +22,36 @@ impl Component for FriendsPage {
 
     fn create(_ctx: &Context<Self>) -> Self {
         Self
+    }
+
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            FriendsMsg::RequestFriend => {
+                let el = window().doc().get_element_by_id("friend-request-input").unwrap();
+                let input = el.dyn_into::<web_sys::HtmlInputElement>().unwrap();
+                let mut email = input.value();
+                if email.is_empty() {
+                    return false;
+                }
+                if !email.contains('@') {
+                    email.push_str("@insa-rouen.fr");
+                }
+
+                let app_link2 = ctx.props().app_link.clone();
+                spawn_local(async move {
+                    match request_friend(email).await {
+                        Ok(()) => {
+                            input.set_value("");
+                            let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            app_link2.send_message(AppMsg::UpdateFriends(new_friends));
+                        }
+                        Err(error) => alert(error.to_string()), // TODO errors
+                    }
+                });
+
+                true
+            }
+        }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -41,6 +77,8 @@ impl Component for FriendsPage {
         let out_picture_iter = out_names.iter().map(|name| format!("https://api.dicebear.com/5.x/micah/svg?seed={name}", name = name.replace(" ", "+")));
         let out_alt_iter = out_names.iter().map(|name| format!("Avatar of {name}"));
         let out_name_iter = out_names.iter();
+
+        let onclick_request = ctx.link().callback(|_| FriendsMsg::RequestFriend);
 
         let del_name_iter = names.iter().rev();
         let del_value_iter = names.iter().rev().map(|name| name.replace(" ", "+"));
