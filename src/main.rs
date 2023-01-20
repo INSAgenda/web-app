@@ -33,6 +33,8 @@ mod tabbar;
 mod friends;
 #[path = "notifications/notifications.rs"]
 mod notifications;
+#[path = "email-verification/email_verification.rs"]
+mod email_verification;
 mod util;
 mod slider;
 mod api;
@@ -54,6 +56,7 @@ pub enum Page {
     Agenda,
     Friends,
     Notifications,
+    EmailVerification { feature: &'static str },
     Event { eid: u64 /* For now this is the start timestamp */ },
     Survey { sid: String },
 }
@@ -116,6 +119,7 @@ impl Component for App {
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
+                Some("email-verification") => link2.send_message(Msg::SilentSetPage(Page::EmailVerification { feature: "unknown" })),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].parse().unwrap_or_default();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -154,6 +158,7 @@ impl Component for App {
             "/change-group" => Page::ChangeGroup,
             "/friends" => Page::Friends,
             "/notifications" => Page::Notifications,
+            "/email-verification" => Page::EmailVerification { feature: "unknown" },
             event if event.starts_with("/event/") => {
                 let eid = event[7..].parse().unwrap_or_default();
                 let link2 = ctx.link().clone();
@@ -348,6 +353,7 @@ impl Component for App {
                     Page::ChangePassword => (String::from("change-password"), "Change password"),
                     Page::ChangeEmail => (String::from("change-email"), "Change email"),
                     Page::ChangeGroup => (String::from("change-group"), "Change group"),
+                    Page::EmailVerification { feature } => (format!("email-verification"), "Email verification"),
                     Page::Agenda => (String::from("agenda"), "Agenda"),
                     Page::Friends => (String::from("friends"), "Friends"),
                     Page::Notifications => (String::from("notifications"), "Notifications"),
@@ -439,6 +445,13 @@ impl Component for App {
                 };
                 let answers = self.survey_answers.iter().find(|s| s.id == *sid).map(|a| a.answers.to_owned());
                 html!(<SurveyComp survey={survey.clone()} answers={answers} app_link={ctx.link().clone()} />)
+            },
+            Page::EmailVerification { feature } => {
+                let email = self.user_info.deref().as_ref().map(|u| u.email.0.to_owned());
+                html!(<>
+                    <EmailVerification feature={feature} app_link={ctx.link().clone()} email={email} />
+                    <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+                </>)
             },
         }
     }

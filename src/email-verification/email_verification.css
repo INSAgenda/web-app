@@ -1,0 +1,18 @@
+main#email-verification {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+main#email-verification>div {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+main#email-verification>div>button {
+    flex-grow: 1;
+}

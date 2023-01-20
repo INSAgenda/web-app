@@ -82,8 +82,9 @@ pub async fn api_post_form(body: &str, endpoint: &str) -> Result<(), ApiError> {
     match response.status() {
         200 => Ok(()),
         400 | 500 => {
-            let json = JsFuture::from(response.json()?).await?;
-            Err(ApiError::from(json))
+            let text = JsFuture::from(response.text()?).await?;
+            let text: String = text.as_string().unwrap();
+            Err(ApiError::Known(serde_json::from_str(&text).unwrap()))
         },
         _ => Err(ApiError::Unknown(response.into()))
     }
@@ -109,6 +110,11 @@ pub async fn api_get<T: DeserializeOwned>(endpoint: &str) -> Result<T, ApiError>
         200 => {
             let text = JsFuture::from(response.text()?).await?;
             let text: String = text.as_string().unwrap();
+            if std::any::type_name::<T>() == "()" {
+                if text.is_empty() {
+                    return Ok(serde_json::from_str("null").unwrap());
+                }
+            }
             Ok(serde_json::from_str(&text).unwrap())
         }
         400 | 500 => {
