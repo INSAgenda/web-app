@@ -21,7 +21,7 @@ impl Component for FriendsPage {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let friends = match &*ctx.props().friends {
             Some(friends) => friends,
-            None => return html! {}
+            None => return yew::virtual_dom::VNode::from_html_unchecked(AttrValue::from(include_str!("friends_loading.html"))),
         };
 
         let has_friends = friends.friends_list.len() > 0;
