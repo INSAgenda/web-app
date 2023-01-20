@@ -19,9 +19,9 @@ impl LocalNotificationTracker {
     }
 
     fn save(&self) {
-        /*let local_storage = window().local_storage().unwrap().unwrap();
+        let local_storage = window().local_storage().unwrap().unwrap();
         let announcement_tracker = serde_json::to_string(&self).unwrap();
-        local_storage.set("notification_tracker", &announcement_tracker).unwrap();*/
+        local_storage.set("notification_tracker", &announcement_tracker).unwrap();
     }
 
     pub fn add_announcements(&mut self, announcements: &[AnnouncementDesc]) {
