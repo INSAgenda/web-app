@@ -32,14 +32,13 @@ pub enum AgendaMsg {
 #[derive(Properties, Clone)]
 pub struct AgendaProps {
     pub app_link: Scope<App>,
-    pub user_info: Rc<Option<UserInfo>>,
     pub events: Rc<Vec<RawEvent>>,
     pub popup: Option<(RawEvent, bool, Option<usize>)>,
 }
 
 impl PartialEq for AgendaProps {
     fn eq(&self, other: &Self) -> bool {
-        !COLORS_CHANGED.load(Ordering::Relaxed) && self.user_info == other.user_info && self.events == other.events && self.popup == other.popup
+        !COLORS_CHANGED.load(Ordering::Relaxed) && self.events == other.events && self.popup == other.popup
     }
 }
 

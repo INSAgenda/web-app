@@ -383,20 +383,14 @@ impl Component for App {
     
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
-            Page::Agenda => {
-                let user_info = Rc::clone(&self.user_info);
-                let events = Rc::clone(&self.events);
-                html!(<>
-                    <Agenda events={events} user_info={user_info} app_link={ctx.link().clone()} popup={None} />
-                    <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
-                </>)
-            },
+            Page::Agenda => html!(<>
+                <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} popup={None} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            </>),
             Page::Event { eid } => {
-                let user_info = Rc::clone(&self.user_info);
-                let events = Rc::clone(&self.events);
-                let event = events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
+                let event = self.events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
                 html!(<>
-                    <Agenda events={events} user_info={user_info} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />
+                    <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
