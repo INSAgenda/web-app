@@ -34,6 +34,7 @@ pub struct AgendaProps {
     pub app_link: Scope<App>,
     pub events: Rc<Vec<RawEvent>>,
     pub popup: Option<(RawEvent, bool, Option<usize>)>,
+    pub profile_src: Option<String>,
 }
 
 impl PartialEq for AgendaProps {
@@ -168,6 +169,7 @@ impl Component for Agenda {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
+        let opt_profile_src = ctx.props().profile_src.as_ref().map(|s| s.clone());
         let screen_width = crate::slider::width();
         let mobile = screen_width <= 1000;
         

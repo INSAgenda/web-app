@@ -399,7 +399,7 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
             Page::Agenda => html!(<>
-                <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} popup={None} />
+                <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Event { eid } => {
@@ -415,8 +415,9 @@ impl Component for App {
             </>),
             Page::FriendAgenda { uid } => {
                 let events = self.friends_events.get_events(*uid, ctx.link().clone()).unwrap_or(Rc::new(Vec::new()));
+                let profile_src = format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", uid);
                 html!(<>
-                    <Agenda events={events} app_link={ctx.link().clone()} popup={None} />
+                    <Agenda events={events} app_link={ctx.link().clone()} profile_src={profile_src} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
