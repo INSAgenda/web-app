@@ -21,3 +21,7 @@ pub async fn accept_friend(uid: i64) -> Result<(), ApiError> {
 pub async fn decline_friend(uid: i64) -> Result<(), ApiError> {
     api_post_form(&format!("uid={uid}"), "friends/decline").await
 }
+
+pub async fn remove_friend(uid: i64) -> Result<(), ApiError> {
+    api_post_form(&format!("uid={uid}"), "friends/remove").await
+}

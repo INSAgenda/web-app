@@ -20,6 +20,7 @@ pub enum FriendsMsg {
     RequestError(String),
     Accept(MouseEvent),
     Decline(MouseEvent),
+    Remove,
 }
 
 impl Component for FriendsPage {
@@ -101,7 +102,6 @@ impl Component for FriendsPage {
                 if parent.tag_name() == "BUTTON" {
                     parent = parent.parent_element().unwrap();
                 }
-                log!("{:?}", parent);
                 let uid: i64 = parent.get_attribute("data-uid").unwrap().parse().unwrap();
 
                 let app_link2 = ctx.props().app_link.clone();
@@ -118,6 +118,35 @@ impl Component for FriendsPage {
 
                 false
             },
+            FriendsMsg::Remove => {
+                let el = window().doc().get_element_by_id("friend-remove-input").unwrap();
+                let input = el.dyn_into::<web_sys::HtmlSelectElement>().unwrap();
+                let email = input.value();
+                let uid = match ctx.props().friends.as_ref() {
+                    Some(friends) => friends.friends_list.iter().find(|f| f.0.email == email).map(|f| f.0.uid),
+                    None => None,
+                };
+                let uid = match uid {
+                    Some(uid) => uid,
+                    None => {
+                        alert(format!("uid to remove is not found for email {email}"));
+                        return false;
+                    }
+                };
+
+                let app_link2 = ctx.props().app_link.clone();
+                spawn_local(async move {
+                    match remove_friend(uid).await {
+                        Ok(()) => {
+                            let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            app_link2.send_message(AppMsg::UpdateFriends(new_friends));
+                        }
+                        Err(error) => alert(error.to_string()),
+                    }
+                });
+                
+                false
+            }
         }
     }
 
@@ -149,8 +178,9 @@ impl Component for FriendsPage {
         let onclick_request = ctx.link().callback(|_| FriendsMsg::Request);
         let request_error_opt = self.request_error.as_ref();
 
-        let del_name_iter = names.iter().rev();
-        let del_value_iter = names.iter().rev().map(|name| name.replace(" ", "+"));
+        let rem_name_iter = names.iter().rev();
+        let rem_value_iter = names.iter().rev().map(|name| name.replace(" ", "+"));
+        let onclick_remove = ctx.link().callback(|_| FriendsMsg::Remove);
 
         template_html!(
             "src/friends/friends.html",

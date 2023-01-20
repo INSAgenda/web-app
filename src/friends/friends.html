@@ -52,11 +52,11 @@
     </section>
     <section present-if={{has_friends}}>
         <h3>Retirer un ami&nbsp;:</h3>
-        <select name="friend-select" class="friend-input">
+        <select name="friend-select" class="friend-input" id="friend-remove-input">
             <option disabled selected>Sélectionnez un ami</option>
-            <option iter value={{del_value_iter}}>{{del_name_iter}}</option>
+            <option iter value={{rem_value_iter}}>{{rem_name_iter}}</option>
         </select>
         <div class="friends-select-arrow"><div></div></div>
-        <button class="primary-button">Retirer</button>
+        <button class="primary-button" onclick={{onclick_remove}}>Retirer</button>
     </section>
 </main>
