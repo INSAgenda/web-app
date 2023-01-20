@@ -230,11 +230,12 @@ impl Component for App {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             AppMsg::UpdateFriends(friends) => {
+                friends.save();
                 self.friends = Rc::new(Some(friends));
                 true
             },
             AppMsg::AnnouncementsSuccess(announcements) => {
-                self.announcements = Rc::new(announcements);
+                self.announcements = Rc::new(announcements); // TODO notifications
                 false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
             },
             AppMsg::ScheduleSuccess(events) => {

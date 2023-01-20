@@ -15,7 +15,8 @@ impl PartialEq for FriendsProps {
 }
 
 pub enum FriendsMsg {
-    RequestFriend,
+    Request,
+    RequestSuccess,
     RequestError(String),
 }
 
@@ -31,7 +32,7 @@ impl Component for FriendsPage {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            FriendsMsg::RequestFriend => {
+            FriendsMsg::Request => {
                 let el = window().doc().get_element_by_id("friend-request-input").unwrap();
                 let input = el.dyn_into::<web_sys::HtmlInputElement>().unwrap();
                 let mut email = input.value();
@@ -49,6 +50,7 @@ impl Component for FriendsPage {
                         Ok(()) => {
                             input.set_value("");
                             let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            link2.send_message(FriendsMsg::RequestSuccess);
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
                         Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
@@ -62,6 +64,10 @@ impl Component for FriendsPage {
             FriendsMsg::RequestError(err) => {
                 self.request_error = Some(err);
                 true
+            }
+            FriendsMsg::RequestSuccess => {
+                self.request_error = None;
+                false // no need because it will be rerendered after AppMsg::UpdateFriends
             }
         }
     }
@@ -90,7 +96,7 @@ impl Component for FriendsPage {
         let out_alt_iter = out_names.iter().map(|name| format!("Avatar of {name}"));
         let out_name_iter = out_names.iter();
 
-        let onclick_request = ctx.link().callback(|_| FriendsMsg::RequestFriend);
+        let onclick_request = ctx.link().callback(|_| FriendsMsg::Request);
         let request_error_opt = self.request_error.as_ref();
 
         let del_name_iter = names.iter().rev();
