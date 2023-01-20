@@ -64,7 +64,7 @@
     color: var(--border-color);
 }
 
-.friends-deny-button, .friends-accept-button {
+.friends-decline-button, .friends-accept-button {
     all: unset;
     cursor: pointer;
     width: 1.7rem;
@@ -73,7 +73,7 @@
     border-radius: 0.85rem;
 }
 
-.friends-deny-button>img, .friends-accept-button>img {
+.friends-decline-button>img, .friends-accept-button>img {
     width: 100%;
     aspect-ratio: 1 / 1;
 }
@@ -87,10 +87,10 @@
     padding: 10%;
 }
 
-.friends-deny-button {
+.friends-decline-button {
     border: 1px solid #f44336;
 }
-.friends-deny-button>img {
+.friends-decline-button>img {
     width: 60%;
     padding: 20%;
 }

@@ -25,9 +25,9 @@
                     <img src={{in_picture_iter}} alt={{in_alt_iter}} />
                     <div>{{in_name_iter}}</div>
                 </div>
-                <div>
-                    <button class="friends-deny-button"><img src="/agenda/images/deny.svg" alt="Refuser"/></button>
-                    <button class="friends-accept-button"><img src="/agenda/images/accept.svg" alt="Accepter"/></button>
+                <div data-uid={{in_uid_iter}}>
+                    <button class="friends-decline-button" onclick={{onclick_decline}}><img src="/agenda/images/decline.svg" alt="Décliner"/></button>
+                    <button class="friends-accept-button" onclick={{onclick_accept}}><img src="/agenda/images/accept.svg" alt="Accepter"/></button>
                 </div>
             </div>
         </div>

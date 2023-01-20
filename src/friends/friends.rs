@@ -18,6 +18,8 @@ pub enum FriendsMsg {
     Request,
     RequestSuccess,
     RequestError(String),
+    Accept(MouseEvent),
+    Decline(MouseEvent),
 }
 
 impl Component for FriendsPage {
@@ -69,6 +71,53 @@ impl Component for FriendsPage {
                 self.request_error = None;
                 false // no need because it will be rerendered after AppMsg::UpdateFriends
             }
+            FriendsMsg::Decline(event) => {
+                let target = event.target().unwrap();
+                let node = target.dyn_into::<web_sys::Node>().unwrap();
+                let mut parent = node.parent_element().unwrap();
+                if parent.tag_name() == "BUTTON" {
+                    parent = parent.parent_element().unwrap();
+                }                
+                let uid: i64 = parent.get_attribute("data-uid").unwrap().parse().unwrap();
+
+                let app_link2 = ctx.props().app_link.clone();
+                spawn_local(async move {
+                    match decline_friend(uid).await {
+                        Ok(()) => {
+                            let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            app_link2.send_message(AppMsg::UpdateFriends(new_friends));
+                        }
+                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
+                        Err(error) => alert(error.to_string()),
+                    }
+                });
+
+                false
+            },
+            FriendsMsg::Accept(event) => {
+                let target = event.target().unwrap();
+                let node = target.dyn_into::<web_sys::Node>().unwrap();
+                let mut parent = node.parent_element().unwrap();
+                if parent.tag_name() == "BUTTON" {
+                    parent = parent.parent_element().unwrap();
+                }
+                log!("{:?}", parent);
+                let uid: i64 = parent.get_attribute("data-uid").unwrap().parse().unwrap();
+
+                let app_link2 = ctx.props().app_link.clone();
+                spawn_local(async move {
+                    match accept_friend(uid).await {
+                        Ok(()) => {
+                            let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            app_link2.send_message(AppMsg::UpdateFriends(new_friends));
+                        }
+                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
+                        Err(error) => alert(error.to_string()),
+                    }
+                });
+
+                false
+            },
         }
     }
 
@@ -85,10 +134,11 @@ impl Component for FriendsPage {
         let name_iter = names.iter();
 
         let has_incoming = friends.friend_requests_incoming.len() > 0;
-        let in_names = friends.friend_requests_incoming.iter().map(|friend| &friend.from.0.email).collect::<Vec<_>>();
+        let in_names = friends.friend_requests_incoming.iter().map(|req| &req.from.0.email).collect::<Vec<_>>();
         let in_picture_iter = in_names.iter().map(|name| format!("https://api.dicebear.com/5.x/micah/svg?seed={name}", name = name.replace(" ", "+")));
         let in_alt_iter = in_names.iter().map(|name| format!("Avatar of {name}"));
         let in_name_iter = in_names.iter();
+        let in_uid_iter = friends.friend_requests_incoming.iter().map(|req| req.from.0.uid.to_string());
 
         let has_outgoing = friends.friend_requests_outgoing.len() > 0;
         let out_names = friends.friend_requests_outgoing.iter().map(|friend| &friend.to.0.email).collect::<Vec<_>>();
@@ -102,6 +152,11 @@ impl Component for FriendsPage {
         let del_name_iter = names.iter().rev();
         let del_value_iter = names.iter().rev().map(|name| name.replace(" ", "+"));
 
-        template_html!("src/friends/friends.html", ...)
+        template_html!(
+            "src/friends/friends.html",
+            onclick_decline = { ctx.link().callback(|id| FriendsMsg::Decline(id)) },
+            onclick_accept = { ctx.link().callback(|id| FriendsMsg::Accept(id)) },
+            ...
+        )
     }
 }
