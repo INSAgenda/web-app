@@ -17,26 +17,13 @@ impl std::fmt::Display for KnownApiError {
         let KnownApiError { kind, messages, message_en, message_fr, .. } = self;
         if let Some(messages) = messages {
             let msg = messages.get(SETTINGS.locale()).unwrap_or(&kind);
-            write!(f, "{msg} of type: {kind}")    
+            write!(f, "{msg} ({kind})")    
         } else if let (Some(msg_fr), Some(msg_en)) = (message_fr.as_ref(), message_en.as_ref()) {
             let msg = if SETTINGS.locale() == "fr" { msg_fr } else { msg_en };
-            write!(f, "{msg} of type: {kind}")    
+            write!(f, "{msg} ({kind})")    
         } else {
             write!(f, "{kind}")
         }
-    }
-}
-
-impl KnownApiError {
-    fn to_string_en(&self) -> String {
-        let KnownApiError { kind, messages, message_en, ..} = self;
-        if let Some(msg) = message_en {
-            return format!("{msg} of type: {kind}")
-        } else if let Some(messages) = messages {
-            let msg = messages.get("en").unwrap_or(&kind);
-            return format!("{msg} of type: {kind}")
-        }
-        format!("{kind}")
     }
 }
 
@@ -51,15 +38,6 @@ impl std::fmt::Display for ApiError {
         match self {
             ApiError::Known(e) => e.fmt(f),
             ApiError::Unknown(e) => write!(f, "{:?}", e),
-        }
-    }
-}
-
-impl ApiError {
-    fn to_string_en(&self) -> String {
-        match self {
-            ApiError::Known(e) => e.to_string_en(),
-            ApiError::Unknown(e) => format!("{:?}", e),
         }
     }
 }
