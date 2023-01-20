@@ -54,7 +54,7 @@ impl LocalNotificationTracker {
         self.notifications.iter().filter(|(_,seen, _)| *seen).map(|(_,_,source)| source)
     }
 
-    pub fn mark_seen(&mut self) {
+    pub fn mark_all_as_read(&mut self) {
         self.notifications.iter_mut().for_each(|(_,seen, _)| *seen = true);
         self.save()
     }
@@ -127,11 +127,11 @@ pub struct NotificationsPage;
 
 #[derive(Clone, Properties)]
 pub struct NotificationsProps {
-    pub notifications: Rc<LocalNotificationTracker>,
+    pub notifications: Rc<RefCell<LocalNotificationTracker>>,
 }
 
 impl PartialEq for NotificationsProps {
-    fn eq(&self, other: &Self) -> bool { self.notifications.notifications.len() == other.notifications.notifications.len() }
+    fn eq(&self, other: &Self) -> bool { self.notifications.borrow().notifications.len() == other.notifications.borrow().notifications.len() }
 }
 
 pub enum NotificationsMsg {
@@ -148,13 +148,13 @@ impl Component for NotificationsPage {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let now = js_sys::Date::now() as u64;
 
-        let unseen = ctx.props().notifications.unseen().map(|source| source.into_notification(now)).collect::<Vec<_>>();
+        let unseen = ctx.props().notifications.borrow().unseen().map(|source| source.into_notification(now)).collect::<Vec<_>>();
         let unseen_text_iter = unseen.iter().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
         let unseen_src_iter = unseen.iter().map(|n| n.image_src.clone());
         let unseen_alt_iter = unseen.iter().map(|n| n.image_alt.clone());
         let unseen_button_iter = unseen.iter().map(|n| n.button_target.as_ref().map(|(uri,text)| html!(<a class="friends-agenda-button" href={uri.to_owned()}>{text}</a>)));
 
-        let seen = ctx.props().notifications.seen().map(|source| source.into_notification(now)).collect::<Vec<_>>();
+        let seen = ctx.props().notifications.borrow().seen().map(|source| source.into_notification(now)).collect::<Vec<_>>();
         let text_iter = seen.iter().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
         let src_iter = seen.iter().map(|n| n.image_src.clone());
         let alt_iter = seen.iter().map(|n| n.image_alt.clone());

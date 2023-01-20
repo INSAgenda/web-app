@@ -90,7 +90,7 @@ pub struct App {
     user_info: Rc<Option<UserInfo>>,
     events: Rc<Vec<RawEvent>>,
     announcements: Rc<Vec<AnnouncementDesc>>,
-    notifications: Rc<LocalNotificationTracker>,
+    notifications: Rc<RefCell<LocalNotificationTracker>>,
     groups: Rc<Vec<GroupDesc>>,
     friends: Rc<Option<FriendsLists>>,
     friends_events: FriendsEvents,
@@ -223,7 +223,7 @@ impl Component for App {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
             announcements: Rc::new(announcements),
-            notifications: Rc::new(notifications),
+            notifications: Rc::new(RefCell::new(notifications)),
             groups: Rc::new(groups),
             friends: Rc::new(friends),
             friends_events,
@@ -334,6 +334,11 @@ impl Component for App {
                     Page::Notifications => self.tabbar_bait_points.2 = false,
                     Page::Settings => self.tabbar_bait_points.3 = false,
                     _ => (),
+                }
+
+                // Mark notifications as read upon leaving the notifications page
+                if let Page::Notifications = self.page {
+                    self.notifications.borrow_mut().mark_all_as_read();
                 }
 
                 let history = window().history().expect("Failed to access history");
