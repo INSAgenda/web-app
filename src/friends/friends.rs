@@ -23,6 +23,7 @@ pub enum FriendsMsg {
     Cancel(MouseEvent),
     Agenda(MouseEvent),
     Remove,
+    Noop,
 }
 
 impl Component for FriendsPage {
@@ -174,6 +175,7 @@ impl Component for FriendsPage {
                 
                 false
             }
+            FriendsMsg::Noop => false,
         }
     }
 
@@ -205,6 +207,7 @@ impl Component for FriendsPage {
         let out_uid_iter = friends.outgoing.iter().map(|req| req.to.0.uid.to_string());
 
         let onclick_request = ctx.link().callback(|_| FriendsMsg::Request);
+        let onkeyup_request = ctx.link().callback(|e: KeyboardEvent| { if e.key() == "Enter" { FriendsMsg::Request } else { FriendsMsg::Noop } });
         let request_error_opt = self.request_error.as_ref();
 
         let rem_name_iter = names.iter().rev();
