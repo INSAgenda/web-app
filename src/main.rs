@@ -219,6 +219,14 @@ impl Component for App {
         notifications.add_announcements(&announcements);
         notifications.add_surveys(&surveys);
 
+        // Set TabBar bait points
+        let tabbar_bait_points = (
+            false,
+            friends.as_ref().map(|f: &FriendLists| !f.incoming.is_empty()).unwrap_or(false),
+            notifications.has_unread(),
+            false
+        );
+
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
@@ -229,7 +237,7 @@ impl Component for App {
             friends_events,
             surveys,
             survey_answers,
-            tabbar_bait_points: (false, false, false, false), // TODO: set bait points
+            tabbar_bait_points,
             page,
             event_closing: false,
             event_popup_size: None,
