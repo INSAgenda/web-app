@@ -72,7 +72,7 @@
     #render {
         position: relative;
         left: 4rem;
-        width: calc(100% - 4rem);
+        width: calc(100% - 3rem); /* the 3 comes from the padding */
         box-sizing: border-box;
     }
 
