@@ -88,7 +88,7 @@
 }
 
 .friends-decline-button {
-    border: 1px solid #f44336;
+    border: 1px solid var(--error-red);
 }
 .friends-decline-button>img {
     width: 60%;
@@ -126,7 +126,7 @@
 }
 
 .friend-request-error {
-    color: #f44336;
+    color: var(--error-red);
     font-size: .9rem;
     margin-top: .2rem;
 }
