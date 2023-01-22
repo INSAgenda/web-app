@@ -55,7 +55,13 @@ impl Component for FriendsPage {
                     match request_friend(email).await {
                         Ok(()) => {
                             input.set_value("");
-                            let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            let new_friends = match get_friends().await {
+                                Ok(friends) => friends,
+                                Err(error) => {
+                                    app_link2.send_message(AppMsg::ApiFailure(error));
+                                    return;
+                                },
+                            };
                             link2.send_message(FriendsMsg::RequestSuccess);
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
@@ -88,7 +94,13 @@ impl Component for FriendsPage {
                 spawn_local(async move {
                     match decline_friend(uid).await {
                         Ok(()) => {
-                            let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            let new_friends = match get_friends().await {
+                                Ok(friends) => friends,
+                                Err(error) => {
+                                    app_link2.send_message(AppMsg::ApiFailure(error));
+                                    return;
+                                },
+                            };
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
                         Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
@@ -111,7 +123,13 @@ impl Component for FriendsPage {
                 spawn_local(async move {
                     match accept_friend(uid).await {
                         Ok(()) => {
-                            let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            let new_friends = match get_friends().await {
+                                Ok(friends) => friends,
+                                Err(error) => {
+                                    app_link2.send_message(AppMsg::ApiFailure(error));
+                                    return;
+                                },
+                            };
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
                         Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
@@ -130,7 +148,13 @@ impl Component for FriendsPage {
                 spawn_local(async move {
                     match remove_friend(uid).await {
                         Ok(()) => {
-                            let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            let new_friends = match get_friends().await {
+                                Ok(friends) => friends,
+                                Err(error) => {
+                                    app_link2.send_message(AppMsg::ApiFailure(error));
+                                    return;
+                                },
+                            };
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
                         Err(error) => alert(error.to_string()),
@@ -166,7 +190,13 @@ impl Component for FriendsPage {
                 spawn_local(async move {
                     match remove_friend(uid).await {
                         Ok(()) => {
-                            let new_friends = get_friends().await.unwrap(); // TODO unwrap
+                            let new_friends = match get_friends().await {
+                                Ok(friends) => friends,
+                                Err(error) => {
+                                    app_link2.send_message(AppMsg::ApiFailure(error));
+                                    return;
+                                },
+                            };
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
                         Err(error) => alert(error.to_string()),
