@@ -148,7 +148,7 @@ impl Component for FriendsPage {
             FriendsMsg::Remove => {
                 let el = window().doc().get_element_by_id("friend-remove-input").unwrap();
                 let input = el.dyn_into::<web_sys::HtmlSelectElement>().unwrap();
-                let email = input.value();
+                let email = format!("{}@insa-rouen.fr", input.value());
                 let uid = match ctx.props().friends.as_ref() {
                     Some(friends) => friends.friends.iter().find(|f| f.0.email == email).map(|f| f.0.uid),
                     None => None,
