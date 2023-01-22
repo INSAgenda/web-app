@@ -249,15 +249,16 @@ impl Component for App {
                     }
                 }
 
-                friends.save();
                 self.friends = Rc::new(Some(friends));
-                true
+                
+                matches!(self.page, Page::Friends /* TODO: in a future PR, friends will be used on Page::Event */) || self.tabbar_bait_points.1
             },
             AppMsg::FriendsEventsSuccess { uid, events } => {
                 self.friends_events.insert(uid, events);
                 matches!(self.page, Page::FriendAgenda { .. } )
             },
             AppMsg::AnnouncementsSuccess(announcements) => {
+                // Add to notifications
                 let mut notifications = self.notifications.borrow_mut();
                 notifications.add_announcements(&announcements);
                 self.tabbar_bait_points.2 = notifications.has_unread();
@@ -266,20 +267,26 @@ impl Component for App {
                 
                 matches!(self.page, Page::Notifications) || self.tabbar_bait_points.2
             },
+            AppMsg::SurveysSuccess(surveys, survey_answers) => {
+                // Add to notifications
+                let mut notifications = self.notifications.borrow_mut();
+                notifications.add_surveys(&surveys);
+                self.tabbar_bait_points.2 = notifications.has_unread();
+
+                self.surveys = surveys;
+                self.survey_answers = survey_answers;
+
+                // Automatically open survey if one is available and required
+                let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+                if let Some(survey) = self.surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now && !self.survey_answers.iter().any(|a| a.id == s.id)) {
+                    ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey.id.clone() }));
+                }
+                
+                matches!(self.page, Page::Survey { .. }) || self.tabbar_bait_points.2
+            },
             AppMsg::ScheduleSuccess(events) => {
                 self.events = Rc::new(events);
                 matches!(self.page, Page::Agenda | Page::Event { .. })
-            },
-            AppMsg::SurveysSuccess(surveys, survey_answers) => {
-                self.surveys = surveys;
-                self.survey_answers = survey_answers;
-                if !self.surveys.is_empty() {
-                    // TODO sort surveys by required
-                    if !self.survey_answers.iter().any(|a| a.id == self.surveys[0].id) {
-                        ctx.link().send_message(Msg::SetPage(Page::Survey { sid: self.surveys[0].id.clone() }));
-                    }
-                }
-                false
             },
             AppMsg::SaveSurveyAnswer(answers) => {
                 self.survey_answers.retain(|s| s.id != answers.id);
