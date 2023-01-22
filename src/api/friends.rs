@@ -2,7 +2,7 @@ use js_sys::encode_uri_component;
 
 use super::*;
 
-pub async fn get_friends() -> Result<FriendsLists, ApiError> {
+pub async fn get_friends() -> Result<FriendLists, ApiError> {
     api_get("friends/").await
 }
 

@@ -70,12 +70,12 @@ pub enum Msg {
     SilentSetPage(Page),
     FetchColors(HashMap<String, String>),
     SaveSurveyAnswer(SurveyAnswers),
-    UpdateFriends(FriendsLists),
+    UpdateFriends(FriendLists),
 
     // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
     GroupsSuccess(Vec<GroupDesc>),
-    FriendsSuccess(FriendsLists),
+    FriendsSuccess(FriendLists),
     FriendsEventsSuccess{ uid: i64, events: Vec<RawEvent> },
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
@@ -92,7 +92,7 @@ pub struct App {
     announcements: Rc<Vec<AnnouncementDesc>>,
     notifications: Rc<RefCell<LocalNotificationTracker>>,
     groups: Rc<Vec<GroupDesc>>,
-    friends: Rc<Option<FriendsLists>>,
+    friends: Rc<Option<FriendLists>>,
     friends_events: FriendsEvents,
     surveys: Vec<Survey>,
     survey_answers: Vec<SurveyAnswers>,
@@ -242,8 +242,8 @@ impl Component for App {
             AppMsg::UpdateFriends(friends) => {
                 // Detect changes to add bait point
                 if let Some(old_friends) = self.friends.as_ref() {
-                    for new_incoming in &friends.friend_requests_incoming {
-                        if !old_friends.friend_requests_incoming.contains(new_incoming) {
+                    for new_incoming in &friends.incoming {
+                        if !old_friends.incoming.contains(new_incoming) {
                             self.tabbar_bait_points.1 = true;
                         }
                     }

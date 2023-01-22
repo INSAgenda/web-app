@@ -160,7 +160,7 @@ impl CachedData for SurveyResponse {
     }
 }
 
-impl CachedData for FriendsLists {
+impl CachedData for FriendLists {
     fn storage_key() ->  &'static str { "friends" }
     fn endpoint() ->  &'static str { "/api/friends/" }
     fn cache_duration() -> u64 { 10 }
