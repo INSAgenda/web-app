@@ -55,7 +55,7 @@ pub enum Page {
     ChangeGroup,
     Agenda,
     Friends,
-    FriendAgenda { uid: i64 },
+    FriendAgenda { pseudo: String },
     Notifications,
     EmailVerification { feature: &'static str },
     Event { eid: u64 /* For now this is the start timestamp */ },
@@ -128,7 +128,7 @@ impl Component for App {
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
                 }
                 Some(survey) if survey.starts_with("survey/") => link2.send_message(Msg::SilentSetPage(Page::Survey { sid: survey[7..].to_string() })),
-                Some(agenda) if agenda.starts_with("friend-agenda/") => link2.send_message(Msg::SilentSetPage(Page::FriendAgenda { uid: agenda[14..].parse().unwrap_or_default() })), // TODO unwrap
+                Some(agenda) if agenda.starts_with("friend-agenda/") => link2.send_message(Msg::SilentSetPage(Page::FriendAgenda { pseudo: agenda[14..].to_string() })),
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
             }
@@ -174,10 +174,7 @@ impl Component for App {
                 Page::Agenda
             }
             survey if survey.starts_with("/survey/") => Page::Survey { sid: survey[8..].to_string() },
-            friend_agenda if friend_agenda.starts_with("/friend-agenda/") => {
-                let uid = friend_agenda[15..].parse().unwrap_or_default(); // TODO unwrap
-                Page::FriendAgenda { uid }
-            }
+            friend_agenda if friend_agenda.starts_with("/friend-agenda/") => Page::FriendAgenda { pseudo: friend_agenda[15..].to_string() },
             "/agenda" => match window().location().hash() { // For compatibility with old links
                 Ok(hash) if hash == "#settings" => Page::Settings,
                 Ok(hash) if hash == "#change-password" => Page::ChangePassword,
@@ -413,7 +410,7 @@ impl Component for App {
                     Page::EmailVerification { .. } => (format!("email-verification"), "Email verification"),
                     Page::Agenda => (String::from("agenda"), "Agenda"),
                     Page::Friends => (String::from("friends"), "Friends"),
-                    Page::FriendAgenda { uid } => (format!("friend-agenda/{uid}"), "Friend agenda"),
+                    Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
                     Page::Notifications => (String::from("notifications"), "Notifications"),
                     Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
                     Page::Event { eid } => (format!("event/{eid}"), "Event"),
@@ -455,8 +452,13 @@ impl Component for App {
                 <FriendsPage friends={Rc::clone(&self.friends)} app_link={ctx.link().clone()} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
-            Page::FriendAgenda { uid } => {
-                let events = self.friends_events.get_events(*uid, ctx.link().clone()).unwrap_or(Rc::new(Vec::new()));
+            Page::FriendAgenda { pseudo } => {
+                let email = format!("{pseudo}@insa-rouen.fr");
+                let uid = match self.friends.deref().as_ref().map(|f| f.friends.iter().find(|f| f.0.email == *email)).flatten() {
+                    Some(f) => f.0.uid,
+                    None => return html!("404 friend not found"), // TODO 404 page
+                };
+                let events = self.friends_events.get_events(uid, ctx.link().clone()).unwrap_or(Rc::new(Vec::new()));
                 let profile_src = format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", uid);
                 html!(<>
                     <Agenda events={events} app_link={ctx.link().clone()} profile_src={profile_src} />

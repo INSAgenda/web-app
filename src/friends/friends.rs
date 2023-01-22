@@ -166,8 +166,8 @@ impl Component for FriendsPage {
             FriendsMsg::Agenda(event) => {
                 let target = event.target().unwrap();
                 let el = target.dyn_into::<web_sys::Element>().unwrap();
-                let uid: i64 = el.get_attribute("data-uid").unwrap().parse().unwrap();
-                ctx.props().app_link.send_message(AppMsg::SetPage(Page::FriendAgenda { uid }));
+                let pseudo = el.get_attribute("data-pseudo").unwrap();
+                ctx.props().app_link.send_message(AppMsg::SetPage(Page::FriendAgenda { pseudo }));
                 false
             },
             FriendsMsg::Remove => {
@@ -220,7 +220,7 @@ impl Component for FriendsPage {
         let picture_iter = friends.friends.iter().map(|friend| friend.0.profile_url());
         let alt_iter = names.iter().map(|name| format!("Avatar of {name}"));
         let name_iter = names.iter();
-        let friend_uid_iter = friends.friends.iter().map(|friend| friend.0.uid.to_string());
+        let friend_pseudo_iter = friends.friends.iter().map(|friend| friend.0.email.trim_end_matches("@insa-rouen.fr").to_string());
 
         let has_incoming = friends.incoming.len() > 0;
         let in_names = friends.incoming.iter().map(|req| req.from.0.email.trim_end_matches("@insa-rouen.fr")).collect::<Vec<_>>();
