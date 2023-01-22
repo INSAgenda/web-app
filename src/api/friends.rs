@@ -37,15 +37,26 @@ impl FriendsEvents {
         let local_storage = window().local_storage().unwrap().unwrap();
     
         let Ok(Some(cached_str)) = local_storage.get(&format!("cached_friends_events")) else { return Self::default() };
-        //let Ok(cached) = serde_json::from_str::<Self>(&cached_str) else { return Self::default() };
+        let Ok(cached) = serde_json::from_str::<HashMap<i64, (u64, Vec<RawEvent>)>>(&cached_str) else { return Self::default() };
+
+        let mut event_map = HashMap::new();
+        for (uid, (time, events)) in cached {
+            event_map.insert(uid, (time, Rc::new(events)));
+        }
     
-        Self::default()
+        Self { events: event_map }
     }
 
     fn save(&self) {
-        // TODO garbage collection
-        //let local_storage = window().local_storage().unwrap().unwrap();
-        //local_storage.set(&format!("cached_friends_events"), &serde_json::to_string(self).unwrap()).unwrap();    
+        // Sort by time, then take the 2 most recent
+        let mut records = self.events.iter().map(|(uid, (time, events))| (*uid, (*time, events.as_ref().to_owned()))).collect::<Vec<(i64, (u64, Vec<RawEvent>))>>();
+        records.sort_by_key(|(_, (time, _))| u64::MAX-time);
+        records.truncate(2);
+        
+        // Save to local storage
+        let local_storage = window().local_storage().unwrap().unwrap();
+        let events = records.into_iter().map(|(id, (time, events))| (id, (time, events))).collect::<HashMap<i64, (u64, Vec<RawEvent>)>>();
+        local_storage.set(&format!("cached_friends_events"), &serde_json::to_string(&events).unwrap()).unwrap();
     }
 
     pub fn update_friend(uid: i64, app_link: AppLink) {
@@ -65,10 +76,19 @@ impl FriendsEvents {
     }
 
     pub fn get_events(&self, uid: i64, app_link: AppLink) -> Option<Rc<Vec<RawEvent>>> {
-        let events = self.events.get(&uid).map(|(_, events)| Rc::clone(&events));
-        if events.is_none() {
-            Self::update_friend(uid, app_link);
+        let res = self.events.get(&uid).map(|(last_updated, events)| (last_updated, Rc::clone(&events)));
+        match res {
+            Some((last_updated, events)) => {
+                let now = (js_sys::Date::new_0().get_time() / 1000.0) as u64;
+                if now - last_updated > 5*3600 {
+                    Self::update_friend(uid, app_link);
+                }
+                Some(events)
+            },
+            None => {
+                Self::update_friend(uid, app_link);
+                None
+            }
         }
-        events
     }
 }
