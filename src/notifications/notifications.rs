@@ -164,6 +164,8 @@ impl Component for NotificationsPage {
         let alt_iter = seen.iter().map(|n| n.image_alt.clone());
         let button_iter = seen.iter().map(|n| n.button_target.as_ref().map(|(uri,text)| html!(<a class="friends-agenda-button" href={uri.to_owned()}>{text}</a>)));
 
+        let notifications_empty = unseen.is_empty() && seen.is_empty();
+
         template_html!("src/notifications/notifications.html", ...)
     }
 }

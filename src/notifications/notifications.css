@@ -45,3 +45,7 @@
     display: inline-block;
     margin-top: .2rem;
 }
+
+#notifications-empty-message {
+    margin: 1rem;
+}
