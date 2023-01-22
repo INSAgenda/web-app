@@ -58,6 +58,7 @@
     display: flex;
     justify-content: center;
     position: relative;
+    cursor: pointer;
 }
 
 #tabbar>button>img {
