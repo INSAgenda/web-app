@@ -14,7 +14,7 @@
     height: 4rem;
 }
 
-.tabbar-selected>img:nth-child(2) {
+.tabbar-selected>.deselected-img {
     display: none;
 }
 
@@ -43,7 +43,7 @@
     left: calc(50% + 1rem - .05rem);
 }
 
-.tabbar-not-selected>img:first-child {
+.tabbar-not-selected>.selected-img {
     display: none;
 }
 
