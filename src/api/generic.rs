@@ -67,20 +67,15 @@ async fn load<T: CachedData>() -> Result<T, ApiError> {
 
     let resp = JsFuture::from(window().fetch_with_request(&request)).await?;
     let resp: web_sys::Response = resp.dyn_into()?;
-    let json = JsFuture::from(resp.json()?).await?;
 
     if resp.status() == 400 || resp.status() == 500 {
-        let error: KnownApiError = match serde_wasm_bindgen::from_value(json) {
-            Ok(error) => error,
-            Err(e) => return Err(ApiError::Unknown(JsValue::from(format!("Invalid JSON in error: {e:?}")))),
-        };
-        return Err(error.into());
+        let text = JsFuture::from(resp.text()?).await?;
+        let error: KnownApiError = serde_json::from_str(&text.as_string().unwrap()).map_err(|e| ApiError::Unknown(JsValue::from_str(&e.to_string())))?;
+        return Err(ApiError::Known(error));
     }
 
-    let value: T = match serde_wasm_bindgen::from_value(json) {
-        Ok(value) => value,
-        Err(e) => return Err(ApiError::Unknown(JsValue::from(format!("Invalid JSON: {e:?}")))),
-    };
+    let text = JsFuture::from(resp.text()?).await?;
+    let value: T = serde_json::from_str(&text.as_string().unwrap()).map_err(|e| ApiError::Unknown(JsValue::from_str(&e.to_string())))?;
     value.save();
 
     Ok(value)
@@ -160,6 +155,18 @@ impl CachedData for SurveyResponse {
                 val.surveys.sort_by_key(|e| e.start_ts);
                 app_link.send_message(AppMsg::SurveysSuccess(val.surveys, val.my_answers));
             },
+            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
+        }
+    }
+}
+
+impl CachedData for FriendLists {
+    fn storage_key() ->  &'static str { "friends" }
+    fn endpoint() ->  &'static str { "/api/friends/" }
+    fn cache_duration() -> u64 { 10 }
+    fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
+        match result {
+            Ok(val) => app_link.send_message(AppMsg::FriendsSuccess(val)),
             Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
         }
     }

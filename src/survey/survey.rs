@@ -1,31 +1,5 @@
 use crate::prelude::*;
 
-pub fn surveys_to_announcements(surveys: &[Survey], answers: &[SurveyAnswers]) -> Vec<AnnouncementDesc> {
-    surveys.iter().map(|survey| {
-        let has_answers = answers.iter().any(|a| a.id == survey.id);
-        let cta_message = match has_answers {
-            true => "Changer de réponse",
-            false => "Répondre",
-        };
-        let code = include_str!("survey_announcement.html").replace("{{survey_id}}", &survey.id)
-            .replace("{{survey_title}}", &survey.title)
-            .replace("{{cta_message}}", cta_message);
-        AnnouncementDesc {
-            title: survey.title.clone(),
-            id: format!("auto-survey-{}", survey.id),
-            start_ts: survey.start_ts as u64,
-            end_ts: survey.end_ts as u64,
-            target: Some(survey.target.clone()),
-            max_impressions: None,
-            closable: !survey.required || has_answers,
-            ty: ContentType::Html,
-            content_fr: Some(code.clone()),
-            content_en: Some(code),
-            script: None,
-        }
-    }).collect()
-}
-
 trait HackTraitGetLocalizedText {
     fn get_localized(&self, lang: &str) -> Option<String>;
 }

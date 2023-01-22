@@ -5,8 +5,6 @@
 
 #[path = "alert/alert.rs"]
 mod alert;
-#[path = "announcement/announcement.rs"]
-mod announcement;
 #[path = "event/event.rs"]
 mod event;
 #[path = "settings/settings.rs"]
@@ -29,6 +27,14 @@ mod survey;
 mod checkbox;
 #[path = "sortable/sortable.rs"]
 mod sortable;
+#[path = "tabbar/tabbar.rs"]
+mod tabbar;
+#[path = "friends/friends.rs"]
+mod friends;
+#[path = "notifications/notifications.rs"]
+mod notifications;
+#[path = "email-verification/email_verification.rs"]
+mod email_verification;
 mod util;
 mod slider;
 mod api;
@@ -41,12 +47,17 @@ use slider::width;
 use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
 
 /// The page that is currently displayed.
+#[derive(Clone, PartialEq)]
 pub enum Page {
     Settings,
     ChangePassword,
     ChangeEmail,
     ChangeGroup,
     Agenda,
+    Friends,
+    FriendAgenda { pseudo: String },
+    Notifications,
+    EmailVerification { feature: &'static str },
     Event { eid: u64 /* For now this is the start timestamp */ },
     Survey { sid: String },
 }
@@ -59,10 +70,13 @@ pub enum Msg {
     SilentSetPage(Page),
     FetchColors(HashMap<String, String>),
     SaveSurveyAnswer(SurveyAnswers),
+    UpdateFriends(FriendLists),
 
     // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
     GroupsSuccess(Vec<GroupDesc>),
+    FriendsSuccess(FriendLists),
+    FriendsEventsSuccess{ uid: i64, events: Vec<RawEvent> },
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
     SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
@@ -73,12 +87,16 @@ pub enum Msg {
 /// The main component of the app.
 /// Stores data that is shared between pages, as well as the page that is currently displayed.
 pub struct App {
-    groups: Rc<Vec<GroupDesc>>,
     user_info: Rc<Option<UserInfo>>,
     events: Rc<Vec<RawEvent>>,
     announcements: Rc<Vec<AnnouncementDesc>>,
+    notifications: Rc<RefCell<LocalNotificationTracker>>,
+    groups: Rc<Vec<GroupDesc>>,
+    friends: Rc<Option<FriendLists>>,
+    friends_events: FriendsEvents,
     surveys: Vec<Survey>,
     survey_answers: Vec<SurveyAnswers>,
+    tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
 
     event_closing: bool,
@@ -102,11 +120,15 @@ impl Component for App {
                 Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
                 Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
+                Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
+                Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
+                Some("email-verification") => link2.send_message(Msg::SilentSetPage(Page::EmailVerification { feature: "unknown" })),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].parse().unwrap_or_default();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
                 }
                 Some(survey) if survey.starts_with("survey/") => link2.send_message(Msg::SilentSetPage(Page::Survey { sid: survey[7..].to_string() })),
+                Some(agenda) if agenda.starts_with("friend-agenda/") => link2.send_message(Msg::SilentSetPage(Page::FriendAgenda { pseudo: agenda[14..].to_string() })),
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
             }
@@ -117,14 +139,20 @@ impl Component for App {
         // Update data
         let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let user_info: Option<UserInfo> = CachedData::init(ctx.link().clone());
-        let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let groups: Vec<GroupDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let friends = CachedData::init(ctx.link().clone());
+        let friends_events = FriendsEvents::init();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
-        if window().navigator().on_line() { // temporary
-            announcements.append(&mut surveys_to_announcements(&surveys, &survey_answers));
-        }
+        let announcements = match &user_info {
+            Some(user_info) => {
+                let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
+                announcements.retain(|a| a.target.as_ref().map(|t| user_info.user_groups.matches(t)).unwrap_or(true));
+                announcements
+            }
+            None => Vec::new(),
+        };
 
         // Open corresponding page
         let path = window().location().pathname().unwrap_or_default();
@@ -133,6 +161,9 @@ impl Component for App {
             "/change-password" => Page::ChangePassword,
             "/change-email" => Page::ChangeEmail,
             "/change-group" => Page::ChangeGroup,
+            "/friends" => Page::Friends,
+            "/notifications" => Page::Notifications,
+            "/email-verification" => Page::EmailVerification { feature: "unknown" },
             event if event.starts_with("/event/") => {
                 let eid = event[7..].parse().unwrap_or_default();
                 let link2 = ctx.link().clone();
@@ -143,6 +174,7 @@ impl Component for App {
                 Page::Agenda
             }
             survey if survey.starts_with("/survey/") => Page::Survey { sid: survey[8..].to_string() },
+            friend_agenda if friend_agenda.starts_with("/friend-agenda/") => Page::FriendAgenda { pseudo: friend_agenda[15..].to_string() },
             "/agenda" => match window().location().hash() { // For compatibility with old links
                 Ok(hash) if hash == "#settings" => Page::Settings,
                 Ok(hash) if hash == "#change-password" => Page::ChangePassword,
@@ -179,13 +211,30 @@ impl Component for App {
             }
         }
 
+        // Get notification tracker
+        let mut notifications = LocalNotificationTracker::load();
+        notifications.add_announcements(&announcements);
+        notifications.add_surveys(&surveys);
+
+        // Set TabBar bait points
+        let tabbar_bait_points = (
+            false,
+            friends.as_ref().map(|f: &FriendLists| !f.incoming.is_empty()).unwrap_or(false),
+            notifications.has_unread(),
+            false
+        );
+
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
             announcements: Rc::new(announcements),
+            notifications: Rc::new(RefCell::new(notifications)),
             groups: Rc::new(groups),
+            friends: Rc::new(friends),
+            friends_events,
             surveys,
             survey_answers,
+            tabbar_bait_points,
             page,
             event_closing: false,
             event_popup_size: None,
@@ -195,24 +244,62 @@ impl Component for App {
     /// Most of the messages handled in the function are sent by the data loader to update the data or report an error.
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            AppMsg::AnnouncementsSuccess(announcements) => {
+            AppMsg::UpdateFriends(friends) => {
+                // Detect changes to add bait point
+                if let Some(old_friends) = self.friends.as_ref() {
+                    for new_incoming in &friends.incoming {
+                        if !old_friends.incoming.contains(new_incoming) {
+                            self.tabbar_bait_points.1 = true;
+                        }
+                    }
+                }
+
+                friends.save();
+                self.friends = Rc::new(Some(friends));
+                
+                matches!(self.page, Page::Friends /* TODO: in a future PR, friends will be used on Page::Event */) || self.tabbar_bait_points.1
+            },
+            AppMsg::FriendsEventsSuccess { uid, events } => {
+                self.friends_events.insert(uid, events);
+                matches!(self.page, Page::FriendAgenda { .. } )
+            },
+            AppMsg::AnnouncementsSuccess(mut announcements) => {
+                // Filter announcements
+                if let Some(user_info) = self.user_info.deref().as_ref() {
+                    announcements.retain(|a| a.target.as_ref().map(|t| user_info.user_groups.matches(t)).unwrap_or(true));
+                } else {
+                    return false;
+                }
+
+                // Add to notifications
+                let mut notifications = self.notifications.borrow_mut();
+                notifications.add_announcements(&announcements);
+                self.tabbar_bait_points.2 = notifications.has_unread();
+
                 self.announcements = Rc::new(announcements);
-                false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
+                
+                matches!(self.page, Page::Notifications) || self.tabbar_bait_points.2
+            },
+            AppMsg::SurveysSuccess(surveys, survey_answers) => {
+                // Add to notifications
+                let mut notifications = self.notifications.borrow_mut();
+                notifications.add_surveys(&surveys);
+                self.tabbar_bait_points.2 = notifications.has_unread();
+
+                self.surveys = surveys;
+                self.survey_answers = survey_answers;
+
+                // Automatically open survey if one is available and required
+                let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+                if let Some(survey) = self.surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now && !self.survey_answers.iter().any(|a| a.id == s.id)) {
+                    ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey.id.clone() }));
+                }
+                
+                matches!(self.page, Page::Survey { .. }) || self.tabbar_bait_points.2
             },
             AppMsg::ScheduleSuccess(events) => {
                 self.events = Rc::new(events);
-                true
-            },
-            AppMsg::SurveysSuccess(surveys, survey_answers) => {
-                self.surveys = surveys;
-                self.survey_answers = survey_answers;
-                if !self.surveys.is_empty() {
-                    // TODO sort surveys by required
-                    if !self.survey_answers.iter().any(|a| a.id == self.surveys[0].id) {
-                        ctx.link().send_message(Msg::SetPage(Page::Survey { sid: self.surveys[0].id.clone() }));
-                    }
-                }
-                false
+                matches!(self.page, Page::Agenda | Page::Event { .. })
             },
             AppMsg::SaveSurveyAnswer(answers) => {
                 self.survey_answers.retain(|s| s.id != answers.id);
@@ -256,7 +343,11 @@ impl Component for App {
                 }
 
                 self.groups = Rc::new(groups);
-                false
+                matches!(self.page, Page::ChangeGroup)
+            },
+            Msg::FriendsSuccess(friends) => {
+                self.friends = Rc::new(Some(friends));
+                matches!(self.page, Page::Friends)
             },
             AppMsg::ScheduleFailure(api_error) => {
                 api_error.handle_api_error();
@@ -270,6 +361,26 @@ impl Component for App {
                 false
             },
             Msg::SetPage(page) => {
+                // Remove bait points
+                match page {
+                    Page::Agenda => self.tabbar_bait_points.0 = false,
+                    Page::Friends => self.tabbar_bait_points.1 = false,
+                    Page::Notifications => self.tabbar_bait_points.2 = false,
+                    Page::Settings => self.tabbar_bait_points.3 = false,
+                    _ => (),
+                }
+
+                // Mark notifications as read upon leaving the notifications page
+                if let Page::Notifications = self.page {
+                    self.notifications.borrow_mut().mark_all_as_read();
+                }
+
+                // FIXME TODO
+                // Prevent user to go on an event page from the friend-agenda page as it is not supported
+                if matches!(self.page, Page::FriendAgenda { .. }) && matches!(page, Page::Event { .. }) {
+                    return false;
+                }
+
                 let history = window().history().expect("Failed to access history");
                 let document = window().doc();
                 if let Page::Event { .. } = &page {
@@ -302,7 +413,11 @@ impl Component for App {
                     Page::ChangePassword => (String::from("change-password"), "Change password"),
                     Page::ChangeEmail => (String::from("change-email"), "Change email"),
                     Page::ChangeGroup => (String::from("change-group"), "Change group"),
+                    Page::EmailVerification { .. } => (format!("email-verification"), "Email verification"),
                     Page::Agenda => (String::from("agenda"), "Agenda"),
+                    Page::Friends => (String::from("friends"), "Friends"),
+                    Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
+                    Page::Notifications => (String::from("notifications"), "Notifications"),
                     Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
                     Page::Event { eid } => (format!("event/{eid}"), "Event"),
                 };
@@ -328,41 +443,66 @@ impl Component for App {
     
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
-            Page::Agenda => {
-                let user_info = Rc::clone(&self.user_info);
-                let events = Rc::clone(&self.events);
-                let announcements = Rc::clone(&self.announcements);
-                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={None} />)
-            },
+            Page::Agenda => html!(<>
+                <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            </>),
             Page::Event { eid } => {
-                let user_info = Rc::clone(&self.user_info);
-                let events = Rc::clone(&self.events);
-                let announcements = Rc::clone(&self.announcements);
-                let event = events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
-                html!(<Agenda events={events} user_info={user_info} announcements={announcements} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />)
+                let event = self.events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
+                html!(<>
+                    <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />
+                    <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+                </>)
             },
-            Page::Settings => html!( <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} /> ),
-            Page::ChangePassword => html!(
+            Page::Friends => html!(<>
+                <FriendsPage friends={Rc::clone(&self.friends)} app_link={ctx.link().clone()} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            </>),
+            Page::FriendAgenda { pseudo } => {
+                let email = format!("{pseudo}@insa-rouen.fr");
+                let uid = match self.friends.deref().as_ref().map(|f| f.friends.iter().find(|f| f.0.email == *email)).flatten() {
+                    Some(f) => f.0.uid,
+                    None => return html!("404 friend not found"), // TODO 404 page
+                };
+                let events = self.friends_events.get_events(uid, ctx.link().clone()).unwrap_or(Rc::new(Vec::new()));
+                let profile_src = format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", uid);
+                html!(<>
+                    <Agenda events={events} app_link={ctx.link().clone()} profile_src={profile_src} />
+                    <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+                </>)
+            },
+            Page::Notifications => html!(<>
+                <NotificationsPage notifications={Rc::clone(&self.notifications)} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            </>),
+            Page::Settings => html!(<>
+                <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            </>),
+            Page::ChangePassword => html!(<>
                 <ChangeDataPage
                     kind="new_password"
                     app_link={ ctx.link().clone() }
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
-            ),
-            Page::ChangeEmail => html!(
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            </>),
+            Page::ChangeEmail => html!(<>
                 <ChangeDataPage
                     kind="email"
                     app_link={ ctx.link().clone() }
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
-            ),
-            Page::ChangeGroup => html!(
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            </>),
+            Page::ChangeGroup => html!(<>
                 <ChangeDataPage
                     kind="group"
                     app_link={ ctx.link().clone() }
                     user_info={Rc::clone(&self.user_info)}
                     groups={Rc::clone(&self.groups)} />
-            ),
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            </>),
             Page::Survey { sid } => {
                 let survey = match self.surveys.iter().find(|s| s.id == *sid) {
                     Some(s) => s,
@@ -373,6 +513,13 @@ impl Component for App {
                 };
                 let answers = self.survey_answers.iter().find(|s| s.id == *sid).map(|a| a.answers.to_owned());
                 html!(<SurveyComp survey={survey.clone()} answers={answers} app_link={ctx.link().clone()} />)
+            },
+            Page::EmailVerification { feature } => {
+                let email = self.user_info.deref().as_ref().map(|u| u.email.0.to_owned());
+                html!(<>
+                    <EmailVerification feature={feature} app_link={ctx.link().clone()} email={email} />
+                    <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+                </>)
             },
         }
     }

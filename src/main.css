@@ -1,6 +1,6 @@
 /* Header */
 
-header {
+header, #tabbar {
     height: 4rem;
 }
 
@@ -42,43 +42,13 @@ body {
 #agenda-main {
     display: flex;
     justify-content: space-around;
-    height: calc(100vh - 4rem);
-    min-height: 35rem;
+    height: calc(100vh - 4rem); /* Desktop only, cf below */
+    min-height: 30rem;
 }
 
-#agenda, #option {
+#agenda {
     height: calc(100% - 2rem);
     padding: 1rem;
-}
-
-/* Option */
-
-#option {
-    width: min-content;
-}
-
-#option-header {
-    margin-bottom: 1rem;
-    width: 100%;
-    height: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: end;
-    place-content: flex-end;
-}
-
-#option-header span {
-    font-weight: bold;
-    color: var(--text);
-}
-
-.divider-bar-option {
-    background-color: var(--primary);
-    height: 3px;
-    width: 48px;
-    border-radius: 3px;
-    margin-top: 3px;
 }
 
 /* Misc */
@@ -90,10 +60,6 @@ body {
 /* For mobile */
 
 @media screen and (max-width: 1000px) {
-    #option {
-        display: none;
-    }
-
     #day-container {
         width: 500%;
         transition: right 0.3s ease-out;
@@ -103,6 +69,7 @@ body {
     #agenda-main {
         flex-direction: column;
         justify-content: flex-start;
+        height: calc(100vh - 8rem);
     }
     
     #agenda-top {

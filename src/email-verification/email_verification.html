@@ -1,0 +1,35 @@
+<header id="header">
+    <a id="header-logo" href="/agenda">
+        <img height="35" width="35" src="/assets/logo/logo.svg" alt="Insagenda logo"/> 
+        <h1 id="header-name">INSAgenda</h1>
+    </a>
+</header>
+<section class="section-page-title">
+    <h2 class="page-title">Vérification d'email</h2>
+    <div class="divider-bar"></div>
+</section>
+<main class="centred" id="auth">
+    <!-- <h3 class="login-title">{{h3}}</h3> -->
+    <p id="change-data-msg">
+        Pour accéder à la fonctionnalité {{fmt_feature}}, vous devez vérifier votre adresse email ({{email}}).
+    </p>
+    <form present-if=!{{success}} class="centred">
+        <div present-if={{is_loading}} class="lds-ring"><div></div><div></div><div></div><div></div></div>
+        <virtual present-if=!{{is_loading}}>
+            <p opt class="error-message">
+                Une erreur est survenue lors de l'envoi de l'email de vérification. Veuillez réessayer.
+
+                {{opt_error}}
+            </p>
+            <br/>
+            <input type="button" class="primary-button" value="Envoyer" onclick={{onclick_send}} />
+            <input type="button" class="secondary-button" value="Retour" onclick={{onclick_back}} />
+        </virtual>
+    </form>
+    <form present-if={{success}} class="centred">
+        <p>
+            Un email de vérification a été envoyé à {{email}}! Veuillez cliquer sur le lien contenu dans cet email pour accéder à la fonctionnalité {{fmt_feature}}.
+        </p>
+        <input type="button" class="secondary-button" value="Retour" onclick={{onclick_back}} />
+    </form>
+</main>

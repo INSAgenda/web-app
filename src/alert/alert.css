@@ -1,11 +1,11 @@
-#errors{
+#errors {
     position: absolute;
-    bottom: 1rem;
+    bottom: 4rem;
     right: 50%;
     transform: translateX(50%);
 }
 
-.alert{
+.alert {
     background: linear-gradient(180deg, #FF0B0B 0%, #D81111 100%);
     font-family: Arial, Helvetica, sans-serif;
     color: #fff;
@@ -17,10 +17,10 @@
     text-align: center;
     position: relative;
 }
-.alert:hover{
+.alert:hover {
     background: linear-gradient(180deg, #fc3939 0%, #d83e3e 100%);
 }
-.alert::after{
+.alert::after {
     content: '+';
     position: absolute;
     top: 50%;

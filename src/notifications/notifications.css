@@ -1,0 +1,51 @@
+:root[data-theme="dark"] #survey {
+    --border-color: #666;
+}
+
+.notification {
+    margin: .5rem;
+    border-radius: .5rem;
+    min-height: 4rem;
+    display: flex;
+    align-items: center;
+}
+
+.unseen-notification {
+    background-color: var(--day);
+}
+
+.notification-point {
+    height: .6rem;
+    width: .6rem;
+    margin: 0 .5rem;
+    border-radius: .3rem;
+    flex-shrink: 0;
+}
+
+.unseen-notification>.notification-point {
+    background-color: var(--primary);
+}
+
+.notification>img {
+    width: 2.5rem;
+    margin-right: .5rem;
+    flex-shrink: 0;
+}
+
+:root[data-theme="dark"] .notification>img {
+    filter: invert(1);
+}
+
+.notification>div:last-child {
+    flex-grow: 1;
+    padding: .5rem .5rem .5rem 0;
+}
+
+.notification>div>a {
+    display: inline-block;
+    margin-top: .2rem;
+}
+
+#notifications-empty-message {
+    margin: 1rem;
+}

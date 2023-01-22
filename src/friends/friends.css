@@ -1,0 +1,140 @@
+#friends {
+    width: calc(100% - 2rem);
+    margin: 0 1rem;
+    --border-color: #aaa; /* cf surveys.css */
+}
+
+:root[data-theme="dark"] #survey {
+    --border-color: #666;
+}
+
+#friends>section {
+    margin: 1rem 0;
+}
+
+#friends>section>h3 {
+    margin: 0;
+    margin-bottom: .5rem;
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.friend-list {
+    background-color: var(--day);
+    border: 1px solid var(--border-color);
+    border-radius: .25rem;
+}
+
+.friend-list>div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .3rem .5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.friend-list>div:last-child {
+    border-bottom: none;
+}
+
+.friend-list>div>div>img {
+    width: 2rem;
+    height: 2rem;
+    margin-right: .3rem;
+}
+
+.friend-list>div>div {
+    display: flex;
+    align-items: center;
+}
+
+.friends-agenda-button, .friends-cancel-button {
+    all: unset;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    cursor: pointer;
+    padding: 0.3rem;
+    padding-bottom: 0.2rem;
+    font-size: .9rem;
+    border-radius: 0.3rem;
+}
+
+.friends-cancel-button {
+    border: 1px solid var(--border-color);
+    color: var(--border-color);
+}
+
+.friends-decline-button, .friends-accept-button {
+    all: unset;
+    cursor: pointer;
+    width: 1.7rem;
+    height: 1.7rem;
+    box-sizing: border-box;
+    border-radius: 0.85rem;
+}
+
+.friends-decline-button>img, .friends-accept-button>img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+.friends-accept-button {
+    margin-left: .5rem;
+    border: 1px solid #4caf50;
+}
+.friends-accept-button>img {
+    width: 80%;
+    padding: 10%;
+}
+
+.friends-decline-button {
+    border: 1px solid var(--error-red);
+}
+.friends-decline-button>img {
+    width: 60%;
+    padding: 20%;
+}
+
+.friends-unstyled-section {
+    border: unset;
+    background: unset;
+}
+
+.friend-input {
+    all: unset;
+    background-color: var(--day);
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: .3rem;
+    padding: .3rem .5rem;
+    line-height: 2rem;
+}
+
+.friends-select-arrow {
+    position: relative;
+}
+
+.friends-select-arrow>div {
+    position: absolute;
+    bottom: calc(1px + 2.6rem / 2 - .6rem / 2);
+    right: .5rem;
+    height: .6rem;
+    width: 1rem;
+    background-color: var(--border-color);
+    clip-path: polygon(100% 0%, 0 0%, 50% 100%);
+}
+
+.friend-request-error {
+    color: var(--error-red);
+    font-size: .9rem;
+    margin-top: .2rem;
+}
+
+/* For desktop */
+
+@media screen and (min-width: 1000px) {
+    #friends {
+        width: 50%;
+    }
+}

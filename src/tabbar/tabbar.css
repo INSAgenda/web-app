@@ -1,0 +1,102 @@
+#tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 4rem;
+    width: 100%;
+    background-color: var(--closer-background);
+    display: flex;
+    z-index: 999;
+    align-items: center;
+}
+
+#tabbar-space {
+    height: 4rem;
+}
+
+.tabbar-selected>.deselected-img {
+    display: none;
+}
+
+#tabbar>button>.bait-point {
+    position: absolute;
+    width: 0rem;
+    height: 0.6rem;
+    background-color: var(--primary);
+    left: calc(50% + 1rem);
+    border-radius: 0.3rem;
+    transition: width .1s ease-in;
+}
+#tabbar>.tabbar-with-bait>.bait-point {
+    width: 0.6rem;
+}
+#tabbar>button:nth-child(1)>.bait-point {
+    left: calc(50% + 1rem - .2rem);
+}
+#tabbar>button:nth-child(2)>.bait-point {
+    left: calc(50% + 1rem - .1rem);
+}
+#tabbar>button:nth-child(3)>.bait-point {
+    left: calc(50% + 1rem - .3rem);
+}
+#tabbar>button:nth-child(4)>.bait-point {
+    left: calc(50% + 1rem - .05rem);
+}
+
+.tabbar-not-selected>.selected-img {
+    display: none;
+}
+
+:root[data-theme="dark"] .tabbar-not-selected>img:nth-child(2) {
+    filter: invert(1);
+}
+
+#tabbar>button {
+    all: unset;
+    display: block;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+}
+
+#tabbar>button>img {
+    width: 2rem;
+    aspect-ratio: 1 / 1;
+}
+
+/* For desktop */
+
+@media screen and (min-width: 1000px) {
+    #render {
+        position: relative;
+        left: 4rem;
+        width: calc(100% - 3rem); /* the 3 comes from the padding */
+        box-sizing: border-box;
+    }
+
+    header {
+        position: relative;
+        right: 4rem;
+        width: calc(100% + 4rem);
+        padding-left: 4rem;
+    }
+
+    #tabbar {
+        top: 0;
+        width: 4rem;
+        height: 100%;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    #tabbar-space {
+        display: none;
+    }
+
+    #tabbar>button {
+        flex-grow: unset;
+        padding: 1rem;
+    }
+}

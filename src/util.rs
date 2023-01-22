@@ -107,3 +107,13 @@ pub fn has_event_on_day(events: &Vec<RawEvent>, current_day: NaiveDate, day_to_l
         },
     }
 }
+
+pub trait HackTraitProfileUrl {
+    fn profile_url(&self) -> String;
+}
+
+impl HackTraitProfileUrl for UserDesc {
+    fn profile_url(&self) -> String {
+        format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", self.uid)
+    }
+}
