@@ -45,6 +45,7 @@ impl Component for FriendsPage {
                 if email.is_empty() {
                     return false;
                 }
+                email = email.to_lowercase();
                 if !email.contains('@') {
                     email.push_str("@insa-rouen.fr");
                 }
