@@ -70,12 +70,12 @@ async fn load<T: CachedData>() -> Result<T, ApiError> {
 
     if resp.status() == 400 || resp.status() == 500 {
         let text = JsFuture::from(resp.text()?).await?;
-        let error: KnownApiError = serde_json::from_str(&text.as_string().unwrap()).unwrap();
+        let error: KnownApiError = serde_json::from_str(&text.as_string().unwrap()).map_err(|e| ApiError::Unknown(JsValue::from_str(&e.to_string())))?;
         return Err(ApiError::Known(error));
     }
 
     let text = JsFuture::from(resp.text()?).await?;
-    let value: T = serde_json::from_str(&text.as_string().unwrap()).unwrap();
+    let value: T = serde_json::from_str(&text.as_string().unwrap()).map_err(|e| ApiError::Unknown(JsValue::from_str(&e.to_string())))?;
     value.save();
 
     Ok(value)
