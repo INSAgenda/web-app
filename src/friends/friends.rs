@@ -184,21 +184,21 @@ impl Component for FriendsPage {
         };
 
         let has_friends = friends.friends_list.len() > 0;
-        let names = friends.friends_list.iter().map(|friend| &friend.0.email).collect::<Vec<_>>();
+        let names = friends.friends_list.iter().map(|friend| friend.0.email.trim_end_matches("@insa-rouen.fr")).collect::<Vec<_>>();
         let picture_iter = friends.friends_list.iter().map(|friend| friend.0.profile_url());
         let alt_iter = names.iter().map(|name| format!("Avatar of {name}"));
         let name_iter = names.iter();
         let friend_uid_iter = friends.friends_list.iter().map(|friend| friend.0.uid.to_string());
 
         let has_incoming = friends.friend_requests_incoming.len() > 0;
-        let in_names = friends.friend_requests_incoming.iter().map(|req| &req.from.0.email).collect::<Vec<_>>();
+        let in_names = friends.friend_requests_incoming.iter().map(|req| req.from.0.email.trim_end_matches("@insa-rouen.fr")).collect::<Vec<_>>();
         let in_picture_iter = friends.friend_requests_incoming.iter().map(|req| req.from.0.profile_url());
         let in_alt_iter = in_names.iter().map(|name| format!("Avatar of {name}"));
         let in_name_iter = in_names.iter();
         let in_uid_iter = friends.friend_requests_incoming.iter().map(|req| req.from.0.uid.to_string());
 
         let has_outgoing = friends.friend_requests_outgoing.len() > 0;
-        let out_names = friends.friend_requests_outgoing.iter().map(|friend| &friend.to.0.email).collect::<Vec<_>>();
+        let out_names = friends.friend_requests_outgoing.iter().map(|friend| friend.to.0.email.trim_end_matches("@insa-rouen.fr")).collect::<Vec<_>>();
         let out_picture_iter = friends.friend_requests_outgoing.iter().map(|req| req.to.0.profile_url());
         let out_alt_iter = out_names.iter().map(|name| format!("Avatar of {name}"));
         let out_name_iter = out_names.iter();
