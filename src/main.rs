@@ -257,7 +257,14 @@ impl Component for App {
                 self.friends_events.insert(uid, events);
                 matches!(self.page, Page::FriendAgenda { .. } )
             },
-            AppMsg::AnnouncementsSuccess(announcements) => {
+            AppMsg::AnnouncementsSuccess(mut announcements) => {
+                // Filter announcements
+                if let Some(user_info) = self.user_info.deref().as_ref() {
+                    announcements.retain(|a| a.target.as_ref().map(|t| user_info.user_groups.matches(t)).unwrap_or(true));
+                } else {
+                    return false;
+                }
+
                 // Add to notifications
                 let mut notifications = self.notifications.borrow_mut();
                 notifications.add_announcements(&announcements);
