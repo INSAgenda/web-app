@@ -258,8 +258,13 @@ impl Component for App {
                 matches!(self.page, Page::FriendAgenda { .. } )
             },
             AppMsg::AnnouncementsSuccess(announcements) => {
-                self.announcements = Rc::new(announcements); // TODO notifications
-                false // Don't think we should refresh display of the page because it would cause high inconvenience and frustration to the users
+                let mut notifications = self.notifications.borrow_mut();
+                notifications.add_announcements(&announcements);
+                self.tabbar_bait_points.2 = notifications.has_unread();
+
+                self.announcements = Rc::new(announcements);
+                
+                matches!(self.page, Page::Notifications) || self.tabbar_bait_points.2
             },
             AppMsg::ScheduleSuccess(events) => {
                 self.events = Rc::new(events);

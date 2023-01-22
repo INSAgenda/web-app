@@ -58,6 +58,10 @@ impl LocalNotificationTracker {
         self.notifications.iter_mut().for_each(|(_,seen, _)| *seen = true);
         self.save()
     }
+
+    pub fn has_unread(&self) -> bool {
+        self.notifications.iter().any(|(_,seen, _)| !seen)
+    }
 }
 
 #[derive(Serialize, Deserialize)]
