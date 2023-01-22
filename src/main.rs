@@ -375,6 +375,12 @@ impl Component for App {
                     self.notifications.borrow_mut().mark_all_as_read();
                 }
 
+                // FIXME TODO
+                // Prevent user to go on an event page from the friend-agenda page as it is not supported
+                if matches!(self.page, Page::FriendAgenda { .. }) && matches!(page, Page::Event { .. }) {
+                    return false;
+                }
+
                 let history = window().history().expect("Failed to access history");
                 let document = window().doc();
                 if let Page::Event { .. } = &page {
