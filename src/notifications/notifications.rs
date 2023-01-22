@@ -150,8 +150,8 @@ impl Component for NotificationsPage {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let now = js_sys::Date::now() as u64;
-
+        let now = (js_sys::Date::new_0().get_time() / 1000.0) as u64;
+        
         let unseen = ctx.props().notifications.borrow().unseen().map(|source| source.into_notification(now)).collect::<Vec<_>>();
         let unseen_text_iter = unseen.iter().map(|n| n.text.get("fr").unwrap_or(&String::from("")).clone());
         let unseen_src_iter = unseen.iter().map(|n| n.image_src.clone());
