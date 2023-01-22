@@ -70,10 +70,8 @@ impl Component for EmailVerification {
         };
         let email = ctx.props().email.as_deref().unwrap_or("[unknown]");
 
-        let initial = matches!(self.state, State::Initial);
-        let loading = matches!(self.state, State::Loading);
         let success = matches!(self.state, State::Success);
-        let error = matches!(self.state, State::Error(_));
+        let is_loading = matches!(self.state, State::Loading);
         let opt_error = match &self.state {
             State::Error(err) => Some(err),
             _ => None,
