@@ -240,6 +240,15 @@ impl Component for App {
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             AppMsg::UpdateFriends(friends) => {
+                // Detect changes to add bait point
+                if let Some(old_friends) = self.friends.as_ref() {
+                    for new_incoming in &friends.friend_requests_incoming {
+                        if !old_friends.friend_requests_incoming.contains(new_incoming) {
+                            self.tabbar_bait_points.1 = true;
+                        }
+                    }
+                }
+
                 friends.save();
                 self.friends = Rc::new(Some(friends));
                 true
@@ -254,7 +263,7 @@ impl Component for App {
             },
             AppMsg::ScheduleSuccess(events) => {
                 self.events = Rc::new(events);
-                true
+                matches!(self.page, Page::Agenda | Page::Event { .. })
             },
             AppMsg::SurveysSuccess(surveys, survey_answers) => {
                 self.surveys = surveys;
