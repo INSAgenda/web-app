@@ -1,5 +1,5 @@
-mod logout;
-pub(crate) use logout::*;
+mod auth;
+pub(crate) use auth::*;
 mod error;
 pub use error::*;
 mod gen_code;
