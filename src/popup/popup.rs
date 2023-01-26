@@ -55,7 +55,7 @@ impl Component for Popup {
         let name = ctx.props().event.format_name();
         let opt_location = ctx.props().event.format_location();
         let comment = Comment {
-            id: 0,
+            cid: 0,
             parent: None,
             author: UserDesc {
                 uid: 0,
@@ -69,7 +69,7 @@ impl Component for Popup {
             vote: 1,
         };
         let comment2 = Comment {
-            id: 1,
+            cid: 1,
             parent: Some(0),
             author: UserDesc {
                 uid: 1,
@@ -83,7 +83,7 @@ impl Component for Popup {
             vote: 1,
         };
         let comment3 = Comment {
-            id: 2,
+            cid: 2,
             parent: Some(0),
             author: UserDesc {
                 uid: 2,
@@ -96,8 +96,9 @@ impl Component for Popup {
             score: -5,
             vote: -1,
         };
+        let comments = vec![comment, comment2, comment3];
         let comment = html! {
-            <CommentComp comment={comment} children={vec![comment2, comment3]} />
+            <CommentComp comments={Rc::new(comments)} cid={0} />
         };
         
         template_html!(
