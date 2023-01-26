@@ -67,7 +67,7 @@ pub async fn api_post_form(body: &str, endpoint: &str) -> Result<(), ApiError> {
 
     let mut req_init = web_sys::RequestInit::new();
     req_init.method("POST");
-    req_init.body(Some(&JsValue::from_str(&body)));
+    req_init.body(Some(&JsValue::from_str(body)));
 
     let request = Request::new_with_str_and_init(&format!("/api/{endpoint}"), &req_init).unwrap();
     request.headers().set(
@@ -110,10 +110,8 @@ pub async fn api_get<T: DeserializeOwned>(endpoint: &str) -> Result<T, ApiError>
         200 => {
             let text = JsFuture::from(response.text()?).await?;
             let text: String = text.as_string().unwrap();
-            if std::any::type_name::<T>() == "()" {
-                if text.is_empty() {
-                    return Ok(serde_json::from_str("null").unwrap());
-                }
+            if std::any::type_name::<T>() == "()" && text.is_empty() {
+                return Ok(serde_json::from_str("null").unwrap());
             }
             Ok(serde_json::from_str(&text).unwrap())
         }
