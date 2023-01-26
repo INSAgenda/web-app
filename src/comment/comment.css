@@ -32,14 +32,6 @@
     margin: 0 1rem;
 }
 
-.comment-body {
-
-}
-
-.comment-main {
-
-}
-
 .comment-not-voted .comment-upvote-fill-img, .comment-not-voted .comment-downvote-fill-img {
     display: none;
 }
