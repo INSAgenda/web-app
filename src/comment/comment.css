@@ -1,4 +1,4 @@
-.comment {
+.comment, .comment-reply {
     margin-top: 1rem;
 }
 
@@ -26,7 +26,7 @@
     color: #777;
 }
 
-.comment-bottom {
+.comment-bottom, .comment-reply {
     display: flex;
 }
 
@@ -35,6 +35,10 @@
     background-color: var(--border-color);
     margin: 0 1rem;
     flex-shrink: 0;
+}
+
+.comment-reply-main, .comment-main {
+    width: 100%;
 }
 
 .comment-upvoted>.comment-upvote-button>svg {
@@ -62,11 +66,29 @@
     margin: 0 .2rem;
 }
 
-.comment-reply-button {
+.comment-reply-button, .comment-reply-cancel-button, .comment-reply-submit-button {
     /* Also see friends-cancel-button */
-    border: 1px solid var(--text);
+    border: none;
+    font-weight: bold;
     padding-left: .75rem;
     padding-right: .75rem;
     color: var(--text);
-    margin-left: 1rem;
+    margin-left: .5rem;
+}
+
+.comment-reply-submit-button {
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.comment-reply-textarea {
+    width: calc(100% - 1rem);
+    padding: .5rem;
+    border-radius: .3rem;
+    border: 1px solid var(--border-color);
+}
+
+.comment-reply-buttons {
+    display: flex;
+    justify-content: flex-end;
 }

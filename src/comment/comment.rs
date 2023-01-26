@@ -9,11 +9,13 @@ pub struct CommentProps {
 pub enum CommentMsg {
     Upvote,
     Downvote,
-    Reply,
+    StartReply,
+    SubmitReply,
 }
 
 pub struct CommentComp {
     vote: i8,
+    replying: bool,
 }
 
 impl Component for CommentComp {
@@ -24,6 +26,7 @@ impl Component for CommentComp {
         let comment = ctx.props().comments.iter().find(|comment| comment.cid == ctx.props().cid).unwrap();
         Self {
             vote: comment.vote,
+            replying: false,
         }
     }
 
@@ -35,6 +38,7 @@ impl Component for CommentComp {
                 } else {
                     self.vote = 1;
                 }
+                // TODO: API call
             }
             CommentMsg::Downvote => {
                 if self.vote == -1 {
@@ -42,10 +46,12 @@ impl Component for CommentComp {
                 } else {
                     self.vote = -1;
                 }
+                // TODO: API call
             }
-            CommentMsg::Reply => {
-
+            CommentMsg::StartReply => {
+                self.replying = !self.replying;
             }
+            CommentMsg::SubmitReply => ()
         }
         true
     }
@@ -57,6 +63,7 @@ impl Component for CommentComp {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let comment = ctx.props().comments.iter().find(|comment| comment.cid == ctx.props().cid).unwrap();
+        let cid = comment.cid;
         let author_avatar = format!("https://api.dicebear.com/5.x/adventurer/svg?seed={}", comment.author.uid);
         let author_name = comment.author.get_username();
         let time_diff = now() - comment.creation_ts;
@@ -68,10 +75,13 @@ impl Component for CommentComp {
             -1 => "comment-downvoted",
             _ => "comment-not-voted",
         };
+        let replying = self.replying;
 
         let onclick_upvote = ctx.link().callback(|_| CommentMsg::Upvote);
         let onclick_downvote = ctx.link().callback(|_| CommentMsg::Downvote);
-        let onclick_reply = ctx.link().callback(|_| CommentMsg::Reply);
+        let onclick_reply = ctx.link().callback(|_| CommentMsg::StartReply);
+        let onclick_reply_cancel = onclick_reply.clone();
+        let onclick_reply_submit = ctx.link().callback(|_| CommentMsg::StartReply);
 
         let children = ctx.props().comments.iter().filter(|child| child.parent == Some(comment.cid)).map(|child| {
             html! {
