@@ -30,7 +30,7 @@ impl Component for CommentComp {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             CommentMsg::Upvote => {
                 if self.vote == 1 {
@@ -51,7 +51,13 @@ impl Component for CommentComp {
             CommentMsg::StartReply => {
                 self.replying = !self.replying;
             }
-            CommentMsg::SubmitReply => ()
+            CommentMsg::SubmitReply => {
+                let el = window().doc().get_element_by_id(&format!("comment-reply-textarea-{}", ctx.props().cid)).unwrap();
+                let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
+                let content = textarea.value();
+                // TODO: API call
+                log!("content: {}", content);
+            }
         }
         true
     }
@@ -81,7 +87,7 @@ impl Component for CommentComp {
         let onclick_downvote = ctx.link().callback(|_| CommentMsg::Downvote);
         let onclick_reply = ctx.link().callback(|_| CommentMsg::StartReply);
         let onclick_reply_cancel = onclick_reply.clone();
-        let onclick_reply_submit = ctx.link().callback(|_| CommentMsg::StartReply);
+        let onclick_reply_submit = ctx.link().callback(|_| CommentMsg::SubmitReply);
 
         let children = ctx.props().comments.iter().filter(|child| child.parent == Some(comment.cid)).map(|child| {
             html! {
