@@ -68,8 +68,36 @@ impl Component for Popup {
             score: 5,
             vote: 1,
         };
+        let comment2 = Comment {
+            id: 1,
+            parent: Some(0),
+            author: UserDesc {
+                uid: 1,
+                email: String::from("satoshi@insa-rouen.fr"),
+                picture: None,
+            },
+            content: String::from("We are all Satoshi"),
+            creation_ts: 1664752794,
+            last_edited_ts: 1664752794,
+            score: 500,
+            vote: 1,
+        };
+        let comment3 = Comment {
+            id: 2,
+            parent: Some(0),
+            author: UserDesc {
+                uid: 2,
+                email: String::from("craigh@insa-rouen.fr"),
+                picture: None,
+            },
+            content: String::from("I am Satoshi"),
+            creation_ts: 1674752390,
+            last_edited_ts: 1674752390,
+            score: -5,
+            vote: -1,
+        };
         let comment = html! {
-            <CommentComp comment={comment} children={Vec::new()} />
+            <CommentComp comment={comment} children={vec![comment2, comment3]} />
         };
         
         template_html!(

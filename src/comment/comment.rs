@@ -36,11 +36,14 @@ impl Component for CommentComp {
         let onclick_downvote = ctx.link().callback(|_| CommentMsg::Downvote);
         let onclick_reply = ctx.link().callback(|_| CommentMsg::Reply);
 
-        let children: Vec<String> = Vec::new();
+        let children: Html = ctx.props().children.iter().map(|child| {
+            html! {
+                <CommentComp comment={child.clone()} children={Vec::new()} />
+            }
+        }).collect();
 
         template_html!(
             "src/comment/comment.html",
-            children_iter = {children.iter()},
             ...
         )
     }
