@@ -13,15 +13,11 @@
                 </p>
                 <div class="comment-buttons {{upvote_class}}">
                     <button class="comment-upvote-button" onclick={{onclick_upvote}}>
-                        <img class="comment-upvote-img" src="/agenda/images/thumbs-up.svg" alt="Upvote" />
-                        <img class="comment-upvote-fill-img" src="/agenda/images/thumbs-up-fill.svg" alt="Upvote" />
-                        <img class="comment-upvote-fill-img-dark" src="/agenda/images/thumbs-up-fill-dark.svg" alt="Upvote" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-thumbs-up"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
                     </button>
                     <span class="comment-score">{{score}}</span>
                     <button class="comment-downvote-button" onclick={{onclick_downvote}}>
-                        <img class="comment-downvote-img" src="/agenda/images/thumbs-down.svg" alt="Downvote" />
-                        <img class="comment-downvote-fill-img" src="/agenda/images/thumbs-down-fill.svg" alt="Downvote" />
-                        <img class="comment-downvote-fill-img-dark" src="/agenda/images/thumbs-down-fill-dark.svg" alt="Downvote" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather feather-thumbs-down"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path></svg>
                     </button>
                     <button class="comment-reply-button" onclick={{onclick_reply}}>Reply</button>
                 </div>

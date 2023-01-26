@@ -36,24 +36,11 @@
     margin: 0 1rem;
 }
 
-.comment-not-voted .comment-upvote-fill-img,
-.comment-not-voted .comment-downvote-fill-img,
-.comment-not-voted .comment-upvote-fill-img-dark,
-.comment-not-voted .comment-downvote-fill-img-dark,
-.comment-upvoted .comment-upvote-img,
-.comment-upvoted .comment-downvote-fill-img,
-.comment-upvoted .comment-downvote-fill-img-dark,
-.comment-downvoted .comment-downvote-img,
-.comment-downvoted .comment-upvote-fill-img,
-.comment-downvoted .comment-upvote-fill-img-dark,
-:root[data-theme="dark"] .comment-upvote-fill-img,
-:root[data-theme="dark"] .comment-downvote-fill-img,
-:root[data-theme="light"] .comment-upvote-fill-img-dark,
-:root[data-theme="light"] .comment-downvote-fill-img-dark {
-    display: none;
+.comment-upvoted>.comment-upvote-button>svg {
+    fill: var(--primary);
 }
-:root[data-theme="dark"] .comment-upvote-img, :root[data-theme="dark"] .comment-downvote-img {
-    filter: invert(1) !important;
+.comment-downvoted>.comment-downvote-button>svg {
+    fill: var(--error-red);
 }
 
 .comment-buttons {
