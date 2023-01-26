@@ -44,7 +44,7 @@
 }
 
 /* TODO: move this into frontend */
-.friends-agenda-button, .friends-cancel-button, .comment-reply-button, .comment-reply-cancel-button, .comment-reply-submit-button {
+.friends-agenda-button, .friends-cancel-button, .comment-button {
     all: unset;
     border: 1px solid var(--primary);
     color: var(--primary);

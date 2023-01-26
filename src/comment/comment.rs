@@ -52,7 +52,7 @@ impl Component for CommentComp {
                 self.replying = !self.replying;
             }
             CommentMsg::SubmitReply => {
-                let el = window().doc().get_element_by_id(&format!("comment-reply-textarea-{}", ctx.props().cid)).unwrap();
+                let el = window().doc().get_element_by_id(&format!("comment-textarea-{}", ctx.props().cid)).unwrap();
                 let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
                 let content = textarea.value();
                 // TODO: API call
@@ -87,6 +87,7 @@ impl Component for CommentComp {
         let onclick_downvote = ctx.link().callback(|_| CommentMsg::Downvote);
         let onclick_reply = ctx.link().callback(|_| CommentMsg::StartReply);
         let onclick_reply_cancel = onclick_reply.clone();
+        let onclick_report = onclick_reply.clone();
         let onclick_reply_submit = ctx.link().callback(|_| CommentMsg::SubmitReply);
 
         let children = ctx.props().comments.iter().filter(|child| child.parent == Some(comment.cid)).map(|child| {

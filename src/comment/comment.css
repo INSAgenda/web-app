@@ -66,41 +66,45 @@
     color: var(--error-red);
 }
 
-.comment-reply-button:active, .comment-reply-cancel-button:active, .comment-reply-submit-button:active {
+.comment-downvote-button {
+    margin-right: .5rem;   
+}
+
+.comment-button:active {
     background-color: #ddd;
 }
-:root[data-theme="dark"] .comment-reply-button:active, :root[data-theme="dark"] .comment-reply-cancel-button:active, :root[data-theme="dark"] .comment-reply-submit-button:active {
-    background-color: #333;
+:root[data-theme="dark"] .comment-button:active {
+    background-color: #444;
 }
 @media (min-width: 1000px) {
-    .comment-reply-button:hover, .comment-reply-cancel-button:hover, .comment-reply-submit-button:hover {
+    .comment-button:hover {
         background-color: #ddd;
     }
-    :root[data-theme="dark"] .comment-reply-button:hover, :root[data-theme="dark"] .comment-reply-cancel-button:hover, :root[data-theme="dark"] .comment-reply-submit-button:hover {
-        background-color: #333;
+    :root[data-theme="dark"] .comment-button:hover {
+        background-color: #444;
     }
 }
 
-.comment-reply-button, .comment-reply-cancel-button, .comment-reply-submit-button {
+.comment-button {
     /* Also see friends-cancel-button */
     border: none;
     font-weight: bold;
-    padding-left: .75rem;
-    padding-right: .75rem;
+    margin: 0 .2rem;
     color: var(--text);
-    margin-left: .5rem;
 }
 
-.comment-reply-submit-button {
+.comment-submit-button {
     color: var(--primary);
     border: 1px solid var(--primary);
 }
 
-.comment-reply-textarea {
+.comment-textarea {
     width: calc(100% - 1rem);
     padding: .5rem;
     border-radius: .3rem;
     outline: none;
+    color: var(--text);
+    background-color: var(--closer-background);
     border: 1px solid var(--border-color);
 }
 
