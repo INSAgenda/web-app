@@ -59,17 +59,25 @@ pub enum Page {
     Friends,
     FriendAgenda { pseudo: String },
     Notifications,
-    EmailVerification { feature: &'static str },
     Event { eid: u64 /* For now this is the start timestamp */ },
     Survey { sid: String },
+}
+
+/// A panel displayed on top of the page
+#[derive(Clone, PartialEq)]
+pub enum Panel {
+    EmailVerification { feature: &'static str },
+    Report,
 }
 
 /// A message that can be sent to the `App` component.
 pub enum Msg {
     /// Switch page
     SetPage(Page),
+    SetPanel(Option<Panel>),
     /// Switch page without saving it in the history
     SilentSetPage(Page),
+    SilentSetPanel(Option<Panel>),
     FetchColors(HashMap<String, String>),
     SaveSurveyAnswer(SurveyAnswers),
     UpdateFriends(FriendLists),
@@ -100,6 +108,7 @@ pub struct App {
     survey_answers: Vec<SurveyAnswers>,
     tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
+    panel: Option<Panel>,
 
     event_closing: bool,
     event_popup_size: Option<usize>,
@@ -124,7 +133,6 @@ impl Component for App {
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
-                Some("email-verification") => link2.send_message(Msg::SilentSetPage(Page::EmailVerification { feature: "unknown" })),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].parse().unwrap_or_default();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -165,7 +173,6 @@ impl Component for App {
             "/change-group" => Page::ChangeGroup,
             "/friends" => Page::Friends,
             "/notifications" => Page::Notifications,
-            "/email-verification" => Page::EmailVerification { feature: "unknown" },
             event if event.starts_with("/event/") => {
                 let eid = event[7..].parse().unwrap_or_default();
                 let link2 = ctx.link().clone();
@@ -238,6 +245,7 @@ impl Component for App {
             survey_answers,
             tabbar_bait_points,
             page,
+            panel: Some(Panel::EmailVerification { feature: "friends" }),
             event_closing: false,
             event_popup_size: None,
         }
@@ -415,7 +423,6 @@ impl Component for App {
                     Page::ChangePassword => (String::from("change-password"), "Change password"),
                     Page::ChangeEmail => (String::from("change-email"), "Change email"),
                     Page::ChangeGroup => (String::from("change-group"), "Change group"),
-                    Page::EmailVerification { .. } => (format!("email-verification"), "Email verification"),
                     Page::Agenda => (String::from("agenda"), "Agenda"),
                     Page::Friends => (String::from("friends"), "Friends"),
                     Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
@@ -424,13 +431,23 @@ impl Component for App {
                     Page::Event { eid } => (format!("event/{eid}"), "Event"),
                 };
                 history.push_state_with_url(&JsValue::from_str(&data), title, Some(&format!("/{data}"))).unwrap();
-                document.set_title(&format!("{}", title));
+                document.set_title(title);
                 self.page = page;
                 true
             },
             Msg::SilentSetPage(page) => {
                 self.page = page;
                 true
+            },
+            Msg::SetPanel(panel) => {
+                let changed = self.panel != panel;
+                self.panel = panel;
+                changed
+            }
+            Msg::SilentSetPanel(panel) => {
+                let changed = self.panel != panel;
+                self.panel = panel;
+                changed
             },
             Msg::FetchColors(new_colors) => {
                 crate::COLORS.update_colors(new_colors);
@@ -444,7 +461,7 @@ impl Component for App {
     }
     
     fn view(&self, ctx: &Context<Self>) -> Html {
-        match &self.page {
+        let page = match &self.page {
             Page::Agenda => html!(<>
                 <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
@@ -462,11 +479,11 @@ impl Component for App {
             </>),
             Page::FriendAgenda { pseudo } => {
                 let email = format!("{pseudo}@insa-rouen.fr");
-                let uid = match self.friends.deref().as_ref().map(|f| f.friends.iter().find(|f| f.0.email == *email)).flatten() {
+                let uid = match self.friends.deref().as_ref().and_then(|f| f.friends.iter().find(|f| f.0.email == *email)) {
                     Some(f) => f.0.uid,
                     None => return html!("404 friend not found"), // TODO 404 page
                 };
-                let events = self.friends_events.get_events(uid, ctx.link().clone()).unwrap_or(Rc::new(Vec::new()));
+                let events = self.friends_events.get_events(uid, ctx.link().clone()).unwrap_or_default();
                 let profile_src = format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", uid);
                 html!(<>
                     <Agenda events={events} app_link={ctx.link().clone()} profile_src={profile_src} />
@@ -516,13 +533,21 @@ impl Component for App {
                 let answers = self.survey_answers.iter().find(|s| s.id == *sid).map(|a| a.answers.to_owned());
                 html!(<SurveyComp survey={survey.clone()} answers={answers} app_link={ctx.link().clone()} />)
             },
-            Page::EmailVerification { feature } => {
-                let email = self.user_info.deref().as_ref().map(|u| u.email.0.to_owned());
-                html!(<>
-                    <EmailVerification feature={feature} app_link={ctx.link().clone()} email={email} />
-                    <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
-                </>)
-            },
+        };
+        if let Some(panel) = &self.panel {
+            let panel = match panel {
+                Panel::EmailVerification { feature } => {
+                    let email = self.user_info.deref().as_ref().map(|u| u.email.0.to_owned());
+                    html!(<EmailVerification feature={feature} email={email} app_link={ctx.link().clone()} />)
+                }
+                Panel::Report => html!(<p>{"Report"}</p>),
+            };
+            html!(<>
+                {page}
+                <div id="panel"><div>{panel}</div></div>
+            </>)
+        } else {
+            page
         }
     }
 }

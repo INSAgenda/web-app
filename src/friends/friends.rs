@@ -66,7 +66,7 @@ impl Component for FriendsPage {
                             link2.send_message(FriendsMsg::RequestSuccess);
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
-                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
+                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPanel(Some(Panel::EmailVerification{ feature: "friends" }))),
                         Err(ApiError::Known(e)) => link2.send_message(FriendsMsg::RequestError(e.to_string())),
                         Err(error) => alert(error.to_string()),
                     }
@@ -104,7 +104,7 @@ impl Component for FriendsPage {
                             };
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
-                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
+                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPanel(Some(Panel::EmailVerification { feature: "friends" }))),
                         Err(error) => alert(error.to_string()),
                     }
                 });
@@ -133,7 +133,7 @@ impl Component for FriendsPage {
                             };
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
-                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
+                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPanel(Some(Panel::EmailVerification { feature: "friends" }))),
                         Err(error) => alert(error.to_string()),
                     }
                 });
