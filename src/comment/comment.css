@@ -2,6 +2,10 @@
     margin-top: 1rem;
 }
 
+:root[data-theme="dark"] #popup .comment img {
+    filter: unset;
+}
+
 .comment-header {
     display: flex;
     align-items: center;
@@ -32,20 +36,38 @@
     margin: 0 1rem;
 }
 
-.comment-not-voted .comment-upvote-fill-img, .comment-not-voted .comment-downvote-fill-img {
+.comment-not-voted .comment-upvote-fill-img,
+.comment-not-voted .comment-downvote-fill-img,
+.comment-not-voted .comment-upvote-fill-img-dark,
+.comment-not-voted .comment-downvote-fill-img-dark,
+.comment-upvoted .comment-upvote-img,
+.comment-upvoted .comment-downvote-fill-img,
+.comment-upvoted .comment-downvote-fill-img-dark,
+.comment-downvoted .comment-downvote-img,
+.comment-downvoted .comment-upvote-fill-img,
+.comment-downvoted .comment-upvote-fill-img-dark,
+:root[data-theme="dark"] .comment-upvote-fill-img,
+:root[data-theme="dark"] .comment-downvote-fill-img,
+:root[data-theme="light"] .comment-upvote-fill-img-dark,
+:root[data-theme="light"] .comment-downvote-fill-img-dark {
     display: none;
 }
-.comment-upvoted .comment-upvote-img, .comment-upvoted .comment-downvote-fill-img {
-    display: none;
-}
-.comment-downvoted .comment-downvote-img, .comment-downvoted .comment-upvote-fill-img {
-    display: none;
+:root[data-theme="dark"] .comment-upvote-img, :root[data-theme="dark"] .comment-downvote-img {
+    filter: invert(1) !important;
 }
 
 .comment-buttons {
     display: flex;
     align-items: center;
     margin-top: 0.5rem;
+}
+
+.comment-reply-button:hover {
+    background-color: #ddd;
+}
+
+:root[data-theme="dark"] .comment-reply-button:hover {
+    background-color: #222;
 }
 
 .comment-score {
