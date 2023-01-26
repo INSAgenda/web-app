@@ -31,6 +31,8 @@ mod sortable;
 mod tabbar;
 #[path = "friends/friends.rs"]
 mod friends;
+#[path = "comment/comment.rs"]
+mod comment;
 #[path = "notifications/notifications.rs"]
 mod notifications;
 #[path = "email-verification/email_verification.rs"]

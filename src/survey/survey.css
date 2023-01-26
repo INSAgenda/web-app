@@ -4,11 +4,6 @@
     height: 100vh; /* https://css-tricks.com/the-trick-to-viewport-units-on-mobile/#css-custom-properties-the-trick-to-correct-sizing */
     height: calc(var(--vh, 1vh) * 100);
     overflow: hidden;
-    --border-color: #aaa;
-}
-
-:root[data-theme="dark"] #survey {
-    --border-color: #666;
 }
 
 .survey-line {

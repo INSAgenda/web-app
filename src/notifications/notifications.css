@@ -1,7 +1,3 @@
-:root[data-theme="dark"] #survey {
-    --border-color: #666;
-}
-
 .notification {
     margin: .5rem;
     border-radius: .5rem;

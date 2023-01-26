@@ -1,3 +1,13 @@
+/* Colors */
+
+:root {
+    --border-color: #aaa;
+}
+
+:root[data-theme="dark"] {
+    --border-color: #666;
+}
+
 /* Header */
 
 header, #tabbar {

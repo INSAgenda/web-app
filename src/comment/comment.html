@@ -1,0 +1,30 @@
+<div class="comment">
+    <div class="comment-header">
+        <img class="comment-author-avatar" src={{author_avatar}} />
+        <span class="comment-author-name">{{author_name}}</span>
+        <span class="comment-time">{{time}}</span>
+    </div>
+    <div class="comment-bottom">
+        <div class="comment-bar"></div>
+        <div class="comment-body">
+            <div class="comment-main">
+                <p>
+                    {{content}}
+                </p>
+                <div class="comment-buttons">
+                    <button class="comment-upvote-button" onclick={{onclick_upvote}}>
+                        <img present-if=!{{upvoted}} src="/agenda/images/thumbs-up.svg" alt="Upvote" />
+                        <img present-if={{upvoted}}  src="/agenda/images/thumbs-up-fill.svg" alt="Upvote" />
+                    </button>
+                    <span class="comment-score">{{score}}</span>
+                    <button class="comment-downvote-button" onclick={{onclick_downvote}}>
+                        <img present-if=!{{downvoted}} src="/agenda/images/thumbs-down.svg" alt="Downvote" />
+                        <img present-if={{downvoted}}  src="/agenda/images/thumbs-down-fill.svg" alt="Downvote" />
+                    </button>
+                    <button class="comment-reply-button" onclick={{onclick_reply}}>Reply</button>
+                </div>
+            </div>
+            <virtual iter>{{children_iter}}</virtual>
+        </div>
+    </div>
+</div>

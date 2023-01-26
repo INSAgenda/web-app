@@ -54,6 +54,10 @@ impl Component for Popup {
         let summary = &ctx.props().event.summary;
         let name = ctx.props().event.format_name();
         let opt_location = ctx.props().event.format_location();
+        let comment = html! {
+            <CommentComp />
+        };
+        
         template_html!(
             "src/popup/popup.html",
             teachers = {ctx.props().event.teachers.join(", ")},
