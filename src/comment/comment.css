@@ -13,8 +13,8 @@
 }
 
 .comment-author-avatar {
-    width: 2rem;
-    height: 2rem;
+    width: calc(2rem + 2px);
+    aspect-ratio: 1/1;
 }
 
 .comment-author-name {
@@ -31,9 +31,10 @@
 }
 
 .comment-bar {
-    width: 1px;
-    background-color: black;
+    width: 2px;
+    background-color: var(--border-color);
     margin: 0 1rem;
+    flex-shrink: 0;
 }
 
 .comment-upvoted>.comment-upvote-button>svg {
