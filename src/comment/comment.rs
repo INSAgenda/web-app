@@ -1,7 +1,5 @@
 use crate::prelude::*;
 
-pub struct CommentComp;
-
 #[derive(Properties, Clone, PartialEq)]
 pub struct CommentProps {
     pub comments: Rc<Vec<Comment>>,
@@ -14,12 +12,47 @@ pub enum CommentMsg {
     Reply,
 }
 
+pub struct CommentComp {
+    vote: i8,
+}
+
 impl Component for CommentComp {
     type Message = CommentMsg;
     type Properties = CommentProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self
+    fn create(ctx: &Context<Self>) -> Self {
+        let comment = ctx.props().comments.iter().find(|comment| comment.cid == ctx.props().cid).unwrap();
+        Self {
+            vote: comment.vote,
+        }
+    }
+
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            CommentMsg::Upvote => {
+                if self.vote == 1 {
+                    self.vote = 0;
+                } else {
+                    self.vote = 1;
+                }
+            }
+            CommentMsg::Downvote => {
+                if self.vote == -1 {
+                    self.vote = 0;
+                } else {
+                    self.vote = -1;
+                }
+            }
+            CommentMsg::Reply => {
+
+            }
+        }
+        true
+    }
+
+    fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
+        self.vote = ctx.props().comments.iter().find(|comment| comment.cid == ctx.props().cid).unwrap().vote;
+        true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -29,8 +62,8 @@ impl Component for CommentComp {
         let time_diff = now() - comment.creation_ts;
         let time = format_time_diff(time_diff);
         let content = &comment.content;
-        let score = comment.score;
-        let upvote_class = match comment.vote {
+        let score = comment.score - comment.vote as i64 + self.vote as i64;
+        let upvote_class = match self.vote {
             1 => "comment-upvoted",
             -1 => "comment-downvoted",
             _ => "comment-not-voted",
