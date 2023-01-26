@@ -63,6 +63,23 @@ pub enum Page {
     Survey { sid: String },
 }
 
+impl Page {
+    fn data_and_title(&self) -> (String, &'static str) {
+        match self {
+            Page::Settings => (String::from("settings"), "Settings"),
+            Page::ChangePassword => (String::from("change-password"), "Change password"),
+            Page::ChangeEmail => (String::from("change-email"), "Change email"),
+            Page::ChangeGroup => (String::from("change-group"), "Change group"),
+            Page::Agenda => (String::from("agenda"), "Agenda"),
+            Page::Friends => (String::from("friends"), "Friends"),
+            Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
+            Page::Notifications => (String::from("notifications"), "Notifications"),
+            Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
+            Page::Event { eid } => (format!("event/{eid}"), "Event"),
+        }
+    }
+}
+
 /// A panel displayed on top of the page
 #[derive(Clone, PartialEq)]
 pub enum Panel {
@@ -133,6 +150,8 @@ impl Component for App {
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
+                Some("report") => link2.send_message(Msg::SilentSetPanel(Some(Panel::Report))),
+                Some(email_verification) if email_verification.starts_with("email-verification/") => link2.send_message(Msg::SilentSetPanel(Some(Panel::EmailVerification { feature: "unknown" }))),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].parse().unwrap_or_default();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -245,7 +264,7 @@ impl Component for App {
             survey_answers,
             tabbar_bait_points,
             page,
-            panel: Some(Panel::EmailVerification { feature: "friends" }),
+            panel: None,
             event_closing: false,
             event_popup_size: None,
         }
@@ -371,6 +390,8 @@ impl Component for App {
                 false
             },
             Msg::SetPage(page) => {
+                self.panel = None;
+
                 // Remove bait points
                 match page {
                     Page::Agenda => self.tabbar_bait_points.0 = false,
@@ -418,30 +439,36 @@ impl Component for App {
                 if matches!(&page, Page::Agenda) {
                     self.event_closing = false;
                 }
-                let (data, title) = match &page {
-                    Page::Settings => (String::from("settings"), "Settings"),
-                    Page::ChangePassword => (String::from("change-password"), "Change password"),
-                    Page::ChangeEmail => (String::from("change-email"), "Change email"),
-                    Page::ChangeGroup => (String::from("change-group"), "Change group"),
-                    Page::Agenda => (String::from("agenda"), "Agenda"),
-                    Page::Friends => (String::from("friends"), "Friends"),
-                    Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
-                    Page::Notifications => (String::from("notifications"), "Notifications"),
-                    Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
-                    Page::Event { eid } => (format!("event/{eid}"), "Event"),
-                };
+                let (data, title) = page.data_and_title();
                 history.push_state_with_url(&JsValue::from_str(&data), title, Some(&format!("/{data}"))).unwrap();
                 document.set_title(title);
                 self.page = page;
                 true
             },
             Msg::SilentSetPage(page) => {
+                self.panel = None;
                 self.page = page;
                 true
             },
             Msg::SetPanel(panel) => {
                 let changed = self.panel != panel;
                 self.panel = panel;
+                match &self.panel {
+                    Some(panel) => {
+                        let (data, title) = self.page.data_and_title();
+                        let url = format!("/{data}");
+                        let history = window().history().expect("Failed to access history");
+                        let data = match panel {
+                            Panel::EmailVerification { feature } => format!("email-verification/{}", feature),
+                            Panel::Report => String::from("report"),
+                        };
+                        history.push_state_with_url(&JsValue::from_str(&data), title, Some(&url)).unwrap();
+                    },
+                    None => {
+                        ctx.link().send_message(Msg::SetPage(self.page.clone()));
+                        return false;
+                    }
+                }
                 changed
             }
             Msg::SilentSetPanel(panel) => {
