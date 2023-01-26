@@ -36,7 +36,7 @@ impl FriendsEvents {
     pub fn init() -> Self {
         let local_storage = window().local_storage().unwrap().unwrap();
     
-        let Ok(Some(cached_str)) = local_storage.get(&format!("cached_friends_events")) else { return Self::default() };
+        let Ok(Some(cached_str)) = local_storage.get("cached_friends_events") else { return Self::default() };
         let Ok(cached) = serde_json::from_str::<HashMap<i64, (u64, Vec<RawEvent>)>>(&cached_str) else { return Self::default() };
 
         let mut event_map = HashMap::new();
@@ -56,7 +56,7 @@ impl FriendsEvents {
         // Save to local storage
         let local_storage = window().local_storage().unwrap().unwrap();
         let events = records.into_iter().map(|(id, (time, events))| (id, (time, events))).collect::<HashMap<i64, (u64, Vec<RawEvent>)>>();
-        local_storage.set(&format!("cached_friends_events"), &serde_json::to_string(&events).unwrap()).unwrap();
+        local_storage.set("cached_friends_events", &serde_json::to_string(&events).unwrap()).unwrap();
     }
 
     pub fn update_friend(uid: i64, app_link: AppLink) {
@@ -69,18 +69,16 @@ impl FriendsEvents {
     }
 
     pub fn insert(&mut self, uid: i64, mut events: Vec<RawEvent>) {
-        let now = (js_sys::Date::new_0().get_time() / 1000.0) as u64;
         events.sort_by_key(|event| event.start_unixtime);
-        self.events.insert(uid, (now, Rc::new(events)));
+        self.events.insert(uid, (now() as u64, Rc::new(events)));
         self.save();
     }
 
     pub fn get_events(&self, uid: i64, app_link: AppLink) -> Option<Rc<Vec<RawEvent>>> {
-        let res = self.events.get(&uid).map(|(last_updated, events)| (last_updated, Rc::clone(&events)));
+        let res = self.events.get(&uid).map(|(last_updated, events)| (last_updated, Rc::clone(events)));
         match res {
             Some((last_updated, events)) => {
-                let now = (js_sys::Date::new_0().get_time() / 1000.0) as u64;
-                if now - last_updated > 5*3600 {
+                if now() - *last_updated as i64 > 5*3600 {
                     Self::update_friend(uid, app_link);
                 }
                 Some(events)

@@ -198,7 +198,7 @@ impl Component for App {
 
         // Open survey if one is available and required
         if window().navigator().on_line() { // temporary
-            let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+            let now = now();
             if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
                 if !survey_answers.iter().any(|a| a.id == survey_to_open.id) {
                     ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey_to_open.id.clone() }));
@@ -292,7 +292,7 @@ impl Component for App {
                 self.survey_answers = survey_answers;
 
                 // Automatically open survey if one is available and required
-                let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+                let now = now();
                 if let Some(survey) = self.surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now && !self.survey_answers.iter().any(|a| a.id == s.id)) {
                     ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey.id.clone() }));
                 }

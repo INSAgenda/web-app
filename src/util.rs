@@ -29,8 +29,9 @@ pub fn window() -> web_sys::Window {
     }
 }
 
+#[deprecated(note = "Use now() instead")]
 pub fn now_ts() -> i64 {
-    (js_sys::Date::new_0().get_time() / 1000.0) as i64
+    now()
 }
 
 pub trait HackTraitDocOnWindow {
@@ -115,5 +116,29 @@ pub trait HackTraitProfileUrl {
 impl HackTraitProfileUrl for UserDesc {
     fn profile_url(&self) -> String {
         format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", self.uid)
+    }
+}
+
+pub fn now() -> i64 {
+    (js_sys::Date::new_0().get_time() / 1000.0) as i64
+}
+
+pub fn format_time_diff(diff: i64) -> String {
+    let words = [["secondes", "minutes", "heures", "jours", "semaines", "mois", "années"], ["seconds ago", "minutes ago", "hours ago", "days ago", "weeks ago", "months ago", "years ago"]];
+    let i = usize::from(SETTINGS.lang() != Lang::French);
+    if diff < 60 {
+        format!("{} {}", diff, words[i][0])
+    } else if diff < 3600 {
+        format!("{} {}", diff / 60, words[i][1])
+    } else if diff < 86400 {
+        format!("{} {}", diff / 3600, words[i][2])
+    } else if diff < 7*86400 {
+        format!("{} {}", diff / 86400, words[i][3])
+    } else if diff < 30*86400 {
+        format!("{} {}", diff / (7*86400), words[i][4])
+    } else if diff < 365*86400 {
+        format!("{} {}", diff / (30*86400), words[i][5])
+    } else {
+        format!("{} {}", diff / (365*86400), words[i][6])
     }
 }

@@ -54,8 +54,22 @@ impl Component for Popup {
         let summary = &ctx.props().event.summary;
         let name = ctx.props().event.format_name();
         let opt_location = ctx.props().event.format_location();
+        let comment = Comment {
+            id: 0,
+            parent: None,
+            author: UserDesc {
+                uid: 0,
+                email: String::from("john.doe@insa-rouen.fr"),
+                picture: None,
+            },
+            content: String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies lacinia, nisl nisl aliquet nisl, nec aliquet nisl nisl sit amet nisl."),
+            creation_ts: 1674752390,
+            last_edited_ts: 1674752390,
+            score: 5,
+            vote: 1,
+        };
         let comment = html! {
-            <CommentComp />
+            <CommentComp comment={comment} children={Vec::new()} />
         };
         
         template_html!(

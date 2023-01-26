@@ -214,25 +214,8 @@ impl Component for SettingsPage {
             }
             email = user_info.email.0.to_owned();
             if let Some(last_password_mod) = user_info.last_password_mod {
-                let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
-                let diff = now - last_password_mod;
-                let words = [["secondes", "minutes", "heures", "jours", "semaines", "mois", "années"], ["seconds ago", "minutes ago", "hours ago", "days ago", "weeks ago", "months ago", "years ago"]];
-                let i = if SETTINGS.lang() == Lang::French { 0 } else { 1 };
-                last_password_mod_str = if diff < 60 {
-                    format!("{} {}", diff, words[i][0])
-                } else if diff < 3600 {
-                    format!("{} {}", diff / 60, words[i][1])
-                } else if diff < 86400 {
-                    format!("{} {}", diff / 3600, words[i][2])
-                } else if diff < 7*86400 {
-                    format!("{} {}", diff / 86400, words[i][3])
-                } else if diff < 30*86400 {
-                    format!("{} {}", diff / (7*86400), words[i][4])
-                } else if diff < 365*86400 {
-                    format!("{} {}", diff / (30*86400), words[i][5])
-                } else {
-                    format!("{} {}", diff / (365*86400), words[i][6])
-                };
+                let diff = now() - last_password_mod;
+                last_password_mod_str = format_time_diff(diff);
             }
 
             // Format group
