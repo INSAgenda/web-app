@@ -30,8 +30,11 @@ impl Component for CommentComp {
         let time = format_time_diff(time_diff);
         let content = &comment.content;
         let score = comment.score;
-        let upvoted = comment.vote == 1;
-        let downvoted = comment.vote == -1;
+        let upvote_class = match comment.vote {
+            1 => "comment-upvoted",
+            -1 => "comment-downvoted",
+            _ => "comment-not-voted",
+        };
 
         let onclick_upvote = ctx.link().callback(|_| CommentMsg::Upvote);
         let onclick_downvote = ctx.link().callback(|_| CommentMsg::Downvote);

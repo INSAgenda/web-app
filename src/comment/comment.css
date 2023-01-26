@@ -40,6 +40,16 @@
 
 }
 
+.comment-not-voted .comment-upvote-fill-img, .comment-not-voted .comment-downvote-fill-img {
+    display: none;
+}
+.comment-upvoted .comment-upvote-img, .comment-upvoted .comment-downvote-fill-img {
+    display: none;
+}
+.comment-downvoted .comment-downvote-img, .comment-downvoted .comment-upvote-fill-img {
+    display: none;
+}
+
 .comment-buttons {
     display: flex;
     align-items: center;

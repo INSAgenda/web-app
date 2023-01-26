@@ -11,15 +11,15 @@
                 <p>
                     {{content}}
                 </p>
-                <div class="comment-buttons">
+                <div class="comment-buttons {{upvote_class}}">
                     <button class="comment-upvote-button" onclick={{onclick_upvote}}>
-                        <img present-if=!{{upvoted}} src="/agenda/images/thumbs-up.svg" alt="Upvote" />
-                        <img present-if={{upvoted}}  src="/agenda/images/thumbs-up-fill.svg" alt="Upvote" />
+                        <img class="comment-upvote-img" src="/agenda/images/thumbs-up.svg" alt="Upvote" />
+                        <img class="comment-upvote-fill-img" src="/agenda/images/thumbs-up-fill.svg" alt="Upvote" />
                     </button>
                     <span class="comment-score">{{score}}</span>
                     <button class="comment-downvote-button" onclick={{onclick_downvote}}>
-                        <img present-if=!{{downvoted}} src="/agenda/images/thumbs-down.svg" alt="Downvote" />
-                        <img present-if={{downvoted}}  src="/agenda/images/thumbs-down-fill.svg" alt="Downvote" />
+                        <img class="comment-downvote-img" src="/agenda/images/thumbs-down.svg" alt="Downvote" />
+                        <img class="comment-downvote-fill-img" src="/agenda/images/thumbs-down-fill.svg" alt="Downvote" />
                     </button>
                     <button class="comment-reply-button" onclick={{onclick_reply}}>Reply</button>
                 </div>
