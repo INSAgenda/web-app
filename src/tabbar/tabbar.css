@@ -72,14 +72,14 @@
     #render {
         position: relative;
         left: 4rem;
-        width: calc(100% - 3rem); /* the 3 comes from the padding */
+        width: calc(100% - 4rem);
         box-sizing: border-box;
     }
 
     header {
         position: relative;
         right: 4rem;
-        width: calc(100% + 4rem);
+        width: calc(100% - 3rem); /* the 3 comes from the padding */
         padding-left: 4rem;
     }
 

@@ -258,7 +258,7 @@ impl Component for Agenda {
                     format!("top: calc(-{body_height}px + 4rem); height: calc({body_height}px - 4rem);") // 4rem is the height of the tabbar
                 }
                 false => match popup_size {
-                    Some(popup_size) => format!("left: -{popup_size}px; width: {popup_size}px;"),
+                    Some(popup_size) => format!("left: calc(-{popup_size}px - 4rem); width: calc({popup_size}px + 4rem);"),
                     None => "left: -70vw; width: 70vw;".to_string(),
                 }
             },
