@@ -299,7 +299,9 @@ impl Component for ChangeDataPage {
                     let style = if required {"display: block;"} else {"display: none;"};
                     let missing = input_user_groups.groups().get(id).is_none();
                     let classes = if missing {"dropdown-list dropdown-list-missing"} else {"dropdown-list"};
-                    html! {
+                    let span_style = format!("{style} position: relative; top: .5rem;");
+                    html! {<>
+                        <span style={span_style}>{name}</span>
                         <div class="dropdown-list-box" style={style}>
                             <select required=true class={classes} name={id.clone()} onchange={ctx.link().callback(Msg::GroupSelectChanged)}>
                                 <option disabled=true selected={missing}>{name}</option>
@@ -315,7 +317,7 @@ impl Component for ChangeDataPage {
                                 }
                             </select>
                         </div>
-                    }
+                    </>}
                 }).collect()
             },
             Data::Email(_password, _email) => {redirect("agenda"); html! {}}
