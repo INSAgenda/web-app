@@ -37,6 +37,11 @@ body {
 
 :root {
     color: var(--text);
+    --border-color: #aaa;
+}
+
+:root[data-theme="dark"] #survey {
+    --border-color: #666;
 }
 
 #agenda-main {
