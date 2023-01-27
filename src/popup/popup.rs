@@ -63,7 +63,10 @@ impl Component for Popup {
 
         // Friend counter
         let friends: Vec<_> = ctx.props().friends.deref().as_ref().map(|friends| {
-            friends.friends.iter().filter(|friend| friend.1.matches(&ctx.props().event.group)).map(|f| &f.0).collect()
+            friends.friends.iter().filter(|friend| {
+                let name = friend.0.get_username().split('.').nth(1).map(|n| n.to_uppercase()); // TODO real name
+                friend.1.matches_with_name(&ctx.props().event.group, name.as_deref())
+            }).map(|f| &f.0).collect()
         }).unwrap_or_default();
         let names = friends.iter().map(|friend| friend.email.trim_end_matches("@insa-rouen.fr")).collect::<Vec<_>>();
         let names_iter = names.iter();
@@ -84,7 +87,7 @@ impl Component for Popup {
             name = {&name},
             onclick_close = {onclick_close.clone()},
             onclick_save = {ctx.link().callback(|_| PopupMsg::SaveColors)},
-            onclick_fold = {ctx.link().callback(|_| PopupMsg::FoldFriendCounter)},
+            onclick_fold = {ctx.link().callback(|_| PopupMsg::TriggerFriendCounter)},
             opt_location = {&opt_location},
             event_color = {event_color.clone()},
             alt_iter = { names.iter().map(|name| format!("Avatar of {}", name)) },
