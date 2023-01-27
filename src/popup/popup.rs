@@ -5,7 +5,7 @@ pub struct Popup {
 }
 
 pub enum PopupMsg {
-    FoldFriendCounter,
+    TriggerFriendCounter,
     SaveColors,
 }
 
@@ -51,7 +51,7 @@ impl Component for Popup {
                 
                 true
             }
-            PopupMsg::FoldFriendCounter => {
+            PopupMsg::TriggerFriendCounter => {
                 self.friend_counter_folded = !self.friend_counter_folded;
                 true
             }
