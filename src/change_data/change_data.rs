@@ -178,6 +178,8 @@ impl Component for ChangeDataPage {
                         }}"#, password.replace('"', "\\\""), email.replace('"', "\\\""))
                     },
                     Data::Group(input_user_groups) => {
+                        let mut input_user_groups = input_user_groups.clone();
+
                         // Make sure all fields are set
                         for group in ctx.props().groups.iter() {
                             let required = group.required_if.as_ref().map(|ri| input_user_groups.matches(ri)).unwrap_or(true);
@@ -186,6 +188,9 @@ impl Component for ChangeDataPage {
                                 return true;
                             }
                         }
+
+                        // Sweep groups
+                        input_user_groups.sweep(&ctx.props().groups);
 
                         // Update user info
                         if let Some(new_user_info) = &mut new_user_info {
