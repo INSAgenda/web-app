@@ -63,7 +63,7 @@
     font-size: 1.2rem;
 }
 
-#popup-body>section>p {
+#popup-body>section>p, #popup-body>#popup-friends-unfolded>div {
     margin: .4rem 0;
 }
 
@@ -100,6 +100,50 @@
     }
 }
 
-:root[data-theme="dark"] #popup img {
+:root[data-theme="dark"] #popup-header img {
     filter: invert(1);
+}
+
+/* Friend counter */
+
+#popup-friends-folded {
+    display: flex;
+    align-items: center;
+}
+
+#popup-friend-pictures {
+    display: flex;
+    padding-right: 1rem;
+    margin-right: .5rem;
+}
+
+#popup-friend-pictures>div {
+    height: 2rem;
+    width: 1.3rem;
+    position: relative;
+}
+
+#popup-friend-pictures>div>div, .popup-friend>div {
+    height: 2rem;
+    width: 2rem;
+    border-radius: 1rem;
+    border: 1px solid white; /* var(--border-color) */
+    background-color: var(--closer-background);
+    overflow: hidden;
+}
+
+#popup-friend-pictures>div>div>img, .popup-friend>div>img {
+    padding: 0.293rem; /* Source: https://media.discordapp.net/attachments/939245180077375538/1068655103629852764/20230127_231310.jpg */
+    height: 1.414rem;
+    width: 1.414rem;
+}
+
+.popup-friend {
+    display: flex;
+    align-items: center;
+    margin-bottom: .5rem;
+}
+
+.popup-friend>div {
+    margin-right: .5rem;
 }

@@ -35,6 +35,7 @@ pub struct AgendaProps {
     pub events: Rc<Vec<RawEvent>>,
     pub popup: Option<(RawEvent, bool, Option<usize>)>,
     pub profile_src: Option<String>,
+    pub friends: Rc<Option<FriendLists>>,
 }
 
 impl PartialEq for AgendaProps {
@@ -248,7 +249,7 @@ impl Component for Agenda {
         };
         let opt_popup = ctx.props().popup.as_ref().map(|(event, _, _)|
             html! {
-                <Popup event={event.clone()} agenda_link={ctx.link().clone()} />
+                <Popup event={event.clone()} agenda_link={ctx.link().clone()} friends={Rc::clone(&ctx.props().friends)} />
             }
         );
         let popup_container_style = match &ctx.props().popup {
