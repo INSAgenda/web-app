@@ -65,7 +65,8 @@ impl Component for Popup {
             content: String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies lacinia, nisl nisl aliquet nisl, nec aliquet nisl nisl sit amet nisl."),
             creation_ts: 1674752390,
             last_edited_ts: 1674752390,
-            score: 5,
+            upvotes: 5,
+            downvotes: 1,
             vote: 1,
         };
         let comment2 = Comment {
@@ -79,7 +80,8 @@ impl Component for Popup {
             content: String::from("We are all Satoshi"),
             creation_ts: 1664752794,
             last_edited_ts: 1664752794,
-            score: 500,
+            upvotes: 500,
+            downvotes: 0,
             vote: 1,
         };
         let comment3 = Comment {
@@ -93,7 +95,8 @@ impl Component for Popup {
             content: String::from("I am Satoshi"),
             creation_ts: 1674752390,
             last_edited_ts: 1674752390,
-            score: -5,
+            upvotes: 1,
+            downvotes: 53,
             vote: -1,
         };
         let comments = vec![comment, comment2, comment3];

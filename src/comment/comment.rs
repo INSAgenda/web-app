@@ -75,7 +75,7 @@ impl Component for CommentComp {
         let time_diff = now() - comment.creation_ts;
         let time = format_time_diff(time_diff);
         let content = &comment.content;
-        let score = comment.score - comment.vote as i64 + self.vote as i64;
+        let score = comment.upvotes as i64 - comment.downvotes as i64 - comment.vote as i64 + self.vote as i64;
         let upvote_class = match self.vote {
             1 => "comment-upvoted",
             -1 => "comment-downvoted",
