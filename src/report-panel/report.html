@@ -1,0 +1,43 @@
+<section class="section-page-title">
+    <h2 class="page-title">Signalement</h2>
+    <div class="divider-bar"></div>
+</section>
+<div id="report-panel">
+    <p></p>
+    <label class="survey-radio">
+        <input type="radio" name="report-reason" value="harassment" onchange={{onchange_harassment}} />
+        <div>Harcèlement</div>
+    </label>
+    <label class="survey-radio">
+        <input type="radio" name="report-reason" value="dox" onchange={{onchange}} />
+        <div>Divulgation d'informations personnelles</div>
+    </label>
+    <label class="survey-radio">
+        <input type="radio" name="report-reason" value="nsfw" onchange={{onchange}} />
+        <div>Contenu NSFW</div>
+    </label>
+    <label class="survey-radio">
+        <input type="radio" name="report-reason" value="spam" onchange={{onchange}} />
+        <div>Spam</div>
+    </label>
+    <label class="survey-radio">
+        <input type="radio" name="report-reason" value="illegal" onchange={{onchange}} />
+        <div>Contenu illégal</div>
+    </label>
+    <label class="survey-radio">
+        <input type="radio" name="report-reason" value="unwanted" onchange={{onchange}} />
+        <div>Contenu indésirable</div>
+    </label>
+    <label class="survey-radio">
+        <input type="radio" name="report-reason" value="other" onchange={{onchange}} />
+        <div>Autre</div>
+    </label>
+    <p present-if={{harassment}}>Aucune forme de harcèlement ne sera tolérée sur INSAgenda.</p>
+    <p present-if={{dox}}>Tout contenu qui révèle ou permet de déduire une information personnelle telle que le domicile d'un individu sera supprimé. Evitez de faire confiance à des groupes d'utilisateurs sur INSAgenda, car ils pourraient contenir des utilisateurs que vous ne connaissez pas.</p>
+    <p present-if={{nsfw}}>Tout contenu ou lien vers du contenu NSFW sera supprimé.</p>
+    <p present-if={{spam}}>Contenu délibérément sans intérêt.</p>
+    <p present-if={{illegal}}>Seul le contenu qu'INSAgenda a l'obligation légale de supprimer sera supprimé pour ce motif. Le droit de manifester sa pensée, ses opinions, et de se positionner contre la loi ne saurait être interdit.</p>
+    <p present-if={{unwanted}}>Contenu nocif ou indésirable, quelqu'en soit la manière.</p>
+    <textarea present-if={{other}} placeholder="Décrivez votre motif"></textarea>
+    <button class="primary-button">Signaler</button>
+</div>

@@ -37,6 +37,8 @@ mod comment;
 mod notifications;
 #[path = "email-verification/email_verification.rs"]
 mod email_verification;
+#[path = "report-panel/report.rs"]
+mod report;
 mod util;
 mod slider;
 mod api;
@@ -264,7 +266,7 @@ impl Component for App {
             survey_answers,
             tabbar_bait_points,
             page,
-            panel: None,
+            panel: Some(Panel::Report),
             event_closing: false,
             event_popup_size: None,
         }
@@ -567,7 +569,9 @@ impl Component for App {
                     let email = self.user_info.deref().as_ref().map(|u| u.email.0.to_owned());
                     html!(<EmailVerification feature={feature} email={email} app_link={ctx.link().clone()} />)
                 }
-                Panel::Report => html!(<p>{"Report"}</p>),
+                Panel::Report => {
+                    html!(<ReportPanel />)
+                },
             };
             html!(<>
                 {page}
