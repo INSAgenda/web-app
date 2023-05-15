@@ -16,7 +16,7 @@ impl std::fmt::Display for KnownApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let KnownApiError { kind, messages, message_en, message_fr, .. } = self;
         if let Some(messages) = messages {
-            let msg = messages.get(SETTINGS.locale()).unwrap_or(&kind);
+            let msg = messages.get(SETTINGS.locale()).unwrap_or(kind);
             write!(f, "{msg} ({kind})")    
         } else if let (Some(msg_fr), Some(msg_en)) = (message_fr.as_ref(), message_en.as_ref()) {
             let msg = if SETTINGS.locale() == "fr" { msg_fr } else { msg_en };
@@ -44,6 +44,9 @@ impl std::fmt::Display for ApiError {
 
 impl From<JsValue> for ApiError {
     fn from(value: JsValue) -> Self {
+        if let (Ok(Some(kind)), Ok(message_en), Ok(message_fr), Ok(origin)) = (Reflect::get(&value, &"kind".into()).map(|v| v.as_string()), Reflect::get(&value, &"message_en".into()).map(|v| v.as_string()), Reflect::get(&value, &"message_fr".into()).map(|v| v.as_string()), Reflect::get(&value, &"origin".into()).map(|v| v.as_string())) {
+            return ApiError::Known(KnownApiError { kind, messages: None, message_en, message_fr, origin })
+        }
         ApiError::Unknown(value)
     }
 }

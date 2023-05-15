@@ -10,6 +10,8 @@ mod generic;
 pub use generic::*;
 mod friends;
 pub use friends::*;
+mod textbook;
+pub use textbook::*;
 
 use crate::prelude::*;
 

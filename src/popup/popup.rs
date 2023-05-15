@@ -101,7 +101,7 @@ impl Component for Popup {
         };
         let comments = vec![comment, comment2, comment3];
         let comment = html! {
-            <CommentComp comments={Rc::new(comments)} cid={0} />
+            <CommentComp eid={Rc::new(ctx.props().event.eid.clone())} comments={Rc::new(comments)} cid={0}/>
         };
         
         template_html!(

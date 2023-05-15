@@ -2,6 +2,7 @@ use crate::prelude::*;
 
 #[derive(Properties, Clone, PartialEq)]
 pub struct CommentProps {
+    pub eid: Rc<String>,
     pub comments: Rc<Vec<Comment>>,
     pub cid: u64,
 }
@@ -39,7 +40,14 @@ impl Component for CommentComp {
                 } else {
                     self.vote = 1;
                 }
-                // TODO: API call
+                let vote = self.vote;
+                let eid = ctx.props().eid.to_string();
+                let cid = ctx.props().cid;
+                spawn_local(async move {
+                    if let Err(e) = update_vote(eid, vote, cid).await {
+                        alert(e.to_string());
+                    }
+                });
             }
             CommentMsg::Downvote => {
                 if self.vote == -1 {
@@ -47,7 +55,14 @@ impl Component for CommentComp {
                 } else {
                     self.vote = -1;
                 }
-                // TODO: API call
+                let vote = self.vote;
+                let eid = ctx.props().eid.to_string();
+                let cid = ctx.props().cid;
+                spawn_local(async move {
+                    if let Err(e) = update_vote(eid, vote, cid).await {
+                        alert(e.to_string());
+                    }
+                });
             }
             CommentMsg::StartReply => {
                 self.replying = !self.replying;
@@ -95,7 +110,7 @@ impl Component for CommentComp {
 
         let children = ctx.props().comments.iter().filter(|child| child.parent == Some(comment.cid)).map(|child| {
             html! {
-                <CommentComp comments={Rc::clone(&ctx.props().comments)} cid={child.cid} />
+                <CommentComp eid={Rc::clone(&ctx.props().eid)} comments={Rc::clone(&ctx.props().comments)} cid={child.cid} />
             }
         }).collect::<Html>();
 
