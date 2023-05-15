@@ -11,6 +11,7 @@ pub enum CommentMsg {
     Downvote,
     StartReply,
     SubmitReply,
+    Report,
 }
 
 pub struct CommentComp {
@@ -56,7 +57,9 @@ impl Component for CommentComp {
                 let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
                 let content = textarea.value();
                 // TODO: API call
-                log!("content: {}", content);
+            }
+            CommentMsg::Report => {
+                web_sys::window().unwrap().open_with_url(&format!("mailto:reports@insagenda.fr?subject=Report%20de%20commentaire%20({})", ctx.props().cid)).unwrap();
             }
         }
         true
@@ -87,7 +90,7 @@ impl Component for CommentComp {
         let onclick_downvote = ctx.link().callback(|_| CommentMsg::Downvote);
         let onclick_reply = ctx.link().callback(|_| CommentMsg::StartReply);
         let onclick_reply_cancel = onclick_reply.clone();
-        let onclick_report = onclick_reply.clone();
+        let onclick_report = ctx.link().callback(|_| CommentMsg::Report);
         let onclick_reply_submit = ctx.link().callback(|_| CommentMsg::SubmitReply);
 
         let children = ctx.props().comments.iter().filter(|child| child.parent == Some(comment.cid)).map(|child| {
