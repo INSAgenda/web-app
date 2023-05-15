@@ -37,8 +37,6 @@ mod comment;
 mod notifications;
 #[path = "email-verification/email_verification.rs"]
 mod email_verification;
-#[path = "report-panel/report.rs"]
-mod report;
 mod util;
 mod slider;
 mod api;
@@ -86,7 +84,7 @@ impl Page {
 #[derive(Clone, PartialEq)]
 pub enum Panel {
     EmailVerification { feature: &'static str },
-    Report,
+    // Report, // unsupported
 }
 
 /// A message that can be sent to the `App` component.
@@ -152,7 +150,6 @@ impl Component for App {
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
-                Some("report") => link2.send_message(Msg::SilentSetPanel(Some(Panel::Report))),
                 Some(email_verification) if email_verification.starts_with("email-verification/") => link2.send_message(Msg::SilentSetPanel(Some(Panel::EmailVerification { feature: "unknown" }))),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].parse().unwrap_or_default();
@@ -266,7 +263,7 @@ impl Component for App {
             survey_answers,
             tabbar_bait_points,
             page,
-            panel: Some(Panel::Report),
+            panel: None,
             event_closing: false,
             event_popup_size: None,
         }
@@ -462,7 +459,6 @@ impl Component for App {
                         let history = window().history().expect("Failed to access history");
                         let data = match panel {
                             Panel::EmailVerification { feature } => format!("email-verification/{}", feature),
-                            Panel::Report => String::from("report"),
                         };
                         history.push_state_with_url(&JsValue::from_str(&data), title, Some(&url)).unwrap();
                     },
@@ -569,9 +565,6 @@ impl Component for App {
                     let email = self.user_info.deref().as_ref().map(|u| u.email.0.to_owned());
                     html!(<EmailVerification feature={feature} email={email} app_link={ctx.link().clone()} />)
                 }
-                Panel::Report => {
-                    html!(<ReportPanel />)
-                },
             };
             html!(<>
                 {page}

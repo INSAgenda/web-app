@@ -169,7 +169,7 @@ impl Component for Agenda {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let opt_profile_src = ctx.props().profile_src.as_ref().map(|s| s.clone());
+        let opt_profile_src = ctx.props().profile_src.as_ref().cloned();
         let screen_width = crate::slider::width();
         let mobile = screen_width <= 1000;
         
