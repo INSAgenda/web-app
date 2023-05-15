@@ -71,7 +71,13 @@ impl Component for CommentComp {
                 let el = window().doc().get_element_by_id(&format!("comment-textarea-{}", ctx.props().cid)).unwrap();
                 let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
                 let content = textarea.value();
-                // TODO: API call
+                let eid = ctx.props().eid.to_string();
+                let parent_id = ctx.props().cid;
+                spawn_local(async move {
+                    if let Err(e) = update_comment(eid, None, Some(parent_id), content).await {
+                        alert(e.to_string());
+                    }
+                });
             }
             CommentMsg::Report => {
                 web_sys::window().unwrap().open_with_url(&format!("mailto:reports@insagenda.fr?subject=Report%20de%20commentaire%20({})", ctx.props().cid)).unwrap();
