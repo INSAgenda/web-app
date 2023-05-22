@@ -92,7 +92,7 @@ pub async fn api_post_form(body: &str, endpoint: &str) -> Result<(), ApiError> {
     }
 }
 
-pub async fn api_get<T: DeserializeOwned>(endpoint: &str) -> Result<T, ApiError> {
+pub async fn api_get<T: DeserializeOwned>(endpoint: impl std::fmt::Display) -> Result<T, ApiError> {
     let (api_key, counter) = get_login_info();
 
     let mut req_init = web_sys::RequestInit::new();
@@ -115,7 +115,10 @@ pub async fn api_get<T: DeserializeOwned>(endpoint: &str) -> Result<T, ApiError>
             if std::any::type_name::<T>() == "()" && text.is_empty() {
                 return Ok(serde_json::from_str("null").unwrap());
             }
-            Ok(serde_json::from_str(&text).unwrap())
+            match serde_json::from_str(&text) {
+                Ok(data) => Ok(data),
+                Err(e) => Err(ApiError::Unknown(format!("Failed to parse JSON: {e}").into())),
+            }
         }
         400 | 500 => {
             let text = JsFuture::from(response.text()?).await?;

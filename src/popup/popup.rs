@@ -7,6 +7,7 @@ pub struct Popup {
 pub enum PopupMsg {
     SaveColors,
     Comment,
+    CommentsLoaded(Vec<Comment>),
 }
 
 #[derive(Properties, Clone)]
@@ -26,7 +27,19 @@ impl Component for Popup {
     type Message = PopupMsg;
     type Properties = PopupProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
+        let eid = ctx.props().event.eid.clone();
+        let link = ctx.link().clone();
+        spawn_local(async move {
+            match api_get(format!("comments?eid={eid}")).await {
+                Ok(new_comments) => link.send_message(PopupMsg::CommentsLoaded(new_comments)),
+                Err(e) => {
+                    alert(e.to_string());
+                    link.send_message(PopupMsg::CommentsLoaded(Vec::new()));
+                },
+            }
+        });
+
         Self {
             comments: None,
         }
@@ -34,6 +47,10 @@ impl Component for Popup {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
+            PopupMsg::CommentsLoaded(new_comments) => {
+                self.comments = Some(new_comments);
+                true
+            }
             PopupMsg::SaveColors => {
                 let mobile = width() <= 1000;
                 let document = window().doc();
