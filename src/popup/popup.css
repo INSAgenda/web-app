@@ -88,6 +88,31 @@
     cursor: pointer;
 }
 
+/* Loading animation for comments */
+
+#popup #waiting-screen {
+    padding: 0;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#popup #waiting-screen-message {
+    font-size: 1rem;
+    margin: 0;
+}
+
+#popup .lds-ring {
+    width: 70px;
+    height: 70px;
+}
+
+#popup .lds-ring>div {
+    width: 48px;
+    height: 48px;
+}
+
+/* Dark theme */
+
 :root[data-theme="dark"] #popup-header, :root[data-theme="dark"] #popup {
     border-top: 1px solid #555;
     border-bottom: 1px solid #555;

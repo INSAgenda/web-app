@@ -1,6 +1,8 @@
 use crate::{prelude::*, slider::width};
 
-pub struct Popup {}
+pub struct Popup {
+    comments: Option<Vec<Comment>>,
+}
 
 pub enum PopupMsg {
     SaveColors,
@@ -25,7 +27,9 @@ impl Component for Popup {
     type Properties = PopupProps;
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Self {}
+        Self {
+            comments: None,
+        }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -72,59 +76,19 @@ impl Component for Popup {
         let summary = &ctx.props().event.summary;
         let name = ctx.props().event.format_name();
         let opt_location = ctx.props().event.format_location();
-        let comment = Comment {
-            cid: 0,
-            parent: None,
-            author: UserDesc {
-                uid: 0,
-                email: String::from("john.doe@insa-rouen.fr"),
-                picture: None,
-            },
-            content: String::from("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget ultricies lacinia, nisl nisl aliquet nisl, nec aliquet nisl nisl sit amet nisl."),
-            creation_ts: 1674752390,
-            last_edited_ts: 1674752390,
-            upvotes: 5,
-            downvotes: 1,
-            vote: 1,
-        };
-        let comment2 = Comment {
-            cid: 1,
-            parent: Some(0),
-            author: UserDesc {
-                uid: 1,
-                email: String::from("satoshi@insa-rouen.fr"),
-                picture: None,
-            },
-            content: String::from("We are all Satoshi"),
-            creation_ts: 1664752794,
-            last_edited_ts: 1664752794,
-            upvotes: 500,
-            downvotes: 0,
-            vote: 1,
-        };
-        let comment3 = Comment {
-            cid: 2,
-            parent: Some(0),
-            author: UserDesc {
-                uid: 2,
-                email: String::from("craigh@insa-rouen.fr"),
-                picture: None,
-            },
-            content: String::from("I am Satoshi"),
-            creation_ts: 1674752390,
-            last_edited_ts: 1674752390,
-            upvotes: 1,
-            downvotes: 53,
-            vote: -1,
-        };
-        let comments = vec![comment, comment2, comment3];
-        let comment = html! {
-            <CommentComp
-                eid={Rc::new(ctx.props().event.eid.clone())}
-                comments={Rc::new(comments)}
-                cid={0}
-                user_info={Rc::clone(&ctx.props().user_info)} />
-        };
+
+        let comments_loading = self.comments.is_none();
+        let comments = Rc::new(self.comments.clone().unwrap_or_default());
+        let eid = Rc::new(ctx.props().event.eid.clone());
+        let comment_iter = comments.iter().filter(|c| c.parent.is_none()).map(|c| {
+            html! {
+                <CommentComp
+                    eid={Rc::clone(&eid)}
+                    comments={Rc::clone(&comments)}
+                    cid={c.cid}
+                    user_info={Rc::clone(&ctx.props().user_info)} />
+            }
+        });
 
         let user_avatar = String::from("unknown"); // TODO
         let user_name = ctx.props().user_info.as_ref().as_ref().map(|u| u.email.0.split('@').next().unwrap().to_string()).unwrap_or(String::from("inconnu"));

@@ -45,7 +45,11 @@
                     </div>
                 </div>
             </div>
-            {{comment}}
+            <virtual iter present-if=!{{comments_loading}}>{{comment_iter}}</virtual>
+            <div id="waiting-screen" present-if={{comments_loading}}>
+                <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+                <p id="waiting-screen-message">Chargement des commentaires...</p>
+            </div>
         </section>
     </div>
 </div>
