@@ -33,6 +33,7 @@ impl Component for Popup {
         spawn_local(async move {
             match api_get(format!("comments?eid={eid}")).await {
                 Ok(new_comments) => link.send_message(PopupMsg::CommentsLoaded(new_comments)),
+                Err(ApiError::Known(e)) if e.kind == "textbook_not_found" => link.send_message(PopupMsg::CommentsLoaded(Vec::new())),
                 Err(e) => {
                     alert(e.to_string());
                     link.send_message(PopupMsg::CommentsLoaded(Vec::new()));
