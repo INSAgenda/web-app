@@ -285,7 +285,7 @@ impl Component for App {
                 friends.save();
                 self.friends = Rc::new(Some(friends));
                 
-                matches!(self.page, Page::Friends /* TODO: in a future PR, friends will be used on Page::Event */) || self.tabbar_bait_points.1
+                matches!(self.page, Page::Friends | Page::Event { .. }) || self.tabbar_bait_points.1
             },
             AppMsg::FriendsEventsSuccess { uid, events } => {
                 self.friends_events.insert(uid, events);
