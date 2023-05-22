@@ -411,7 +411,6 @@ impl Component for App {
                     return false;
                 }
 
-                let history = window().history().expect("Failed to access history");
                 let document = window().doc();
                 if let Page::Event { .. } = &page {
                     if let Some(day_el) = document.get_element_by_id("day0") {
@@ -439,7 +438,9 @@ impl Component for App {
                     self.event_closing = false;
                 }
                 let (data, title) = page.data_and_title();
-                history.push_state_with_url(&JsValue::from_str(&data), title, Some(&format!("/{data}"))).unwrap();
+                if let Ok(history) = window().history() {
+                    let _ = history.push_state_with_url(&JsValue::from_str(&data), title, Some(&format!("/{data}")));
+                }
                 document.set_title(title);
                 self.page = page;
                 true
