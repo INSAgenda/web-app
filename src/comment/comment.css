@@ -13,7 +13,8 @@
 }
 
 .comment-author-avatar {
-    width: calc(2rem + 2px);
+    width: calc(1.5rem + 2px);
+    padding: .25rem;
     aspect-ratio: 1/1;
 }
 
