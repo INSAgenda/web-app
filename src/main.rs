@@ -488,13 +488,20 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let page = match &self.page {
             Page::Agenda => html!(<>
-                <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} />
+                <Agenda
+                    events={Rc::clone(&self.events)}
+                    app_link={ctx.link().clone()}
+                    user_info={Rc::clone(&self.user_info)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Event { eid } => {
                 let event = self.events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
                 html!(<>
-                    <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} />
+                    <Agenda
+                        events={Rc::clone(&self.events)}
+                        app_link={ctx.link().clone()}
+                        popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))}
+                        user_info={Rc::clone(&self.user_info)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
@@ -511,7 +518,11 @@ impl Component for App {
                 let events = self.friends_events.get_events(uid, ctx.link().clone()).unwrap_or_default();
                 let profile_src = format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", uid);
                 html!(<>
-                    <Agenda events={events} app_link={ctx.link().clone()} profile_src={profile_src} />
+                    <Agenda
+                        events={events}
+                        app_link={ctx.link().clone()}
+                        profile_src={profile_src}
+                        user_info={Rc::clone(&self.user_info)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },

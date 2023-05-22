@@ -10,11 +10,12 @@ pub enum PopupMsg {
 pub struct PopupProps {
     pub event: RawEvent,
     pub agenda_link: Scope<Agenda>,
+    pub user_info: Rc<Option<UserInfo>>,
 }
 
 impl PartialEq for PopupProps {
     fn eq(&self, other: &Self) -> bool {
-        self.event == other.event
+        self.event == other.event && self.user_info == other.user_info
     }
 }
 
@@ -101,7 +102,11 @@ impl Component for Popup {
         };
         let comments = vec![comment, comment2, comment3];
         let comment = html! {
-            <CommentComp eid={Rc::new(ctx.props().event.eid.clone())} comments={Rc::new(comments)} cid={0}/>
+            <CommentComp
+                eid={Rc::new(ctx.props().event.eid.clone())}
+                comments={Rc::new(comments)}
+                cid={0}
+                user_info={Rc::clone(&ctx.props().user_info)} />
         };
         
         template_html!(

@@ -5,6 +5,7 @@ pub struct CommentProps {
     pub eid: Rc<String>,
     pub comments: Rc<Vec<Comment>>,
     pub cid: u64,
+    pub user_info: Rc<Option<UserInfo>>,
 }
 
 pub enum CommentMsg {
@@ -94,7 +95,7 @@ impl Component for CommentComp {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let comment = ctx.props().comments.iter().find(|comment| comment.cid == ctx.props().cid).unwrap();
         let cid = comment.cid;
-        let author_avatar = format!("https://api.dicebear.com/5.x/adventurer/svg?seed={}", comment.author.uid);
+        let author_avatar = format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", comment.author.uid);
         let author_name = comment.author.get_username();
         let time_diff = now() - comment.creation_ts;
         let time = format_time_diff(time_diff);
@@ -116,9 +117,17 @@ impl Component for CommentComp {
 
         let children = ctx.props().comments.iter().filter(|child| child.parent == Some(comment.cid)).map(|child| {
             html! {
-                <CommentComp eid={Rc::clone(&ctx.props().eid)} comments={Rc::clone(&ctx.props().comments)} cid={child.cid} />
+                <CommentComp
+                    eid={Rc::clone(&ctx.props().eid)}
+                    comments={Rc::clone(&ctx.props().comments)}
+                    cid={child.cid}
+                    user_info={Rc::clone(&ctx.props().user_info)} />
             }
         }).collect::<Html>();
+
+        //let user_avatar = ctx.props().user_info.map(|u| format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", u.uid)).unwrap_or(String::from(""));
+        let user_avatar = String::from("unknown"); // TODO
+        let user_name = ctx.props().user_info.as_ref().as_ref().map(|u| u.email.0.split('@').next().unwrap().to_string()).unwrap_or(String::from("inconnu"));
 
         template_html!(
             "src/comment/comment.html",

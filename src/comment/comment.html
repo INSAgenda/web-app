@@ -24,12 +24,18 @@
                 </div>
             </div>
             <div present-if={{replying}} class="comment-reply">
-                <div class="comment-bar"></div>
-                <div class="comment-reply-main">
-                    <textarea class="comment-textarea" id="comment-textarea-{{cid}}" placeholder="Ecrivez une réponse"></textarea>
-                    <div class="comment-reply-buttons">
-                        <button class="comment-button" onclick={{onclick_reply_cancel}}>Annuler</button>
-                        <button class="comment-button comment-submit-button" onclick={{onclick_reply_submit}}>Envoyer</button>
+                <div class="comment-header">
+                    <img class="comment-author-avatar" src={{user_avatar}} />
+                    <span class="comment-author-name">{{user_name}}</span>
+                </div>
+                <div class="comment-bottom">
+                    <div class="comment-bar"></div>
+                    <div class="comment-reply-main">
+                        <textarea class="comment-textarea" id="comment-textarea-{{cid}}" placeholder="Ecrivez une réponse"></textarea>
+                        <div class="comment-reply-buttons">
+                            <button class="comment-button" onclick={{onclick_reply_cancel}}>Annuler</button>
+                            <button class="comment-button comment-submit-button" onclick={{onclick_reply_submit}}>Envoyer</button>
+                        </div>
                     </div>
                 </div>
             </div>
