@@ -4,6 +4,7 @@ pub struct Popup {}
 
 pub enum PopupMsg {
     SaveColors,
+    Comment,
 }
 
 #[derive(Properties, Clone)]
@@ -43,6 +44,22 @@ impl Component for Popup {
                 if !mobile {
                     ctx.props().agenda_link.send_message(AgendaMsg::Refresh);
                 }
+                
+                true
+            }
+            PopupMsg::Comment => {
+                let el = window().doc().get_element_by_id("comment-textarea-top").unwrap();
+                let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
+                let content = textarea.value();
+                textarea.set_value("");
+                let eid = ctx.props().event.eid.clone();
+                spawn_local(async move {
+                    if let Err(e) = update_comment(eid, None, None, content).await {
+                        alert(e.to_string());
+                    }
+                });
+                
+                // TODO append to comments
                 
                 true
             }
@@ -108,7 +125,11 @@ impl Component for Popup {
                 cid={0}
                 user_info={Rc::clone(&ctx.props().user_info)} />
         };
-        
+
+        let user_avatar = String::from("unknown"); // TODO
+        let user_name = ctx.props().user_info.as_ref().as_ref().map(|u| u.email.0.split('@').next().unwrap().to_string()).unwrap_or(String::from("inconnu"));
+        let onclick_comment = ctx.link().callback(|_| PopupMsg::Comment);
+
         template_html!(
             "src/popup/popup.html",
             teachers = {ctx.props().event.teachers.join(", ")},
