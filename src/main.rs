@@ -59,7 +59,7 @@ pub enum Page {
     Friends,
     FriendAgenda { pseudo: String },
     Notifications,
-    Event { eid: u64 /* For now this is the start timestamp */ },
+    Event { eid: String },
     Survey { sid: String },
 }
 
@@ -152,7 +152,7 @@ impl Component for App {
                 Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
                 Some(email_verification) if email_verification.starts_with("email-verification/") => link2.send_message(Msg::SilentSetPanel(Some(Panel::EmailVerification { feature: "unknown" }))),
                 Some(event) if event.starts_with("event/") => {
-                    let eid = event[6..].parse().unwrap_or_default();
+                    let eid = event[6..].to_string();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
                 }
                 Some(survey) if survey.starts_with("survey/") => link2.send_message(Msg::SilentSetPage(Page::Survey { sid: survey[7..].to_string() })),
@@ -192,7 +192,7 @@ impl Component for App {
             "/friends" => Page::Friends,
             "/notifications" => Page::Notifications,
             event if event.starts_with("/event/") => {
-                let eid = event[7..].parse().unwrap_or_default();
+                let eid = event[7..].to_string();
                 let link2 = ctx.link().clone();
                 wasm_bindgen_futures::spawn_local(async move {
                     sleep(Duration::from_millis(100)).await;
@@ -496,7 +496,7 @@ impl Component for App {
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Event { eid } => {
-                let event = self.events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
+                let event = self.events.iter().find(|e| e.eid == *eid).unwrap().to_owned();
                 html!(<>
                     <Agenda
                         events={Rc::clone(&self.events)}

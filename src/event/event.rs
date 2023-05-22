@@ -85,10 +85,10 @@ impl Component for EventComp {
         let percent_height = 100.0 / day_sec_count * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;
 
         // Render
-        let eid = ctx.props().event.start_unixtime;
+        let eid = ctx.props().event.eid.clone(); // FIXME: what if eid contains slashes and stuff?
+        let onclick = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Event { eid: eid.clone() } )));
         template_html!(
             "src/event/event.html",
-            onclick = { ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Event { eid } ))) },
             teachers = { ctx.props().event.teachers.join(", ")},
             opt_location = location,
             bg_color = {bg_color.clone()},
