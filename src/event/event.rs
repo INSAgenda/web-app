@@ -10,6 +10,7 @@ pub struct EventCompProps {
     pub day_start: u64,
     pub agenda_link: yew::html::Scope<Agenda>,
     pub week_day: u8,
+    pub comment_counts: Rc<HashMap<String, usize>>,
 }
 
 impl PartialEq for EventCompProps {
@@ -18,6 +19,7 @@ impl PartialEq for EventCompProps {
             && self.event == other.event
             && self.day_start == other.day_start
             && self.week_day == other.week_day
+            && self.comment_counts.get(&self.event.eid) == other.comment_counts.get(&other.event.eid)
     }
 }
 
@@ -87,6 +89,7 @@ impl Component for EventComp {
         // Render
         let eid = ctx.props().event.eid.clone(); // FIXME: what if eid contains slashes and stuff?
         let onclick = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Event { eid: eid.clone() } )));
+        let opt_comment_count = ctx.props().comment_counts.get(&ctx.props().event.eid).copied();
         template_html!(
             "src/event/event.html",
             teachers = { ctx.props().event.teachers.join(", ")},

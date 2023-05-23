@@ -36,11 +36,12 @@ pub struct AgendaProps {
     pub popup: Option<(RawEvent, bool, Option<usize>)>,
     pub profile_src: Option<String>,
     pub user_info: Rc<Option<UserInfo>>,
+    pub comment_counts: Rc<HashMap<String, usize>>,
 }
 
 impl PartialEq for AgendaProps {
     fn eq(&self, other: &Self) -> bool {
-        !COLORS_CHANGED.load(Ordering::Relaxed) && self.events == other.events && self.popup == other.popup && self.user_info == other.user_info
+        !COLORS_CHANGED.load(Ordering::Relaxed) && self.events == other.events && self.popup == other.popup && self.user_info == other.user_info && self.comment_counts == other.comment_counts
     }
 }
 
@@ -205,7 +206,8 @@ impl Component for Agenda {
                         week_day={d}
                         event={e.clone()}
                         day_start={day_start}
-                        agenda_link={ctx.link().clone()}>
+                        agenda_link={ctx.link().clone()}
+                        comment_counts={Rc::clone(&ctx.props().comment_counts)}>
                     </EventComp>
                 });
                 idx += 1;

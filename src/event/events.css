@@ -9,6 +9,17 @@
     position: absolute;
 }
 
+.event-comment-count {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    background-color: var(--primary);
+    padding: 0.2rem;
+    border-radius: 0.2rem;
+    color: white;
+    font-weight: bold;
+}
+
 :root[data-theme="dark"] .event {
     font-weight: bold;
 }

@@ -104,6 +104,7 @@ pub enum Msg {
     GroupsSuccess(Vec<GroupDesc>),
     FriendsSuccess(FriendLists),
     FriendsEventsSuccess{ uid: i64, events: Vec<RawEvent> },
+    CommentCountsSuccess(CommentCounts),
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
     SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
@@ -121,6 +122,7 @@ pub struct App {
     groups: Rc<Vec<GroupDesc>>,
     friends: Rc<Option<FriendLists>>,
     friends_events: FriendsEvents,
+    comment_counts: Rc<CommentCounts>,
     surveys: Vec<Survey>,
     survey_answers: Vec<SurveyAnswers>,
     tabbar_bait_points: (bool, bool, bool, bool),
@@ -170,6 +172,7 @@ impl Component for App {
         let groups: Vec<GroupDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let friends = CachedData::init(ctx.link().clone());
         let friends_events = FriendsEvents::init();
+        let comment_counts = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
@@ -259,6 +262,7 @@ impl Component for App {
             groups: Rc::new(groups),
             friends: Rc::new(friends),
             friends_events,
+            comment_counts: Rc::new(comment_counts),
             surveys,
             survey_answers,
             tabbar_bait_points,
@@ -377,6 +381,10 @@ impl Component for App {
                 self.friends = Rc::new(Some(friends));
                 matches!(self.page, Page::Friends)
             },
+            Msg::CommentCountsSuccess(comment_counts) => {
+                self.comment_counts = Rc::new(comment_counts);
+                matches!(self.page, Page::Agenda)
+            }
             AppMsg::ScheduleFailure(api_error) => {
                 api_error.handle_api_error();
                 if self.events.is_empty() {
@@ -492,7 +500,8 @@ impl Component for App {
                 <Agenda
                     events={Rc::clone(&self.events)}
                     app_link={ctx.link().clone()}
-                    user_info={Rc::clone(&self.user_info)} />
+                    user_info={Rc::clone(&self.user_info)}
+                    comment_counts={Rc::clone(&self.comment_counts)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Event { eid } => {
@@ -502,7 +511,8 @@ impl Component for App {
                         events={Rc::clone(&self.events)}
                         app_link={ctx.link().clone()}
                         popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))}
-                        user_info={Rc::clone(&self.user_info)} />
+                        user_info={Rc::clone(&self.user_info)}
+                        comment_counts={Rc::clone(&self.comment_counts)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
@@ -523,7 +533,8 @@ impl Component for App {
                         events={events}
                         app_link={ctx.link().clone()}
                         profile_src={profile_src}
-                        user_info={Rc::clone(&self.user_info)} />
+                        user_info={Rc::clone(&self.user_info)}
+                        comment_counts={Rc::clone(&self.comment_counts)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
