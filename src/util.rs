@@ -123,6 +123,7 @@ pub fn now() -> i64 {
     (js_sys::Date::new_0().get_time() / 1000.0) as i64
 }
 
+// FIXME: plural forms
 pub fn format_time_diff(diff: i64) -> String {
     let words = [["secondes", "minutes", "heures", "jours", "semaines", "mois", "années"], ["seconds ago", "minutes ago", "hours ago", "days ago", "weeks ago", "months ago", "years ago"]];
     let i = usize::from(SETTINGS.lang() != Lang::French);
