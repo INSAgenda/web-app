@@ -74,14 +74,31 @@ impl Component for Popup {
                 let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
                 let content = textarea.value();
                 textarea.set_value("");
+                
+                let mut comments = self.comments.take().unwrap_or_default();
+                comments.push(Comment {
+                    cid: 0,
+                    parent: None,
+                    author: UserDesc {
+                        uid: ctx.props().user_info.as_ref().as_ref().map(|u| u.uid).unwrap_or(0),
+                        email: ctx.props().user_info.as_ref().as_ref().map(|u| u.email.0.split('@').next().unwrap().to_string()).unwrap_or(String::from("unknown")),
+                        picture: None,
+                    },
+                    content: content.clone(),
+                    creation_ts: now(),
+                    last_edited_ts: now(),
+                    upvotes: 1,
+                    downvotes: 0,
+                    vote: 1,
+                });
+                self.comments = Some(comments);
+
                 let eid = ctx.props().event.eid.clone();
                 spawn_local(async move {
                     if let Err(e) = update_comment(eid, None, None, content).await {
                         alert(e.to_string());
                     }
                 });
-                
-                // TODO append to comments
                 
                 true
             }
