@@ -125,13 +125,9 @@ impl Component for CommentComp {
             }
         }).collect::<Html>();
 
-        //let user_avatar = ctx.props().user_info.map(|u| format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", u.uid)).unwrap_or(String::from(""));
-        let user_avatar = String::from("unknown"); // TODO
+        let user_avatar = format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", ctx.props().user_info.as_ref().as_ref().map(|u| u.uid).unwrap_or(0));
         let user_name = ctx.props().user_info.as_ref().as_ref().map(|u| u.email.0.split('@').next().unwrap().to_string()).unwrap_or(String::from("inconnu"));
 
-        template_html!(
-            "src/comment/comment.html",
-            ...
-        )
+        template_html!("src/comment/comment.html", ...)
     }
 }
