@@ -11,13 +11,19 @@
 
 .event-comment-count {
     position: absolute;
-    bottom: 0.5rem;
-    right: 0.5rem;
+    bottom: .5rem;
+    right: .5rem;
     background-color: var(--primary);
-    padding: 0.2rem;
-    border-radius: 0.2rem;
+    padding: .1rem .4rem;
+    border-radius: .2rem;
     color: white;
     font-weight: bold;
+}
+
+.seen-event-comment-count {
+    color: black;
+    background-color: #ffffff88;
+    font-weight: normal;
 }
 
 :root[data-theme="dark"] .event {

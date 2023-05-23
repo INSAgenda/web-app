@@ -31,17 +31,23 @@ pub enum AgendaMsg {
 
 #[derive(Properties, Clone)]
 pub struct AgendaProps {
-    pub app_link: Scope<App>,
+    pub app_link: AppLink,
     pub events: Rc<Vec<RawEvent>>,
     pub popup: Option<(RawEvent, bool, Option<usize>)>,
     pub profile_src: Option<String>,
     pub user_info: Rc<Option<UserInfo>>,
-    pub comment_counts: Rc<HashMap<String, usize>>,
+    pub comment_counts: Rc<CommentCounts>,
+    pub seen_comment_counts: Rc<CommentCounts>,
 }
 
 impl PartialEq for AgendaProps {
     fn eq(&self, other: &Self) -> bool {
-        !COLORS_CHANGED.load(Ordering::Relaxed) && self.events == other.events && self.popup == other.popup && self.user_info == other.user_info && self.comment_counts == other.comment_counts
+        !COLORS_CHANGED.load(Ordering::Relaxed)
+            && self.events == other.events
+            && self.popup == other.popup
+            && self.user_info == other.user_info
+            && self.comment_counts == other.comment_counts
+            && self.seen_comment_counts == other.seen_comment_counts
     }
 }
 
@@ -207,7 +213,8 @@ impl Component for Agenda {
                         event={e.clone()}
                         day_start={day_start}
                         agenda_link={ctx.link().clone()}
-                        comment_counts={Rc::clone(&ctx.props().comment_counts)}>
+                        comment_counts={Rc::clone(&ctx.props().comment_counts)}
+                        seen_comment_counts={Rc::clone(&ctx.props().seen_comment_counts)}>
                     </EventComp>
                 });
                 idx += 1;

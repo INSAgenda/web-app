@@ -28,3 +28,4 @@ pub use yew::{html::Scope, prelude::*};
 pub use yew_template::template_html;
 
 pub type AppLink = yew::html::Scope<crate::App>;
+pub type AgendaLink = yew::html::Scope<crate::agenda::Agenda>;

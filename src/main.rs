@@ -98,6 +98,7 @@ pub enum Msg {
     FetchColors(HashMap<String, String>),
     SaveSurveyAnswer(SurveyAnswers),
     UpdateFriends(FriendLists),
+    MarkCommentsAsSeen(String),
 
     // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
@@ -123,6 +124,7 @@ pub struct App {
     friends: Rc<Option<FriendLists>>,
     friends_events: FriendsEvents,
     comment_counts: Rc<CommentCounts>,
+    seen_comment_counts: Rc<CommentCounts>,
     surveys: Vec<Survey>,
     survey_answers: Vec<SurveyAnswers>,
     tabbar_bait_points: (bool, bool, bool, bool),
@@ -185,6 +187,15 @@ impl Component for App {
             None => Vec::new(),
         };
 
+        // Load seen comment counts
+        let local_storage = window().local_storage().unwrap().unwrap();
+        let mut seen_comment_counts = Rc::new(HashMap::new());
+        'try_load: {
+            let Ok(Some(data)) = local_storage.get("seen_comment_counts") else { break 'try_load };
+            let Ok(data) = serde_json::from_str::<HashMap<String, usize>>(&data) else { break 'try_load };
+            seen_comment_counts = Rc::new(data);
+        }
+    
         // Open corresponding page
         let path = window().location().pathname().unwrap_or_default();
         let page = match path.as_str().trim_end_matches('/') {
@@ -263,6 +274,7 @@ impl Component for App {
             friends: Rc::new(friends),
             friends_events,
             comment_counts: Rc::new(comment_counts),
+            seen_comment_counts,
             surveys,
             survey_answers,
             tabbar_bait_points,
@@ -420,15 +432,21 @@ impl Component for App {
                 }
 
                 let document = window().doc();
-                if let Page::Event { .. } = &page {
+                if let Page::Event { eid } = &page {
+                    let should_mark_as_seen = self.comment_counts.get(eid).copied().unwrap_or_default() != self.seen_comment_counts.get(eid).copied().unwrap_or(0);
+                    let eid2 = eid.clone();
                     if let Some(day_el) = document.get_element_by_id("day0") {
                         let rect = day_el.get_bounding_client_rect();
                         self.event_popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
                     }
+                    let app_link = ctx.link().clone();
                     spawn_local(async move {
                         window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
                         sleep(Duration::from_millis(500)).await;
                         window().doc().body().unwrap().remove_attribute("style").unwrap();
+                        if should_mark_as_seen {
+                            app_link.send_message(Msg::MarkCommentsAsSeen(eid2));
+                        }
                     });
                 }
                 if matches!((&self.page, &page), (Page::Event { .. }, Page::Agenda)) && !self.event_closing {
@@ -487,6 +505,16 @@ impl Component for App {
                 crate::COLORS.update_colors(new_colors);
                 true
             },
+            AppMsg::MarkCommentsAsSeen(eid) => {
+                let val = self.comment_counts.get(&eid).copied().unwrap_or_default();
+                let mut seen_comment_counts = self.seen_comment_counts.deref().clone();
+                seen_comment_counts.retain(|eid,_| self.events.iter().any(|e| e.eid == *eid));
+                seen_comment_counts.insert(eid, val);
+                self.seen_comment_counts = Rc::new(seen_comment_counts);
+                let local_storage = window().local_storage().unwrap().unwrap();
+                let _ = local_storage.set("seen_comment_counts", &serde_json::to_string(&self.seen_comment_counts.deref()).unwrap());
+                true
+            }
         }
     }
     
@@ -501,7 +529,8 @@ impl Component for App {
                     events={Rc::clone(&self.events)}
                     app_link={ctx.link().clone()}
                     user_info={Rc::clone(&self.user_info)}
-                    comment_counts={Rc::clone(&self.comment_counts)} />
+                    comment_counts={Rc::clone(&self.comment_counts)}
+                    seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Event { eid } => {
@@ -512,7 +541,8 @@ impl Component for App {
                         app_link={ctx.link().clone()}
                         popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))}
                         user_info={Rc::clone(&self.user_info)}
-                        comment_counts={Rc::clone(&self.comment_counts)} />
+                        comment_counts={Rc::clone(&self.comment_counts)}
+                        seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
@@ -534,7 +564,8 @@ impl Component for App {
                         app_link={ctx.link().clone()}
                         profile_src={profile_src}
                         user_info={Rc::clone(&self.user_info)}
-                        comment_counts={Rc::clone(&self.comment_counts)} />
+                        comment_counts={Rc::clone(&self.comment_counts)}
+                        seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
