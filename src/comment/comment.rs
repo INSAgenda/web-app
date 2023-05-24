@@ -1,11 +1,18 @@
 use crate::prelude::*;
 
-#[derive(Properties, Clone, PartialEq)]
+#[derive(Properties, Clone)]
 pub struct CommentProps {
     pub eid: Rc<String>,
     pub comments: Rc<Vec<Comment>>,
     pub cid: u64,
     pub user_info: Rc<Option<UserInfo>>,
+    pub popup_link: PopupLink,
+}
+
+impl PartialEq for CommentProps {
+    fn eq(&self, other: &Self) -> bool {
+        self.eid == other.eid && self.comments == other.comments && self.cid == other.cid && self.user_info == other.user_info
+    }
 }
 
 pub enum CommentMsg {
@@ -20,7 +27,6 @@ pub enum CommentMsg {
 }
 
 pub struct CommentComp {
-    comments_override: Option<Rc<Vec<Comment>>>,
     vote: i8,
     replying: bool,
     editing: bool,
@@ -33,7 +39,6 @@ impl Component for CommentComp {
     fn create(ctx: &Context<Self>) -> Self {
         let comment = ctx.props().comments.iter().find(|comment| comment.cid == ctx.props().cid).unwrap();
         Self {
-            comments_override: None,
             vote: comment.vote,
             replying: false,
             editing: false,
@@ -41,11 +46,6 @@ impl Component for CommentComp {
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        if ctx.props().cid == 0 {
-            alert("Veuillez actualiser la page pour interagir avec les nouveaux commentaires.");
-            return false; // Fake comments are unresponsive
-        }
-
         match msg {
             CommentMsg::Upvote => {
                 if self.vote == 1 {
@@ -93,34 +93,16 @@ impl Component for CommentComp {
                 let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
                 let content = textarea.value();
 
-                let mut comments_override: Vec<Comment> = match self.comments_override.take() {
-                    Some(comments_override) => comments_override.as_ref().to_owned(),
-                    None => ctx.props().comments.to_vec()
-                };
-                comments_override.push(Comment {
-                    cid: 0,
-                    parent: Some(ctx.props().cid),
-                    author: UserDesc {
-                        uid: ctx.props().user_info.as_ref().as_ref().map(|u| u.uid).unwrap_or(0),
-                        email: ctx.props().user_info.as_ref().as_ref().map(|u| u.email.0.split('@').next().unwrap().to_string()).unwrap_or(String::from("unknown")),
-                        picture: None,
-                    },
-                    content: content.clone(),
-                    creation_ts: now(),
-                    last_edited_ts: now(),
-                    upvotes: 1,
-                    downvotes: 0,
-                    vote: 1,
-                });
-                self.comments_override = Some(Rc::new(comments_override));
                 self.replying = false;
 
                 let eid = ctx.props().eid.to_string();
                 let parent_id = ctx.props().cid;
+                let popup_link = ctx.props().popup_link.clone();
                 spawn_local(async move {
                     if let Err(e) = update_comment(eid, None, Some(parent_id), content).await {
                         alert(e.to_string());
                     }
+                    popup_link.send_message(PopupMsg::ReloadComments);
                 });
             }
             CommentMsg::SubmitEdit => {
@@ -128,22 +110,16 @@ impl Component for CommentComp {
                 let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
                 let content = textarea.value();
 
-                let mut comments_override: Vec<Comment> = match self.comments_override.take() {
-                    Some(comments_override) => comments_override.as_ref().to_owned(),
-                    None => ctx.props().comments.to_vec()
-                };
-                let comment = comments_override.iter_mut().find(|comment| comment.cid == ctx.props().cid).unwrap();
-                comment.content = content.clone();
-                comment.last_edited_ts = now();
-                self.comments_override = Some(Rc::new(comments_override));
                 self.editing = false;
 
                 let eid = ctx.props().eid.to_string();
                 let cid = ctx.props().cid;
+                let popup_link = ctx.props().popup_link.clone();
                 spawn_local(async move {
                     if let Err(e) = update_comment(eid, Some(cid), None, content).await {
                         alert(e.to_string());
                     }
+                    popup_link.send_message(PopupMsg::ReloadComments);
                 });
             }
             CommentMsg::Report => {
@@ -155,20 +131,15 @@ impl Component for CommentComp {
                 web_sys::window().unwrap().open_with_url(&url_to_open).unwrap();
             }
             CommentMsg::Delete => {
-                let mut comments_override: Vec<Comment> = match self.comments_override.take() {
-                    Some(comments_override) => comments_override.as_ref().to_owned(),
-                    None => ctx.props().comments.to_vec()
-                };
-                comments_override.retain(|comment| comment.cid != ctx.props().cid);
-                self.comments_override = Some(Rc::new(comments_override));
-
                 let eid = ctx.props().eid.to_string();
                 let cid = ctx.props().cid;
+                let popup_link = ctx.props().popup_link.clone();
                 spawn_local(async move {
                     match api_delete(format!("comment?eid={eid}&cid={cid}")).await {
                         Ok(()) => (),
                         Err(e) => alert(e.to_string()), 
                     }
+                    popup_link.send_message(PopupMsg::ReloadComments);
                 });
             }
         }
@@ -181,10 +152,7 @@ impl Component for CommentComp {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let comments = match self.comments_override.as_ref() {
-            Some(comments) => Rc::clone(comments),
-            None => Rc::clone(&ctx.props().comments),
-        };
+        let comments = Rc::clone(&ctx.props().comments);
         let comment = match comments.iter().find(|comment| comment.cid == ctx.props().cid) {
             Some(comment) => comment,
             None => return html!(),
@@ -222,7 +190,8 @@ impl Component for CommentComp {
                     eid={Rc::clone(&ctx.props().eid)}
                     comments={Rc::clone(&comments)}
                     cid={child.cid}
-                    user_info={Rc::clone(&ctx.props().user_info)} />
+                    user_info={Rc::clone(&ctx.props().user_info)}
+                    popup_link={ctx.props().popup_link.clone()} />
             }
         }).collect::<Html>();
 

@@ -2,11 +2,11 @@ use crate::{prelude::*, slider::width};
 
 pub struct Popup {
     comments: Option<Vec<Comment>>,
-    counter: u64,
 }
 
 pub enum PopupMsg {
     SaveColors,
+    ReloadComments,
     Comment,
     CommentsLoaded(Vec<Comment>),
 }
@@ -44,7 +44,6 @@ impl Component for Popup {
 
         Self {
             comments: None,
-            counter: 0,
         }
     }
 
@@ -61,6 +60,10 @@ impl Component for Popup {
                 new_comments.sort_by_key(|c| c.downvotes as isize - c.upvotes as isize);
                 self.comments = Some(new_comments);
                 true
+            }
+            PopupMsg::ReloadComments => {
+                *self = Component::create(ctx);
+                false
             }
             PopupMsg::SaveColors => {
                 let mobile = width() <= 1000;
@@ -84,31 +87,14 @@ impl Component for Popup {
                 let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
                 let content = textarea.value();
                 textarea.set_value("");
-                
-                let mut comments = self.comments.take().unwrap_or_default();
-                comments.push(Comment {
-                    cid: self.counter,
-                    parent: None,
-                    author: UserDesc {
-                        uid: ctx.props().user_info.as_ref().as_ref().map(|u| u.uid).unwrap_or(0),
-                        email: ctx.props().user_info.as_ref().as_ref().map(|u| u.email.0.split('@').next().unwrap().to_string()).unwrap_or(String::from("unknown")),
-                        picture: None,
-                    },
-                    content: content.clone(),
-                    creation_ts: now(),
-                    last_edited_ts: now(),
-                    upvotes: 1,
-                    downvotes: 0,
-                    vote: 1,
-                });
-                self.counter += 1;
-                self.comments = Some(comments);
 
                 let eid = ctx.props().event.eid.clone();
+                let link = ctx.link().clone();
                 spawn_local(async move {
                     if let Err(e) = update_comment(eid, None, None, content).await {
                         alert(e.to_string());
                     }
+                    link.send_message(PopupMsg::ReloadComments);
                 });
                 
                 true
@@ -132,7 +118,8 @@ impl Component for Popup {
                     eid={Rc::clone(&eid)}
                     comments={Rc::clone(&comments)}
                     cid={c.cid}
-                    user_info={Rc::clone(&ctx.props().user_info)} />
+                    user_info={Rc::clone(&ctx.props().user_info)}
+                    popup_link={ctx.link().clone()} />
             }
         });
 
