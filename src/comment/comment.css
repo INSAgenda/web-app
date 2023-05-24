@@ -42,7 +42,7 @@
     width: 100%;
 }
 
-.comment-buttons {
+.comment-buttons, .comment-reply-buttons {
     display: flex;
     align-items: center;
     margin-top: 0.5rem;
