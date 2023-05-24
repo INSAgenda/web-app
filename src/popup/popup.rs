@@ -48,6 +48,13 @@ impl Component for Popup {
         }
     }
 
+    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
+        if ctx.props().event.eid != old_props.event.eid {
+            *self = Component::create(ctx);
+        }
+        true
+    }
+
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             PopupMsg::CommentsLoaded(new_comments) => {
