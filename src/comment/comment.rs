@@ -195,6 +195,7 @@ impl Component for CommentComp {
         let author_name = comment.author.get_username();
         let time_diff = now() - comment.creation_ts;
         let time = format_time_diff(time_diff);
+        let modified = comment.last_edited_ts > comment.creation_ts;
         let score = comment.upvotes as i64 - comment.downvotes as i64 - comment.vote as i64 + self.vote as i64;
         let upvote_class = match self.vote {
             1 => "comment-upvoted",
