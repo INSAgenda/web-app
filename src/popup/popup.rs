@@ -57,7 +57,8 @@ impl Component for Popup {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            PopupMsg::CommentsLoaded(new_comments) => {
+            PopupMsg::CommentsLoaded(mut new_comments) => {
+                new_comments.sort_by_key(|c| c.downvotes as isize - c.upvotes as isize);
                 self.comments = Some(new_comments);
                 true
             }
