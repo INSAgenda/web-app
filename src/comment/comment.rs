@@ -12,8 +12,10 @@ pub enum CommentMsg {
     Upvote,
     Downvote,
     StartReply,
+    StartEdit,
     SubmitReply,
     Report,
+    Delete,
 }
 
 pub struct CommentComp {
@@ -75,12 +77,18 @@ impl Component for CommentComp {
             CommentMsg::StartReply => {
                 self.replying = !self.replying;
             }
+            CommentMsg::StartEdit => {
+                todo!()
+            }
             CommentMsg::SubmitReply => {
                 let el = window().doc().get_element_by_id(&format!("comment-textarea-{}", ctx.props().cid)).unwrap();
                 let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
                 let content = textarea.value();
 
-                let mut comments_override: Vec<Comment> = ctx.props().comments.to_vec();
+                let mut comments_override: Vec<Comment> = match self.comments_override.take() {
+                    Some(comments_override) => comments_override.as_ref().to_owned(),
+                    None => ctx.props().comments.to_vec()
+                };
                 comments_override.push(Comment {
                     cid: 0,
                     parent: Some(ctx.props().cid),
@@ -110,6 +118,23 @@ impl Component for CommentComp {
             CommentMsg::Report => {
                 web_sys::window().unwrap().open_with_url(&format!("mailto:reports@insagenda.fr?subject=Report%20de%20commentaire%20({})", ctx.props().cid)).unwrap();
             }
+            CommentMsg::Delete => {
+                let mut comments_override: Vec<Comment> = match self.comments_override.take() {
+                    Some(comments_override) => comments_override.as_ref().to_owned(),
+                    None => ctx.props().comments.to_vec()
+                };
+                comments_override.retain(|comment| comment.cid != ctx.props().cid);
+                self.comments_override = Some(Rc::new(comments_override));
+
+                let eid = ctx.props().eid.to_string();
+                let cid = ctx.props().cid;
+                spawn_local(async move {
+                    match api_delete(format!("comment?eid={eid}&cid={cid}")).await {
+                        Ok(()) => (),
+                        Err(e) => alert(e.to_string()), 
+                    }
+                });
+            }
         }
         true
     }
@@ -124,8 +149,11 @@ impl Component for CommentComp {
             Some(comments) => Rc::clone(comments),
             None => Rc::clone(&ctx.props().comments),
         };
-
-        let comment = comments.iter().find(|comment| comment.cid == ctx.props().cid).unwrap();
+        let comment = match comments.iter().find(|comment| comment.cid == ctx.props().cid) {
+            Some(comment) => comment,
+            None => return html!(),
+        };
+        
         let cid = comment.cid;
         let author_avatar = format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", comment.author.uid);
         let author_name = comment.author.get_username();
@@ -144,8 +172,10 @@ impl Component for CommentComp {
         let onclick_downvote = ctx.link().callback(|_| CommentMsg::Downvote);
         let onclick_reply = ctx.link().callback(|_| CommentMsg::StartReply);
         let onclick_reply_cancel = onclick_reply.clone();
-        let onclick_report = ctx.link().callback(|_| CommentMsg::Report);
+        let onclick_edit = ctx.link().callback(|_| CommentMsg::StartEdit);
         let onclick_reply_submit = ctx.link().callback(|_| CommentMsg::SubmitReply);
+        let onclick_report = ctx.link().callback(|_| CommentMsg::Report);
+        let onclick_delete = ctx.link().callback(move |_| CommentMsg::Delete);
 
         let children = comments.iter().filter(|child| child.parent == Some(comment.cid)).map(|child| {
             html! {
@@ -157,8 +187,10 @@ impl Component for CommentComp {
             }
         }).collect::<Html>();
 
-        let user_avatar = format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", ctx.props().user_info.as_ref().as_ref().map(|u| u.uid).unwrap_or(0));
-        let user_name = ctx.props().user_info.as_ref().as_ref().map(|u| u.email.0.split('@').next().unwrap().to_string()).unwrap_or(String::from("inconnu"));
+        let self_uid = ctx.props().user_info.as_ref().as_ref().map(|u| u.uid).unwrap_or(0);
+        let is_author = comment.author.uid == self_uid;
+        let self_avatar = format!("https://api.dicebear.com/5.x/identicon/svg?seed={self_uid}");
+        let self_name = ctx.props().user_info.as_ref().as_ref().map(|u| u.email.0.split('@').next().unwrap().to_string()).unwrap_or(String::from("inconnu"));
 
         template_html!("src/comment/comment.html", ...)
     }

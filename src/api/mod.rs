@@ -93,10 +93,18 @@ pub async fn api_post_form(body: &str, endpoint: &str) -> Result<(), ApiError> {
 }
 
 pub async fn api_get<T: DeserializeOwned>(endpoint: impl std::fmt::Display) -> Result<T, ApiError> {
+    api_custom_method(endpoint, "GET").await
+}
+
+pub async fn api_delete<T: DeserializeOwned>(endpoint: impl std::fmt::Display) -> Result<T, ApiError> {
+    api_custom_method(endpoint, "DELETE").await
+}
+
+async fn api_custom_method<T: DeserializeOwned>(endpoint: impl std::fmt::Display, method: &'static str) -> Result<T, ApiError> {
     let (api_key, counter) = get_login_info();
 
     let mut req_init = web_sys::RequestInit::new();
-    req_init.method("GET");
+    req_init.method(method);
 
     let request = Request::new_with_str_and_init(&format!("/api/{endpoint}"), &req_init).unwrap();
     request.headers().set(
