@@ -2,6 +2,7 @@ use crate::{prelude::*, slider::width};
 
 pub struct Popup {
     comments: Option<Vec<Comment>>,
+    counter: u64,
 }
 
 pub enum PopupMsg {
@@ -43,6 +44,7 @@ impl Component for Popup {
 
         Self {
             comments: None,
+            counter: 0,
         }
     }
 
@@ -77,7 +79,7 @@ impl Component for Popup {
                 
                 let mut comments = self.comments.take().unwrap_or_default();
                 comments.push(Comment {
-                    cid: 0,
+                    cid: self.counter,
                     parent: None,
                     author: UserDesc {
                         uid: ctx.props().user_info.as_ref().as_ref().map(|u| u.uid).unwrap_or(0),
@@ -91,6 +93,7 @@ impl Component for Popup {
                     downvotes: 0,
                     vote: 1,
                 });
+                self.counter += 1;
                 self.comments = Some(comments);
 
                 let eid = ctx.props().event.eid.clone();
