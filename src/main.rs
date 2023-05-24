@@ -435,9 +435,11 @@ impl Component for App {
                 if let Page::Event { eid } = &page {
                     let should_mark_as_seen = self.comment_counts.get(eid).copied().unwrap_or_default() != self.seen_comment_counts.get(eid).copied().unwrap_or(0);
                     let eid2 = eid.clone();
-                    if let Some(day_el) = document.get_element_by_id("day0") {
-                        let rect = day_el.get_bounding_client_rect();
-                        self.event_popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
+                    if !matches!(self.page, Page::Event { .. }) || self.event_popup_size.is_none() {
+                        if let Some(day_el) = document.get_element_by_id("day0") {
+                            let rect = day_el.get_bounding_client_rect();
+                            self.event_popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
+                        }
                     }
                     let app_link = ctx.link().clone();
                     spawn_local(async move {
