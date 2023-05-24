@@ -109,6 +109,10 @@
     border: 1px solid var(--border-color);
 }
 
+p ~ .comment-textarea {
+    display: none; /* When viewing, p exists so the editing area is hidden. When editing, p is removed which breaks this rule. */
+}
+
 .comment-reply-buttons {
     display: flex;
     justify-content: flex-end;

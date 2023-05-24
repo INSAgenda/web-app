@@ -12,8 +12,9 @@ pub enum CommentMsg {
     Upvote,
     Downvote,
     StartReply,
-    StartEdit,
     SubmitReply,
+    StartEdit,
+    SubmitEdit,
     Report,
     Delete,
 }
@@ -22,6 +23,7 @@ pub struct CommentComp {
     comments_override: Option<Rc<Vec<Comment>>>,
     vote: i8,
     replying: bool,
+    editing: bool,
 }
 
 impl Component for CommentComp {
@@ -34,6 +36,7 @@ impl Component for CommentComp {
             comments_override: None,
             vote: comment.vote,
             replying: false,
+            editing: false,
         }
     }
 
@@ -78,10 +81,15 @@ impl Component for CommentComp {
                 self.replying = !self.replying;
             }
             CommentMsg::StartEdit => {
-                todo!()
+                self.editing = !self.editing;
+                if self.editing {
+                    let el = window().doc().get_element_by_id(&format!("comment-textarea-{}", ctx.props().cid)).unwrap();
+                    let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
+                    textarea.set_value(&ctx.props().comments.iter().find(|comment| comment.cid == ctx.props().cid).unwrap().content);
+                }
             }
             CommentMsg::SubmitReply => {
-                let el = window().doc().get_element_by_id(&format!("comment-textarea-{}", ctx.props().cid)).unwrap();
+                let el = window().doc().get_element_by_id(&format!("reply-textarea-{}", ctx.props().cid)).unwrap();
                 let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
                 let content = textarea.value();
 
@@ -111,6 +119,29 @@ impl Component for CommentComp {
                 let parent_id = ctx.props().cid;
                 spawn_local(async move {
                     if let Err(e) = update_comment(eid, None, Some(parent_id), content).await {
+                        alert(e.to_string());
+                    }
+                });
+            }
+            CommentMsg::SubmitEdit => {
+                let el = window().doc().get_element_by_id(&format!("comment-textarea-{}", ctx.props().cid)).unwrap();
+                let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
+                let content = textarea.value();
+
+                let mut comments_override: Vec<Comment> = match self.comments_override.take() {
+                    Some(comments_override) => comments_override.as_ref().to_owned(),
+                    None => ctx.props().comments.to_vec()
+                };
+                let comment = comments_override.iter_mut().find(|comment| comment.cid == ctx.props().cid).unwrap();
+                comment.content = content.clone();
+                comment.last_edited_ts = now();
+                self.comments_override = Some(Rc::new(comments_override));
+                self.editing = false;
+
+                let eid = ctx.props().eid.to_string();
+                let cid = ctx.props().cid;
+                spawn_local(async move {
+                    if let Err(e) = update_comment(eid, Some(cid), None, content).await {
                         alert(e.to_string());
                     }
                 });
@@ -159,7 +190,6 @@ impl Component for CommentComp {
         let author_name = comment.author.get_username();
         let time_diff = now() - comment.creation_ts;
         let time = format_time_diff(time_diff);
-        let content = &comment.content;
         let score = comment.upvotes as i64 - comment.downvotes as i64 - comment.vote as i64 + self.vote as i64;
         let upvote_class = match self.vote {
             1 => "comment-upvoted",
@@ -167,13 +197,16 @@ impl Component for CommentComp {
             _ => "comment-not-voted",
         };
         let replying = self.replying;
+        let editing = self.editing;
 
         let onclick_upvote = ctx.link().callback(|_| CommentMsg::Upvote);
         let onclick_downvote = ctx.link().callback(|_| CommentMsg::Downvote);
         let onclick_reply = ctx.link().callback(|_| CommentMsg::StartReply);
         let onclick_reply_cancel = onclick_reply.clone();
-        let onclick_edit = ctx.link().callback(|_| CommentMsg::StartEdit);
         let onclick_reply_submit = ctx.link().callback(|_| CommentMsg::SubmitReply);
+        let onclick_edit = ctx.link().callback(|_| CommentMsg::StartEdit);
+        let onclick_edit_cancel = onclick_edit.clone();
+        let onclick_edit_submit = ctx.link().callback(|_| CommentMsg::SubmitEdit);
         let onclick_report = ctx.link().callback(|_| CommentMsg::Report);
         let onclick_delete = ctx.link().callback(move |_| CommentMsg::Delete);
 
@@ -192,6 +225,10 @@ impl Component for CommentComp {
         let self_avatar = format!("https://api.dicebear.com/5.x/identicon/svg?seed={self_uid}");
         let self_name = ctx.props().user_info.as_ref().as_ref().map(|u| u.email.0.split('@').next().unwrap().to_string()).unwrap_or(String::from("inconnu"));
 
-        template_html!("src/comment/comment.html", ...)
+        template_html!(
+            "src/comment/comment.html",
+            content = { comment.content.clone() },
+            ...
+        )
     }
 }
