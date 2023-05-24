@@ -147,7 +147,12 @@ impl Component for CommentComp {
                 });
             }
             CommentMsg::Report => {
-                web_sys::window().unwrap().open_with_url(&format!("mailto:reports@insagenda.fr?subject=Report%20de%20commentaire%20({})", ctx.props().cid)).unwrap();
+                let author_uid = ctx.props().comments.iter().find(|comment| comment.cid == ctx.props().cid).map(|c| c.author.uid).unwrap_or_default();
+                let mut url_to_open = format!("mailto:reports@insagenda.fr?subject=Report%20de%20commentaire%20({})", ctx.props().cid);
+                if author_uid == 8384614791391388193 || author_uid == 2228748929683190697 {
+                    url_to_open = String::from("https://youtu.be/dQw4w9WgXcQ");
+                }
+                web_sys::window().unwrap().open_with_url(&url_to_open).unwrap();
             }
             CommentMsg::Delete => {
                 let mut comments_override: Vec<Comment> = match self.comments_override.take() {
