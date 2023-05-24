@@ -2,8 +2,8 @@
     margin-top: 1rem;
 }
 
-:root[data-theme="dark"] #popup .comment img {
-    filter: unset;
+.comment-author-avatar {
+    filter: unset !important;
 }
 
 .comment-header {
