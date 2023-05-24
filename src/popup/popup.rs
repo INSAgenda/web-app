@@ -2,9 +2,11 @@ use crate::{prelude::*, slider::width};
 
 pub struct Popup {
     comments: Option<Vec<Comment>>,
+    friend_counter_folded: bool,
 }
 
 pub enum PopupMsg {
+    TriggerFriendCounter,
     SaveColors,
     ReloadComments,
     Comment,
@@ -16,6 +18,7 @@ pub struct PopupProps {
     pub event: RawEvent,
     pub agenda_link: Scope<Agenda>,
     pub user_info: Rc<Option<UserInfo>>,
+    pub friends: Rc<Option<FriendLists>>,
 }
 
 impl PartialEq for PopupProps {
@@ -44,6 +47,7 @@ impl Component for Popup {
 
         Self {
             comments: None,
+            friend_counter_folded: true,
         }
     }
 
@@ -96,7 +100,10 @@ impl Component for Popup {
                     }
                     link.send_message(PopupMsg::ReloadComments);
                 });
-                
+                true
+            }
+            PopupMsg::TriggerFriendCounter => {
+                self.friend_counter_folded = !self.friend_counter_folded;
                 true
             }
         }
@@ -104,6 +111,22 @@ impl Component for Popup {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let onclick_close = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Agenda)));
+
+        // Friend counter
+        let friends: Vec<_> = ctx.props().friends.deref().as_ref().map(|friends| {
+            friends.friends.iter().filter(|friend| {
+                let name = friend.0.get_username().split('.').nth(1).map(|n| n.to_uppercase()); // TODO real name
+                friend.1.matches_with_name(&ctx.props().event.group, name.as_deref())
+            }).map(|f| &f.0).collect()
+        }).unwrap_or_default();
+        let names = friends.iter().map(|friend| friend.email.trim_end_matches("@insa-rouen.fr")).collect::<Vec<_>>();
+        let names_iter = names.iter();
+        let friend_count = friends.len();
+        let friend_counter_folded = friend_count != 0 && self.friend_counter_folded;
+        let friend_counter_unfolded = friend_count != 0 && !self.friend_counter_folded;
+        let only_one_friend = friend_count == 1;
+        let z_index_iter = 1..friend_count+1;
+
         let event_color = COLORS.get(&ctx.props().event.summary);
         let summary = &ctx.props().event.summary;
         let name = ctx.props().event.format_name();
@@ -134,8 +157,11 @@ impl Component for Popup {
             name = {&name},
             onclick_close = {onclick_close.clone()},
             onclick_save = {ctx.link().callback(|_| PopupMsg::SaveColors)},
+            onclick_fold = {ctx.link().callback(|_| PopupMsg::TriggerFriendCounter)},
             opt_location = {&opt_location},
             event_color = {event_color.clone()},
+            alt_iter = { names.iter().map(|name| format!("Avatar of {}", name)) },
+            picture_iter = { friends.iter().map(|friend| friend.profile_url()) },
             ...
         )
     }

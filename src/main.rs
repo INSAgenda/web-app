@@ -531,6 +531,7 @@ impl Component for App {
                     events={Rc::clone(&self.events)}
                     app_link={ctx.link().clone()}
                     user_info={Rc::clone(&self.user_info)}
+                    friends={Rc::clone(&self.friends)}
                     comment_counts={Rc::clone(&self.comment_counts)}
                     seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
@@ -542,6 +543,7 @@ impl Component for App {
                         events={Rc::clone(&self.events)}
                         app_link={ctx.link().clone()}
                         popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))}
+                        friends={Rc::clone(&self.friends)}
                         user_info={Rc::clone(&self.user_info)}
                         comment_counts={Rc::clone(&self.comment_counts)}
                         seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
@@ -565,6 +567,7 @@ impl Component for App {
                         events={events}
                         app_link={ctx.link().clone()}
                         profile_src={profile_src}
+                        friends={Rc::clone(&self.friends)}
                         user_info={Rc::clone(&self.user_info)}
                         comment_counts={Rc::clone(&self.comment_counts)}
                         seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />

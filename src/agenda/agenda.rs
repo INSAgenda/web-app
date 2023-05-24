@@ -38,6 +38,7 @@ pub struct AgendaProps {
     pub user_info: Rc<Option<UserInfo>>,
     pub comment_counts: Rc<CommentCounts>,
     pub seen_comment_counts: Rc<CommentCounts>,
+    pub friends: Rc<Option<FriendLists>>,
 }
 
 impl PartialEq for AgendaProps {
@@ -261,6 +262,7 @@ impl Component for Agenda {
                 <Popup
                     event={event.clone()}
                     agenda_link={ctx.link().clone()}
+                    friends={Rc::clone(&ctx.props().friends)}
                     user_info={Rc::clone(&ctx.props().user_info)} />
             }
         );

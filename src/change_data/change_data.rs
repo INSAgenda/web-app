@@ -178,6 +178,8 @@ impl Component for ChangeDataPage {
                         }}"#, password.replace('"', "\\\""), email.replace('"', "\\\""))
                     },
                     Data::Group(input_user_groups) => {
+                        let mut input_user_groups = input_user_groups.clone();
+
                         // Make sure all fields are set
                         for group in ctx.props().groups.iter() {
                             let required = group.required_if.as_ref().map(|ri| input_user_groups.matches(ri)).unwrap_or(true);
@@ -186,6 +188,9 @@ impl Component for ChangeDataPage {
                                 return true;
                             }
                         }
+
+                        // Sweep groups
+                        input_user_groups.sweep(&ctx.props().groups);
 
                         // Update user info
                         if let Some(new_user_info) = &mut new_user_info {
@@ -298,9 +303,11 @@ impl Component for ChangeDataPage {
                     let required = required_if.as_ref().map(|ri| input_user_groups.matches(ri)).unwrap_or(true);
                     let style = if required {"display: block;"} else {"display: none;"};
                     let missing = input_user_groups.groups().get(id).is_none();
+                    let span_style = if missing { "display: none;" } else { "" };
                     let classes = if missing {"dropdown-list dropdown-list-missing"} else {"dropdown-list"};
                     html! {
                         <div class="dropdown-list-box" style={style}>
+                            <span style={span_style}>{name}</span>
                             <select required=true class={classes} name={id.clone()} onchange={ctx.link().callback(Msg::GroupSelectChanged)}>
                                 <option disabled=true selected={missing}>{name}</option>
                                 {
