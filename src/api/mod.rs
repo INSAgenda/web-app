@@ -131,7 +131,10 @@ async fn api_custom_method<T: DeserializeOwned>(endpoint: impl std::fmt::Display
         400 | 500 => {
             let text = JsFuture::from(response.text()?).await?;
             let text: String = text.as_string().unwrap();
-            Err(ApiError::Known(serde_json::from_str(&text).unwrap()))
+            match serde_json::from_str(&text) {
+                Ok(data) => Err(ApiError::Known(data)),
+                Err(e) => Err(ApiError::Unknown(format!("Failed to parse JSON: {e}").into())),
+            }
         },
         _ => Err(ApiError::Unknown(response.into()))
     }
