@@ -50,6 +50,11 @@ fn load_cached<T: CachedData>() -> Option<(i64, T)> {
     let storage_key = T::storage_key();
 
     let Ok(Some(Ok(last_updated))) = local_storage.get(&format!("last_updated_{storage_key}")).map(|v| v.map(|v| v.parse())) else { return None };
+    if storage_key == "events" { // Temporary
+        if last_updated < 1684973740 {
+            return None;
+        }
+    }
     let Ok(Some(cached_str)) = local_storage.get(&format!("cached_{storage_key}")) else { return None };
     let Ok(cached) = serde_json::from_str::<T>(&cached_str) else { return None };
 
