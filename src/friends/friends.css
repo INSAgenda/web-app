@@ -1,11 +1,6 @@
 #friends {
     width: calc(100% - 2rem);
     margin: 0 1rem;
-    --border-color: #aaa; /* cf surveys.css */
-}
-
-:root[data-theme="dark"] #survey {
-    --border-color: #666;
 }
 
 #friends>section {
@@ -48,7 +43,8 @@
     align-items: center;
 }
 
-.friends-agenda-button, .friends-cancel-button {
+/* TODO: move this into frontend */
+.friends-agenda-button, .friends-cancel-button, .comment-button {
     all: unset;
     border: 1px solid var(--primary);
     color: var(--primary);
@@ -64,7 +60,7 @@
     color: var(--border-color);
 }
 
-.friends-decline-button, .friends-accept-button {
+.friends-decline-button, .friends-accept-button, .comment-upvote-button, .comment-downvote-button {
     all: unset;
     cursor: pointer;
     width: 1.7rem;
@@ -73,7 +69,7 @@
     border-radius: 0.85rem;
 }
 
-.friends-decline-button>img, .friends-accept-button>img {
+.friends-decline-button>img, .friends-accept-button>img, .comment-upvote-button>img, .comment-downvote-button>img {
     width: 100%;
     aspect-ratio: 1 / 1;
 }

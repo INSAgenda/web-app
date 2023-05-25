@@ -31,6 +31,8 @@ mod sortable;
 mod tabbar;
 #[path = "friends/friends.rs"]
 mod friends;
+#[path = "comment/comment.rs"]
+mod comment;
 #[path = "notifications/notifications.rs"]
 mod notifications;
 #[path = "email-verification/email_verification.rs"]
@@ -57,26 +59,53 @@ pub enum Page {
     Friends,
     FriendAgenda { pseudo: String },
     Notifications,
-    EmailVerification { feature: &'static str },
-    Event { eid: u64 /* For now this is the start timestamp */ },
+    Event { eid: String },
     Survey { sid: String },
+}
+
+impl Page {
+    fn data_and_title(&self) -> (String, &'static str) {
+        match self {
+            Page::Settings => (String::from("settings"), "Settings"),
+            Page::ChangePassword => (String::from("change-password"), "Change password"),
+            Page::ChangeEmail => (String::from("change-email"), "Change email"),
+            Page::ChangeGroup => (String::from("change-group"), "Change group"),
+            Page::Agenda => (String::from("agenda"), "Agenda"),
+            Page::Friends => (String::from("friends"), "Friends"),
+            Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
+            Page::Notifications => (String::from("notifications"), "Notifications"),
+            Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
+            Page::Event { eid } => (format!("event/{eid}"), "Event"),
+        }
+    }
+}
+
+/// A panel displayed on top of the page
+#[derive(Clone, PartialEq)]
+pub enum Panel {
+    EmailVerification { feature: &'static str },
+    // Report, // unsupported
 }
 
 /// A message that can be sent to the `App` component.
 pub enum Msg {
     /// Switch page
     SetPage(Page),
+    SetPanel(Option<Panel>),
     /// Switch page without saving it in the history
     SilentSetPage(Page),
+    SilentSetPanel(Option<Panel>),
     FetchColors(HashMap<String, String>),
     SaveSurveyAnswer(SurveyAnswers),
     UpdateFriends(FriendLists),
+    MarkCommentsAsSeen(String),
 
     // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
     GroupsSuccess(Vec<GroupDesc>),
     FriendsSuccess(FriendLists),
     FriendsEventsSuccess{ uid: i64, events: Vec<RawEvent> },
+    CommentCountsSuccess(CommentCounts),
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
     SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
@@ -94,10 +123,13 @@ pub struct App {
     groups: Rc<Vec<GroupDesc>>,
     friends: Rc<Option<FriendLists>>,
     friends_events: FriendsEvents,
+    comment_counts: Rc<CommentCounts>,
+    seen_comment_counts: Rc<CommentCounts>,
     surveys: Vec<Survey>,
     survey_answers: Vec<SurveyAnswers>,
     tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
+    panel: Option<Panel>,
 
     event_closing: bool,
     event_popup_size: Option<usize>,
@@ -122,9 +154,9 @@ impl Component for App {
                 Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
-                Some("email-verification") => link2.send_message(Msg::SilentSetPage(Page::EmailVerification { feature: "unknown" })),
+                Some(email_verification) if email_verification.starts_with("email-verification/") => link2.send_message(Msg::SilentSetPanel(Some(Panel::EmailVerification { feature: "unknown" }))),
                 Some(event) if event.starts_with("event/") => {
-                    let eid = event[6..].parse().unwrap_or_default();
+                    let eid = event[6..].to_string();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
                 }
                 Some(survey) if survey.starts_with("survey/") => link2.send_message(Msg::SilentSetPage(Page::Survey { sid: survey[7..].to_string() })),
@@ -142,6 +174,7 @@ impl Component for App {
         let groups: Vec<GroupDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let friends = CachedData::init(ctx.link().clone());
         let friends_events = FriendsEvents::init();
+        let comment_counts = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
@@ -154,6 +187,15 @@ impl Component for App {
             None => Vec::new(),
         };
 
+        // Load seen comment counts
+        let local_storage = window().local_storage().unwrap().unwrap();
+        let mut seen_comment_counts = Rc::new(HashMap::new());
+        'try_load: {
+            let Ok(Some(data)) = local_storage.get("seen_comment_counts") else { break 'try_load };
+            let Ok(data) = serde_json::from_str::<HashMap<String, usize>>(&data) else { break 'try_load };
+            seen_comment_counts = Rc::new(data);
+        }
+    
         // Open corresponding page
         let path = window().location().pathname().unwrap_or_default();
         let page = match path.as_str().trim_end_matches('/') {
@@ -163,9 +205,8 @@ impl Component for App {
             "/change-group" => Page::ChangeGroup,
             "/friends" => Page::Friends,
             "/notifications" => Page::Notifications,
-            "/email-verification" => Page::EmailVerification { feature: "unknown" },
             event if event.starts_with("/event/") => {
-                let eid = event[7..].parse().unwrap_or_default();
+                let eid = event[7..].to_string();
                 let link2 = ctx.link().clone();
                 wasm_bindgen_futures::spawn_local(async move {
                     sleep(Duration::from_millis(100)).await;
@@ -196,7 +237,7 @@ impl Component for App {
 
         // Open survey if one is available and required
         if window().navigator().on_line() { // temporary
-            let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+            let now = now();
             if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
                 if !survey_answers.iter().any(|a| a.id == survey_to_open.id) {
                     ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey_to_open.id.clone() }));
@@ -232,10 +273,13 @@ impl Component for App {
             groups: Rc::new(groups),
             friends: Rc::new(friends),
             friends_events,
+            comment_counts: Rc::new(comment_counts),
+            seen_comment_counts,
             surveys,
             survey_answers,
             tabbar_bait_points,
             page,
+            panel: None,
             event_closing: false,
             event_popup_size: None,
         }
@@ -257,7 +301,7 @@ impl Component for App {
                 friends.save();
                 self.friends = Rc::new(Some(friends));
                 
-                matches!(self.page, Page::Friends /* TODO: in a future PR, friends will be used on Page::Event */) || self.tabbar_bait_points.1
+                matches!(self.page, Page::Friends | Page::Event { .. }) || self.tabbar_bait_points.1
             },
             AppMsg::FriendsEventsSuccess { uid, events } => {
                 self.friends_events.insert(uid, events);
@@ -290,7 +334,7 @@ impl Component for App {
                 self.survey_answers = survey_answers;
 
                 // Automatically open survey if one is available and required
-                let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
+                let now = now();
                 if let Some(survey) = self.surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now && !self.survey_answers.iter().any(|a| a.id == s.id)) {
                     ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey.id.clone() }));
                 }
@@ -349,6 +393,10 @@ impl Component for App {
                 self.friends = Rc::new(Some(friends));
                 matches!(self.page, Page::Friends)
             },
+            Msg::CommentCountsSuccess(comment_counts) => {
+                self.comment_counts = Rc::new(comment_counts);
+                matches!(self.page, Page::Agenda)
+            }
             AppMsg::ScheduleFailure(api_error) => {
                 api_error.handle_api_error();
                 if self.events.is_empty() {
@@ -361,6 +409,8 @@ impl Component for App {
                 false
             },
             Msg::SetPage(page) => {
+                self.panel = None;
+
                 // Remove bait points
                 match page {
                     Page::Agenda => self.tabbar_bait_points.0 = false,
@@ -381,17 +431,24 @@ impl Component for App {
                     return false;
                 }
 
-                let history = window().history().expect("Failed to access history");
                 let document = window().doc();
-                if let Page::Event { .. } = &page {
-                    if let Some(day_el) = document.get_element_by_id("day0") {
-                        let rect = day_el.get_bounding_client_rect();
-                        self.event_popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
+                if let Page::Event { eid } = &page {
+                    let should_mark_as_seen = self.comment_counts.get(eid).copied().unwrap_or_default() != self.seen_comment_counts.get(eid).copied().unwrap_or(0);
+                    let eid2 = eid.clone();
+                    if !matches!(self.page, Page::Event { .. }) || self.event_popup_size.is_none() {
+                        if let Some(day_el) = document.get_element_by_id("day0") {
+                            let rect = day_el.get_bounding_client_rect();
+                            self.event_popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
+                        }
                     }
+                    let app_link = ctx.link().clone();
                     spawn_local(async move {
                         window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
                         sleep(Duration::from_millis(500)).await;
                         window().doc().body().unwrap().remove_attribute("style").unwrap();
+                        if should_mark_as_seen {
+                            app_link.send_message(Msg::MarkCommentsAsSeen(eid2));
+                        }
                     });
                 }
                 if matches!((&self.page, &page), (Page::Event { .. }, Page::Agenda)) && !self.event_closing {
@@ -408,32 +465,58 @@ impl Component for App {
                 if matches!(&page, Page::Agenda) {
                     self.event_closing = false;
                 }
-                let (data, title) = match &page {
-                    Page::Settings => (String::from("settings"), "Settings"),
-                    Page::ChangePassword => (String::from("change-password"), "Change password"),
-                    Page::ChangeEmail => (String::from("change-email"), "Change email"),
-                    Page::ChangeGroup => (String::from("change-group"), "Change group"),
-                    Page::EmailVerification { .. } => (format!("email-verification"), "Email verification"),
-                    Page::Agenda => (String::from("agenda"), "Agenda"),
-                    Page::Friends => (String::from("friends"), "Friends"),
-                    Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
-                    Page::Notifications => (String::from("notifications"), "Notifications"),
-                    Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
-                    Page::Event { eid } => (format!("event/{eid}"), "Event"),
-                };
-                history.push_state_with_url(&JsValue::from_str(&data), title, Some(&format!("/{data}"))).unwrap();
-                document.set_title(&format!("{}", title));
+                let (data, title) = page.data_and_title();
+                if let Ok(history) = window().history() {
+                    let _ = history.push_state_with_url(&JsValue::from_str(&data), title, Some(&format!("/{data}")));
+                }
+                document.set_title(title);
                 self.page = page;
                 true
             },
             Msg::SilentSetPage(page) => {
+                self.panel = None;
                 self.page = page;
                 true
+            },
+            Msg::SetPanel(panel) => {
+                let changed = self.panel != panel;
+                self.panel = panel;
+                match &self.panel {
+                    Some(panel) => {
+                        let (data, title) = self.page.data_and_title();
+                        let url = format!("/{data}");
+                        let history = window().history().expect("Failed to access history");
+                        let data = match panel {
+                            Panel::EmailVerification { feature } => format!("email-verification/{}", feature),
+                        };
+                        history.push_state_with_url(&JsValue::from_str(&data), title, Some(&url)).unwrap();
+                    },
+                    None => {
+                        ctx.link().send_message(Msg::SetPage(self.page.clone()));
+                        return false;
+                    }
+                }
+                changed
+            }
+            Msg::SilentSetPanel(panel) => {
+                let changed = self.panel != panel;
+                self.panel = panel;
+                changed
             },
             Msg::FetchColors(new_colors) => {
                 crate::COLORS.update_colors(new_colors);
                 true
             },
+            AppMsg::MarkCommentsAsSeen(eid) => {
+                let val = self.comment_counts.get(&eid).copied().unwrap_or_default();
+                let mut seen_comment_counts = self.seen_comment_counts.deref().clone();
+                seen_comment_counts.retain(|eid,_| self.events.iter().any(|e| e.eid == *eid));
+                seen_comment_counts.insert(eid, val);
+                self.seen_comment_counts = Rc::new(seen_comment_counts);
+                let local_storage = window().local_storage().unwrap().unwrap();
+                let _ = local_storage.set("seen_comment_counts", &serde_json::to_string(&self.seen_comment_counts.deref()).unwrap());
+                true
+            }
         }
     }
     
@@ -442,15 +525,28 @@ impl Component for App {
     }
     
     fn view(&self, ctx: &Context<Self>) -> Html {
-        match &self.page {
+        let page = match &self.page {
             Page::Agenda => html!(<>
-                <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} friends={Rc::clone(&self.friends)} />
+                <Agenda
+                    events={Rc::clone(&self.events)}
+                    app_link={ctx.link().clone()}
+                    user_info={Rc::clone(&self.user_info)}
+                    friends={Rc::clone(&self.friends)}
+                    comment_counts={Rc::clone(&self.comment_counts)}
+                    seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Event { eid } => {
-                let event = self.events.iter().find(|e| e.start_unixtime == *eid).unwrap().to_owned();
+                let event = self.events.iter().find(|e| e.eid == *eid).unwrap().to_owned();
                 html!(<>
-                    <Agenda events={Rc::clone(&self.events)} app_link={ctx.link().clone()} popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))} friends={Rc::clone(&self.friends)} />
+                    <Agenda
+                        events={Rc::clone(&self.events)}
+                        app_link={ctx.link().clone()}
+                        popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))}
+                        friends={Rc::clone(&self.friends)}
+                        user_info={Rc::clone(&self.user_info)}
+                        comment_counts={Rc::clone(&self.comment_counts)}
+                        seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
@@ -460,14 +556,21 @@ impl Component for App {
             </>),
             Page::FriendAgenda { pseudo } => {
                 let email = format!("{pseudo}@insa-rouen.fr");
-                let uid = match self.friends.deref().as_ref().map(|f| f.friends.iter().find(|f| f.0.email == *email)).flatten() {
+                let uid = match self.friends.deref().as_ref().and_then(|f| f.friends.iter().find(|f| f.0.email == *email)) {
                     Some(f) => f.0.uid,
                     None => return html!("404 friend not found"), // TODO 404 page
                 };
-                let events = self.friends_events.get_events(uid, ctx.link().clone()).unwrap_or(Rc::new(Vec::new()));
+                let events = self.friends_events.get_events(uid, ctx.link().clone()).unwrap_or_default();
                 let profile_src = format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", uid);
                 html!(<>
-                    <Agenda events={events} app_link={ctx.link().clone()} profile_src={profile_src} friends={Rc::clone(&self.friends)} />
+                    <Agenda
+                        events={events}
+                        app_link={ctx.link().clone()}
+                        profile_src={profile_src}
+                        friends={Rc::clone(&self.friends)}
+                        user_info={Rc::clone(&self.user_info)}
+                        comment_counts={Rc::clone(&self.comment_counts)}
+                        seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
@@ -514,13 +617,20 @@ impl Component for App {
                 let answers = self.survey_answers.iter().find(|s| s.id == *sid).map(|a| a.answers.to_owned());
                 html!(<SurveyComp survey={survey.clone()} answers={answers} app_link={ctx.link().clone()} />)
             },
-            Page::EmailVerification { feature } => {
-                let email = self.user_info.deref().as_ref().map(|u| u.email.0.to_owned());
-                html!(<>
-                    <EmailVerification feature={feature} app_link={ctx.link().clone()} email={email} />
-                    <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
-                </>)
-            },
+        };
+        if let Some(panel) = &self.panel {
+            let panel = match panel {
+                Panel::EmailVerification { feature } => {
+                    let email = self.user_info.deref().as_ref().map(|u| u.email.0.to_owned());
+                    html!(<EmailVerification feature={feature} email={email} app_link={ctx.link().clone()} />)
+                }
+            };
+            html!(<>
+                {page}
+                <div id="panel"><div>{panel}</div></div>
+            </>)
+        } else {
+            page
         }
     }
 }

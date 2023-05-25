@@ -59,8 +59,7 @@ impl Colors {
 
         if let Some(time) = local_storage.get_item("last_colors_updated").unwrap() {
             let last_updated = time.parse::<i64>().unwrap();
-            let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
-            if now - last_updated < 15 { 
+            if now() - last_updated < 15 { 
                 return;
             }   
         }
@@ -90,10 +89,9 @@ impl Colors {
         }
         local_colors.extend(remote_colors);
         // Save last updated time
-        let now = (js_sys::Date::new_0().get_time() / 1000.0) as i64;
 
         let local_storage = window().local_storage().unwrap().unwrap();
-        local_storage.set_item("last_colors_updated", &now.to_string()).unwrap();
+        local_storage.set_item("last_colors_updated", &now().to_string()).unwrap();
         drop(local_colors);
         crate::colors::COLORS_CHANGED.store(true, std::sync::atomic::Ordering::Relaxed);
         self.save();

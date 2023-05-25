@@ -7,7 +7,13 @@ fn alert_with_report(message: impl AsRef<str>, report: bool) {
     }
 
     let doc = window().doc();
-    let error_container = doc.get_element_by_id("errors").unwrap();
+    let error_container = match doc.get_element_by_id("errors") {
+        Some(container) => container,
+        None => {
+            log!("No error container found, cannot display error: {}", message.as_ref());
+            return;
+        }
+    };
     for child in error_container.children().into_iter() {
         let child: HtmlElement = child.dyn_into().unwrap();
         if child.inner_text() == message.as_ref() {

@@ -171,3 +171,17 @@ impl CachedData for FriendLists {
         }
     }
 }
+
+pub type CommentCounts = HashMap<String, usize>;
+
+impl CachedData for CommentCounts {
+    fn storage_key() ->  &'static str { "comment_counts" }
+    fn endpoint() ->  &'static str { "/api/textbook-course-ids" }
+    fn cache_duration() -> u64 { 3600 }
+    fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
+        match result {
+            Ok(val) => app_link.send_message(AppMsg::CommentCountsSuccess(val)),
+            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
+        }
+    }
+}

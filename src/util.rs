@@ -29,8 +29,9 @@ pub fn window() -> web_sys::Window {
     }
 }
 
+#[deprecated(note = "Use now() instead")]
 pub fn now_ts() -> i64 {
-    (js_sys::Date::new_0().get_time() / 1000.0) as i64
+    now()
 }
 
 pub trait HackTraitDocOnWindow {
@@ -115,5 +116,68 @@ pub trait HackTraitProfileUrl {
 impl HackTraitProfileUrl for UserDesc {
     fn profile_url(&self) -> String {
         format!("https://api.dicebear.com/5.x/identicon/svg?seed={}", self.uid)
+    }
+}
+
+pub fn now() -> i64 {
+    (js_sys::Date::new_0().get_time() / 1000.0) as i64
+}
+
+pub fn format_time_diff(diff: i64) -> String {
+    let french = SETTINGS.lang() == Lang::French;
+    if diff < 60 {
+        match (french, diff >= 2) {
+            (true, true) => format!("{diff} secondes"),
+            (true, false) => format!("{diff} seconde"),
+            (false, true) => format!("{diff} seconds ago"),
+            (false, false) => format!("{diff} second ago"),
+        }
+    } else if diff < 3600 {
+        let diff = diff / 60;
+        match (french, diff >= 2) {
+            (true, true) => format!("{diff} minutes"),
+            (true, false) => format!("{diff} minute"),
+            (false, true) => format!("{diff} minutes ago"),
+            (false, false) => format!("{diff} minute ago"),
+        }
+    } else if diff < 86400 {
+        let diff = diff / 3600;
+        match (french, diff >= 2) {
+            (true, true) => format!("{diff} heures"),
+            (true, false) => format!("{diff} heure"),
+            (false, true) => format!("{diff} hours ago"),
+            (false, false) => format!("{diff} hour ago"),
+        }
+    } else if diff < 7*86400 {
+        let diff = diff / 86400;
+        match (french, diff >= 2) {
+            (true, true) => format!("{diff} jours"),
+            (true, false) => format!("{diff} jour"),
+            (false, true) => format!("{diff} days ago"),
+            (false, false) => format!("{diff} day ago"),
+        }
+    } else if diff < 30*86400 {
+        let diff = diff / (7*86400);
+        match (french, diff >= 2) {
+            (true, true) => format!("{diff} semaines"),
+            (true, false) => format!("{diff} semaine"),
+            (false, true) => format!("{diff} weeks ago"),
+            (false, false) => format!("{diff} week ago"),
+        }
+    } else if diff < 365*86400 {
+        let diff = diff / (30*86400);
+        match (french, diff >= 2) {
+            (true, _) => format!("{diff} mois"),
+            (false, true) => format!("{diff} months ago"),
+            (false, false) => format!("{diff} month ago"),
+        }
+    } else {
+        let diff = diff / (365*86400);
+        match (french, diff >= 2) {
+            (true, true) => format!("{diff} ans"),
+            (true, false) => format!("{diff} an"),
+            (false, true) => format!("{diff} years ago"),
+            (false, false) => format!("{diff} year ago"),
+        }
     }
 }

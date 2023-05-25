@@ -80,10 +80,7 @@ impl Component for EmailVerification {
         template_html!(
             "src/email-verification/email_verification.html",
             onclick_send = {ctx.link().callback(|_| EmailVerificationMsg::Verify)},
-            onclick_back = {ctx.props().app_link.callback(move |_| AppMsg::SetPage(match feature {
-                "friends" => Page::Friends,
-                _ => Page::Agenda,
-            }))},
+            onclick_back = {ctx.props().app_link.callback(move |_| AppMsg::SetPanel(None))},
             ...
         )
     }

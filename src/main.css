@@ -1,3 +1,13 @@
+/* Colors */
+
+:root {
+    --border-color: #aaa;
+}
+
+:root[data-theme="dark"] {
+    --border-color: #666;
+}
+
 /* Header */
 
 header, #tabbar {
@@ -26,6 +36,41 @@ header, #tabbar {
 @media screen and (max-width: 300px) {
     #header-logo:first-child {
         display: none;
+    }
+}
+
+/* Panel */
+
+#panel {
+    position: fixed;
+    top: 0;
+    left: -4rem;
+    width: calc(100% + 4rem);
+    height: 100%;
+    background-color: #00000088;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#panel>div {
+    background-color: var(--closer-background);
+    box-shadow: 0 0 1rem #00000055;
+    border: 1px solid var(--border-color);
+    border-radius: .3rem;
+    width: 60%;
+}
+
+@media screen and (max-width: 1000px) {
+    #panel {
+        left: unset;
+        width: 100%;
+    }
+
+    #panel>div {
+        width: calc(100% - 2rem);
     }
 }
 

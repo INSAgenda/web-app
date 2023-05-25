@@ -10,6 +10,8 @@ mod generic;
 pub use generic::*;
 mod friends;
 pub use friends::*;
+mod textbook;
+pub use textbook::*;
 
 use crate::prelude::*;
 
@@ -90,11 +92,19 @@ pub async fn api_post_form(body: &str, endpoint: &str) -> Result<(), ApiError> {
     }
 }
 
-pub async fn api_get<T: DeserializeOwned>(endpoint: &str) -> Result<T, ApiError> {
+pub async fn api_get<T: DeserializeOwned>(endpoint: impl std::fmt::Display) -> Result<T, ApiError> {
+    api_custom_method(endpoint, "GET").await
+}
+
+pub async fn api_delete<T: DeserializeOwned>(endpoint: impl std::fmt::Display) -> Result<T, ApiError> {
+    api_custom_method(endpoint, "DELETE").await
+}
+
+async fn api_custom_method<T: DeserializeOwned>(endpoint: impl std::fmt::Display, method: &'static str) -> Result<T, ApiError> {
     let (api_key, counter) = get_login_info();
 
     let mut req_init = web_sys::RequestInit::new();
-    req_init.method("GET");
+    req_init.method(method);
 
     let request = Request::new_with_str_and_init(&format!("/api/{endpoint}"), &req_init).unwrap();
     request.headers().set(
@@ -113,7 +123,10 @@ pub async fn api_get<T: DeserializeOwned>(endpoint: &str) -> Result<T, ApiError>
             if std::any::type_name::<T>() == "()" && text.is_empty() {
                 return Ok(serde_json::from_str("null").unwrap());
             }
-            Ok(serde_json::from_str(&text).unwrap())
+            match serde_json::from_str(&text) {
+                Ok(data) => Ok(data),
+                Err(e) => Err(ApiError::Unknown(format!("Failed to parse JSON: {e}").into())),
+            }
         }
         400 | 500 => {
             let text = JsFuture::from(response.text()?).await?;

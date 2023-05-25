@@ -31,16 +31,24 @@ pub enum AgendaMsg {
 
 #[derive(Properties, Clone)]
 pub struct AgendaProps {
-    pub app_link: Scope<App>,
+    pub app_link: AppLink,
     pub events: Rc<Vec<RawEvent>>,
     pub popup: Option<(RawEvent, bool, Option<usize>)>,
     pub profile_src: Option<String>,
+    pub user_info: Rc<Option<UserInfo>>,
+    pub comment_counts: Rc<CommentCounts>,
+    pub seen_comment_counts: Rc<CommentCounts>,
     pub friends: Rc<Option<FriendLists>>,
 }
 
 impl PartialEq for AgendaProps {
     fn eq(&self, other: &Self) -> bool {
-        !COLORS_CHANGED.load(Ordering::Relaxed) && self.events == other.events && self.popup == other.popup
+        !COLORS_CHANGED.load(Ordering::Relaxed)
+            && self.events == other.events
+            && self.popup == other.popup
+            && self.user_info == other.user_info
+            && self.comment_counts == other.comment_counts
+            && self.seen_comment_counts == other.seen_comment_counts
     }
 }
 
@@ -170,7 +178,7 @@ impl Component for Agenda {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let opt_profile_src = ctx.props().profile_src.as_ref().map(|s| s.clone());
+        let opt_profile_src = ctx.props().profile_src.as_ref().cloned();
         let screen_width = crate::slider::width();
         let mobile = screen_width <= 1000;
         
@@ -205,7 +213,9 @@ impl Component for Agenda {
                         week_day={d}
                         event={e.clone()}
                         day_start={day_start}
-                        agenda_link={ctx.link().clone()}>
+                        agenda_link={ctx.link().clone()}
+                        comment_counts={Rc::clone(&ctx.props().comment_counts)}
+                        seen_comment_counts={Rc::clone(&ctx.props().seen_comment_counts)}>
                     </EventComp>
                 });
                 idx += 1;
@@ -249,7 +259,11 @@ impl Component for Agenda {
         };
         let opt_popup = ctx.props().popup.as_ref().map(|(event, _, _)|
             html! {
-                <Popup event={event.clone()} agenda_link={ctx.link().clone()} friends={Rc::clone(&ctx.props().friends)} />
+                <Popup
+                    event={event.clone()}
+                    agenda_link={ctx.link().clone()}
+                    friends={Rc::clone(&ctx.props().friends)}
+                    user_info={Rc::clone(&ctx.props().user_info)} />
             }
         );
         let popup_container_style = match &ctx.props().popup {

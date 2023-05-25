@@ -66,7 +66,7 @@ impl Component for FriendsPage {
                             link2.send_message(FriendsMsg::RequestSuccess);
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
-                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
+                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPanel(Some(Panel::EmailVerification{ feature: "friends" }))),
                         Err(ApiError::Known(e)) => link2.send_message(FriendsMsg::RequestError(e.to_string())),
                         Err(error) => alert(error.to_string()),
                     }
@@ -104,7 +104,7 @@ impl Component for FriendsPage {
                             };
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
-                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
+                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPanel(Some(Panel::EmailVerification { feature: "friends" }))),
                         Err(error) => alert(error.to_string()),
                     }
                 });
@@ -133,7 +133,7 @@ impl Component for FriendsPage {
                             };
                             app_link2.send_message(AppMsg::UpdateFriends(new_friends));
                         }
-                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPage(Page::EmailVerification{ feature: "friends" })),
+                        Err(ApiError::Known(e)) if e.kind == "email_not_verified" => app_link2.send_message(AppMsg::SetPanel(Some(Panel::EmailVerification { feature: "friends" }))),
                         Err(error) => alert(error.to_string()),
                     }
                 });
@@ -216,21 +216,21 @@ impl Component for FriendsPage {
             None => return yew::virtual_dom::VNode::from_html_unchecked(AttrValue::from(include_str!("friends_loading.html"))),
         };
 
-        let has_friends = friends.friends.len() > 0;
+        let has_friends = !friends.friends.is_empty();
         let names = friends.friends.iter().map(|friend| friend.0.email.trim_end_matches("@insa-rouen.fr")).collect::<Vec<_>>();
         let picture_iter = friends.friends.iter().map(|friend| friend.0.profile_url());
         let alt_iter = names.iter().map(|name| format!("Avatar of {name}"));
         let name_iter = names.iter();
         let friend_pseudo_iter = friends.friends.iter().map(|friend| friend.0.email.trim_end_matches("@insa-rouen.fr").to_string());
 
-        let has_incoming = friends.incoming.len() > 0;
+        let has_incoming = !friends.incoming.is_empty();
         let in_names = friends.incoming.iter().map(|req| req.from.0.email.trim_end_matches("@insa-rouen.fr")).collect::<Vec<_>>();
         let in_picture_iter = friends.incoming.iter().map(|req| req.from.0.profile_url());
         let in_alt_iter = in_names.iter().map(|name| format!("Avatar of {name}"));
         let in_name_iter = in_names.iter();
         let in_uid_iter = friends.incoming.iter().map(|req| req.from.0.uid.to_string());
 
-        let has_outgoing = friends.outgoing.len() > 0;
+        let has_outgoing = !friends.outgoing.is_empty();
         let out_names = friends.outgoing.iter().map(|friend| friend.to.0.email.trim_end_matches("@insa-rouen.fr")).collect::<Vec<_>>();
         let out_picture_iter = friends.outgoing.iter().map(|req| req.to.0.profile_url());
         let out_alt_iter = out_names.iter().map(|name| format!("Avatar of {name}"));
@@ -242,7 +242,7 @@ impl Component for FriendsPage {
         let request_error_opt = self.request_error.as_ref();
 
         let rem_name_iter = names.iter().rev();
-        let rem_value_iter = names.iter().rev().map(|name| name.replace(" ", "+"));
+        let rem_value_iter = names.iter().rev().map(|name| name.replace(' ', "+"));
         let onclick_remove = ctx.link().callback(|_| FriendsMsg::Remove);
 
         template_html!(

@@ -39,5 +39,28 @@
                 <input type="color" id="popup-color-input" value={{event_color}} oninput={{onclick_save}} />
             </div>
         </section>
+        <section>
+            <h4>Commentaires</h4>
+            <div class="comment-reply">
+                <div class="comment-header">
+                    <img class="comment-author-avatar" src={{user_avatar}} />
+                    <span class="comment-author-name">{{user_name}}</span>
+                </div>
+                <div class="comment-bottom">
+                    <div class="comment-bar"></div>
+                    <div class="comment-reply-main">
+                        <textarea class="comment-textarea" id="comment-textarea-top" placeholder="Ecrivez un commentaire"></textarea>
+                        <div class="comment-reply-buttons">
+                            <button class="comment-button comment-submit-button" onclick={{onclick_comment}}>Envoyer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <virtual iter present-if=!{{comments_loading}}>{{comment_iter}}</virtual>
+            <div id="waiting-screen" present-if={{comments_loading}}>
+                <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+                <p id="waiting-screen-message">Chargement des commentaires...</p>
+            </div>
+        </section>
     </div>
 </div>

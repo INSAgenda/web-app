@@ -1,0 +1,119 @@
+.comment, .comment-reply {
+    margin-top: 1rem;
+}
+
+.comment-author-avatar {
+    filter: unset !important;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: .1rem;
+}
+
+.comment-author-avatar {
+    width: calc(1.5rem + 2px);
+    padding: .25rem;
+    aspect-ratio: 1/1;
+}
+
+.comment-author-name {
+    margin: 0 .6rem 0 .25rem;
+}
+
+.comment-time {
+    font-size: .8rem;
+    color: #777;
+}
+
+.comment-bottom {
+    display: flex;
+}
+
+.comment-bar {
+    width: 2px;
+    background-color: var(--border-color);
+    margin: 0 1rem;
+    flex-shrink: 0;
+}
+
+.comment-reply-main, .comment-main {
+    width: 100%;
+}
+
+.comment-buttons, .comment-reply-buttons {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.comment-score {
+    margin: 0 .2rem;
+}
+
+.comment-upvoted>.comment-upvote-button>svg {
+    fill: var(--primary);
+}
+.comment-upvoted>.comment-score {
+    font-weight: bold;
+    color: var(--primary);
+}
+.comment-downvoted>.comment-downvote-button>svg {
+    fill: var(--error-red);
+}
+.comment-downvoted>.comment-score {
+    font-weight: bold;
+    color: var(--error-red);
+}
+
+.comment-downvote-button {
+    margin-right: .5rem;   
+}
+
+.comment-button:active {
+    background-color: #ddd;
+}
+:root[data-theme="dark"] .comment-button:active {
+    background-color: #444;
+}
+@media (min-width: 1000px) {
+    .comment-button:hover {
+        background-color: #ddd;
+    }
+    :root[data-theme="dark"] .comment-button:hover {
+        background-color: #444;
+    }
+}
+
+.comment-button {
+    /* Also see friends-cancel-button */
+    border: none;
+    font-weight: bold;
+    margin: 0 .2rem;
+    color: var(--text);
+}
+
+.comment-submit-button {
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.comment-textarea {
+    width: calc(100% - 1rem);
+    padding: .5rem;
+    border-radius: .3rem;
+    outline: none;
+    color: var(--text);
+    background-color: var(--closer-background);
+    border: 1px solid var(--border-color);
+}
+
+p ~ .comment-textarea {
+    display: none; /* When viewing, p exists so the editing area is hidden. When editing, p is removed which breaks this rule. */
+}
+
+.comment-reply-buttons {
+    display: flex;
+    justify-content: flex-end;
+}
