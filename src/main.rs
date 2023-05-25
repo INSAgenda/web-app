@@ -537,7 +537,13 @@ impl Component for App {
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Event { eid } => {
-                let event = self.events.iter().find(|e| e.eid == *eid).unwrap().to_owned();
+                let event = match self.events.iter().find(|e| e.eid == *eid) {
+                    Some(event) => event.to_owned(),
+                    None => {
+                        ctx.link().send_message(Msg::SetPage(Page::Agenda));
+                        return html!();
+                    }
+                };
                 html!(<>
                     <Agenda
                         events={Rc::clone(&self.events)}
