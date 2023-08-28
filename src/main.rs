@@ -17,8 +17,6 @@ mod glider_selector;
 mod calendar;
 #[path = "crash/crash_handler.rs"]
 mod crash_handler;
-#[path = "change_data/change_data.rs"]
-mod change_data;
 #[path ="popup/popup.rs"]
 mod popup;
 #[path = "survey/survey.rs"]
@@ -35,8 +33,6 @@ mod friends;
 mod comment;
 #[path = "notifications/notifications.rs"]
 mod notifications;
-#[path = "email-verification/email_verification.rs"]
-mod email_verification;
 mod util;
 mod slider;
 mod api;
@@ -46,15 +42,12 @@ mod colors;
 
 use slider::width;
 
-use crate::{prelude::*, settings::SettingsPage, change_data::ChangeDataPage};
+use crate::{prelude::*, settings::SettingsPage};
 
 /// The page that is currently displayed.
 #[derive(Clone, PartialEq)]
 pub enum Page {
     Settings,
-    ChangePassword,
-    ChangeEmail,
-    ChangeGroup,
     Agenda,
     Friends,
     FriendAgenda { pseudo: String },
@@ -67,9 +60,6 @@ impl Page {
     fn data_and_title(&self) -> (String, &'static str) {
         match self {
             Page::Settings => (String::from("settings"), "Settings"),
-            Page::ChangePassword => (String::from("change-password"), "Change password"),
-            Page::ChangeEmail => (String::from("change-email"), "Change email"),
-            Page::ChangeGroup => (String::from("change-group"), "Change group"),
             Page::Agenda => (String::from("agenda"), "Agenda"),
             Page::Friends => (String::from("friends"), "Friends"),
             Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
@@ -80,21 +70,12 @@ impl Page {
     }
 }
 
-/// A panel displayed on top of the page
-#[derive(Clone, PartialEq)]
-pub enum Panel {
-    EmailVerification { feature: &'static str },
-    // Report, // unsupported
-}
-
 /// A message that can be sent to the `App` component.
 pub enum Msg {
     /// Switch page
     SetPage(Page),
-    SetPanel(Option<Panel>),
     /// Switch page without saving it in the history
     SilentSetPage(Page),
-    SilentSetPanel(Option<Panel>),
     FetchColors(HashMap<String, String>),
     SaveSurveyAnswer(SurveyAnswers),
     UpdateFriends(FriendLists),
@@ -102,7 +83,6 @@ pub enum Msg {
 
     // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
-    GroupsSuccess(Vec<GroupDesc>),
     FriendsSuccess(FriendLists),
     FriendsEventsSuccess{ uid: i64, events: Vec<RawEvent> },
     CommentCountsSuccess(CommentCounts),
@@ -120,7 +100,6 @@ pub struct App {
     events: Rc<Vec<RawEvent>>,
     announcements: Rc<Vec<AnnouncementDesc>>,
     notifications: Rc<RefCell<LocalNotificationTracker>>,
-    groups: Rc<Vec<GroupDesc>>,
     friends: Rc<Option<FriendLists>>,
     friends_events: FriendsEvents,
     comment_counts: Rc<CommentCounts>,
@@ -129,7 +108,6 @@ pub struct App {
     survey_answers: Vec<SurveyAnswers>,
     tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
-    panel: Option<Panel>,
 
     event_closing: bool,
     event_popup_size: Option<usize>,
@@ -149,12 +127,8 @@ impl Component for App {
             match state.as_deref() {
                 Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
                 Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
-                Some("change-password") => link2.send_message(Msg::SilentSetPage(Page::ChangePassword)),
-                Some("change-email") => link2.send_message(Msg::SilentSetPage(Page::ChangeEmail)),
-                Some("change-group") => link2.send_message(Msg::SilentSetPage(Page::ChangeGroup)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
-                Some(email_verification) if email_verification.starts_with("email-verification/") => link2.send_message(Msg::SilentSetPanel(Some(Panel::EmailVerification { feature: "unknown" }))),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].to_string();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -171,7 +145,6 @@ impl Component for App {
         // Update data
         let events = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let user_info: Option<UserInfo> = CachedData::init(ctx.link().clone());
-        let groups: Vec<GroupDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let friends = CachedData::init(ctx.link().clone());
         let friends_events = FriendsEvents::init();
         let comment_counts = CachedData::init(ctx.link().clone()).unwrap_or_default();
@@ -181,7 +154,7 @@ impl Component for App {
         let announcements = match &user_info {
             Some(user_info) => {
                 let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
-                announcements.retain(|a| a.target.as_ref().map(|t| user_info.user_groups.matches(t)).unwrap_or(true));
+                announcements.retain(|a| a.target.as_ref().map(|t| user_info.groups.matches(t)).unwrap_or(true));
                 announcements
             }
             None => Vec::new(),
@@ -200,9 +173,6 @@ impl Component for App {
         let path = window().location().pathname().unwrap_or_default();
         let page = match path.as_str().trim_end_matches('/') {
             "/settings" => Page::Settings,
-            "/change-password" => Page::ChangePassword,
-            "/change-email" => Page::ChangeEmail,
-            "/change-group" => Page::ChangeGroup,
             "/friends" => Page::Friends,
             "/notifications" => Page::Notifications,
             event if event.starts_with("/event/") => {
@@ -218,9 +188,6 @@ impl Component for App {
             friend_agenda if friend_agenda.starts_with("/friend-agenda/") => Page::FriendAgenda { pseudo: friend_agenda[15..].to_string() },
             "/agenda" => match window().location().hash() { // For compatibility with old links
                 Ok(hash) if hash == "#settings" => Page::Settings,
-                Ok(hash) if hash == "#change-password" => Page::ChangePassword,
-                Ok(hash) if hash == "#change-email" => Page::ChangeEmail,
-                Ok(hash) if hash == "#change-group" => Page::ChangeGroup,
                 Ok(hash) if hash.starts_with("#survey-") => Page::Survey { sid: hash[8..].to_string() },
                 Ok(hash) if hash.is_empty() => Page::Agenda,
                 Ok(hash) => {
@@ -245,13 +212,6 @@ impl Component for App {
             }
         }
 
-        // Ask user to set new groups if they are outdated
-        if let Some(user_info) = &user_info {
-            if !groups.is_empty() && user_info.user_groups.needs_correction(&groups) {
-                ctx.link().send_message(Msg::SetPage(Page::ChangeGroup));
-            }
-        }
-
         // Get notification tracker
         let mut notifications = LocalNotificationTracker::load();
         notifications.add_announcements(&announcements);
@@ -270,7 +230,6 @@ impl Component for App {
             user_info: Rc::new(user_info),
             announcements: Rc::new(announcements),
             notifications: Rc::new(RefCell::new(notifications)),
-            groups: Rc::new(groups),
             friends: Rc::new(friends),
             friends_events,
             comment_counts: Rc::new(comment_counts),
@@ -279,7 +238,6 @@ impl Component for App {
             survey_answers,
             tabbar_bait_points,
             page,
-            panel: None,
             event_closing: false,
             event_popup_size: None,
         }
@@ -310,7 +268,7 @@ impl Component for App {
             AppMsg::AnnouncementsSuccess(mut announcements) => {
                 // Filter announcements
                 if let Some(user_info) = self.user_info.deref().as_ref() {
-                    announcements.retain(|a| a.target.as_ref().map(|t| user_info.user_groups.matches(t)).unwrap_or(true));
+                    announcements.retain(|a| a.target.as_ref().map(|t| user_info.groups.matches(t)).unwrap_or(true));
                 } else {
                     return false;
                 }
@@ -360,16 +318,11 @@ impl Component for App {
 
                 // Update events if user groups changed
                 if let Some(old_user_info) = self.user_info.as_ref() {
-                    if old_user_info.user_groups != user_info.user_groups {
+                    if old_user_info.groups != user_info.groups {
                         self.events = Rc::new(Vec::new());
                         <Vec<RawEvent>>::refresh(ctx.link().clone());
                         should_refresh = true;
                     }
-                }
-
-                // Ask correction if needed
-                if user_info.user_groups.needs_correction(&self.groups) {
-                    ctx.link().send_message(Msg::SetPage(Page::ChangeGroup));
                 }
 
                 // Set new user info
@@ -377,17 +330,6 @@ impl Component for App {
                 self.user_info = Rc::new(Some(user_info));
 
                 should_refresh
-            },
-            Msg::GroupsSuccess(groups) => {
-                // Ask correction if needed
-                if let Some(user_info) = self.user_info.as_ref() {
-                    if user_info.user_groups.needs_correction(&groups) {
-                        ctx.link().send_message(Msg::SetPage(Page::ChangeGroup));
-                    }
-                }
-
-                self.groups = Rc::new(groups);
-                matches!(self.page, Page::ChangeGroup)
             },
             Msg::FriendsSuccess(friends) => {
                 self.friends = Rc::new(Some(friends));
@@ -409,8 +351,6 @@ impl Component for App {
                 false
             },
             Msg::SetPage(page) => {
-                self.panel = None;
-
                 // Remove bait points
                 match page {
                     Page::Agenda => self.tabbar_bait_points.0 = false,
@@ -474,34 +414,8 @@ impl Component for App {
                 true
             },
             Msg::SilentSetPage(page) => {
-                self.panel = None;
                 self.page = page;
                 true
-            },
-            Msg::SetPanel(panel) => {
-                let changed = self.panel != panel;
-                self.panel = panel;
-                match &self.panel {
-                    Some(panel) => {
-                        let (data, title) = self.page.data_and_title();
-                        let url = format!("/{data}");
-                        let history = window().history().expect("Failed to access history");
-                        let data = match panel {
-                            Panel::EmailVerification { feature } => format!("email-verification/{}", feature),
-                        };
-                        history.push_state_with_url(&JsValue::from_str(&data), title, Some(&url)).unwrap();
-                    },
-                    None => {
-                        ctx.link().send_message(Msg::SetPage(self.page.clone()));
-                        return false;
-                    }
-                }
-                changed
-            }
-            Msg::SilentSetPanel(panel) => {
-                let changed = self.panel != panel;
-                self.panel = panel;
-                changed
             },
             Msg::FetchColors(new_colors) => {
                 crate::COLORS.update_colors(new_colors);
@@ -525,7 +439,7 @@ impl Component for App {
     }
     
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let page = match &self.page {
+        match &self.page {
             Page::Agenda => html!(<>
                 <Agenda
                     events={Rc::clone(&self.events)}
@@ -588,30 +502,6 @@ impl Component for App {
                 <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
-            Page::ChangePassword => html!(<>
-                <ChangeDataPage
-                    kind="new_password"
-                    app_link={ ctx.link().clone() }
-                    user_info={Rc::clone(&self.user_info)}
-                    groups={Rc::clone(&self.groups)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
-            </>),
-            Page::ChangeEmail => html!(<>
-                <ChangeDataPage
-                    kind="email"
-                    app_link={ ctx.link().clone() }
-                    user_info={Rc::clone(&self.user_info)}
-                    groups={Rc::clone(&self.groups)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
-            </>),
-            Page::ChangeGroup => html!(<>
-                <ChangeDataPage
-                    kind="group"
-                    app_link={ ctx.link().clone() }
-                    user_info={Rc::clone(&self.user_info)}
-                    groups={Rc::clone(&self.groups)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
-            </>),
             Page::Survey { sid } => {
                 let survey = match self.surveys.iter().find(|s| s.id == *sid) {
                     Some(s) => s,
@@ -623,20 +513,6 @@ impl Component for App {
                 let answers = self.survey_answers.iter().find(|s| s.id == *sid).map(|a| a.answers.to_owned());
                 html!(<SurveyComp survey={survey.clone()} answers={answers} app_link={ctx.link().clone()} />)
             },
-        };
-        if let Some(panel) = &self.panel {
-            let panel = match panel {
-                Panel::EmailVerification { feature } => {
-                    let email = self.user_info.deref().as_ref().map(|u| u.email.0.to_owned());
-                    html!(<EmailVerification feature={feature} email={email} app_link={ctx.link().clone()} />)
-                }
-            };
-            html!(<>
-                {page}
-                <div id="panel"><div>{panel}</div></div>
-            </>)
-        } else {
-            page
         }
     }
 }

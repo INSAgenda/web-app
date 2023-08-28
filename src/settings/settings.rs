@@ -204,51 +204,10 @@ impl Component for SettingsPage {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Compute variable messages
-        let mut email_not_verified = false;
-        let mut email = String::from(t("[inconnue]"));
-        let mut formatted_group = String::from(t("[inconnu]"));
-        let mut last_password_mod_str = String::from(t("[indisponible]"));
+        let mut formatted_groups = String::from(t("[inconnu]"));
         if let Some(user_info) = ctx.props().user_info.as_ref() {
-            if !user_info.email.1 {
-                email_not_verified = true;
-            }
-            email = user_info.email.0.to_owned();
-            if let Some(last_password_mod) = user_info.last_password_mod {
-                let diff = now() - last_password_mod;
-                last_password_mod_str = format_time_diff(diff);
-            }
-
-            // Format group
-            let school = user_info.user_groups.groups().get("school").map(|s| s.as_str()).unwrap_or_default();
-            match school {
-                "insa-rouen" => {
-                    let department = user_info.user_groups.groups().get("insa-rouen:department").map(|s| s.as_str()).unwrap_or_default();
-                    match department {
-                        "STPI1" | "STPI2" => {
-                            if let (Some(c), Some(g)) = (user_info.user_groups.groups().get("insa-rouen:stpi:class"), user_info.user_groups.groups().get("insa-rouen:stpi:tp-group")) {
-                                formatted_group = format!("{department}, {} {c}{g}", t("en classe"));
-                            }
-                        }
-                        "ITI3" => {
-                            if let Some(g) = user_info.user_groups.groups().get("insa-rouen:iti:group") {
-                                formatted_group = format!("{department}, {} {g}", t("en groupe"));
-                            }
-                        }
-                        department => formatted_group = department.to_string(),
-                    }
-                }
-                "" => (),
-                _ => alert(format!("Unknown school {school}")),
-            };
+            formatted_groups = user_info.groups.groups().iter().map(|group| group.to_string()).collect::<Vec<_>>().join(", ");
         }
-
-        let app_link = ctx.props().app_link.clone();
-        let app_link2 = ctx.props().app_link.clone();
-        let app_link3 = ctx.props().app_link.clone();
-        let app_link4 = ctx.props().app_link.clone();
-
-        let user_info = ctx.props().user_info.as_ref();
-        let has_password = user_info.as_ref().map(|user_info| user_info.has_password).unwrap_or(true);
 
         let theme_glider_selector = html! {
             <GliderSelector
@@ -269,11 +228,6 @@ impl Component for SettingsPage {
             onclick_confirm = {ctx.link().callback(move |_| Msg::Confirm)},
             onclick_delete = {ctx.link().callback(move |_| Msg::Delete)},
             onclick_cancel = {ctx.link().callback(move |_| Msg::Cancel)},
-            onclick_change_password = {move |_| app_link.send_message(AppMsg::SetPage(Page::ChangePassword))},
-            onclick_change_password2 = {move |_| app_link4.send_message(AppMsg::SetPage(Page::ChangePassword))},
-            onclick_change_email = {move |_| app_link2.send_message(AppMsg::SetPage(Page::ChangeEmail))},
-            onclick_change_group = {move |_| app_link3.send_message(AppMsg::SetPage(Page::ChangeGroup))},
-            last_password_mod = last_password_mod_str,
             ...
         )
     }

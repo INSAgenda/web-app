@@ -1,9 +1,5 @@
 use super::*;
 
-pub async fn new_confirmation_email() -> Result<(), ApiError> {
-    api_get("auth/new-confirmation-email").await
-}
-
 pub(crate) async fn logout()-> Result<(), ApiError> {
     let window = window();
     let local_storage = window.local_storage().unwrap().unwrap();

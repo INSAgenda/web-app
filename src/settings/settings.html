@@ -14,28 +14,10 @@
         <section>
             <h3>Général</h3>
             <div class="settings-group">
-                <div present-if={{has_password}} class="setting">
-                    <h4>Changer de mot de passe</h4>
-                    <p>Votre mot de passe a été changé il y a {{last_password_mod}}.</p>
-                    <div class="primary-button" onclick={{onclick_change_password}}>Modifier</div>
-                </div>
-                <div present-if=!{{has_password}} class="setting">
-                    <h4>Ajouter un mot de passe</h4>
-                    <p>Vous n'avez pas encore de mot de passe.</p>
-                    <div class="primary-button" onclick={{onclick_change_password2}}>Ajouter</div>
-                </div>
                 <div class="setting">
-                    <h4>Changer de classe</h4>
-                    <p>Vous êtes actuellement en {{formatted_group}}.</p>
-                    <div class="primary-button" onclick={{onclick_change_group}}>Modifier</div>
-                </div>
-                <div present-if={{has_password}} class="setting">
-                    <h4>Adresse mail</h4>
-                    <p>
-                        Votre adresse actuelle est {{email}}.
-                        <span present-if={{email_not_verified}}>&nbsp;Elle n'a pas encore été vérifiée.</span>
-                    </p>
-                    <div class="primary-button" onclick={{onclick_change_email}}>Modifier</div>
+                    <h4>Groupes</h4>
+                    <p>Vos groupes sont les suivants: {{formatted_groups}}.</p>
+                    <!--<div class="primary-button" onclick={{onclick_change_group}}>Modifier</div>-->
                 </div>
             </div>
         </section>

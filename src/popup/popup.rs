@@ -116,7 +116,7 @@ impl Component for Popup {
         let friends: Vec<_> = ctx.props().friends.deref().as_ref().map(|friends| {
             friends.friends.iter().filter(|friend| {
                 let name = friend.0.get_username().split('.').nth(1).map(|n| n.to_uppercase()); // TODO real name
-                friend.1.matches_with_name(&ctx.props().event.group, name.as_deref())
+                friend.1.matches_with_name(&ctx.props().event.groups, name.as_deref())
             }).map(|f| &f.0).collect()
         }).unwrap_or_default();
         let names = friends.iter().map(|friend| friend.email.trim_end_matches("@insa-rouen.fr")).collect::<Vec<_>>();
