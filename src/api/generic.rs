@@ -115,19 +115,6 @@ impl CachedData for Vec<AnnouncementDesc> {
     }
 }
 
-impl CachedData for Vec<GroupDesc> {
-    fn storage_key() ->  &'static str { "groups" }
-    fn endpoint() ->  &'static str { "/config/groups.json" }
-    fn cache_duration() -> u64 { 60 }
-    fn force_reload(&self) -> bool { self.is_empty() }
-    fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
-        match result {
-            Ok(groups) => app_link.send_message(AppMsg::GroupsSuccess(groups)),
-            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
-        }
-    }
-}
-
 impl CachedData for UserInfo {
     fn storage_key() ->  &'static str { "user_info" }
     fn endpoint() ->  &'static str { "/api/user-info" }

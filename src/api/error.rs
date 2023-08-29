@@ -92,7 +92,7 @@ impl SentryReportable for &ApiError {
                 let obj = Object::new();
                 Reflect::set(&obj, &"kind".into(), &kind.into()).unwrap();
                 let messages = if let Some(msg) = messages {
-                    msg.get("en").unwrap_or(&kind)
+                    msg.get("en").unwrap_or(kind)
                 } else if let Some(msg) = message_en {
                     msg
                 } else {

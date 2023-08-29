@@ -1,8 +1,8 @@
 pub use crate::{
     agenda::*, alert::*, api::*, calendar::*, checkbox::*, colors::*, comment::*,
-    email_verification::*, event::*, friends::*, glider_selector::*, log, notifications::*,
+    event::*, friends::*, glider_selector::*, log, notifications::*,
     popup::Popup, popup::*, settings::*, sortable::*, survey::*, tabbar::*, translation::*,
-    util::*, App, Msg as AppMsg, Page, Panel,
+    util::*, App, Msg as AppMsg, Page,
 };
 pub use chrono::{
     DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Timelike, Utc,
