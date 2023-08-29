@@ -204,10 +204,11 @@ impl Component for SettingsPage {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Compute variable messages
-        let mut formatted_groups = String::from(t("[inconnu]"));
+        let mut groups = Vec::new();
         if let Some(user_info) = ctx.props().user_info.as_ref() {
-            formatted_groups = user_info.groups.groups().iter().map(|group| group.to_string()).collect::<Vec<_>>().join(", ");
+            groups = user_info.groups.groups().iter().map(|group| group.to_string()).collect::<Vec<_>>();
         }
+        let group_iter = groups.into_iter();
 
         let theme_glider_selector = html! {
             <GliderSelector
