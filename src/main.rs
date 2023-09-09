@@ -41,6 +41,7 @@ mod translation;
 mod colors;
 
 use slider::width;
+use yew::virtual_dom::VNode;
 
 use crate::{prelude::*, settings::SettingsPage};
 
@@ -54,6 +55,7 @@ pub enum Page {
     Notifications,
     Event { eid: String },
     Survey { sid: String },
+    Rick,
 }
 
 impl Page {
@@ -66,6 +68,7 @@ impl Page {
             Page::Notifications => (String::from("notifications"), "Notifications"),
             Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
             Page::Event { eid } => (format!("event/{eid}"), "Event"),
+            Page::Rick => (String::from("r"), "Rick"),
         }
     }
 }
@@ -129,6 +132,7 @@ impl Component for App {
                 Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
+                Some("r") => link2.send_message(Msg::SilentSetPage(Page::Rick)),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].to_string();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -512,6 +516,12 @@ impl Component for App {
                 };
                 let answers = self.survey_answers.iter().find(|s| s.id == *sid).map(|a| a.answers.to_owned());
                 html!(<SurveyComp survey={survey.clone()} answers={answers} app_link={ctx.link().clone()} />)
+            },
+            Page::Rick => {
+                let random = js_sys::Math::random();
+                let rick = if random > 0.1 {"rick1"} else {"rick2"};
+                let raw_html = format!(r#"<video class="rick" autoplay src="/assets/{rick}.mp4" style="width: 100%;">Never gonna give you up</video>"#);
+                VNode::from_html_unchecked(raw_html.into())
             },
         }
     }

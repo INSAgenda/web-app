@@ -109,6 +109,10 @@ impl Component for CommentComp {
                 let el = window().doc().get_element_by_id(&format!("comment-textarea-{}", ctx.props().cid)).unwrap();
                 let textarea = el.dyn_into::<web_sys::HtmlTextAreaElement>().unwrap();
                 let content = textarea.value();
+                
+                if content.is_empty() {
+                    return false;
+                }
 
                 self.editing = false;
 

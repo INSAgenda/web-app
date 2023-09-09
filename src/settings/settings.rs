@@ -109,7 +109,7 @@ impl SettingStore {
 }
 
 pub enum Msg {
-    Confirm,
+    //Confirm,
     Cancel,
     ThemeChange(usize),
     LogOut,
@@ -147,10 +147,10 @@ impl Component for SettingsPage {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Confirm => {
+            /*Msg::Confirm => {
                 ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                 false
-            }
+            }*/
             Msg::Cancel => {
                 ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                 SETTINGS.set_theme(self.clone_storage.theme.load(Ordering::Relaxed));
@@ -225,6 +225,7 @@ impl Component for SettingsPage {
 
         template_html!(
             "src/settings/settings.html",
+            onclick_rick = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Rick))},
             onclick_logout = {ctx.link().callback(move |_| Msg::LogOut)},
             onclick_confirm = {ctx.link().callback(move |_| Msg::Confirm)},
             onclick_delete = {ctx.link().callback(move |_| Msg::Delete)},

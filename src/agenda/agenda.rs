@@ -301,6 +301,7 @@ impl Component for Agenda {
         };
         template_html!(
             "src/agenda/agenda.html",
+            onclick_rick = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Rick))},
             onclick_previous = {ctx.link().callback(|_| AgendaMsg::Previous)},
             onclick_next = {ctx.link().callback(|_| AgendaMsg::Next)},
             ...
