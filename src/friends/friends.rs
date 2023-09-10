@@ -45,6 +45,10 @@ impl Component for FriendsPage {
                 if email.is_empty() {
                     return false;
                 }
+                if email == "rick" || email == "jules.chiron" {
+                    ctx.props().app_link.send_message(AppMsg::SetPage(Page::Rick));
+                    return false;
+                }
                 email = email.to_lowercase();
                 if !email.contains('@') {
                     email.push_str("@insa-rouen.fr");

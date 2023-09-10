@@ -11,6 +11,7 @@ pub enum PopupMsg {
     ReloadComments,
     Comment,
     CommentsLoaded(Vec<Comment>),
+    AppMsg(AppMsg),
 }
 
 #[derive(Properties, Clone)]
@@ -105,6 +106,10 @@ impl Component for Popup {
             PopupMsg::TriggerFriendCounter => {
                 self.friend_counter_folded = !self.friend_counter_folded;
                 true
+            }
+            PopupMsg::AppMsg(msg) => {
+                ctx.props().agenda_link.send_message(AgendaMsg::AppMsg(msg));
+                false
             }
         }
     }
