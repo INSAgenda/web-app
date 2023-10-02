@@ -177,3 +177,22 @@ impl CachedData for CommentCounts {
         }
     }
 }
+
+#[derive(Serialize, Deserialize)]
+
+pub struct WifiSettings {
+    pub ssid: String,
+    pub password: String,
+}
+
+impl CachedData for WifiSettings {
+    fn storage_key() ->  &'static str { "wifi_settings" }
+    fn endpoint() ->  &'static str { "/api/get_wifi" }
+    fn cache_duration() -> u64 { 3600 * 5 }
+    fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
+        match result {
+            Ok(val) => app_link.send_message(AppMsg::WiFiSuccess(val)),
+            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
+        }
+    }
+}

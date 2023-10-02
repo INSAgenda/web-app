@@ -94,6 +94,7 @@ pub enum Msg {
     SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
     ScheduleFailure(ApiError),
     AnnouncementsSuccess(Vec<AnnouncementDesc>),
+    WiFiSuccess(WifiSettings),
 }
 
 /// The main component of the app.
@@ -111,7 +112,8 @@ pub struct App {
     survey_answers: Vec<SurveyAnswers>,
     tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
-
+    wifi_ssid : Rc<Option<String>>,
+    wifi_password : Rc<Option<String>>,
     event_closing: bool,
     event_popup_size: Option<usize>,
 }
@@ -153,6 +155,7 @@ impl Component for App {
         let friends_events = FriendsEvents::init();
         let comment_counts = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let wifi_settings: Option<WifiSettings> = CachedData::init(ctx.link().clone());
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
         let announcements = match &user_info {
@@ -237,6 +240,8 @@ impl Component for App {
             friends: Rc::new(friends),
             friends_events,
             comment_counts: Rc::new(comment_counts),
+            wifi_ssid: Rc::new(wifi_settings.as_ref().map(|w: &WifiSettings| w.ssid.clone())),
+            wifi_password: Rc::new(wifi_settings.map(|w| w.password)),
             seen_comment_counts,
             surveys,
             survey_answers,
@@ -343,6 +348,11 @@ impl Component for App {
                 self.comment_counts = Rc::new(comment_counts);
                 matches!(self.page, Page::Agenda)
             }
+            Msg::WiFiSuccess(wifi_settings) => {
+                self.wifi_ssid = Rc::new(Some(wifi_settings.ssid));
+                self.wifi_password = Rc::new(Some(wifi_settings.password));
+                matches!(self.page, Page::Notifications)
+            },
             AppMsg::ScheduleFailure(api_error) => {
                 api_error.handle_api_error();
                 if self.events.is_empty() {
@@ -499,7 +509,10 @@ impl Component for App {
                 </>)
             },
             Page::Notifications => html!(<>
-                <NotificationsPage notifications={Rc::clone(&self.notifications)} />
+                <NotificationsPage
+                    notifications={Rc::clone(&self.notifications)} 
+                    wifi_ssid={Rc::clone(&self.wifi_ssid)}
+                    wifi_password={Rc::clone(&self.wifi_password)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Settings => html!(<>

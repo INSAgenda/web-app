@@ -132,6 +132,8 @@ pub struct NotificationsPage;
 #[derive(Clone, Properties)]
 pub struct NotificationsProps {
     pub notifications: Rc<RefCell<LocalNotificationTracker>>,
+    pub wifi_ssid : Rc<Option<String>>,
+    pub wifi_password : Rc<Option<String>>,
 }
 
 impl PartialEq for NotificationsProps {
@@ -165,6 +167,9 @@ impl Component for NotificationsPage {
         let button_iter = seen.iter().map(|n| n.button_target.as_ref().map(|(uri,text)| html!(<a class="friends-agenda-button" href={uri.to_owned()}>{text}</a>)));
 
         let notifications_empty = unseen.is_empty() && seen.is_empty();
+
+        let opt_wifi_ssid = ctx.props().wifi_ssid.as_deref().map(|s| s.to_owned());
+        let opt_wifi_password = ctx.props().wifi_password.as_deref().map(|s| s.to_owned());
 
         template_html!("src/notifications/notifications.html", ...)
     }
