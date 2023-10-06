@@ -29,11 +29,6 @@ pub fn window() -> web_sys::Window {
     }
 }
 
-#[deprecated(note = "Use now() instead")]
-pub fn now_ts() -> i64 {
-    now()
-}
-
 pub trait HackTraitDocOnWindow {
     fn doc(&self) -> Document;
 }
