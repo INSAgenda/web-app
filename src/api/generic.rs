@@ -192,6 +192,7 @@ impl CachedData for WifiSettings {
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
         match result {
             Ok(val) => app_link.send_message(AppMsg::WiFiSuccess(val)),
+            Err(ApiError::Known(e)) if e.kind == "wifi_credentials_not_set" => (),
             Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
         }
     }
