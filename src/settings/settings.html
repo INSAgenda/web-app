@@ -16,10 +16,16 @@
             <div class="settings-group">
                 <div class="setting">
                     <h4>Groupes</h4>
-                    <p>Vos groupes sont les suivants. Ils sont mis à jour quand vous vous connectez à INSAgenda.</p>
-                    <ul>
-                        <li iter>{{group_iter}}</li>
-                    </ul>
+                    <p>Cochez les groupes pour lesquels afficher les cours dans la liste suivante.</p>
+                    
+                    <div id="group-list-setting">
+                        <div iter class="checkbox">
+                            <input type="checkbox" id="group-radio-{{group_radio_i_iter}}" checked={{group_radio_checked_iter}} />
+                            <label for="group-radio-{{group_radio_i2_iter}}" class="checkbox-box"></label>
+                            <label for="group-radio-{{group_radio_i3_iter}}">{{group_radio_label_iter}}&nbsp;<span class="group-radio-official">{{group_radio_official_iter}}</span></label>
+                        </div>
+                    </div>
+
                     <!--<div class="primary-button" onclick={{onclick_change_group}}>Modifier</div>-->
                 </div>
             </div>

@@ -204,11 +204,22 @@ impl Component for SettingsPage {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Compute variable messages
-        let mut groups = Vec::new();
+        let mut official_groups = Groups::new();
+        let mut selected_groups = Groups::new();
+        let mut available_groups = Vec::new();
         if let Some(user_info) = ctx.props().user_info.as_ref() {
-            groups = user_info.groups.groups().iter().map(|group| group.to_string()).collect::<Vec<_>>();
+            official_groups = user_info.official_groups.clone();
+            selected_groups = user_info.groups.clone();
+            available_groups = user_info.available_groups.groups().iter().cloned().collect::<Vec<_>>();
+            available_groups.sort();
         }
-        let group_iter = groups.into_iter();
+
+        let group_radio_i_iter = (0..available_groups.len()).map(|i| i.to_string());
+        let group_radio_i2_iter = group_radio_i_iter.clone();
+        let group_radio_i3_iter = group_radio_i_iter.clone();
+        let group_radio_label_iter = available_groups.iter().cloned();
+        let group_radio_official_iter = available_groups.iter().map(|g| if official_groups.groups().contains(g) {"(officiel)"} else {""});
+        let group_radio_checked_iter = available_groups.iter().map(|g| selected_groups.groups().contains(g));
 
         let theme_glider_selector = html! {
             <GliderSelector
