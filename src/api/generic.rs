@@ -187,7 +187,7 @@ pub struct WifiSettings {
 
 impl CachedData for WifiSettings {
     fn storage_key() ->  &'static str { "wifi_settings" }
-    fn endpoint() ->  &'static str { "/api/get_wifi" }
+    fn endpoint() ->  &'static str { "/api/get-wifi" }
     fn cache_duration() -> u64 { 3600 * 5 }
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
         match result {
