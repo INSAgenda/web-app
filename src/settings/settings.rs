@@ -109,7 +109,7 @@ impl SettingStore {
 }
 
 pub enum Msg {
-    //Confirm,
+    Confirm,
     Cancel,
     ThemeChange(usize),
     LogOut,
@@ -147,10 +147,38 @@ impl Component for SettingsPage {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            /*Msg::Confirm => {
+            Msg::Confirm => {
+                // Collect checked groups
+                if let Some(user_info) = ctx.props().user_info.as_ref() {
+                    let mut available_groups = user_info.available_groups.groups().iter().cloned().collect::<Vec<_>>();
+                    available_groups.sort();
+
+                    let document = window().doc();
+                    let mut groups = Groups::new();
+                    for (i, group) in available_groups.iter().enumerate() {
+                        let el = document.get_element_by_id(&format!("group-radio-{}", i)).unwrap();
+                        let el = el.dyn_into::<HtmlInputElement>().unwrap();
+                        if el.checked() {
+                            groups.insert(group);
+                        }
+                    }
+                    
+                    // Update the groups both in backend and frontend
+                    if groups != user_info.groups {
+                        let app_link = ctx.props().app_link.clone();
+                        let user_info = user_info.clone();
+                        wasm_bindgen_futures::spawn_local(async move {
+                            match api_post(groups.clone(), "set-groups").await {
+                                Ok(()) => app_link.send_message(AppMsg::UserInfoSuccess(UserInfo {groups, ..user_info})),
+                                Err(e) => alert(format!("Impossible de mettre à jour les groupes : {}", e)),
+                            }
+                        })
+                    }
+                }
+
                 ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                 false
-            }*/
+            }
             Msg::Cancel => {
                 ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                 SETTINGS.set_theme(self.clone_storage.theme.load(Ordering::Relaxed));
