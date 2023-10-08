@@ -61,6 +61,17 @@
     justify-content: space-around;
 }
 
+/* Group checkboxes */
+
+#group-list-setting .checkbox {
+    margin: 0.1rem 0;
+}
+
+#group-list-setting .group-radio-official {
+    opacity: 0.5;
+    font-size: .85rem;
+}
+
 /* Setting */
 
 .setting {

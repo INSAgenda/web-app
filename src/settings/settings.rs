@@ -109,7 +109,7 @@ impl SettingStore {
 }
 
 pub enum Msg {
-    //Confirm,
+    Confirm,
     Cancel,
     ThemeChange(usize),
     LogOut,
@@ -147,10 +147,38 @@ impl Component for SettingsPage {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            /*Msg::Confirm => {
+            Msg::Confirm => {
+                // Collect checked groups
+                if let Some(user_info) = ctx.props().user_info.as_ref() {
+                    let mut available_groups = user_info.available_groups.groups().iter().cloned().collect::<Vec<_>>();
+                    available_groups.sort();
+
+                    let document = window().doc();
+                    let mut groups = Groups::new();
+                    for (i, group) in available_groups.iter().enumerate() {
+                        let el = document.get_element_by_id(&format!("group-radio-{}", i)).unwrap();
+                        let el = el.dyn_into::<HtmlInputElement>().unwrap();
+                        if el.checked() {
+                            groups.insert(group);
+                        }
+                    }
+                    
+                    // Update the groups both in backend and frontend
+                    if groups != user_info.groups {
+                        let app_link = ctx.props().app_link.clone();
+                        let user_info = user_info.clone();
+                        wasm_bindgen_futures::spawn_local(async move {
+                            match api_post(groups.clone(), "set-groups").await {
+                                Ok(()) => app_link.send_message(AppMsg::UserInfoSuccess(UserInfo {groups, ..user_info})),
+                                Err(e) => alert(format!("Impossible de mettre à jour les groupes : {}", e)),
+                            }
+                        })
+                    }
+                }
+
                 ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                 false
-            }*/
+            }
             Msg::Cancel => {
                 ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                 SETTINGS.set_theme(self.clone_storage.theme.load(Ordering::Relaxed));
@@ -204,11 +232,22 @@ impl Component for SettingsPage {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         // Compute variable messages
-        let mut groups = Vec::new();
+        let mut official_groups = Groups::new();
+        let mut selected_groups = Groups::new();
+        let mut available_groups = Vec::new();
         if let Some(user_info) = ctx.props().user_info.as_ref() {
-            groups = user_info.groups.groups().iter().map(|group| group.to_string()).collect::<Vec<_>>();
+            official_groups = user_info.official_groups.clone();
+            selected_groups = user_info.groups.clone();
+            available_groups = user_info.available_groups.groups().iter().cloned().collect::<Vec<_>>();
+            available_groups.sort();
         }
-        let group_iter = groups.into_iter();
+
+        let group_radio_i_iter = (0..available_groups.len()).map(|i| i.to_string());
+        let group_radio_i2_iter = group_radio_i_iter.clone();
+        let group_radio_i3_iter = group_radio_i_iter.clone();
+        let group_radio_label_iter = available_groups.iter().cloned();
+        let group_radio_official_iter = available_groups.iter().map(|g| if official_groups.groups().contains(g) {"(officiel)"} else {""});
+        let group_radio_checked_iter = available_groups.iter().map(|g| selected_groups.groups().contains(g));
 
         let theme_glider_selector = html! {
             <GliderSelector

@@ -338,7 +338,7 @@ impl Component for App {
                 user_info.save();
                 self.user_info = Rc::new(Some(user_info));
 
-                should_refresh
+                should_refresh || matches!(self.page, Page::Settings)
             },
             Msg::FriendsSuccess(friends) => {
                 self.friends = Rc::new(Some(friends));
