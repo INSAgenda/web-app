@@ -197,23 +197,43 @@ impl Component for Agenda {
         for d in 0..6 {
             let day_start = Paris.from_local_datetime(&current_day.and_hms_opt(0,0,0).unwrap()).unwrap().timestamp() as u64;
             let selected_event_other_day = !mobile && ctx.props().popup.as_ref().map(|(e,is_closing,_)| !is_closing && !(day_start..day_start+86400).contains(&e.start_unixtime)).unwrap_or(false);
-            let mut events = Vec::new();
 
             // Iterate over events, starting from the first one that starts during the current day
             let mut idx = match ctx.props().events.binary_search_by_key(&day_start, |e| e.start_unixtime) {
                 Ok(idx) => idx,
                 Err(idx) => idx,
             };
+            let mut events = Vec::new();
             while let Some(e) = ctx.props().events.get(idx) {
                 if e.start_unixtime > day_start + 24*3600 {
                     break;
                 }
-                events.push(html!{
+                events.push(e);
+            }
+
+            // Find overlapping events
+            let mut overlapping_events = Vec::new();
+            for (i, e) in events.iter().enumerate() {
+                let e_range = e.start_unixtime..e.end_unixtime;
+                for (i2, e2) in events.iter().enumerate() {
+                    if e == e2 { continue }
+                    let e2_range = e2.start_unixtime..e2.end_unixtime;
+                    if e2_range.contains(&e_range.start) || e2_range.contains(&e_range.end) {
+                        overlapping_events.push(i);
+                    }
+                }
+            }
+            
+            // Generate event components
+            let mut event_comps = Vec::new();
+            for (i, e) in events.into_iter().enumerate() {
+                event_comps.push(html!{
                     <EventComp
                         week_day={d}
                         event={e.clone()}
                         day_start={day_start}
                         agenda_link={ctx.link().clone()}
+                        vertical_offset={overlapping_events.iter().position(|i2| i == *i2).map(|i| (i, overlapping_events.len())).unwrap_or((0, 1))}
                         comment_counts={Rc::clone(&ctx.props().comment_counts)}
                         seen_comment_counts={Rc::clone(&ctx.props().seen_comment_counts)}>
                     </EventComp>
@@ -221,6 +241,7 @@ impl Component for Agenda {
                 idx += 1;
             }
 
+            // Generate day styles
             let mut day_style = String::new();
             let mut day_name_style = String::new();
             if mobile {
@@ -236,6 +257,7 @@ impl Component for Agenda {
                 }
             }
 
+            // Generate day component
             day_names.push(html! {
                 <span id={if current_day == self.selected_day {"selected-day"} else {""}} style={day_name_style}>
                     { format_day(current_day.weekday(), current_day.day()) }
@@ -243,7 +265,7 @@ impl Component for Agenda {
             });
             days.push(html! {
                 <div class="day" id={format!("day{d}")} style={day_style}>
-                    { events }
+                    { event_comps }
                 </div>
             });
 

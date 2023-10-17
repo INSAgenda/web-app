@@ -10,6 +10,7 @@ pub struct EventCompProps {
     pub day_start: u64,
     pub agenda_link: AgendaLink,
     pub week_day: u8,
+    pub vertical_offset: (usize, usize),
     pub comment_counts: Rc<CommentCounts>,
     pub seen_comment_counts: Rc<CommentCounts>,
 }
