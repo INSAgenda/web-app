@@ -88,6 +88,8 @@ impl Component for EventComp {
             return html!{};
         }
         let percent_height = 100.0 / day_sec_count * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;
+        let percent_width = 100.0 / ctx.props().vertical_offset.1 as f64;
+        let percent_vertical_offset = percent_width * ctx.props().vertical_offset.0 as f64;
 
         // Count comments
         let opt_comment_count = ctx.props().comment_counts.get(&ctx.props().event.eid).copied();

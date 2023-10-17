@@ -209,6 +209,7 @@ impl Component for Agenda {
                     break;
                 }
                 events.push(e);
+                idx += 1;
             }
 
             // Find overlapping events
