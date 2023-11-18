@@ -26,6 +26,7 @@ impl Component for ForceClickComp {
         let today = Local::now().naive_local().num_days_from_ce();
         let local_storage = window().local_storage().unwrap().unwrap();
         local_storage.set(KEY, &today.to_string()).unwrap();
+        self.last_click = Some(today);
 
         true
     }
