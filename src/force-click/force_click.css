@@ -1,6 +1,6 @@
 .force-click {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 8rem);
     background: var(--background);
     display: flex;
     position: fixed;
