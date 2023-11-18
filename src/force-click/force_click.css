@@ -32,10 +32,14 @@
 
 .to-click {
     font-size: 1.3rem;
-    color: var(--primary);
-    text-decoration: underline;
+    color: var(--text);
+    text-decoration: none;
     display: flex;
     margin: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
 }
 
 .to-click img {

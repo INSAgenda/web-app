@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use chrono::{Local, NaiveDate};
+use chrono::Local;
 
 const KEY: &str = "last_click_date";
 
@@ -11,7 +11,7 @@ impl Component for ForceClickComp {
     type Message = ();
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         let last_click = {
             let local_storage = window().local_storage().unwrap().unwrap();
             local_storage.get(KEY).unwrap_or_default().map(|date| date.parse::<i32>().unwrap_or_default())
@@ -30,11 +30,9 @@ impl Component for ForceClickComp {
             template_html!(
                 "src/force-click/force_click.html",
                 show_popup = show_popup,
-                onclick_link = { ctx.link().callback(|_| {
-                    let today = Local::now().naive_local().num_days_from_ce();
+                onclick_link = { ctx.link().callback(move |_| {
                     let local_storage = window().local_storage().unwrap().unwrap();
                     local_storage.set(KEY, &today.to_string()).unwrap();
-    
                 })}
             )
         } else {
@@ -42,6 +40,5 @@ impl Component for ForceClickComp {
                 <div></div>
             }
         }
-        
     }
 }
