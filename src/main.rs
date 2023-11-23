@@ -35,6 +35,7 @@ mod comment;
 mod notifications;
 #[path ="force-click/force_click.rs"]
 mod force_click;
+mod advent;
 
 mod util;
 mod slider;

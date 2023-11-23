@@ -2,6 +2,7 @@ pub use crate::{
     agenda::*, alert::*, api::*, calendar::*, checkbox::*, colors::*, comment::*,
     event::*, friends::*, glider_selector::*, log, notifications::*,
     popup::Popup, popup::*, settings::*, sortable::*, survey::*, tabbar::*, translation::*,
+    advent::*,
     util::*, App, Msg as AppMsg, Page,
 };
 pub use chrono::{
