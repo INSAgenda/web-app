@@ -1,14 +1,15 @@
 use crate::prelude::*;
-use chrono::Local;
-
-const KEY: &str = "last_click_date";
 
 pub struct GiftComp {
     show_popup: bool,
 }
 
+pub enum GiftMsg {
+    OpenGift,
+}
+
 impl Component for GiftComp {
-    type Message = ();
+    type Message = GiftMsg;
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
@@ -17,18 +18,23 @@ impl Component for GiftComp {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        // Handle message
+        match msg {
+            GiftMsg::OpenGift => {
+                self.show_popup = false;
+            }
+        }
 
         true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let today = Local::now().naive_local().num_days_from_ce();
-
         if self.show_popup {
             template_html!(
                 "src/advent/gift/gift.html",
                 show_popup = show_popup,
+                onclick_gift = { ctx.link().callback(|_| GiftMsg::OpenGift) },
             )
         } else {
             html! {
