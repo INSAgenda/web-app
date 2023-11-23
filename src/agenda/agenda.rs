@@ -182,7 +182,7 @@ impl Component for Agenda {
         let opt_gift = if opt_profile_src.is_none() {
             Some(
                 html! {
-                    <GiftComp />
+                    <GiftComp agenda_link={ctx.link().clone()} />
                 }
             )
         } else {

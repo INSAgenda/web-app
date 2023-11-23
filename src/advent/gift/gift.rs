@@ -1,5 +1,15 @@
 use crate::prelude::*;
 
+#[derive(Properties, Clone)]
+pub struct AdventProps {
+    pub agenda_link: AgendaLink,
+}
+
+impl PartialEq for AdventProps {
+    fn eq(&self, other: &Self) -> bool { true }
+}
+
+
 pub struct GiftComp {
     show_popup: bool,
 }
@@ -10,7 +20,7 @@ pub enum GiftMsg {
 
 impl Component for GiftComp {
     type Message = GiftMsg;
-    type Properties = ();
+    type Properties = AdventProps;
 
     fn create(_ctx: &Context<Self>) -> Self {
         Self {
