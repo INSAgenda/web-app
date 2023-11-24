@@ -1,0 +1,17 @@
+[
+    {
+        "day": 1,
+        "kind": "decoration",
+        "title": "Christmas Tree"
+    },
+    {
+        "day": 2,
+        "kind": "music",
+        "title": "Jingle Bells"
+    },
+    {
+        "day": 3,
+        "kind": "animation",
+        "title": "Santa Claus"
+    }
+]
