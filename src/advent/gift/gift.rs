@@ -43,7 +43,6 @@ impl Component for GiftComp {
         if self.show_popup {
             template_html!(
                 "src/advent/gift/gift.html",
-                show_popup = show_popup,
                 onclick_gift = { ctx.link().callback(|_| GiftMsg::OpenGift) },
             )
         } else {
