@@ -150,8 +150,8 @@ impl Component for Calendar {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let selected: chrono::NaiveDate = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).expect("Invalid date");
-        let selected_republican: calendrier::DateTime = selected.try_into().expect("Could not convert date");
+        let Some(selected) = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day) else {return html! {}};
+        let Ok(selected_republican): Option<calendrier::DateTime> = selected.try_into() else {return html! {}};
         let today = Local::now().date_naive();
 
         let gregorian_display_month = format!("{} {}", t(match ctx.props().month {
