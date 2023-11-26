@@ -33,9 +33,6 @@ mod friends;
 mod comment;
 #[path = "notifications/notifications.rs"]
 mod notifications;
-#[path ="force-click/force_click.rs"]
-mod force_click;
-
 mod util;
 mod slider;
 mod api;
