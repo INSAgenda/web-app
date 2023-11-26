@@ -1,4 +1,4 @@
-use crate::{prelude::*, slider, force_click::ForceClickComp};
+use crate::{prelude::*, slider};
 
 fn format_day(day_name: Weekday, day: u32) -> String {
     let day_name = t(match day_name {
@@ -266,11 +266,6 @@ impl Component for Agenda {
                     user_info={Rc::clone(&ctx.props().user_info)} />
             }
         );
-
-        let opt_force_click = Some(html! {
-                <ForceClickComp />
-        });
-        
         let popup_container_style = match &ctx.props().popup {
             Some((_, false, popup_size)) => match mobile {
                 true => {
