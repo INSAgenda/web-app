@@ -39,7 +39,7 @@ lazy_static::lazy_static!{
         SettingStore {
             theme: AtomicUsize::new(theme),
             lang: AtomicUsize::new(lang),
-            calendar: AtomicUsize::new(0),
+            calendar: AtomicUsize::new(calendar),
         }
     };
 }
