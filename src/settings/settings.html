@@ -43,6 +43,15 @@
                     <p>Pour afficher l'interface dans langue de Molière.</p>
                     {{language_glider_selector}}
                 </div>
+                <div class="setting">
+                    <h4>Calendrier</h4>
+                    <p present-if=!{{republican}}>Dieu créa le monde en 6 jours, et se reposa le 7ème.</p>
+                    <p present-if={{republican}}>
+                        Tu vois, Républicain, l'image de tes jours, Des nuages sans nombre en assiègent le cours; Mais ces jours nébuleux, si fréquens dans la vie, Tu les rendras sereins en servant la Patrie.
+                        <!-- Source: https://gallica.bnf.fr/ark:/12148/btv1b69450349/f1.item.zoom -->
+                    </p>
+                    {{calendar_glider_selector}}
+                </div>
             </div>
         </section>
     </div>

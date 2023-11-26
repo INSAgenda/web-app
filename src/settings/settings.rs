@@ -34,6 +34,7 @@ lazy_static::lazy_static!{
         SettingStore {
             theme: AtomicUsize::new(theme),
             lang: AtomicUsize::new(lang),
+            calendar: AtomicUsize::new(0),
         }
     };
 }
@@ -50,9 +51,16 @@ pub enum Lang {
     English,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Calendar {
+    Gregorian = 0,
+    Republican,
+}
+
 pub struct SettingStore {
     theme: AtomicUsize,
     lang: AtomicUsize,
+    calendar: AtomicUsize,
 }
 
 impl SettingStore {
@@ -106,6 +114,18 @@ impl SettingStore {
         let storage = window().local_storage().unwrap().unwrap();
         storage.set_item("setting-lang", lang).unwrap();
     }
+
+    pub fn calendar(&self) -> Calendar {
+        match self.calendar.load(Ordering::Relaxed) {
+            0 => Calendar::Gregorian,
+            1 => Calendar::Republican,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn set_calendar(&self, calendar: usize) {
+        self.calendar.store(calendar, Ordering::Relaxed);
+    }
 }
 
 pub enum Msg {
@@ -114,6 +134,7 @@ pub enum Msg {
     ThemeChange(usize),
     LogOut,
     LanguageChange(usize),
+    CalendarChange(usize),
 }
 
 #[derive(Properties, Clone)]
@@ -141,6 +162,7 @@ impl Component for SettingsPage {
             clone_storage: SettingStore {
                 theme: AtomicUsize::new(SETTINGS.theme.load(Ordering::Relaxed)),
                 lang: AtomicUsize::new(SETTINGS.lang.load(Ordering::Relaxed)),
+                calendar: AtomicUsize::new(SETTINGS.calendar.load(Ordering::Relaxed)),
             }
         }
     }
@@ -227,6 +249,10 @@ impl Component for SettingsPage {
                 SETTINGS.set_lang(v);
                 true
             }
+            Msg::CalendarChange(v) => {
+                SETTINGS.set_calendar(v);
+                true
+            }
         }
     }
 
@@ -261,6 +287,12 @@ impl Component for SettingsPage {
                 on_change = { ctx.link().callback(Msg::LanguageChange) }
                 selected = { SETTINGS.lang() as usize } />
         };
+        let calendar_glider_selector = html! {
+            <GliderSelector
+                values = { vec!["Gregorien", "Républicain"] }
+                on_change = { ctx.link().callback(Msg::CalendarChange) }
+                selected = { SETTINGS.calendar() as usize } />
+        };
 
         template_html!(
             "src/settings/settings.html",
@@ -269,6 +301,7 @@ impl Component for SettingsPage {
             onclick_confirm = {ctx.link().callback(move |_| Msg::Confirm)},
             onclick_delete = {ctx.link().callback(move |_| Msg::Delete)},
             onclick_cancel = {ctx.link().callback(move |_| Msg::Cancel)},
+            republican = {SETTINGS.calendar() == Calendar::Republican},
             ...
         )
     }
