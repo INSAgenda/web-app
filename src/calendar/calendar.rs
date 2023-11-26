@@ -68,7 +68,7 @@ impl Component for Calendar {
                 },
                 CalendarKind::Republican => {
                     let selected = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).unwrap();
-                    let selected: calendrier::DateTime = selected.try_into().expect("Could not convert date");
+                    let selected: RepublicanDateTime = selected.try_into().expect("Could not convert date");
                     let mut month0 = selected.num_month0();
                     let mut year0 = selected.year0();
                     if month0 >= 12 {
@@ -77,7 +77,7 @@ impl Component for Calendar {
                     } else {
                         month0 += 1;
                     }
-                    let new_date = calendrier::DateTime::from_ymd_hms0(year0, month0, 0, selected.hour(), selected.minute(), selected.second());
+                    let new_date = RepublicanDateTime::from_ymd_hms0(year0, month0, 0, selected.hour(), selected.minute(), selected.second());
                     let new_date: NaiveDate = new_date.try_into().unwrap();
                     ctx.props().agenda_link.send_message(AgendaMsg::Goto {
                         day: new_date.day(),
@@ -101,7 +101,7 @@ impl Component for Calendar {
                 },
                 CalendarKind::Republican => {
                     let selected = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).unwrap();
-                    let selected: calendrier::DateTime = selected.try_into().expect("Could not convert date");
+                    let selected: RepublicanDateTime = selected.try_into().expect("Could not convert date");
                     let mut month0 = selected.num_month0();
                     let mut year0 = selected.year0();
                     if month0 <= 0 {
@@ -110,7 +110,7 @@ impl Component for Calendar {
                     } else {
                         month0 -= 1;
                     }
-                    let new_date = calendrier::DateTime::from_ymd_hms0(year0, month0, 0, selected.hour(), selected.minute(), selected.second());
+                    let new_date = RepublicanDateTime::from_ymd_hms0(year0, month0, 0, selected.hour(), selected.minute(), selected.second());
                     let new_date: NaiveDate = new_date.try_into().unwrap();
                     ctx.props().agenda_link.send_message(AgendaMsg::Goto {
                         day: new_date.day(),
@@ -151,7 +151,7 @@ impl Component for Calendar {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let Some(selected) = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day) else {return html! {}};
-        let Ok(selected_republican): Option<calendrier::DateTime> = selected.try_into() else {return html! {}};
+        let Ok(selected_republican): Result<RepublicanDateTime, _> = selected.try_into() else {return html! {}};
         let today = Local::now().date_naive();
 
         let gregorian_display_month = format!("{} {}", t(match ctx.props().month {
@@ -204,9 +204,9 @@ impl Component for Calendar {
                 7
             },
             CalendarKind::Republican => {
-                let first_day = calendrier::DateTime::from_ymd_hms0(selected_republican.year0(), selected_republican.num_month0(), 0, selected_republican.hour(), selected_republican.minute(), selected_republican.second());
+                let first_day = RepublicanDateTime::from_ymd_hms0(selected_republican.year0(), selected_republican.num_month0(), 0, selected_republican.hour(), selected_republican.minute(), selected_republican.second());
 
-                let day_count = if selected_republican.month() == calendrier::Month::Sansculotides {
+                let day_count = if selected_republican.month() == RepublicanMonth::Sansculotides {
                     let sextile = calendrier::get_day_count0(selected_republican.year0()) == 366;
                     if sextile { 6 } else { 5 }
                 } else {
