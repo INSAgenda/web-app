@@ -240,12 +240,12 @@ impl Component for Agenda {
 
             let day_name = match SETTINGS.calendar() {
                 CalendarKind::Gregorian => format_day(current_day.weekday(), current_day.day()),
-                CalendarKind::Republican => {
-                    let datetime: calendrier::DateTime = current_day.try_into().expect("Couldn't convert chrono::NaiveDate to calendrier::Date");
-                    match datetime.num_month() {
+                CalendarKind::Republican => match calendrier::DateTime::try_from(current_day) {
+                    Ok(datetime) => match datetime.num_month() {
                         13 => datetime.decade_day().to_string(),
                         _ => format!("{} {}", datetime.decade_day(), datetime.day()),
-                    }
+                    },
+                    Err(_) => String::from("invalid date"),
                 },
             };
             day_names.push(html! {
