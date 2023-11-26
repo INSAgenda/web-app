@@ -108,21 +108,30 @@ impl Component for Calendar {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let display_month = format!("{} {}", t(match ctx.props().month {
-            1 => "Janvier",
-            2 => "Février",
-            3 => "Mars",
-            4 => "Avril",
-            5 => "Mai",
-            6 => "Juin",
-            7 => "Juillet",
-            8 => "Août",
-            9 => "Septembre",
-            10 => "Octobre",
-            11 => "Novembre",
-            12 => "Décembre",
-            _ => unreachable!(),
-        }), ctx.props().year);
+        let display_month = match SETTINGS.calendar() {
+            CalendarKind::Gregorian => {
+                format!("{} {}", t(match ctx.props().month {
+                    1 => "Janvier",
+                    2 => "Février",
+                    3 => "Mars",
+                    4 => "Avril",
+                    5 => "Mai",
+                    6 => "Juin",
+                    7 => "Juillet",
+                    8 => "Août",
+                    9 => "Septembre",
+                    10 => "Octobre",
+                    11 => "Novembre",
+                    12 => "Décembre",
+                    _ => unreachable!(),
+                }), ctx.props().year)
+            },
+            CalendarKind::Republican => {
+                let date: chrono::NaiveDate = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).expect("Invalid date");
+                let date: calendrier::Date = date.try_into().expect("Could not convert date");
+                format!("{} {}", date.month(), date.year())
+            }
+        };
 
         let first_day = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, 1).unwrap();
         let last_day = NaiveDate::from_ymd_opt(ctx.props().year, (ctx.props().month % 12) + 1, 1).unwrap().pred_opt().unwrap();
