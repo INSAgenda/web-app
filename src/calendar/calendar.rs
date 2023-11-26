@@ -182,12 +182,12 @@ impl Component for Calendar {
 
         let mut week_iter = Vec::new();
         let mut cases_iter = Vec::new();
-        match SETTINGS.calendar() {
+        let mut calendar_cases = Vec::new();
+        let week_len = match SETTINGS.calendar() {
             CalendarKind::Gregorian => {
                 let first_day = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, 1).unwrap();
                 let last_day = NaiveDate::from_ymd_opt(ctx.props().year, (ctx.props().month % 12) + 1, 1).unwrap().pred_opt().unwrap();
         
-                let mut calendar_cases = Vec::new();
                 for _ in 0..first_day.weekday().number_from_monday() - 1 {
                     calendar_cases.push(html! {
                         <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::Previous)}></span>
@@ -201,78 +201,49 @@ impl Component for Calendar {
                         <span class="calendar-case" id={id} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
                     });
                 }
-                while calendar_cases.len() % 7 != 0 {
-                    calendar_cases.push(html! {
-                        <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::Next)}></span>
-                    });
-                }
-
-                for week in 1..=calendar_cases.len()/7 {
-                    week_iter.push(week);
-                    cases_iter.push(calendar_cases.drain(0..7).collect::<Vec<_>>());
-                }
+                7
             },
             CalendarKind::Republican => {
                 let first_day = calendrier::DateTime::from_ymd_hms0(selected_republican.year0(), selected_republican.num_month0(), 0, selected_republican.hour(), selected_republican.minute(), selected_republican.second());
 
-                if selected_republican.month() == calendrier::Month::Sansculotides {
+                let day_count = if selected_republican.month() == calendrier::Month::Sansculotides {
                     let sextile = calendrier::get_day_count0(selected_republican.year0()) == 366;
-                    let day_count = if sextile { 6 } else { 5 };
-                    let mut decade_cases = Vec::new();
-                    for day0 in 0..day_count {
-                        let date = first_day.clone() + chrono::Duration::days(day0);
-                        let gregorian: chrono::NaiveDate = date.try_into().unwrap();
-                        let id = if gregorian == selected {Some("calendar-case-selected")} else if gregorian == today {Some("calendar-case-today")} else {None};
-
-                        decade_cases.push(html! {
-                            <span
-                                class="calendar-case"
-                                id={id}
-                                onclick={ctx.link().callback(move |_| Msg::Goto {
-                                    day: gregorian.day0()+1,
-                                    month: gregorian.month0()+1,
-                                    year: gregorian.year()
-                                })}
-                            >
-                                {(day0+1).to_string()}
-                            </span>
-                        });
-                    }
-                    while decade_cases.len() < 10 {
-                        decade_cases.push(html! {
-                            <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::Next)}></span>
-                        });
-                    }
-                    week_iter.push(1);
-                    cases_iter.push(decade_cases);
+                    if sextile { 6 } else { 5 }
                 } else {
-                    for decade in 0..3 {
-                        let mut decade_cases = Vec::new();
-                        for decade_day in 0..10 {
-                            let day0 = decade*10 + decade_day;
-                            let date = first_day.clone() + chrono::Duration::days(day0);
-                            let gregorian: chrono::NaiveDate = date.try_into().unwrap();
-                            let id = if gregorian == selected {Some("calendar-case-selected")} else if gregorian == today {Some("calendar-case-today")} else {None};
+                    30
+                };
 
-                            decade_cases.push(html! {
-                                <span
-                                    class="calendar-case"
-                                    id={id}
-                                    onclick={ctx.link().callback(move |_| Msg::Goto {
-                                        day: gregorian.day0()+1,
-                                        month: gregorian.month0()+1,
-                                        year: gregorian.year()
-                                    })}
-                                >
-                                    {(day0+1).to_string()}
-                                </span>
-                            });
-                        }
-                        week_iter.push(decade as usize+1);
-                        cases_iter.push(decade_cases);
-                    }
-                }                
+                for day0 in 0..day_count {
+                    let date = first_day.clone() + chrono::Duration::days(day0);
+                    let gregorian: chrono::NaiveDate = date.try_into().unwrap();
+                    let id = if gregorian == selected {Some("calendar-case-selected")} else if gregorian == today {Some("calendar-case-today")} else {None};
+                    calendar_cases.push(html! {
+                        <span
+                            class="calendar-case"
+                            id={id}
+                            onclick={ctx.link().callback(move |_| Msg::Goto {
+                                day: gregorian.day0()+1,
+                                month: gregorian.month0()+1,
+                                year: gregorian.year()
+                            })}
+                        >
+                            {(day0+1).to_string()}
+                        </span>
+                    });
+                }
+                10
             }
+        };
+
+        while calendar_cases.len() % week_len != 0 {
+            calendar_cases.push(html! {
+                <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::Next)}></span>
+            });
+        }
+
+        for week in 1..=calendar_cases.len()/week_len {
+            week_iter.push(week);
+            cases_iter.push(calendar_cases.drain(0..week_len).collect::<Vec<_>>());
         }
 
         let mobile = width() <= 1000;
