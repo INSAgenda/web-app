@@ -43,6 +43,16 @@
                     <p>Pour afficher l'interface dans langue de Molière.</p>
                     {{language_glider_selector}}
                 </div>
+                <div class="setting">
+                    <h4>Calendrier</h4>
+                    <p present-if=!{{republican}}>
+                        Le calendrier de l'Église romaine, saints catholiques et fêtes religieuses. Adopté par le pape Grégoire XIII dans la bulle pontificale "Inter gravissimas" du 24 février 1582.
+                    </p>
+                    <p present-if={{republican}}>
+                        Il en est de la révolte comme de toute création humaine : elle ne vaut que par les détails.
+                    </p>
+                    {{calendar_glider_selector}}
+                </div>
             </div>
         </section>
     </div>

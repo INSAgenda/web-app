@@ -26,6 +26,7 @@ pub use wasm_bindgen_futures::{spawn_local, JsFuture};
 pub use web_sys::{HtmlElement, HtmlInputElement, Request, RequestInit};
 pub use yew::{html::Scope, prelude::*};
 pub use yew_template::template_html;
+pub use calendrier::{DateTime as RepublicanDateTime, Date as RepublicanDate, Month as RepublicanMonth};
 
 pub type AppLink = yew::html::Scope<crate::App>;
 pub type AgendaLink = yew::html::Scope<crate::agenda::Agenda>;
