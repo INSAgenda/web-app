@@ -71,7 +71,7 @@ impl Component for Calendar {
                     let selected: calendrier::DateTime = selected.try_into().expect("Could not convert date");
                     let mut month0 = selected.num_month0();
                     let mut year0 = selected.year0();
-                    if month0 >= 13 {
+                    if month0 >= 12 {
                         month0 = 0;
                         year0 += 1;
                     } else {
@@ -213,10 +213,11 @@ impl Component for Calendar {
                 let selected_republican: calendrier::DateTime = selected.try_into().expect("Could not convert date");
                 let first_day = calendrier::DateTime::from_ymd_hms0(selected_republican.year0(), selected_republican.num_month0(), 0, selected_republican.hour(), selected_republican.minute(), selected_republican.second());
 
-                for decade in 0..3 {
+                if selected_republican.month() == calendrier::Month::Sansculotides {
+                    let sextile = calendrier::get_day_count0(selected_republican.year0()) == 366;
+                    let day_count = if sextile { 6 } else { 5 };
                     let mut decade_cases = Vec::new();
-                    for decade_day in 0..10 {
-                        let day0 = decade*10 + decade_day;
+                    for day0 in 0..day_count {
                         let date = first_day.clone() + chrono::Duration::days(day0);
                         let gregorian: chrono::NaiveDate = date.try_into().unwrap();
                         let id = if gregorian == selected {Some("calendar-case-selected")} else if gregorian == today {Some("calendar-case-today")} else {None};
@@ -235,9 +236,40 @@ impl Component for Calendar {
                             </span>
                         });
                     }
-                    week_iter.push(decade as usize+1);
+                    while decade_cases.len() < 10 {
+                        decade_cases.push(html! {
+                            <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::Next)}></span>
+                        });
+                    }
+                    week_iter.push(1);
                     cases_iter.push(decade_cases);
-                }
+                } else {
+                    for decade in 0..3 {
+                        let mut decade_cases = Vec::new();
+                        for decade_day in 0..10 {
+                            let day0 = decade*10 + decade_day;
+                            let date = first_day.clone() + chrono::Duration::days(day0);
+                            let gregorian: chrono::NaiveDate = date.try_into().unwrap();
+                            let id = if gregorian == selected {Some("calendar-case-selected")} else if gregorian == today {Some("calendar-case-today")} else {None};
+
+                            decade_cases.push(html! {
+                                <span
+                                    class="calendar-case"
+                                    id={id}
+                                    onclick={ctx.link().callback(move |_| Msg::Goto {
+                                        day: gregorian.day0()+1,
+                                        month: gregorian.month0()+1,
+                                        year: gregorian.year()
+                                    })}
+                                >
+                                    {(day0+1).to_string()}
+                                </span>
+                            });
+                        }
+                        week_iter.push(decade as usize+1);
+                        cases_iter.push(decade_cases);
+                    }
+                }                
             }
         }
 
