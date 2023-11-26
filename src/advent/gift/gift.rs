@@ -1,5 +1,7 @@
 use crate::prelude::*;
 
+use super::gifts::CollectedGifts;
+
 #[derive(Properties, Clone)]
 pub struct AdventProps {
     pub agenda_link: AgendaLink,
@@ -9,9 +11,9 @@ impl PartialEq for AdventProps {
     fn eq(&self, other: &Self) -> bool { true }
 }
 
-
 pub struct GiftComp {
-    show_popup: bool,
+    day: u8,
+    collected: bool,
 }
 
 pub enum GiftMsg {
@@ -23,8 +25,17 @@ impl Component for GiftComp {
     type Properties = AdventProps;
 
     fn create(_ctx: &Context<Self>) -> Self {
+        let local_storage = window().local_storage().unwrap().unwrap();
+        let collected_gifts = match local_storage.get_item("collected_gifts").unwrap() {
+            Some(json) => CollectedGifts::from_json(&json).unwrap_or_default(),
+            None => CollectedGifts::default(),
+        };
+
+        
+
         Self {
-            show_popup: true,
+            day: 0,
+            collected: false,
         }
     }
 
@@ -32,7 +43,7 @@ impl Component for GiftComp {
         // Handle message
         match msg {
             GiftMsg::OpenGift => {
-                self.show_popup = false;
+                self.collected = false;
             }
         }
 
@@ -40,7 +51,7 @@ impl Component for GiftComp {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        if self.show_popup {
+        if !self.collected {
             template_html!(
                 "src/advent/gift/gift.html",
                 onclick_gift = { ctx.link().callback(|_| GiftMsg::OpenGift) },

@@ -14,7 +14,7 @@ pub struct GiftList {
     pub gifts: Vec<Gift>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct CollectedGifts {
     collected: HashSet<u8>
 }
