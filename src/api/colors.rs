@@ -31,25 +31,3 @@ pub async fn get_colors() -> Result<HashMap<String, String>, ApiError> {
 
     Ok(colors)
 }
-
-#[deprecated(note = "Use api_post instead")]
-pub async fn publish_colors(colors: &Vec<(String, String)>) -> Result<(), ApiError> {
-    let mut init = web_sys::RequestInit::new();
-    let body = serde_json::to_string(&colors).unwrap();
-    init.body(Some(&JsValue::from_str(&body)));
-
-    match post_api_request("colors", init, vec![]).await {
-        Ok(resp_value) => {
-            let response: web_sys::Response = resp_value.clone().dyn_into().unwrap();
-            match response.status() {
-                200 => Ok(()),
-                400 | 500 => {
-                    let json = JsFuture::from(response.json()?).await?;
-                    Err(ApiError::from(json))
-                },
-                _ => Err(ApiError::Unknown(resp_value))
-            }
-        },
-        Err(e) => Err(ApiError::Unknown(e)),
-    }
- }
