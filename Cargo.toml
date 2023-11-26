@@ -1,14 +1,14 @@
 [package]
 name = "web-app"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-yew = { version="0.20", features=["csr"] }
+yew = { version="0.21", features=["csr"] }
 yew-template = "~0.10"
 wasm-bindgen = {version="0.2", features=["serde-serialize"]}
 wasm-bindgen-futures = "0.4"
-serde-wasm-bindgen = "0.4"
+serde-wasm-bindgen = "0.6"
 js-sys = "0.3"
 chrono = {version="0.4", features=["wasmbind"]}
 chrono-tz = "0.8"
