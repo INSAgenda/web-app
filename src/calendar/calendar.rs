@@ -54,28 +54,70 @@ impl Component for Calendar {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Next if !self.folded => {
-                let mut month = ctx.props().month;
-                let mut year = ctx.props().year;
-                if month == 12 {
-                    month = 1;
-                    year += 1;
-                } else {
-                    month += 1;
+            Msg::Next if !self.folded => match SETTINGS.calendar() {
+                CalendarKind::Gregorian => {
+                    let mut month = ctx.props().month;
+                    let mut year = ctx.props().year;
+                    if month == 12 {
+                        month = 1;
+                        year += 1;
+                    } else {
+                        month += 1;
+                    }
+                    ctx.props().agenda_link.send_message(AgendaMsg::Goto { day: 1, month, year });
+                },
+                CalendarKind::Republican => {
+                    let selected = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).unwrap();
+                    let selected: calendrier::DateTime = selected.try_into().expect("Could not convert date");
+                    let mut month0 = selected.num_month0();
+                    let mut year0 = selected.year0();
+                    if month0 >= 13 {
+                        month0 = 0;
+                        year0 += 1;
+                    } else {
+                        month0 += 1;
+                    }
+                    let new_date = calendrier::DateTime::from_ymd_hms0(year0, month0, 0, selected.hour(), selected.minute(), selected.second());
+                    let new_date: NaiveDate = new_date.try_into().unwrap();
+                    ctx.props().agenda_link.send_message(AgendaMsg::Goto {
+                        day: new_date.day(),
+                        month: new_date.month(),
+                        year: new_date.year()
+                    });
                 }
-                ctx.props().agenda_link.send_message(AgendaMsg::Goto { day: 1, month, year });
             },
-            Msg::Previous if !self.folded => {
-                let mut month = ctx.props().month;
-                let mut year = ctx.props().year;
-                if month == 1 {
-                    month = 12;
-                    year -= 1;
-                } else {
-                    month -= 1;
+            Msg::Previous if !self.folded => match SETTINGS.calendar() {
+                CalendarKind::Gregorian => {
+                    let mut month = ctx.props().month;
+                    let mut year = ctx.props().year;
+                    if month == 1 {
+                        month = 12;
+                        year -= 1;
+                    } else {
+                        month -= 1;
+                    }
+                    let day = NaiveDate::from_ymd_opt(year, (month % 12) + 1, 1).unwrap().pred_opt().unwrap().day();
+                    ctx.props().agenda_link.send_message(AgendaMsg::Goto { day, month, year });
+                },
+                CalendarKind::Republican => {
+                    let selected = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).unwrap();
+                    let selected: calendrier::DateTime = selected.try_into().expect("Could not convert date");
+                    let mut month0 = selected.num_month0();
+                    let mut year0 = selected.year0();
+                    if month0 <= 0 {
+                        month0 = 12;
+                        year0 -= 1;
+                    } else {
+                        month0 -= 1;
+                    }
+                    let new_date = calendrier::DateTime::from_ymd_hms0(year0, month0, 0, selected.hour(), selected.minute(), selected.second());
+                    let new_date: NaiveDate = new_date.try_into().unwrap();
+                    ctx.props().agenda_link.send_message(AgendaMsg::Goto {
+                        day: new_date.day(),
+                        month: new_date.month(),
+                        year: new_date.year()
+                    });
                 }
-                let day = NaiveDate::from_ymd_opt(year, (month % 12) + 1, 1).unwrap().pred_opt().unwrap().day();
-                ctx.props().agenda_link.send_message(AgendaMsg::Goto { day, month, year });
             },
             Msg::Next => {
                 let next_week = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).unwrap() + chrono::Duration::days(7);
