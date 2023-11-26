@@ -53,6 +53,10 @@
     border: 1px solid transparent;
 }
 
+.republican-calendar-content #calendar-days>span, .republican-calendar-content .calendar-case {
+    width: calc(100% / 10);
+}
+
 /* Grid */
 
 #calendar-content {
