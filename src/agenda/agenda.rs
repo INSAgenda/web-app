@@ -238,9 +238,16 @@ impl Component for Agenda {
                 }
             }
 
+            let day_name = match SETTINGS.calendar() {
+                CalendarKind::Gregorian => format_day(current_day.weekday(), current_day.day()),
+                CalendarKind::Republican => {
+                    let datetime: calendrier::Date = current_day.try_into().expect("Couldn't convert chrono::NaiveDate to calendrier::Date");
+                    format!("{} {}", datetime.decade_day(), datetime.day())
+                },
+            };
             day_names.push(html! {
                 <span id={if current_day == self.selected_day {"selected-day"} else {""}} style={day_name_style}>
-                    { format_day(current_day.weekday(), current_day.day()) }
+                    { day_name }
                 </span>
             });
             days.push(html! {

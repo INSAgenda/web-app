@@ -52,7 +52,7 @@ pub enum Lang {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub enum Calendar {
+pub enum CalendarKind {
     Gregorian = 0,
     Republican,
 }
@@ -115,10 +115,10 @@ impl SettingStore {
         storage.set_item("setting-lang", lang).unwrap();
     }
 
-    pub fn calendar(&self) -> Calendar {
+    pub fn calendar(&self) -> CalendarKind {
         match self.calendar.load(Ordering::Relaxed) {
-            0 => Calendar::Gregorian,
-            1 => Calendar::Republican,
+            0 => CalendarKind::Gregorian,
+            1 => CalendarKind::Republican,
             _ => unreachable!(),
         }
     }
@@ -301,7 +301,7 @@ impl Component for SettingsPage {
             onclick_confirm = {ctx.link().callback(move |_| Msg::Confirm)},
             onclick_delete = {ctx.link().callback(move |_| Msg::Delete)},
             onclick_cancel = {ctx.link().callback(move |_| Msg::Cancel)},
-            republican = {SETTINGS.calendar() == Calendar::Republican},
+            republican = {SETTINGS.calendar() == CalendarKind::Republican},
             ...
         )
     }
