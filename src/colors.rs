@@ -104,14 +104,14 @@ impl Colors {
                 Ok(v) => v,
                 Err(_) => {sentry_report("try lock impossible"); return},
             };
-            let to_publish_tpmp = to_publish.clone();
+            let to_publish_tmp = to_publish.clone();
             drop(to_publish);
-            if !to_publish_tpmp.is_empty() && crate::api::publish_colors(&to_publish_tpmp).await.is_ok() {
+            if !to_publish_tmp.is_empty() && api_post(&to_publish_tmp, "colors").await.is_ok() {
                 let mut to_publish = match to_publish_arc.as_ref().try_lock() {
                     Ok(v) => v,
                     Err(_) => {sentry_report("try lock impossible"); return},
                 };
-                to_publish.drain(..to_publish_tpmp.len());
+                to_publish.drain(..to_publish_tmp.len());
             }
         });
     }

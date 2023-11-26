@@ -25,14 +25,15 @@ pub(crate) async fn logout()-> Result<(), ApiError> {
 
     let resp = JsFuture::from(window.fetch_with_request(&request)).await?;
     let resp: web_sys::Response = resp.dyn_into()?;
-    let json = JsFuture::from(resp.json()?).await?;
     
     if resp.status() != 200 {
-        let error: KnownApiError = match serde_wasm_bindgen::from_value(json.clone()) {
-            Ok(error) => error,
-            _ => return Err(ApiError::Unknown(json)),
-        };
-        return Err(error.into());
+        let text = JsFuture::from(resp.text()?).await?;
+        let text: String = text.as_string().unwrap();
+        match serde_json::from_str::<KnownApiError>(&text) {
+            Ok(error) => Err(error.into()),
+            Err(_) => Err(ApiError::Unknown(text.into())),
+        }
+    } else {
+        Ok(())
     }
-    Ok(())
 }

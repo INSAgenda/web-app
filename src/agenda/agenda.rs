@@ -33,7 +33,9 @@ pub enum AgendaMsg {
 pub struct AgendaProps {
     pub app_link: AppLink,
     pub events: Rc<Vec<RawEvent>>,
+    #[prop_or_default]
     pub popup: Option<(RawEvent, bool, Option<usize>)>,
+    #[prop_or_default]
     pub profile_src: Option<String>,
     pub user_info: Rc<Option<UserInfo>>,
     pub comment_counts: Rc<CommentCounts>,
