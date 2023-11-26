@@ -22,14 +22,6 @@ impl Component for ForceClickComp {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
-        let today = Local::now().naive_local().num_days_from_ce();
-        let local_storage = window().local_storage().unwrap().unwrap();
-        local_storage.set(KEY, &today.to_string()).unwrap();
-
-        true
-    }
-
     fn view(&self, ctx: &Context<Self>) -> Html {
         let today = Local::now().naive_local().num_days_from_ce();
         let show_popup = !self.last_click.map_or(false, |date| date == today);
@@ -38,7 +30,10 @@ impl Component for ForceClickComp {
             template_html!(
                 "src/force-click/force_click.html",
                 show_popup = show_popup,
-                onclick_link = { ctx.link().callback(|_| ()) },
+                onclick_link = { ctx.link().callback(move |_| {
+                    let local_storage = window().local_storage().unwrap().unwrap();
+                    local_storage.set(KEY, &today.to_string()).unwrap();
+                })}
             )
         } else {
             html! {
