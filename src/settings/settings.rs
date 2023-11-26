@@ -30,6 +30,11 @@ lazy_static::lazy_static!{
                 lang.unwrap_or(0)
             },
         };
+        let calendar = match local_storage.get_item("setting-calendar").unwrap() {
+            Some(calendar) if calendar == "gregorian" => 0,
+            Some(calendar) if calendar == "republican" => 1,
+            _ => 0,
+        };
 
         SettingStore {
             theme: AtomicUsize::new(theme),
@@ -125,6 +130,15 @@ impl SettingStore {
 
     pub fn set_calendar(&self, calendar: usize) {
         self.calendar.store(calendar, Ordering::Relaxed);
+
+        let calendar = match calendar {
+            0 => "gregorian",
+            1 => "republican",
+            _ => unreachable!(),
+        };
+
+        let storage = window().local_storage().unwrap().unwrap();
+        storage.set_item("setting-calendar", calendar).unwrap();
     }
 }
 
