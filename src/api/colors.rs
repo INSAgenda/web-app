@@ -14,19 +14,19 @@ pub async fn get_colors() -> Result<HashMap<String, String>, ApiError> {
 
     let resp = JsFuture::from(window().fetch_with_request(&request)).await?;
     let resp: web_sys::Response = resp.dyn_into()?;
-    let json = JsFuture::from(resp.json()?).await?;
+    let text = JsFuture::from(resp.text()?).await?;
+    let text: String = text.as_string().unwrap();
 
     if resp.status() == 400 || resp.status() == 500 {
-        let error: KnownApiError = match serde_wasm_bindgen::from_value(json.clone()) {
-            Ok(error) => error,
-            _ => return Err(ApiError::Unknown(json)),
-        };
-        return Err(error.into());
+        match serde_json::from_str::<KnownApiError>(&text) {
+            Ok(error) => return Err(error.into()),
+            Err(_) => return Err(ApiError::Unknown(text.into())),
+        }
     }
 
-    let colors: HashMap<String, String> = match serde_wasm_bindgen::from_value(json.clone()) {
+    let colors: HashMap<String, String> = match serde_json::from_str(&text) {
         Ok(colors) => colors,
-        _ => return Err(ApiError::Unknown(json)),
+        _ => return Err(ApiError::Unknown(text.into())),
     };
 
     Ok(colors)
