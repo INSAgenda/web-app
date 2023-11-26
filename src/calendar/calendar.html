@@ -7,8 +7,8 @@
         </div>
         <button present-if="{{show_arrows}}" class="calendar-arrow" id="calendar-right-arrow" onclick={{onclick_next}}></button>
     </div>
-    <virtual present-if=!{{is_folded}} >
-        <div present-if=!{{republican}} id="calendar-content">
+    <div present-if=!{{is_folded}} id="calendar-content">
+        <virtual present-if=!{{republican}}>
             <div id="calendar-days">
                 <span>Lun</span>
                 <span>Mar</span>
@@ -21,9 +21,9 @@
             <div iter id="week{{week_iter}}" class="calendar-week">
                 {{cases_iter}}
             </div>
-        </div>
-        <div present-if={{republican}} id="calendar-content" class="republican-calendar-content">
-            <div id="calendar-days">
+        </virtual>
+        <virtual present-if={{republican}}>
+            <div id="calendar-days" class="republican-calendar-days">
                 <span>Pri</span>
                 <span>Duo</span>
                 <span>Tri</span>
@@ -35,9 +35,12 @@
                 <span>Non</span>
                 <span>Déc</span>
             </div>
-            <div iter id="week{{week_iter}}" class="calendar-week">
+            <div iter id="week{{week_iter}}" class="calendar-week republican-calendar-week">
                 {{cases_iter}}
             </div>
+        </virtual>
+        <div id="other-calendar-day">
+            = {{other_calendar_day}}
         </div>
-    </virtual>
+    </div>
 </div>

@@ -151,30 +151,33 @@ impl Component for Calendar {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let selected: chrono::NaiveDate = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).expect("Invalid date");
+        let selected_republican: calendrier::DateTime = selected.try_into().expect("Could not convert date");
         let today = Local::now().date_naive();
 
-        let display_month = match SETTINGS.calendar() {
-            CalendarKind::Gregorian => {
-                format!("{} {}", t(match ctx.props().month {
-                    1 => "Janvier",
-                    2 => "Février",
-                    3 => "Mars",
-                    4 => "Avril",
-                    5 => "Mai",
-                    6 => "Juin",
-                    7 => "Juillet",
-                    8 => "Août",
-                    9 => "Septembre",
-                    10 => "Octobre",
-                    11 => "Novembre",
-                    12 => "Décembre",
-                    _ => unreachable!(),
-                }), ctx.props().year)
-            },
-            CalendarKind::Republican => {
-                let selected: calendrier::Date = selected.try_into().expect("Could not convert date");
-                format!("{} {}", selected.month(), selected.year())
-            }
+        let gregorian_display_month = format!("{} {}", t(match ctx.props().month {
+            1 => "Janvier",
+            2 => "Février",
+            3 => "Mars",
+            4 => "Avril",
+            5 => "Mai",
+            6 => "Juin",
+            7 => "Juillet",
+            8 => "Août",
+            9 => "Septembre",
+            10 => "Octobre",
+            11 => "Novembre",
+            12 => "Décembre",
+            _ => unreachable!(),
+        }), ctx.props().year);
+        let (display_month, other_calendar_day) = match SETTINGS.calendar() {
+            CalendarKind::Gregorian => {(
+                gregorian_display_month,
+                format!("{} {} an {}", selected_republican.day(), selected_republican.month(), selected_republican.year())
+            )}
+            CalendarKind::Republican => {(
+                format!("{} {}", selected_republican.month(), selected_republican.year()),
+                format!("{} {gregorian_display_month}", selected.day())
+            )}
         };
 
         let mut week_iter = Vec::new();
@@ -210,7 +213,6 @@ impl Component for Calendar {
                 }
             },
             CalendarKind::Republican => {
-                let selected_republican: calendrier::DateTime = selected.try_into().expect("Could not convert date");
                 let first_day = calendrier::DateTime::from_ymd_hms0(selected_republican.year0(), selected_republican.num_month0(), 0, selected_republican.hour(), selected_republican.minute(), selected_republican.second());
 
                 if selected_republican.month() == calendrier::Month::Sansculotides {

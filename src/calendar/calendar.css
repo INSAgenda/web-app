@@ -53,7 +53,7 @@
     border: 1px solid transparent;
 }
 
-.republican-calendar-content #calendar-days>span, .republican-calendar-content .calendar-case {
+.republican-calendar-days>span, .republican-calendar-case {
     width: calc(100% / 10);
 }
 
@@ -128,4 +128,12 @@
 #calendar-case-today {
     border: 1px solid var(--primary);
     color: var(--primary);
+}
+
+/* Bottom */
+
+#other-calendar-day {
+    color: rgba(0,0,0,0.7);
+    text-align: center;
+    font-size: .95rem;
 }
