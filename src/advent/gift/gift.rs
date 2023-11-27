@@ -1,4 +1,9 @@
-use crate::prelude::*;
+use crate::prelude::{*, gifts::GiftList};
+
+
+lazy_static::lazy_static!{
+    static ref GIFT_LIST: GiftList = GiftList::from_json(include_str!("../gifts.json")).unwrap();
+}
 
 use super::gifts::CollectedGifts;
 
