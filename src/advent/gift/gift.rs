@@ -1,11 +1,9 @@
 use crate::prelude::{*, gifts::GiftList};
-
+use super::gifts::CollectedGifts;
 
 lazy_static::lazy_static!{
     static ref GIFT_LIST: GiftList = GiftList::from_json(include_str!("../gifts.json")).unwrap();
 }
-
-use super::gifts::CollectedGifts;
 
 #[derive(Properties, Clone)]
 pub struct AdventProps {
@@ -36,8 +34,6 @@ impl Component for GiftComp {
             None => CollectedGifts::default(),
         };
 
-        
-
         Self {
             day: 0,
             collected: false,
@@ -51,7 +47,6 @@ impl Component for GiftComp {
                 self.collected = false;
             }
         }
-
         true
     }
 
