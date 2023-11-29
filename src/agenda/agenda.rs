@@ -316,7 +316,6 @@ impl Component for Agenda {
         };
 
         let day1_collected = CollectedGifts::from_local_storage().is_collected(0);
-        log!("day1_collected: {}", day1_collected);
 
         template_html!(
             "src/agenda/agenda.html",
