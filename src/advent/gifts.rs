@@ -20,7 +20,7 @@ pub struct CollectedGifts {
 
 impl GiftList {
     pub fn from_json(json: &str) -> Option<Self> {
-       let mut gifts: Vec<Gift> = serde_json::from_str(json).ok()?;
+        let mut gifts: Vec<Gift> = serde_json::from_str(json).ok()?;
         gifts.sort_by_key(|gift| gift.day);
         Some(Self { gifts })
     }
