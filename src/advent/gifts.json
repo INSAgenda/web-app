@@ -2,13 +2,5 @@
     {
         "day": 0,
         "kind": "decoration"
-    },
-    {
-        "day": 1,
-        "kind": "music"
-    },
-    {
-        "day": 2,
-        "kind": "animation"
     }
 ]
