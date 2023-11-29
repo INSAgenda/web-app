@@ -54,7 +54,7 @@ impl CollectedGifts {
     }
 
     pub fn is_collected(&self, day: i32) -> bool {
-        if !(0..=24).contains(&day) {
+        if !(0..=23).contains(&day) {
             return false;
         }
         let day = day as u8;
