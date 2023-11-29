@@ -5,7 +5,7 @@ lazy_static::lazy_static!{
     static ref GIFT_LIST: GiftList = GiftList::from_json(include_str!("../gifts.json")).unwrap();
 }
 
-const START_DAY: i32 = 738_853; // 01/12/2023
+const START_DAY: i32 = 738_855; // 01/12/2023
 
 #[derive(Properties, Clone)]
 pub struct AdventProps {

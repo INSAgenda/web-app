@@ -1,4 +1,4 @@
-use crate::{prelude::*, slider, force_click::ForceClickComp};
+use crate::{prelude::{*, gifts::CollectedGifts}, slider, force_click::ForceClickComp};
 
 fn format_day(day_name: Weekday, day: u32) -> String {
     let day_name = t(match day_name {
@@ -314,6 +314,10 @@ impl Component for Agenda {
         } else {
             String::new()
         };
+
+        let day1_collected = CollectedGifts::from_local_storage().is_collected(0);
+        log!("day1_collected: {}", day1_collected);
+
         template_html!(
             "src/agenda/agenda.html",
             onclick_rick = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Rick))},
