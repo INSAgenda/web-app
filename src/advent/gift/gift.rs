@@ -5,7 +5,7 @@ lazy_static::lazy_static!{
     static ref GIFT_LIST: GiftList = GiftList::from_json(include_str!("../gifts.json")).unwrap();
 }
 
-const START_DAY: i32 = 25;
+const START_DAY: i32 = 738_853; // 01/12/2023
 
 #[derive(Properties, Clone)]
 pub struct AdventProps {
@@ -17,7 +17,7 @@ impl PartialEq for AdventProps {
 }
 
 pub struct GiftComp {
-    day: u8,
+    day: i8,
     collected: bool,
 }
 
@@ -37,10 +37,10 @@ impl Component for GiftComp {
         };
 
         let today = Local::now().naive_local().num_days_from_ce() - START_DAY;
-        let today = if today > u8::MAX as i32 {
-            0
+        let today = if !(0..=23).contains(&today) {
+            -1
         } else {
-            today as u8
+            today as i8
         };
         
         let collected = collected_gifts.is_collected(today as i32);
@@ -50,22 +50,26 @@ impl Component for GiftComp {
         }
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         // Handle message
         match msg {
             GiftMsg::OpenGift => {
+                if self.day < 0 {
+                    return false;
+                }
                 self.collected = true;
                 let local_storage = window().local_storage().unwrap().unwrap();
                 let mut collected_gifts = CollectedGifts::from_local_storage();
-                collected_gifts.collect(self.day);
+                collected_gifts.collect(self.day as u8);
                 local_storage.set_item("collected_gifts", &collected_gifts.to_json()).unwrap();
+                ctx.props().agenda_link.send_message(AgendaMsg::Refresh);
             }
         }
         true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        if !self.collected {
+        if !self.collected && self.day >= 0 {
             template_html!(
                 "src/advent/gift/gift.html",
                 onclick_gift = { ctx.link().callback(|_| GiftMsg::OpenGift) },
