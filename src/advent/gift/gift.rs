@@ -75,9 +75,7 @@ impl Component for GiftComp {
                 onclick_gift = { ctx.link().callback(|_| GiftMsg::OpenGift) },
             )
         } else {
-            html! {
-                <div></div>
-            }
+            html! { }
         }
     }
 }
