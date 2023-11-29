@@ -30,10 +30,16 @@ lazy_static::lazy_static!{
                 lang.unwrap_or(0)
             },
         };
+        let calendar = match local_storage.get_item("setting-calendar").unwrap() {
+            Some(calendar) if calendar == "gregorian" => 0,
+            Some(calendar) if calendar == "republican" => 1,
+            _ => 0,
+        };
 
         SettingStore {
             theme: AtomicUsize::new(theme),
             lang: AtomicUsize::new(lang),
+            calendar: AtomicUsize::new(calendar),
         }
     };
 }
@@ -50,9 +56,16 @@ pub enum Lang {
     English,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum CalendarKind {
+    Gregorian = 0,
+    Republican,
+}
+
 pub struct SettingStore {
     theme: AtomicUsize,
     lang: AtomicUsize,
+    calendar: AtomicUsize,
 }
 
 impl SettingStore {
@@ -106,6 +119,27 @@ impl SettingStore {
         let storage = window().local_storage().unwrap().unwrap();
         storage.set_item("setting-lang", lang).unwrap();
     }
+
+    pub fn calendar(&self) -> CalendarKind {
+        match self.calendar.load(Ordering::Relaxed) {
+            0 => CalendarKind::Gregorian,
+            1 => CalendarKind::Republican,
+            _ => unreachable!(),
+        }
+    }
+
+    pub fn set_calendar(&self, calendar: usize) {
+        self.calendar.store(calendar, Ordering::Relaxed);
+
+        let calendar = match calendar {
+            0 => "gregorian",
+            1 => "republican",
+            _ => unreachable!(),
+        };
+
+        let storage = window().local_storage().unwrap().unwrap();
+        storage.set_item("setting-calendar", calendar).unwrap();
+    }
 }
 
 pub enum Msg {
@@ -114,6 +148,7 @@ pub enum Msg {
     ThemeChange(usize),
     LogOut,
     LanguageChange(usize),
+    CalendarChange(usize),
 }
 
 #[derive(Properties, Clone)]
@@ -141,6 +176,7 @@ impl Component for SettingsPage {
             clone_storage: SettingStore {
                 theme: AtomicUsize::new(SETTINGS.theme.load(Ordering::Relaxed)),
                 lang: AtomicUsize::new(SETTINGS.lang.load(Ordering::Relaxed)),
+                calendar: AtomicUsize::new(SETTINGS.calendar.load(Ordering::Relaxed)),
             }
         }
     }
@@ -227,6 +263,10 @@ impl Component for SettingsPage {
                 SETTINGS.set_lang(v);
                 true
             }
+            Msg::CalendarChange(v) => {
+                SETTINGS.set_calendar(v);
+                true
+            }
         }
     }
 
@@ -261,6 +301,12 @@ impl Component for SettingsPage {
                 on_change = { ctx.link().callback(Msg::LanguageChange) }
                 selected = { SETTINGS.lang() as usize } />
         };
+        let calendar_glider_selector = html! {
+            <GliderSelector
+                values = { vec!["Gregorien", "Républicain"] }
+                on_change = { ctx.link().callback(Msg::CalendarChange) }
+                selected = { SETTINGS.calendar() as usize } />
+        };
 
         template_html!(
             "src/settings/settings.html",
@@ -269,6 +315,7 @@ impl Component for SettingsPage {
             onclick_confirm = {ctx.link().callback(move |_| Msg::Confirm)},
             onclick_delete = {ctx.link().callback(move |_| Msg::Delete)},
             onclick_cancel = {ctx.link().callback(move |_| Msg::Cancel)},
+            republican = {SETTINGS.calendar() == CalendarKind::Republican},
             ...
         )
     }

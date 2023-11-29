@@ -3,6 +3,7 @@ use crate::{prelude::*, redirect};
 use js_sys::{Reflect, Function, Array, Object};
 use serde::Deserialize;
 
+#[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 pub struct KnownApiError {
     pub kind: String, 

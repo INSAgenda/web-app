@@ -139,22 +139,3 @@ async fn api_custom_method<T: DeserializeOwned>(endpoint: impl std::fmt::Display
         _ => Err(ApiError::Unknown(response.into()))
     }
 }
-
-/// Send a POST request to the API and update the counter
-#[deprecated(note = "Use api_post instead")]
-pub(crate) async fn post_api_request(endpoint: &str, mut request_init: RequestInit, headers: Vec<(&str, &str)>) -> Result<JsValue, JsValue> {
-    let (api_key, counter) = get_login_info();
-    
-    request_init.method("POST");
-
-    let request = Request::new_with_str_and_init(&format!("/api/{}", endpoint), &request_init).unwrap();
-
-    request.headers().set(
-        "Api-Key",
-        &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
-    )?;
-    for (header, value) in headers {
-        request.headers().set(header, value)?;
-    }
-    JsFuture::from(window().fetch_with_request(&request)).await
-}

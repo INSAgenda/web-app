@@ -54,28 +54,70 @@ impl Component for Calendar {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Next if !self.folded => {
-                let mut month = ctx.props().month;
-                let mut year = ctx.props().year;
-                if month == 12 {
-                    month = 1;
-                    year += 1;
-                } else {
-                    month += 1;
+            Msg::Next if !self.folded => match SETTINGS.calendar() {
+                CalendarKind::Gregorian => {
+                    let mut month = ctx.props().month;
+                    let mut year = ctx.props().year;
+                    if month == 12 {
+                        month = 1;
+                        year += 1;
+                    } else {
+                        month += 1;
+                    }
+                    ctx.props().agenda_link.send_message(AgendaMsg::Goto { day: 1, month, year });
+                },
+                CalendarKind::Republican => {
+                    let selected = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).unwrap();
+                    let selected: RepublicanDateTime = selected.try_into().expect("Could not convert date");
+                    let mut month0 = selected.num_month0();
+                    let mut year0 = selected.year0();
+                    if month0 >= 12 {
+                        month0 = 0;
+                        year0 += 1;
+                    } else {
+                        month0 += 1;
+                    }
+                    let new_date = RepublicanDateTime::from_ymd_hms0(year0, month0, 0, selected.hour(), selected.minute(), selected.second());
+                    let new_date: NaiveDate = new_date.try_into().unwrap();
+                    ctx.props().agenda_link.send_message(AgendaMsg::Goto {
+                        day: new_date.day(),
+                        month: new_date.month(),
+                        year: new_date.year()
+                    });
                 }
-                ctx.props().agenda_link.send_message(AgendaMsg::Goto { day: 1, month, year });
             },
-            Msg::Previous if !self.folded => {
-                let mut month = ctx.props().month;
-                let mut year = ctx.props().year;
-                if month == 1 {
-                    month = 12;
-                    year -= 1;
-                } else {
-                    month -= 1;
+            Msg::Previous if !self.folded => match SETTINGS.calendar() {
+                CalendarKind::Gregorian => {
+                    let mut month = ctx.props().month;
+                    let mut year = ctx.props().year;
+                    if month == 1 {
+                        month = 12;
+                        year -= 1;
+                    } else {
+                        month -= 1;
+                    }
+                    let day = NaiveDate::from_ymd_opt(year, (month % 12) + 1, 1).unwrap().pred_opt().unwrap().day();
+                    ctx.props().agenda_link.send_message(AgendaMsg::Goto { day, month, year });
+                },
+                CalendarKind::Republican => {
+                    let selected = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).unwrap();
+                    let selected: RepublicanDateTime = selected.try_into().expect("Could not convert date");
+                    let mut month0 = selected.num_month0();
+                    let mut year0 = selected.year0();
+                    if month0 <= 0 {
+                        month0 = 12;
+                        year0 -= 1;
+                    } else {
+                        month0 -= 1;
+                    }
+                    let new_date = RepublicanDateTime::from_ymd_hms0(year0, month0, 0, selected.hour(), selected.minute(), selected.second());
+                    let new_date: NaiveDate = new_date.try_into().unwrap();
+                    ctx.props().agenda_link.send_message(AgendaMsg::Goto {
+                        day: new_date.day(),
+                        month: new_date.month(),
+                        year: new_date.year()
+                    });
                 }
-                let day = NaiveDate::from_ymd_opt(year, (month % 12) + 1, 1).unwrap().pred_opt().unwrap().day();
-                ctx.props().agenda_link.send_message(AgendaMsg::Goto { day, month, year });
             },
             Msg::Next => {
                 let next_week = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day).unwrap() + chrono::Duration::days(7);
@@ -108,7 +150,11 @@ impl Component for Calendar {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let display_month = format!("{} {}", t(match ctx.props().month {
+        let Some(selected) = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, ctx.props().day) else {return html! {}};
+        let Ok(selected_republican): Result<RepublicanDateTime, _> = selected.try_into() else {return html! {}};
+        let today = Local::now().date_naive();
+
+        let gregorian_display_month = format!("{} {}", t(match ctx.props().month {
             1 => "Janvier",
             2 => "Février",
             3 => "Mars",
@@ -123,36 +169,81 @@ impl Component for Calendar {
             12 => "Décembre",
             _ => unreachable!(),
         }), ctx.props().year);
+        let (display_month, other_calendar_day) = match SETTINGS.calendar() {
+            CalendarKind::Gregorian => {(
+                gregorian_display_month,
+                format!("{} {} an {}", selected_republican.day(), selected_republican.month(), selected_republican.year())
+            )}
+            CalendarKind::Republican => {(
+                format!("{} {}", selected_republican.month(), selected_republican.year()),
+                format!("{} {gregorian_display_month}", selected.day())
+            )}
+        };
 
-        let first_day = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, 1).unwrap();
-        let last_day = NaiveDate::from_ymd_opt(ctx.props().year, (ctx.props().month % 12) + 1, 1).unwrap().pred_opt().unwrap();
-        let today = Local::now().date_naive();
-
+        let mut week_iter = Vec::new();
+        let mut cases_iter = Vec::new();
         let mut calendar_cases = Vec::new();
-        for _ in 0..first_day.weekday().number_from_monday() - 1 {
-            calendar_cases.push(html! {
-                <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::Previous)}></span>
-            });
-        }
-        for day in 1..=last_day.day() {
-            let (month, year) = (ctx.props().month, ctx.props().year);
-            let date = NaiveDate::from_ymd_opt(year, month, day).unwrap();
-            let id = if day==ctx.props().day {Some("calendar-case-selected")} else if date==today {Some("calendar-case-today")} else {None};
-            calendar_cases.push(html! {
-                <span class="calendar-case" id={id} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
-            });
-        }
-        while calendar_cases.len() % 7 != 0 {
+        let week_len = match SETTINGS.calendar() {
+            CalendarKind::Gregorian => {
+                let first_day = NaiveDate::from_ymd_opt(ctx.props().year, ctx.props().month, 1).unwrap();
+                let last_day = NaiveDate::from_ymd_opt(ctx.props().year, (ctx.props().month % 12) + 1, 1).unwrap().pred_opt().unwrap();
+        
+                for _ in 0..first_day.weekday().number_from_monday() - 1 {
+                    calendar_cases.push(html! {
+                        <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::Previous)}></span>
+                    });
+                }
+                for day in 1..=last_day.day() {
+                    let (month, year) = (ctx.props().month, ctx.props().year);
+                    let date = NaiveDate::from_ymd_opt(year, month, day).unwrap();
+                    let id = if day==ctx.props().day {Some("calendar-case-selected")} else if date==today {Some("calendar-case-today")} else {None};
+                    calendar_cases.push(html! {
+                        <span class="calendar-case" id={id} onclick={ctx.link().callback(move |_| Msg::Goto {day,month,year})}>{day.to_string()}</span>
+                    });
+                }
+                7
+            },
+            CalendarKind::Republican => {
+                let first_day = RepublicanDateTime::from_ymd_hms0(selected_republican.year0(), selected_republican.num_month0(), 0, selected_republican.hour(), selected_republican.minute(), selected_republican.second());
+
+                let day_count = if selected_republican.month() == RepublicanMonth::Sansculotides {
+                    let sextile = calendrier::get_day_count0(selected_republican.year0()) == 366;
+                    if sextile { 6 } else { 5 }
+                } else {
+                    30
+                };
+
+                for day0 in 0..day_count {
+                    let date = first_day.clone() + chrono::Duration::days(day0);
+                    let gregorian: chrono::NaiveDate = date.try_into().unwrap();
+                    let id = if gregorian == selected {Some("calendar-case-selected")} else if gregorian == today {Some("calendar-case-today")} else {None};
+                    calendar_cases.push(html! {
+                        <span
+                            class="calendar-case"
+                            id={id}
+                            onclick={ctx.link().callback(move |_| Msg::Goto {
+                                day: gregorian.day0()+1,
+                                month: gregorian.month0()+1,
+                                year: gregorian.year()
+                            })}
+                        >
+                            {(day0+1).to_string()}
+                        </span>
+                    });
+                }
+                10
+            }
+        };
+
+        while calendar_cases.len() % week_len != 0 {
             calendar_cases.push(html! {
                 <span class="calendar-case" onclick={ctx.link().callback(|_| Msg::Next)}></span>
             });
         }
 
-        let mut week_iter = Vec::new();
-        let mut cases_iter = Vec::new();
-        for week in 1..=calendar_cases.len()/7 {
+        for week in 1..=calendar_cases.len()/week_len {
             week_iter.push(week);
-            cases_iter.push(calendar_cases.drain(0..7).collect::<Vec<_>>());
+            cases_iter.push(calendar_cases.drain(0..week_len).collect::<Vec<_>>());
         }
 
         let mobile = width() <= 1000;
@@ -163,9 +254,10 @@ impl Component for Calendar {
             onclick_previous = {ctx.link().callback(|_| Msg::Previous)},
             onclick_fold = {ctx.link().callback(|_| Msg::TriggerFold)},
             onclick_next = {ctx.link().callback(|_| Msg::Next)},
-            week_iter = {week_iter.into_iter()},
-            cases_iter = {cases_iter.into_iter()},
+            week_iter = {week_iter.iter()},
+            cases_iter = {cases_iter.iter()},
             is_folded = {self.folded},
+            republican = {SETTINGS.calendar() == CalendarKind::Republican},
             ...
         }
     }
