@@ -5,6 +5,8 @@ lazy_static::lazy_static!{
     static ref GIFT_LIST: GiftList = GiftList::from_json(include_str!("../gifts.json")).unwrap();
 }
 
+const START_DAY: i32 = 25;
+
 #[derive(Properties, Clone)]
 pub struct AdventProps {
     pub agenda_link: AgendaLink,
@@ -34,9 +36,17 @@ impl Component for GiftComp {
             None => CollectedGifts::default(),
         };
 
+        let today = Local::now().naive_local().num_days_from_ce() - START_DAY;
+        let today = if today > u8::MAX as i32 {
+            0
+        } else {
+            today as u8
+        };
+        
+        let collected = collected_gifts.is_collected(today as i32);
         Self {
-            day: 0,
-            collected: false,
+            day: today,
+            collected,
         }
     }
 
@@ -44,7 +54,11 @@ impl Component for GiftComp {
         // Handle message
         match msg {
             GiftMsg::OpenGift => {
-                self.collected = false;
+                self.collected = true;
+                let local_storage = window().local_storage().unwrap().unwrap();
+                let mut collected_gifts = CollectedGifts::from_local_storage();
+                collected_gifts.collect(self.day);
+                local_storage.set_item("collected_gifts", &collected_gifts.to_json()).unwrap();
             }
         }
         true

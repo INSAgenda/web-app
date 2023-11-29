@@ -1,10 +1,9 @@
-use std::{num::NonZeroU8, collections::HashSet};
+use std::collections::HashSet;
 use crate::prelude::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Gift {
     pub day: u8,
-    pub title: String,
     pub kind: String,
 }
 
@@ -26,31 +25,44 @@ impl GiftList {
         Some(Self { gifts })
     }
 
-    pub fn get_gift(&self, day: NonZeroU8) -> Option<Gift> {
-        self.gifts.get(day.get() as usize - 1).cloned()
+    pub fn get_gift(&self, day: u8) -> Option<Gift> {
+        self.gifts.get(day as usize - 1).cloned()
     }
 
-    pub fn get_all_days(&self) -> HashSet<NonZeroU8> {
-        self.gifts.iter().map(|gift| NonZeroU8::new(gift.day).unwrap()).collect()
+    pub fn get_all_days(&self) -> HashSet<u8> {
+        self.gifts.iter().map(|gift| gift.day).collect()
     }
 }
 
 impl CollectedGifts {
+    pub fn from_local_storage() -> Self {
+        let local_storage = window().local_storage().unwrap().unwrap();
+        
+        match local_storage.get_item("collected_gifts").unwrap() {
+            Some(json) => Self::from_json(&json).unwrap_or_default(),
+            None => Self::default(),
+        }
+    }
+    
     pub fn from_json(json: &str) -> Option<Self> {
         let collected: HashSet<u8> = serde_json::from_str(json).ok()?;
         Some(Self { collected })
     }
 
-    pub fn get_all_days(&self) -> HashSet<NonZeroU8> {
-        self.collected.iter().map(|day| NonZeroU8::new(*day).unwrap()).collect()
+    pub fn get_all_days(&self) -> HashSet<u8> {
+        self.collected.clone()
     }
 
-    pub fn is_collected(&self, day: NonZeroU8) -> bool {
-        self.collected.contains(&day.get())
+    pub fn is_collected(&self, day: i32) -> bool {
+        if !(0..=24).contains(&day) {
+            return false;
+        }
+        let day = day as u8;
+        self.collected.contains(&day)
     }
 
-    pub fn collect(&mut self, day: NonZeroU8) {
-        self.collected.insert(day.get());
+    pub fn collect(&mut self, day: u8) {
+        self.collected.insert(day);
     }
 
     pub fn to_json(&self) -> String {
