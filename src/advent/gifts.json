@@ -2,5 +2,21 @@
     {
         "day": 0,
         "kind": "decoration"
+    },
+    {
+        "day": 1,
+        "kind": "decoration"
+    },
+    {
+        "day": 2,
+        "kind": "decoration"
+    },
+    {
+        "day": 3,
+        "kind": "decoration"
+    },
+    {
+        "day": 4,
+        "kind": "decoration"
     }
 ]

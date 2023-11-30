@@ -127,3 +127,29 @@
 :root[data-theme="light"] .hide-light {
     display: none;
 }
+
+.header-garlands {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    pointer-events: none;
+    z-index: 9;
+}
+
+.hide-garlands-desktop {
+    display: none;
+}
+
+.hide-garlands-mobile {
+    display: initial;
+}
+
+@media screen and (min-width: 430px) {
+    .hide-garlands-mobile {
+        display: none;
+    }
+    
+    .hide-garlands-desktop {
+        display: initial;
+    }
+}
