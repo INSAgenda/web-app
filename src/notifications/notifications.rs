@@ -1,4 +1,5 @@
 pub use crate::prelude::*;
+use crate::prelude::gifts::CollectedGifts;
 
 #[derive(Serialize, Deserialize)]
 pub struct LocalNotificationTracker {
@@ -170,6 +171,8 @@ impl Component for NotificationsPage {
 
         let opt_wifi_ssid = ctx.props().wifi_ssid.as_deref().map(|s| s.to_owned());
         let opt_wifi_password = ctx.props().wifi_password.as_deref().map(|s| s.to_owned());
+
+        let day2_collected = CollectedGifts::from_local_storage().is_collected(1);
 
         template_html!("src/notifications/notifications.html", ...)
     }

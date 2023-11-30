@@ -45,3 +45,15 @@
 #notifications-empty-message {
     margin: 1rem;
 }
+
+.candle {
+    height: 4rem;
+    position: fixed;
+    bottom: 4rem;
+}
+
+@media screen and (min-width: 1000px) {
+    .candle {
+        bottom: 0;
+    }
+}
