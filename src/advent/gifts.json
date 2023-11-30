@@ -18,5 +18,9 @@
     {
         "day": 4,
         "kind": "decoration"
+    },
+    {
+        "day": 5,
+        "kind": "decoration"
     }
 ]

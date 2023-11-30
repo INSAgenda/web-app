@@ -203,6 +203,16 @@ impl Component for Agenda {
             },
         };
 
+        let storage = CollectedGifts::from_local_storage();
+        let day1_collected = storage.is_collected(0);
+        let day6_collected = storage.is_collected(5);
+        let day4_tree_class = if storage.is_collected(3) {
+            "day tree-day"
+        } else {
+            "day"
+        };
+
+
         // Build each day and put events in them
         let mut days = Vec::new();
         let mut day_names = Vec::new();
@@ -264,7 +274,7 @@ impl Component for Agenda {
                 </span>
             });
             days.push(html! {
-                <div class="day" id={format!("day{d}")} style={day_style}>
+                <div class={day4_tree_class} id={format!("day{d}")} style={day_style}>
                     { events }
                 </div>
             });
@@ -321,9 +331,6 @@ impl Component for Agenda {
         } else {
             String::new()
         };
-
-        let day1_collected = CollectedGifts::from_local_storage().is_collected(0);
-        let day4_collected = CollectedGifts::from_local_storage().is_collected(3);
 
         template_html!(
             "src/agenda/agenda.html",
