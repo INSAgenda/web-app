@@ -56,3 +56,10 @@
         filter: brightness(0.8);
     }
 }
+
+.barley-sugar:first-child {
+    background-image: url("/agenda/images/advent/barley_sugar.png");
+    background-repeat: no-repeat;
+    background-size: 2.5rem;
+    background-position: calc(100% - 0.3rem) center;
+}

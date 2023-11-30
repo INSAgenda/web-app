@@ -308,7 +308,7 @@ impl Component for SettingsPage {
                 selected = { SETTINGS.calendar() as usize } />
         };
 
-        let mut collected_gifts = CollectedGifts::from_local_storage();
+        let collected_gifts = CollectedGifts::from_local_storage();
         let day3_collected: bool = collected_gifts.is_collected(2);
 
         template_html!(

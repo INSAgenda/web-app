@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::prelude::{*, gifts::CollectedGifts};
 
 lazy_static::lazy_static!{
     static ref ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
@@ -97,6 +97,11 @@ impl Component for EventComp {
         // Render
         let eid = ctx.props().event.eid.clone(); // FIXME: what if eid contains slashes and stuff?
         let onclick = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Event { eid: eid.clone() } )));
+        let class = if CollectedGifts::from_local_storage().is_collected(4) {
+            "barley-sugar"
+        } else {
+            ""
+        };
         template_html!(
             "src/event/event.html",
             teachers = { ctx.props().event.teachers.join(", ")},
