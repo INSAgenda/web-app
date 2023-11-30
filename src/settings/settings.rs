@@ -1,4 +1,4 @@
-use crate::prelude::{*, gifts::CollectedGifts};
+use crate::prelude::*;
 
 lazy_static::lazy_static!{
     pub static ref SETTINGS: SettingStore = {

@@ -1,4 +1,4 @@
-use crate::{prelude::{*, gifts::CollectedGifts}, slider};
+use crate::{prelude::*, slider, advent::GiftComp};
 
 fn format_day(day_name: Weekday, day: u32) -> String {
     let day_name = t(match day_name {
