@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::prelude::{*, gifts::CollectedGifts};
 
 lazy_static::lazy_static!{
     pub static ref SETTINGS: SettingStore = {
@@ -307,6 +307,9 @@ impl Component for SettingsPage {
                 on_change = { ctx.link().callback(Msg::CalendarChange) }
                 selected = { SETTINGS.calendar() as usize } />
         };
+
+        let mut collected_gifts = CollectedGifts::from_local_storage();
+        let day3_collected: bool = collected_gifts.is_collected(2);
 
         template_html!(
             "src/settings/settings.html",

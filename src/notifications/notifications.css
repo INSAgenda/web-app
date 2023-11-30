@@ -49,11 +49,19 @@
 .candle {
     height: 4rem;
     position: fixed;
-    bottom: 4rem;
+    bottom: 4.25rem;
 }
 
+.orange {
+    height: 4rem;
+    position: fixed;
+    bottom: 4.0rem;
+    right: 0.2rem;
+}
+
+
 @media screen and (min-width: 1000px) {
-    .candle {
-        bottom: 0;
+    .candle, .orange {
+        bottom: 0.25rem;
     }
 }

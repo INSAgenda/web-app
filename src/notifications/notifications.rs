@@ -172,7 +172,8 @@ impl Component for NotificationsPage {
         let opt_wifi_ssid = ctx.props().wifi_ssid.as_deref().map(|s| s.to_owned());
         let opt_wifi_password = ctx.props().wifi_password.as_deref().map(|s| s.to_owned());
 
-        let day2_collected = CollectedGifts::from_local_storage().is_collected(1);
+        let collected_gifts = CollectedGifts::from_local_storage();
+        let day2_collected = collected_gifts.is_collected(1);
 
         template_html!("src/notifications/notifications.html", ...)
     }
