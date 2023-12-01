@@ -12,7 +12,7 @@ pub struct AdventProps {
 }
 
 impl PartialEq for AdventProps {
-    fn eq(&self, other: &Self) -> bool { true }
+    fn eq(&self, _other: &Self) -> bool { true }
 }
 
 pub struct GiftComp {
@@ -62,6 +62,13 @@ impl Component for GiftComp {
                 collected_gifts.collect(self.day as u8);
                 local_storage.set_item("collected_gifts", &collected_gifts.to_json()).unwrap();
                 ctx.props().agenda_link.send_message(AgendaMsg::Refresh);
+
+                let window = window();
+                let Ok(analytics_function) = js_sys::Reflect::get(&window, &JsValue::from_str("sa_event")) else { return true };
+                let Ok(analytics_function) = analytics_function.dyn_into::<js_sys::Function>() else { return true };
+                let args = js_sys::Array::new();
+                args.push(&JsValue::from_str("advent_gift"));
+                let _ = js_sys::Reflect::apply(&analytics_function, &window, &args);
             }
         }
         true
