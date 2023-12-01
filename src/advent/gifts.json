@@ -22,5 +22,9 @@
     {
         "day": 5,
         "kind": "decoration"
+    },
+    {
+        "day": 6,
+        "kind": "decoration"
     }
 ]
