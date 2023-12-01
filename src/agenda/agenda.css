@@ -98,15 +98,13 @@
     background-color: var(--day);
 }
 
-@media screen and (min-width: 1000px) {
-    .tree-day:last-child {
-        background: url("/agenda/images/advent/tree1.svg");
-        background-repeat: no-repeat;
-        background-position: center;
-        background-position: center;
-        background-size: 80%;
-        background-color: var(--day);
-    }
+.tree {
+    height: 80%;
+    bottom: 0;
+    right: 1rem;
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
 }
 
 @media screen and (max-width: 1000px) {
@@ -114,13 +112,11 @@
         width: 19%;
     }
 
-    .tree-day {
-        background: url("/agenda/images/advent/tree1.svg");
+    .tree {
         background-repeat: no-repeat;
         background-position: center;
         background-position: right;
         background-size: 50%;
-        background-color: var(--day);
     }    
     
 }
