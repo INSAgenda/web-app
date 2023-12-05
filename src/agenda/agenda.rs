@@ -215,7 +215,7 @@ impl Component for Agenda {
                 <img draggable="false" src={{src}} class="tree" />
             }
         } else {
-            html!("")
+            html!()
         };
 
         // Build each day and put events in them
