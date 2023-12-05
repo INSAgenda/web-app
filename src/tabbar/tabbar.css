@@ -100,3 +100,30 @@
         padding: 1rem;
     }
 }
+
+#sled {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    background-color: transparent;
+    height: 15rem;
+    animation: move-sled 10s forwards;
+    z-index: 100;
+}
+
+/* animation move sled */
+@keyframes move-sled {
+    from {
+        left: 0;
+        transform: translateX(-100%);
+        top: 60%;
+        scale: 4;
+    }
+    to {
+        left: 100%;
+        transform: translateX(100%);
+        top: 0;
+        scale: 0.8;
+    }
+    
+}
