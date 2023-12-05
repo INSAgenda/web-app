@@ -160,14 +160,14 @@ impl Component for App {
         let wifi_settings: Option<WifiSettings> = CachedData::init(ctx.link().clone());
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
-        let announcements = match &user_info {
-            Some(user_info) => {
-                let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
-                announcements.retain(|a| a.target.as_ref().map(|t| user_info.groups.matches(t)).unwrap_or(true));
-                announcements
+        let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        if let Some(user_info) = &user_info {
+            let previous_len = announcements.len();
+            announcements.retain(|a| a.target.as_ref().map(|t| user_info.groups.matches(t)).unwrap_or(true));
+            if previous_len != announcements.len() {
+                log!("Filtered announcements: {} -> {}", previous_len, announcements.len());
             }
-            None => Vec::new(),
-        };
+        }
 
         // Load seen comment counts
         let local_storage = window().local_storage().unwrap().unwrap();
@@ -335,6 +335,15 @@ impl Component for App {
                         should_refresh = true;
                     }
                 }
+
+                // Filter announcements
+                let mut announcements = self.announcements.deref().to_owned();
+                let previous_len = announcements.len();
+                announcements.retain(|a| a.target.as_ref().map(|t| user_info.groups.matches(t)).unwrap_or(true));
+                if previous_len != announcements.len() {
+                    log!("Filtered announcements: {} -> {}", previous_len, announcements.len());
+                }
+                self.announcements = Rc::new(announcements);
 
                 // Set new user info
                 user_info.save();
