@@ -291,8 +291,8 @@ impl Component for Agenda {
             } else {
                 days.push(html!(
                     <div class="day" id={format!("day{d}")} style={day_style}> 
-                        { tree.clone() }
                         { events }
+                        { tree.clone() }
                     </div>
                 ));
             }
