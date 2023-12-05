@@ -1,3 +1,5 @@
+use web_sys::Storage;
+
 use crate::prelude::*;
 
 pub struct TabBar;
@@ -42,6 +44,9 @@ impl Component for TabBar {
         let onclick_settings = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings));
         let mut settings_classes = String::from(if matches!(page, Page::Settings) {"tabbar-selected"} else {"tabbar-not-selected"});
         if ctx.props().bait_points.3 { settings_classes.push_str(" tabbar-with-bait"); }
+
+        let storage = CollectedGifts::from_local_storage();
+        let day7_collected = storage.is_collected(6);
 
         template_html!("src/tabbar/tabbar.html", ...)
     }

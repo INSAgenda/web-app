@@ -203,6 +203,21 @@ impl Component for Agenda {
             },
         };
 
+        let storage = CollectedGifts::from_local_storage();
+        let day1_collected = storage.is_collected(0);
+        let day4_collected = storage.is_collected(3);
+        let day6_collected = storage.is_collected(5);
+        let day8_collected = storage.is_collected(7);
+        let tree_level = day6_collected as usize + day8_collected as usize;
+        let tree = if tree_level > 0  {
+            let src: String = format!("/agenda/images/advent/tree{}.svg", tree_level);
+            html! {
+                <img draggable="false" src={{src}} class="tree" />
+            }
+        } else {
+            html!()
+        };
+
         // Build each day and put events in them
         let mut days = Vec::new();
         let mut day_names = Vec::new();
@@ -263,11 +278,21 @@ impl Component for Agenda {
                     { day_name }
                 </span>
             });
-            days.push(html! {
-                <div class="day" id={format!("day{d}")} style={day_style}>
-                    { events }
-                </div>
-            });
+            if d != 5 && !mobile{
+                days.push(html!(
+                        <div class="day" id={format!("day{d}")} style={day_style}> 
+                            { events }
+                        </div>
+                    )
+                );
+            } else {
+                days.push(html!(
+                    <div class="day" id={format!("day{d}")} style={day_style}> 
+                        { tree.clone() }
+                        { events }
+                    </div>
+                ));
+            }
 
             current_day += chrono::Duration::days(1);
         }
@@ -321,9 +346,6 @@ impl Component for Agenda {
         } else {
             String::new()
         };
-
-        let day1_collected = CollectedGifts::from_local_storage().is_collected(0);
-        let day4_collected = CollectedGifts::from_local_storage().is_collected(3);
 
         template_html!(
             "src/agenda/agenda.html",

@@ -98,10 +98,27 @@
     background-color: var(--day);
 }
 
+.tree {
+    height: 80%;
+    bottom: 0;
+    right: 1rem;
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+}
+
 @media screen and (max-width: 1000px) {
     .day {
         width: 19%;
     }
+
+    .tree {
+        background-repeat: no-repeat;
+        background-position: center;
+        background-position: right;
+        background-size: 50%;
+    }    
+    
 }
 
 /* For popup animation on desktop */

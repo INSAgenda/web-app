@@ -21,6 +21,8 @@
     overflow-y: scroll;
     background-color: var(--closer-background);
     box-shadow: -0.5rem 0 .3rem rgba(0, 0, 0, 0.07);
+    z-index: 4;
+    position: inherit;
 }
 
 #popup-header {
