@@ -233,7 +233,6 @@ impl Component for Agenda {
                 Ok(idx) => idx,
                 Err(idx) => idx,
             };
-            log!("range: {:?}", self.get_break_ts(ctx, idx, day_start));
             while let Some(e) = ctx.props().events.get(idx) {
                 if e.start_unixtime > day_start + 24*3600 {
                     break;
