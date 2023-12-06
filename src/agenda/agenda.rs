@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::{prelude::*, slider, advent::GiftComp};
 
 fn format_day(day_name: Weekday, day: u32) -> String {
@@ -288,8 +290,8 @@ impl Component for Agenda {
             } else {
                 days.push(html!(
                     <div class="day" id={format!("day{d}")} style={day_style}> 
-                        { tree.clone() }
                         { events }
+                        { tree.clone() }
                     </div>
                 ));
             }
@@ -355,5 +357,28 @@ impl Component for Agenda {
             republican = {SETTINGS.calendar() == CalendarKind::Republican},
             ...
         )
+    }
+}
+
+impl Agenda {
+    fn get_break_ts(&self, ctx: &Context<Self>, idx: usize, day_start: u64) -> Range<u64> {        
+        let mut break_range = 11*3600..14*3600;
+        let day_duration = 24*3600;
+        let mut idx = idx;
+
+        while let Some(e) = ctx.props().events.get(idx) {
+            if e.start_unixtime > day_start + 24*3600 {
+                break;
+            }
+
+            if break_range.contains(&e.end_unixtime) || break_range.contains(&e.start_unixtime) {
+                continue;
+            }
+            break_range.start = break_range.start.max(e.end_unixtime % day_duration);
+            break_range.end = break_range.end.min(e.start_unixtime % day_duration);
+            idx += 1;
+        }
+        log!("break_range: {:?}", break_range);
+        break_range
     }
 }
