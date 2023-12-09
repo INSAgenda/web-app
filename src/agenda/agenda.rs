@@ -210,7 +210,8 @@ impl Component for Agenda {
         let day4_collected = storage.is_collected(3);
         let day6_collected = storage.is_collected(5);
         let day8_collected = storage.is_collected(7);
-        let tree_level = day6_collected as usize + day8_collected as usize;
+        let day12_collected = storage.is_collected(11);
+        let tree_level = day6_collected as usize + day8_collected as usize + day12_collected as usize;
         let tree = if tree_level > 0  {
             let src: String = format!("/agenda/images/advent/tree{}.svg", tree_level);
             html! {

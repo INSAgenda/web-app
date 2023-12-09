@@ -246,6 +246,9 @@ impl Component for FriendsPage {
         let rem_value_iter = names.iter().rev().map(|name| name.replace(' ', "+"));
         let onclick_remove = ctx.link().callback(|_| FriendsMsg::Remove);
 
+        let collected = CollectedGifts::from_local_storage();
+        let day9_collected = collected.is_collected(8);
+
         template_html!(
             "src/friends/friends.html",
             onclick_rick = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Rick))},
