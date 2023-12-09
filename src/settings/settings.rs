@@ -310,6 +310,7 @@ impl Component for SettingsPage {
 
         let collected_gifts = CollectedGifts::from_local_storage();
         let day3_collected: bool = collected_gifts.is_collected(2);
+        let day10_collected: bool = collected_gifts.is_collected(9);
 
         template_html!(
             "src/settings/settings.html",
