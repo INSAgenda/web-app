@@ -46,6 +46,8 @@ features = [
     "HtmlOptionsCollection",
     "HtmlOptionElement",
     "HtmlElement",
+    "AudioContext",
+    "HtmlAudioElement",
 ]
 
 [profile.release]
