@@ -127,3 +127,22 @@
     }
     
 }
+
+#snow-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.snowflake {
+    position: fixed;
+    top: -10%; 
+    z-index: 9999;
+    opacity: 0.8; 
+}
+
+@keyframes fall {
+    0% { transform: translateY(0) translateX(-10vw) rotate(0deg); }
+    100% { transform: translateY(100vh) translateX(0vw) rotate(360deg); }
+}
+
+

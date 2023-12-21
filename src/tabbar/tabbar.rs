@@ -59,8 +59,9 @@ impl Component for TabBar {
         let mut settings_classes = String::from(if matches!(page, Page::Settings) {"tabbar-selected"} else {"tabbar-not-selected"});
         if ctx.props().bait_points.3 { settings_classes.push_str(" tabbar-with-bait"); }
 
-        let storage = CollectedGifts::from_local_storage();
+        let storage: CollectedGifts = CollectedGifts::from_local_storage();
         let day7_collected = storage.is_collected(6);
+        let day22_collected = storage.is_collected(21);
 
         template_html!("src/tabbar/tabbar.html", ...)
     }
