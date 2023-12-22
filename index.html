@@ -28,6 +28,7 @@
     <link data-trunk rel="css" href="src/advent/gift/gift.css" />
     <link data-trunk rel="css" href="styles/waiting-screen.css" />
 
+    <link data-trunk rel="copy-dir" href="assets"/>
     <link data-trunk rel="copy-dir" href="images" />
     <script common_code="head">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
 </head>
@@ -132,5 +133,34 @@
         appHeight();
     </script>
     <script common_code="manifest-script">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
+    <script>
+        function createSnowflakes() {
+            const container = document.getElementById('snow-container');
+            const numberOfSnowflakes = 50; // Adjust based on the desired density
+        
+            for (let i = 0; i < numberOfSnowflakes; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.classList.add('snowflake');
+                
+                // Set the snowflake's size, position, and animation
+                const snowflakeSize = Math.random() * 20 + 10; // Random size between 10px and 30px
+                const snowflakePosition = Math.random() * 100; // Random position between 0% and 100%
+                const animationDuration = Math.random() * 5 + 5; // Random duration between 5s and 10s
+                const animationDelay = Math.random() * 5; // Random delay up to 10 seconds
+
+                snowflake.style.width = `${snowflakeSize}px`;
+                snowflake.style.height = `${snowflakeSize}px`;
+                snowflake.style.left = `${snowflakePosition}%`;
+                snowflake.style.backgroundImage = 'url("/agenda/images/advent/tree1.svg")'; // Set your snowflake image
+                snowflake.style.backgroundSize = 'contain';
+                snowflake.style.backgroundRepeat = 'no-repeat';
+                snowflake.style.animation = `fall ${animationDuration}s linear ${animationDelay}s infinite`;
+        
+                container.appendChild(snowflake);
+            }
+        }
+        setTimeout(createSnowflakes, 1000);
+
+    </script>
 </body>
 </html>

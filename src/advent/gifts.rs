@@ -62,6 +62,9 @@ impl CollectedGifts {
     }
 
     pub fn collect(&mut self, day: u8) {
+        if day == 21 {
+            let _ = window().location().reload();
+        }
         self.collected.insert(day);
     }
 

@@ -1,5 +1,3 @@
-use std::ops::Range;
-
 use crate::{prelude::*, slider, advent::GiftComp};
 
 fn format_day(day_name: Weekday, day: u32) -> String {
@@ -211,7 +209,9 @@ impl Component for Agenda {
         let day6_collected = storage.is_collected(5);
         let day8_collected = storage.is_collected(7);
         let day12_collected = storage.is_collected(11);
-        let tree_level = day6_collected as usize + day8_collected as usize + day12_collected as usize;
+        let day21_collected = storage.is_collected(21);
+        let day22_collected = storage.is_collected(22);
+        let tree_level = day6_collected as usize + day8_collected as usize + day12_collected as usize + day21_collected as usize + day22_collected as usize;
         let tree = if tree_level > 0  {
             let src: String = format!("/agenda/images/advent/tree{}.svg", tree_level);
             html! {
@@ -358,28 +358,5 @@ impl Component for Agenda {
             republican = {SETTINGS.calendar() == CalendarKind::Republican},
             ...
         )
-    }
-}
-
-impl Agenda {
-    fn get_break_ts(&self, ctx: &Context<Self>, idx: usize, day_start: u64) -> Range<u64> {        
-        let mut break_range = 11*3600..14*3600;
-        let day_duration = 24*3600;
-        let mut idx = idx;
-
-        while let Some(e) = ctx.props().events.get(idx) {
-            if e.start_unixtime > day_start + 24*3600 {
-                break;
-            }
-
-            if break_range.contains(&e.end_unixtime) || break_range.contains(&e.start_unixtime) {
-                continue;
-            }
-            break_range.start = break_range.start.max(e.end_unixtime % day_duration);
-            break_range.end = break_range.end.min(e.start_unixtime % day_duration);
-            idx += 1;
-        }
-        log!("break_range: {:?}", break_range);
-        break_range
     }
 }

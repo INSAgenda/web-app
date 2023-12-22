@@ -3,10 +3,12 @@
         <img height="35" width="35" src="/assets/logo/logo.svg" alt="Insagenda logo"/> 
         <h1 id="header-name">INSAgenda</h1>
     </a>
-    <div class="logout-button" onclick="{{onclick_logout}}">
-        <img style="height: 100%; margin-right: 1rem;" present-if={{day10_collected}} src="/agenda/images/advent/ball1.png" />
-        <span>Se déconnecter</span>
-        <img src="agenda/images/log-out.svg" alt="Settings button"/>
+    <div style="display: flex;">
+        <img style="height: 3rem; margin-right: 1rem;" present-if={{day10_collected}} src="/agenda/images/advent/ball1.png" />
+        <div class="logout-button" onclick="{{onclick_logout}}">
+            <span>Se déconnecter</span>
+            <img src="agenda/images/log-out.svg" alt="Settings button"/>
+        </div>
     </div>
 </header>
 <main id="settings-main">
