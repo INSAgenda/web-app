@@ -103,18 +103,6 @@ impl CachedData for Vec<RawEvent> {
     }
 }
 
-impl CachedData for Vec<AnnouncementDesc> {
-    fn storage_key() ->  &'static str { "announcements" }
-    fn endpoint() ->  &'static str { "/api/announcements" }
-    fn cache_duration() -> u64 { 3600 }
-    fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
-        match result {
-            Ok(announcements) => app_link.send_message(AppMsg::AnnouncementsSuccess(announcements)),
-            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
-        }
-    }
-}
-
 impl CachedData for UserInfo {
     fn storage_key() ->  &'static str { "user_info" }
     fn endpoint() ->  &'static str { "/api/user-info" }
