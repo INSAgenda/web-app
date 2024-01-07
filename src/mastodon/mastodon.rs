@@ -44,42 +44,43 @@ pub fn init_mastodon(page: &Page, app_link: AppLink) -> web_sys::Element {
     window().doc().body().unwrap().append_child(&iframe).unwrap();
     if !matches!(page, Page::Mastodon) {
         iframe.set_attribute("style", "display: none").unwrap();
-    }
 
-    // Listen for message
-    let mut skip = false;
-    let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
-        if skip {
-            return;
-        }
-
-        if e.origin() != "https://mastodon.insa.lol/" {
-            log!("Received message from unknown origin {e:?}");
-        }
-        let data = e.data();
-        let data: js_sys::Array = match data.dyn_into::<js_sys::Array>() {
-            Ok(data) => data,
-            Err(_) => {
-                log!("Received message with invalid data");
+        // Listen for message
+        let mut skip = false;
+        let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
+            if skip {
                 return;
             }
-        };
-        let mut ids = Vec::new();
-        for element in data {
-            if let Some(id) = element.as_string() {
-                ids.push(id);
+
+            if e.origin() != "https://mastodon.insa.lol/" {
+                log!("Received message from unknown o
+                rigin {e:?}");
             }
-        }
-        let mut mastodon_seen_ids = MastodonSeenIds::load();
-        mastodon_seen_ids.insert_new_ids(ids);
-        mastodon_seen_ids.save();
-        if mastodon_seen_ids.has_unseen_ids() {
-            app_link.send_message(AppMsg::MastodonNotification);
-            skip = true;
-        }
-    }) as Box<dyn FnMut(_)>);
-    window().add_event_listener_with_callback("message", on_message.as_ref().unchecked_ref()).unwrap();
-    on_message.forget();
+            let data = e.data();
+            let data: js_sys::Array = match data.dyn_into::<js_sys::Array>() {
+                Ok(data) => data,
+                Err(_) => {
+                    log!("Received message with invalid data");
+                    return;
+                }
+            };
+            let mut ids = Vec::new();
+            for element in data {
+                if let Some(id) = element.as_string() {
+                    ids.push(id);
+                }
+            }
+            let mut mastodon_seen_ids = MastodonSeenIds::load();
+            mastodon_seen_ids.insert_new_ids(ids);
+            mastodon_seen_ids.save();
+            if mastodon_seen_ids.has_unseen_ids() {
+                skip = true;
+                app_link.send_message(AppMsg::MastodonNotification);
+            }
+        }) as Box<dyn FnMut(_)>);
+        window().add_event_listener_with_callback("message", on_message.as_ref().unchecked_ref()).unwrap();
+        on_message.forget();
+    }
     
     iframe
 }
