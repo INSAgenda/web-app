@@ -10,7 +10,7 @@ pub struct TabBarProps {
 }
 
 impl PartialEq for TabBarProps {
-    fn eq(&self, other: &Self) -> bool { self.page.eq(&other.page) }
+    fn eq(&self, other: &Self) -> bool { self.page.eq(&other.page) && self.bait_points.eq(&other.bait_points) }
 }
 
 pub enum TabBarMsg {}

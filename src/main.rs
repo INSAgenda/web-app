@@ -31,6 +31,8 @@ mod tabbar;
 mod friends;
 #[path = "comment/comment.rs"]
 mod comment;
+#[path = "mastodon/mastodon.rs"]
+mod mastodon;
 mod advent;
 
 mod util;
@@ -40,6 +42,7 @@ mod prelude;
 mod translation;
 mod colors;
 
+use mastodon::{init_mastodon, mastodon_mark_all_seen};
 use slider::width;
 use yew::virtual_dom::VNode;
 
@@ -83,6 +86,7 @@ pub enum Msg {
     SaveSurveyAnswer(SurveyAnswers),
     UpdateFriends(FriendLists),
     MarkCommentsAsSeen(String),
+    MastodonNotification,
 
     // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
@@ -216,14 +220,7 @@ impl Component for App {
             false
         );
 
-        // Start loading the iframe so that it is ready when the user clicks on the tab
-        let iframe = window().doc().create_element("iframe").unwrap();
-        iframe.set_attribute("id", "mastodon-iframe").unwrap();
-        iframe.set_attribute("src", "https://insagenda.fr/cas/login?service=https%3A%2F%2Fmastodon.insa.lol%2Fauth%2Fauth%2Fcas%2Fcallback%3Furl%3Dhttps%253A%252F%252Fmastodon.insa.lol%252Fauth%252Fsign_in").unwrap();
-        window().doc().body().unwrap().append_child(&iframe).unwrap();
-        if !matches!(page, Page::Mastodon) {
-            iframe.set_attribute("style", "display: none").unwrap();
-        }
+        let iframe = init_mastodon(&page, ctx.link().clone());
 
         Self {
             events: Rc::new(events),
@@ -341,7 +338,12 @@ impl Component for App {
                 match page {
                     Page::Agenda => self.tabbar_bait_points.0 = false,
                     Page::Friends => self.tabbar_bait_points.1 = false,
-                    Page::Mastodon => self.tabbar_bait_points.2 = false,
+                    Page::Mastodon => {
+                        if self.tabbar_bait_points.2 {
+                            mastodon_mark_all_seen();
+                        }
+                        self.tabbar_bait_points.2 = false;
+                    },
                     Page::Settings => self.tabbar_bait_points.3 = false,
                     _ => (),
                 }
@@ -417,6 +419,10 @@ impl Component for App {
                 self.seen_comment_counts = Rc::new(seen_comment_counts);
                 let local_storage = window().local_storage().unwrap().unwrap();
                 let _ = local_storage.set("seen_comment_counts", &serde_json::to_string(&self.seen_comment_counts.deref()).unwrap());
+                true
+            }
+            AppMsg::MastodonNotification => {
+                self.tabbar_bait_points.2 = true;
                 true
             }
         }
