@@ -19,15 +19,16 @@ impl MastodonSeenIds {
         storage.set_item("mastodon_seen_ids", &serde_json::to_string(self).unwrap()).unwrap();
     }
 
-    fn insert_new_unseen_ids(&mut self, mut new_ids: Vec<String>) {
+    fn insert_new_ids(&mut self, mut new_ids: Vec<String>) {
+        new_ids.retain(|id| !self.seen_ids.contains(id));
         new_ids.extend(self.unseen_ids.drain(..));
-        new_ids.truncate(1_000);
+        new_ids.truncate(7_000);
         self.unseen_ids = new_ids;
     }
 
     fn mark_all_seen(&mut self) {
         self.seen_ids.extend(self.unseen_ids.drain(..));
-        self.seen_ids.truncate(1_000);
+        self.seen_ids.truncate(7_000);
     }
 
     fn has_unseen_ids(&self) -> bool {
@@ -70,7 +71,7 @@ pub fn init_mastodon(page: &Page, app_link: AppLink) -> web_sys::Element {
             }
         }
         let mut mastodon_seen_ids = MastodonSeenIds::load();
-        mastodon_seen_ids.insert_new_unseen_ids(ids);
+        mastodon_seen_ids.insert_new_ids(ids);
         mastodon_seen_ids.save();
         if mastodon_seen_ids.has_unseen_ids() {
             app_link.send_message(AppMsg::MastodonNotification);
