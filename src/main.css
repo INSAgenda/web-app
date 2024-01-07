@@ -130,7 +130,10 @@ body {
     width: calc(100% - 4rem);
     height: 100%;
     border: none;
-    display: block
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 4rem;
 }
 
 /* For mobile */
@@ -170,6 +173,7 @@ body {
 
     #mastodon-iframe {
         width: 100%;
+        left: 0;
         height: calc(100% - 4rem);
     }
 }

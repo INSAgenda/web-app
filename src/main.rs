@@ -113,6 +113,7 @@ pub struct App {
     wifi_password : Rc<Option<String>>,
     event_closing: bool,
     event_popup_size: Option<usize>,
+    iframe: web_sys::Element,
 }
 
 impl Component for App {
@@ -215,6 +216,15 @@ impl Component for App {
             false
         );
 
+        // Start loading the iframe so that it is ready when the user clicks on the tab
+        let iframe = window().doc().create_element("iframe").unwrap();
+        iframe.set_attribute("id", "mastodon-iframe").unwrap();
+        iframe.set_attribute("src", "https://mastodon.insa.lol").unwrap();
+        window().doc().body().unwrap().append_child(&iframe).unwrap();
+        if !matches!(page, Page::Mastodon) {
+            iframe.set_attribute("style", "display: none").unwrap();
+        }
+
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
@@ -230,6 +240,7 @@ impl Component for App {
             page,
             event_closing: false,
             event_popup_size: None,
+            iframe,
         }
     }
 
@@ -333,6 +344,13 @@ impl Component for App {
                     Page::Mastodon => self.tabbar_bait_points.2 = false,
                     Page::Settings => self.tabbar_bait_points.3 = false,
                     _ => (),
+                }
+
+                // Change the display of the Mastodon iframe when the user switches on or off the Mastodon page
+                if matches!(self.page, Page::Mastodon) && !matches!(page, Page::Mastodon) { // off
+                    self.iframe.set_attribute("style", "display: none").unwrap();
+                } else if !matches!(self.page, Page::Mastodon) && matches!(page, Page::Mastodon)  { // on
+                    self.iframe.remove_attribute("style").unwrap();
                 }
 
                 // FIXME TODO
@@ -465,7 +483,6 @@ impl Component for App {
                 </>)
             },
             Page::Mastodon => html!(<>
-                <iframe id="mastodon-iframe" src="https://mastodon.insa.lol"/>
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Settings => html!(<>
