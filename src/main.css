@@ -12,6 +12,12 @@ html, body, #render {
     height: 100%;
 }
 
+a {
+    color: var(--primary);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 /* Header */
 
 header, #tabbar {

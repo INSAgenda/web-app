@@ -252,6 +252,7 @@ impl Component for FriendsPage {
         template_html!(
             "src/friends/friends.html",
             onclick_rick = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Rick))},
+            onclick_mastodon = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Mastodon))},
             onclick_decline = { ctx.link().callback(|e| FriendsMsg::Decline(e)) },
             onclick_accept = { ctx.link().callback(|e| FriendsMsg::Accept(e)) },
             onclick_cancel = { ctx.link().callback(|e| FriendsMsg::Cancel(e)) },
