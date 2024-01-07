@@ -219,7 +219,7 @@ impl Component for App {
         // Start loading the iframe so that it is ready when the user clicks on the tab
         let iframe = window().doc().create_element("iframe").unwrap();
         iframe.set_attribute("id", "mastodon-iframe").unwrap();
-        iframe.set_attribute("src", "https://mastodon.insa.lol").unwrap();
+        iframe.set_attribute("src", "https://insagenda.fr/cas/login?service=https%3A%2F%2Fmastodon.insa.lol%2Fauth%2Fauth%2Fcas%2Fcallback%3Furl%3Dhttps%253A%252F%252Fmastodon.insa.lol%252Fauth%252Fsign_in").unwrap();
         window().doc().body().unwrap().append_child(&iframe).unwrap();
         if !matches!(page, Page::Mastodon) {
             iframe.set_attribute("style", "display: none").unwrap();
