@@ -1,9 +1,9 @@
 pub use crate::{
-    agenda::*, alert::*, api::*, calendar::*, checkbox::*, colors::*, comment::*,
-    event::*, friends::*, glider_selector::*, log, notifications::*,
-    popup::Popup, popup::*, settings::*, sortable::*, survey::*, tabbar::*, translation::*,
-    advent::gifts::CollectedGifts,
-    util::*, App, Msg as AppMsg, Page,
+    agenda::*, alert::*, api::*, calendar::*, checkbox::*,
+    colors::*, comment::*, event::*, friends::*, glider_selector::*, log, popup::Popup, popup::*,
+    settings::*, sortable::*, survey::*, tabbar::*, translation::*, util::*, App, Msg as AppMsg,
+    notifications::*,
+    Page,
 };
 pub use chrono::{
     DateTime, Datelike, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Timelike, Utc,

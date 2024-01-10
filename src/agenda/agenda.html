@@ -1,19 +1,11 @@
 <header id="header">
-    <img present-if={{day4_collected}} class="header-garlands hide-dark hide-garlands-mobile" src="/agenda/images/advent/garland_mobile_light.svg" />
-    <img present-if={{day4_collected}} class="header-garlands hide-light hide-garlands-mobile" src="/agenda/images/advent/garland_mobile_dark.svg" />
-    <img present-if={{day4_collected}} class="header-garlands hide-dark hide-garlands-desktop" src="/agenda/images/advent/garland_desktop_light.svg" />
-    <img present-if={{day4_collected}} class="header-garlands hide-light hide-garlands-desktop" src="/agenda/images/advent/garland_desktop_dark.svg" />
-
     <a id="header-logo" onclick={{onclick_rick}}>
-        <img present-if={{day1_collected}} src="/agenda/images/advent/logo_chapeau_dark.svg" class="hide-light" alt="INSAgenda logo" /> 
-        <img present-if={{day1_collected}} src="/agenda/images/advent/logo_chapeau_light.svg" class="hide-dark" alt="INSAgenda logo" /> 
-        <img present-if=!{{day1_collected}} src="/assets/logo/logo.svg" alt="INSAgenda logo" /> 
+        <img src="/assets/logo/logo.svg" alt="INSAgenda logo" /> 
         <h1 id="header-name" class="header-agenda">INSAgenda</h1>
     </a>
     {{calendar}}
     <div style="height: 70%; aspect-ratio: 1 / 1;">
         <img opt src={{opt_profile_src}} />
-        <virtual opt>{{opt_gift}}</virtual>
     </div>
 </header>
 <main id="agenda-main">
