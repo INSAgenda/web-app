@@ -33,7 +33,6 @@ mod friends;
 mod comment;
 #[path = "notifications/notifications.rs"]
 mod notifications;
-mod advent;
 
 mod util;
 mod slider;

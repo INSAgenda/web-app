@@ -4,7 +4,6 @@
         <h1 id="header-name">INSAgenda</h1>
     </a>
     <div style="display: flex;">
-        <img style="height: 3rem; margin-right: 1rem;" present-if={{day10_collected}} src="/agenda/images/advent/ball1.png" />
         <div class="logout-button" onclick="{{onclick_logout}}">
             <span>Se déconnecter</span>
             <img src="agenda/images/log-out.svg" alt="Settings button"/>
@@ -62,5 +61,4 @@
 
     <div class="primary-button" onclick={{onclick_confirm}}>Valider</div>
     <div class="secondary-button" onclick={{onclick_cancel}}>Annuler</div>
-    <img present-if={{day3_collected}} class="orange" src="/agenda/images/advent/orange.svg" alt="Orange" />
 </main>
