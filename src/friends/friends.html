@@ -44,6 +44,13 @@
             </div>
         </div>
     </section>
+    <section present-if=!{{has_friends}}>
+        <p>
+            Les amis peuvent mutuellement consulter leurs agendas.
+            De plus, ils seront abonnés l'un à l'autre dans&nbsp;<a onclick={{onclick_mastodon}}>Mastodon</a>.<br/>
+            Demandez un ami dès maintenant en entrant son adresse mail INSA ou son identifiant long!
+        </p>
+    </section>
     <section>
         <h3>Ajouter un ami&nbsp;:</h3>
         <input type="text" class="friend-input" placeholder="prenom.nom@insa-rouen.fr" id="friend-request-input" onkeyup={{onkeyup_request}} />

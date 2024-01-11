@@ -10,7 +10,7 @@ pub struct TabBarProps {
 }
 
 impl PartialEq for TabBarProps {
-    fn eq(&self, other: &Self) -> bool { self.page.eq(&other.page) }
+    fn eq(&self, other: &Self) -> bool { self.page.eq(&other.page) && self.bait_points.eq(&other.bait_points) }
 }
 
 pub enum TabBarMsg {}
@@ -34,9 +34,9 @@ impl Component for TabBar {
         let mut friends_classes = String::from(if matches!(page, Page::Friends | Page::FriendAgenda { .. }) {"tabbar-selected"} else {"tabbar-not-selected"});
         if ctx.props().bait_points.1 { friends_classes.push_str(" tabbar-with-bait"); }
 
-        let onclick_notifications = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Notifications));
-        let mut notifications_classes = String::from(if matches!(page, Page::Notifications) {"tabbar-selected"} else {"tabbar-not-selected"});
-        if ctx.props().bait_points.2 { notifications_classes.push_str(" tabbar-with-bait"); }
+        let onclick_mastodon = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Mastodon));
+        let mut mastodon_classes = String::from(if matches!(page, Page::Mastodon) {"tabbar-selected"} else {"tabbar-not-selected"});
+        if ctx.props().bait_points.2 { mastodon_classes.push_str(" tabbar-with-bait"); }
 
         let onclick_settings = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings));
         let mut settings_classes = String::from(if matches!(page, Page::Settings) {"tabbar-selected"} else {"tabbar-not-selected"});
