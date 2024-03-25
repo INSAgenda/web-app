@@ -89,7 +89,7 @@ async fn load<T: CachedData>() -> Result<T, ApiError> {
 impl CachedData for Vec<RawEvent> {
     fn storage_key() ->  &'static str { "events" }
     fn endpoint() ->  &'static str { "/api/schedule" }
-    fn cache_duration() -> u64 { 3600*2 }
+    fn cache_duration() -> u64 { 3600 / 2 }
     fn force_reload(&self) -> bool { self.is_empty() }
     fn on_cache(&mut self) { self.sort_by_key(|e| e.start_unixtime); }
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
