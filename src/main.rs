@@ -31,8 +31,8 @@ mod tabbar;
 mod friends;
 #[path = "comment/comment.rs"]
 mod comment;
-#[path = "notifications/notifications.rs"]
-mod notifications;
+#[path = "mastodon/mastodon.rs"]
+mod mastodon;
 
 mod util;
 mod slider;
@@ -41,6 +41,7 @@ mod prelude;
 mod translation;
 mod colors;
 
+use mastodon::{init_mastodon, mastodon_mark_all_seen};
 use slider::width;
 use yew::virtual_dom::VNode;
 
@@ -53,7 +54,7 @@ pub enum Page {
     Agenda,
     Friends,
     FriendAgenda { pseudo: String },
-    Notifications,
+    Mastodon,
     Event { eid: String },
     Survey { sid: String },
     Rick,
@@ -66,7 +67,7 @@ impl Page {
             Page::Agenda => (String::from("agenda"), "Agenda"),
             Page::Friends => (String::from("friends"), "Friends"),
             Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
-            Page::Notifications => (String::from("notifications"), "Notifications"),
+            Page::Mastodon => (String::from("mastodon"), "Mastodon"),
             Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
             Page::Event { eid } => (format!("event/{eid}"), "Event"),
             Page::Rick => (String::from("r"), "Rick"),
@@ -84,6 +85,7 @@ pub enum Msg {
     SaveSurveyAnswer(SurveyAnswers),
     UpdateFriends(FriendLists),
     MarkCommentsAsSeen(String),
+    MastodonNotification,
 
     // Data updating messages sent by the loader in /src/api/generic.rs
     UserInfoSuccess(UserInfo),
@@ -94,7 +96,6 @@ pub enum Msg {
     ScheduleSuccess(Vec<RawEvent>),
     SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
     ScheduleFailure(ApiError),
-    AnnouncementsSuccess(Vec<AnnouncementDesc>),
     WiFiSuccess(WifiSettings),
 }
 
@@ -103,8 +104,6 @@ pub enum Msg {
 pub struct App {
     user_info: Rc<Option<UserInfo>>,
     events: Rc<Vec<RawEvent>>,
-    announcements: Rc<Vec<AnnouncementDesc>>,
-    notifications: Rc<RefCell<LocalNotificationTracker>>,
     friends: Rc<Option<FriendLists>>,
     friends_events: FriendsEvents,
     comment_counts: Rc<CommentCounts>,
@@ -117,6 +116,7 @@ pub struct App {
     wifi_password : Rc<Option<String>>,
     event_closing: bool,
     event_popup_size: Option<usize>,
+    iframe: web_sys::Element,
 }
 
 impl Component for App {
@@ -134,7 +134,7 @@ impl Component for App {
                 Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
                 Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
-                Some("notifications") => link2.send_message(Msg::SilentSetPage(Page::Notifications)),
+                Some("mastodon") => link2.send_message(Msg::SilentSetPage(Page::Mastodon)),
                 Some("r") => link2.send_message(Msg::SilentSetPage(Page::Rick)),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].to_string();
@@ -159,14 +159,6 @@ impl Component for App {
         let wifi_settings: Option<WifiSettings> = CachedData::init(ctx.link().clone());
         let surveys = survey_response.surveys;
         let survey_answers = survey_response.my_answers;
-        let mut announcements: Vec<AnnouncementDesc> = CachedData::init(ctx.link().clone()).unwrap_or_default();
-        if let Some(user_info) = &user_info {
-            let previous_len = announcements.len();
-            announcements.retain(|a| a.target.as_ref().map(|t| user_info.groups.matches(t)).unwrap_or(true));
-            if previous_len != announcements.len() {
-                log!("Filtered announcements: {} -> {}", previous_len, announcements.len());
-            }
-        }
 
         // Load seen comment counts
         let local_storage = window().local_storage().unwrap().unwrap();
@@ -182,7 +174,7 @@ impl Component for App {
         let page = match path.as_str().trim_end_matches('/') {
             "/settings" => Page::Settings,
             "/friends" => Page::Friends,
-            "/notifications" => Page::Notifications,
+            "/mastodon" => Page::Mastodon,
             event if event.starts_with("/event/") => {
                 let eid = event[7..].to_string();
                 let link2 = ctx.link().clone();
@@ -220,24 +212,19 @@ impl Component for App {
             }
         }
 
-        // Get notification tracker
-        let mut notifications = LocalNotificationTracker::load();
-        notifications.add_announcements(&announcements);
-        notifications.add_surveys(&surveys);
-
         // Set TabBar bait points
         let tabbar_bait_points = (
             false,
             friends.as_ref().map(|f: &FriendLists| !f.incoming.is_empty()).unwrap_or(false),
-            notifications.has_unread(),
+            false, // TODO
             false
         );
+
+        let iframe = init_mastodon(&page, ctx.link().clone());
 
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
-            announcements: Rc::new(announcements),
-            notifications: Rc::new(RefCell::new(notifications)),
             friends: Rc::new(friends),
             friends_events,
             comment_counts: Rc::new(comment_counts),
@@ -250,6 +237,7 @@ impl Component for App {
             page,
             event_closing: false,
             event_popup_size: None,
+            iframe,
         }
     }
 
@@ -275,29 +263,7 @@ impl Component for App {
                 self.friends_events.insert(uid, events);
                 matches!(self.page, Page::FriendAgenda { .. } )
             },
-            AppMsg::AnnouncementsSuccess(mut announcements) => {
-                // Filter announcements
-                if let Some(user_info) = self.user_info.deref().as_ref() {
-                    announcements.retain(|a| a.target.as_ref().map(|t| user_info.groups.matches(t)).unwrap_or(true));
-                } else {
-                    return false;
-                }
-
-                // Add to notifications
-                let mut notifications = self.notifications.borrow_mut();
-                notifications.add_announcements(&announcements);
-                self.tabbar_bait_points.2 = notifications.has_unread();
-
-                self.announcements = Rc::new(announcements);
-                
-                matches!(self.page, Page::Notifications) || self.tabbar_bait_points.2
-            },
             AppMsg::SurveysSuccess(surveys, survey_answers) => {
-                // Add to notifications
-                let mut notifications = self.notifications.borrow_mut();
-                notifications.add_surveys(&surveys);
-                self.tabbar_bait_points.2 = notifications.has_unread();
-
                 self.surveys = surveys;
                 self.survey_answers = survey_answers;
 
@@ -335,15 +301,6 @@ impl Component for App {
                     }
                 }
 
-                // Filter announcements
-                let mut announcements = self.announcements.deref().to_owned();
-                let previous_len = announcements.len();
-                announcements.retain(|a| a.target.as_ref().map(|t| user_info.groups.matches(t)).unwrap_or(true));
-                if previous_len != announcements.len() {
-                    log!("Filtered announcements: {} -> {}", previous_len, announcements.len());
-                }
-                self.announcements = Rc::new(announcements);
-
                 // Set new user info
                 user_info.save();
                 self.user_info = Rc::new(Some(user_info));
@@ -361,7 +318,9 @@ impl Component for App {
             Msg::WiFiSuccess(wifi_settings) => {
                 self.wifi_ssid = Rc::new(Some(wifi_settings.ssid));
                 self.wifi_password = Rc::new(Some(wifi_settings.password));
-                matches!(self.page, Page::Notifications)
+                //matches!(self.page, Page::Notifications)
+                // TODO: find out where it's going to be
+                false
             },
             AppMsg::ScheduleFailure(api_error) => {
                 api_error.handle_api_error();
@@ -379,14 +338,21 @@ impl Component for App {
                 match page {
                     Page::Agenda => self.tabbar_bait_points.0 = false,
                     Page::Friends => self.tabbar_bait_points.1 = false,
-                    Page::Notifications => self.tabbar_bait_points.2 = false,
+                    Page::Mastodon => {
+                        if self.tabbar_bait_points.2 {
+                            mastodon_mark_all_seen();
+                            self.tabbar_bait_points.2 = false;
+                        }
+                    },
                     Page::Settings => self.tabbar_bait_points.3 = false,
                     _ => (),
                 }
 
-                // Mark notifications as read upon leaving the notifications page
-                if let Page::Notifications = self.page {
-                    self.notifications.borrow_mut().mark_all_as_read();
+                // Change the display of the Mastodon iframe when the user switches on or off the Mastodon page
+                if matches!(self.page, Page::Mastodon) && !matches!(page, Page::Mastodon) { // off
+                    self.iframe.set_attribute("style", "display: none").unwrap();
+                } else if !matches!(self.page, Page::Mastodon) && matches!(page, Page::Mastodon)  { // on
+                    self.iframe.remove_attribute("style").unwrap();
                 }
 
                 // FIXME TODO
@@ -455,6 +421,15 @@ impl Component for App {
                 let _ = local_storage.set("seen_comment_counts", &serde_json::to_string(&self.seen_comment_counts.deref()).unwrap());
                 true
             }
+            AppMsg::MastodonNotification => {
+                if matches!(self.page, Page::Mastodon) {
+                    mastodon_mark_all_seen();
+                    false
+                } else {
+                    self.tabbar_bait_points.2 = true;
+                    true
+                }
+            }
         }
     }
     
@@ -518,11 +493,7 @@ impl Component for App {
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
-            Page::Notifications => html!(<>
-                <NotificationsPage
-                    notifications={Rc::clone(&self.notifications)} 
-                    wifi_ssid={Rc::clone(&self.wifi_ssid)}
-                    wifi_password={Rc::clone(&self.wifi_password)} />
+            Page::Mastodon => html!(<>
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Settings => html!(<>

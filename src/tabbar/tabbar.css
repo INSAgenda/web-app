@@ -21,26 +21,15 @@
 #tabbar>button>.bait-point {
     position: absolute;
     width: 0rem;
-    height: 0.6rem;
+    height: 1rem;
     background-color: var(--primary);
-    left: calc(50% + 1rem);
-    border-radius: 0.3rem;
+    left: calc(50% + 1rem - .4rem);
+    top: -0.3rem;
+    border-radius: 0.5rem;
     transition: width .1s ease-in;
 }
 #tabbar>.tabbar-with-bait>.bait-point {
-    width: 0.6rem;
-}
-#tabbar>button:nth-child(1)>.bait-point {
-    left: calc(50% + 1rem - .2rem);
-}
-#tabbar>button:nth-child(2)>.bait-point {
-    left: calc(50% + 1rem - .1rem);
-}
-#tabbar>button:nth-child(3)>.bait-point {
-    left: calc(50% + 1rem - .3rem);
-}
-#tabbar>button:nth-child(4)>.bait-point {
-    left: calc(50% + 1rem - .05rem);
+    width: 1rem;
 }
 
 .tabbar-not-selected>.selected-img {
@@ -64,13 +53,14 @@
 #tabbar>button>img {
     width: 2rem;
     aspect-ratio: 1 / 1;
+    z-index: 1;
 }
 
 /* For desktop */
 
 @media screen and (min-width: 1000px) {
     #render {
-        position: relative;
+        position: fixed;
         left: 4rem;
         width: calc(100% - 4rem);
         box-sizing: border-box;
