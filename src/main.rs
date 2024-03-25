@@ -423,8 +423,13 @@ impl Component for App {
                 true
             }
             AppMsg::MastodonNotification => {
-                self.tabbar_bait_points.2 = true;
-                true
+                if matches!(self.page, Page::Mastodon) {
+                    mastodon_mark_all_seen();
+                    false
+                } else {
+                    self.tabbar_bait_points.2 = true;
+                    true
+                }
             }
         }
     }
