@@ -341,8 +341,8 @@ impl Component for App {
                     Page::Mastodon => {
                         if self.tabbar_bait_points.2 {
                             mastodon_mark_all_seen();
+                            self.tabbar_bait_points.2 = false;
                         }
-                        self.tabbar_bait_points.2 = false;
                     },
                     Page::Settings => self.tabbar_bait_points.3 = false,
                     _ => (),
