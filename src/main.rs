@@ -135,6 +135,7 @@ impl Component for App {
                 Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
                 Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
+                Some("mastodon") => link2.send_message(Msg::SilentSetPage(Page::Mastodon)),
                 Some("r") => link2.send_message(Msg::SilentSetPage(Page::Rick)),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].to_string();
