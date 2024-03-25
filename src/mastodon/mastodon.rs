@@ -53,8 +53,7 @@ pub fn init_mastodon(page: &Page, app_link: AppLink) -> web_sys::Element {
             }
 
             if e.origin() != "https://mastodon.insa.lol/" {
-                log!("Received message from unknown o
-                rigin {e:?}");
+                log!("Received message from unknown origin {e:?}");
             }
             let data = e.data();
             let data: js_sys::Array = match data.dyn_into::<js_sys::Array>() {
