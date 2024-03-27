@@ -218,14 +218,17 @@ impl Component for Agenda {
             let mut overlapping_events = Vec::new();
             for (i, e) in events.iter().enumerate() {
                 let e_range = e.start_unixtime..e.end_unixtime;
-                for e2 in events.iter() {
+                for (i2, e2) in events.iter().enumerate() {
                     if e == e2 { continue }
                     let e2_range = e2.start_unixtime..e2.end_unixtime;
-                    if e2_range.contains(&e_range.start) || e2_range.contains(&e_range.end) {
+                    if e2_range.contains(&e_range.start) || e2_range.contains(&e_range.end.saturating_sub(1)) {
                         overlapping_events.push(i);
+                        overlapping_events.push(i2);
                     }
                 }
             }
+            overlapping_events.sort();
+            overlapping_events.dedup();
             
             // Generate event components
             let mut event_comps = Vec::new();
