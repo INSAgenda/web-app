@@ -78,9 +78,7 @@ impl Page {
 /// A message that can be sent to the `App` component.
 pub enum Msg {
     /// Switch page
-    SetPage(Page),
-    /// Switch page without saving it in the history
-    SilentSetPage(Page),
+    SetPage { page: Page, silent: bool },
     FetchColors(HashMap<String, String>),
     SaveSurveyAnswer(SurveyAnswers),
     UpdateFriends(FriendLists),
@@ -97,6 +95,18 @@ pub enum Msg {
     SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
     ScheduleFailure(ApiError),
     WiFiSuccess(WifiSettings),
+}
+
+/// Methods for backward compatibility
+#[allow(non_snake_case)]
+impl Msg {
+    fn SetPage(page: Page) -> Self {
+        Msg::SetPage { page, silent: false }
+    }
+
+    fn SilentSetPage(page: Page) -> Self {
+        Msg::SetPage { page, silent: true }
+    }
 }
 
 /// The main component of the app.
@@ -333,7 +343,7 @@ impl Component for App {
                 api_error.handle_api_error();
                 false
             },
-            Msg::SetPage(page) => {
+            Msg::SetPage { page, silent } => {
                 // Remove bait points
                 match page {
                     Page::Agenda => self.tabbar_bait_points.0 = false,
@@ -396,14 +406,12 @@ impl Component for App {
                     self.event_closing = false;
                 }
                 let (data, title) = page.data_and_title();
-                if let Ok(history) = window().history() {
-                    let _ = history.push_state_with_url(&JsValue::from_str(&data), title, Some(&format!("/{data}")));
+                if !silent {
+                    if let Ok(history) = window().history() {
+                        let _ = history.push_state_with_url(&JsValue::from_str(&data), title, Some(&format!("/{data}")));
+                    }
                 }
                 document.set_title(title);
-                self.page = page;
-                true
-            },
-            Msg::SilentSetPage(page) => {
                 self.page = page;
                 true
             },

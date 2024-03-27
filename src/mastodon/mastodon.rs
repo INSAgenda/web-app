@@ -21,13 +21,13 @@ impl MastodonSeenIds {
 
     fn insert_new_ids(&mut self, mut new_ids: Vec<String>) {
         new_ids.retain(|id| !self.seen_ids.contains(id));
-        new_ids.extend(self.unseen_ids.drain(..));
+        new_ids.append(&mut self.unseen_ids);
         new_ids.truncate(7_000);
         self.unseen_ids = new_ids;
     }
 
     fn mark_all_seen(&mut self) {
-        self.seen_ids.extend(self.unseen_ids.drain(..));
+        self.seen_ids.append(&mut self.unseen_ids);
         self.seen_ids.truncate(7_000);
     }
 
