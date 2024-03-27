@@ -216,7 +216,7 @@ impl Component for Agenda {
             let mut overlapping_events = Vec::new();
             for (i, e) in events.iter().enumerate() {
                 let e_range = e.start_unixtime..e.end_unixtime;
-                for (i2, e2) in events.iter().enumerate() {
+                for e2 in events.iter() {
                     if e == e2 { continue }
                     let e2_range = e2.start_unixtime..e2.end_unixtime;
                     if e2_range.contains(&e_range.start) || e2_range.contains(&e_range.end) {
