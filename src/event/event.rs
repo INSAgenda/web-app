@@ -10,6 +10,7 @@ pub struct EventCompProps {
     pub day_start: u64,
     pub agenda_link: AgendaLink,
     pub week_day: u8,
+    pub vertical_offset: (usize, usize),
     pub comment_counts: Rc<CommentCounts>,
     pub seen_comment_counts: Rc<CommentCounts>,
 }
@@ -80,13 +81,19 @@ impl Component for EventComp {
 
         // Calculate position
         let day_sec_count = 43200.0;
-        let sec_offset = ctx.props().event.start_unixtime.saturating_sub(ctx.props().day_start + 8 * 3600);
-        let percent_offset = 100.0 / day_sec_count * sec_offset as f64;
+        let sec_offset = ctx.props().event.start_unixtime as f64 - (ctx.props().day_start + 8 * 3600) as f64;
+        let mut percent_offset = 100.0 / day_sec_count * sec_offset;
         if ctx.props().event.start_unixtime >= ctx.props().event.end_unixtime {
             log!("Event {} in {:?}  ends before it starts", name, location);
             return html!{};
         }
-        let percent_height = 100.0 / day_sec_count * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;
+        let mut percent_height = 100.0 / day_sec_count * (ctx.props().event.end_unixtime - ctx.props().event.start_unixtime) as f64;
+        if percent_offset < 0.0 {
+            percent_height += percent_offset;
+            percent_offset = 0.0;
+        }
+        let percent_width = 100.0 / ctx.props().vertical_offset.1 as f64;
+        let percent_vertical_offset = percent_width * ctx.props().vertical_offset.0 as f64;
 
         // Count comments
         let opt_comment_count = ctx.props().comment_counts.get(&ctx.props().event.eid).copied();
