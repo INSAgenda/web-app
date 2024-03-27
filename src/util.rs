@@ -118,8 +118,7 @@ pub fn now() -> i64 {
     (js_sys::Date::new_0().get_time() / 1000.0) as i64
 }
 
-pub fn format_time_diff(diff: i64) -> String {
-    let french = SETTINGS.lang() == Lang::French;
+pub fn format_time_diff_with_lang(diff: i64, french: bool) -> String {
     if diff < 60 {
         match (french, diff >= 2) {
             (true, true) => format!("{diff} secondes"),
@@ -175,4 +174,9 @@ pub fn format_time_diff(diff: i64) -> String {
             (false, false) => format!("{diff} year ago"),
         }
     }
+}
+
+pub fn format_time_diff(diff: i64) -> String {
+    let french = SETTINGS.lang() == Lang::French;
+    format_time_diff_with_lang(diff, french)
 }

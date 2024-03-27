@@ -10,7 +10,7 @@
 </header>
 <main id="agenda-main">
 <div id="agenda">
-    <div id="agenda-hours">
+    <div present-if=!{{republican}} id="agenda-hours">
         <span>08:00</span>
         <span>09:45</span>
         <span>11:30</span>
@@ -18,6 +18,15 @@
         <span>15:00</span>
         <span>16:45</span>
         <span>18:30</span>
+    </div>
+    <div present-if={{republican}} id="agenda-hours">
+        <span>3:45</span>
+        <span>4:18</span>
+        <span>4:91</span>
+        <span>5:64</span>
+        <span>6:37</span>
+        <span>7:10</span>
+        <span>7:83</span>
     </div>
     <div id="agenda-main-part">
         <div id="agenda-top">

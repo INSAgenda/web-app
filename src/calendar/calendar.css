@@ -37,6 +37,17 @@
     transform: rotate(180deg);
 }
 
+#open-calendar-labels {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#open-calendar-halving-countdown {
+    font-size: 1rem;
+    color: orange;
+}
+
 #calendar-days {
     display: flex;
     justify-content: space-around;
@@ -53,10 +64,14 @@
     border: 1px solid transparent;
 }
 
+.republican-calendar-days>span, .republican-calendar-case {
+    width: calc(100% / 10);
+}
+
 /* Grid */
 
 #calendar-content {
-    z-index: 1;
+    z-index: 3;
     position: absolute;
     top: 4rem;
     left: 0;
@@ -124,4 +139,11 @@
 #calendar-case-today {
     border: 1px solid var(--primary);
     color: var(--primary);
+}
+
+/* Bottom */
+
+#other-calendar-day {
+    text-align: center;
+    font-size: .95rem;
 }

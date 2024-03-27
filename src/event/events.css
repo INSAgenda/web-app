@@ -35,6 +35,8 @@
     height: 100%;
     padding: 0.2rem;
     box-sizing: border-box;
+    position: inherit;
+    z-index: 2;
 }
 
 .event-container span {
@@ -55,4 +57,18 @@
     .event:active {
         filter: brightness(0.8);
     }
+}
+
+.barley-sugar:first-child {
+    background-image: url("/agenda/images/advent/barley_sugar.png");
+    background-repeat: no-repeat;
+    background-size: 2.5rem;
+    background-position: calc(100% - 0.3rem) center;
+}
+
+.sock:nth-child(2) {
+    background-image: url("/agenda/images/advent/sock.svg");
+    background-repeat: no-repeat;
+    background-size: 4.5rem;
+    background-position: calc(100% - 0.3rem) center;
 }

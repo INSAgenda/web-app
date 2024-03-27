@@ -33,7 +33,9 @@ pub enum AgendaMsg {
 pub struct AgendaProps {
     pub app_link: AppLink,
     pub events: Rc<Vec<RawEvent>>,
+    #[prop_or_default]
     pub popup: Option<(RawEvent, bool, Option<usize>)>,
+    #[prop_or_default]
     pub profile_src: Option<String>,
     pub user_info: Rc<Option<UserInfo>>,
     pub comment_counts: Rc<CommentCounts>,
@@ -258,10 +260,19 @@ impl Component for Agenda {
                 }
             }
 
-            // Generate day component
+            let day_name = match SETTINGS.calendar() {
+                CalendarKind::Gregorian => format_day(current_day.weekday(), current_day.day()),
+                CalendarKind::Republican => match RepublicanDateTime::try_from(current_day) {
+                    Ok(datetime) => match datetime.num_month() {
+                        13 => datetime.decade_day().to_string(),
+                        _ => format!("{} {}", datetime.decade_day(), datetime.day()),
+                    },
+                    Err(_) => String::from("invalid date"),
+                },
+            };
             day_names.push(html! {
                 <span id={if current_day == self.selected_day {"selected-day"} else {""}} style={day_name_style}>
-                    { format_day(current_day.weekday(), current_day.day()) }
+                    { day_name }
                 </span>
             });
             days.push(html! {
@@ -322,11 +333,13 @@ impl Component for Agenda {
         } else {
             String::new()
         };
+
         template_html!(
             "src/agenda/agenda.html",
             onclick_rick = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Rick))},
             onclick_previous = {ctx.link().callback(|_| AgendaMsg::Previous)},
             onclick_next = {ctx.link().callback(|_| AgendaMsg::Next)},
+            republican = {SETTINGS.calendar() == CalendarKind::Republican},
             ...
         )
     }

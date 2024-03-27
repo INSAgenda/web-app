@@ -8,6 +8,16 @@
     --border-color: #666;
 }
 
+html, body, #render {
+    height: 100%;
+}
+
+a {
+    color: var(--primary);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 /* Header */
 
 header, #tabbar {
@@ -120,6 +130,18 @@ body {
     filter: invert(1);
 }
 
+/* Mastodon iframe */
+
+#mastodon-iframe {
+    width: calc(100% - 4rem);
+    height: 100%;
+    border: none;
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 4rem;
+}
+
 /* For mobile */
 
 @media screen and (max-width: 1000px) {
@@ -153,5 +175,11 @@ body {
     .primary-button:hover, .secondary-button:hover {
         transform: unset;
         box-shadow: unset;
+    }
+
+    #mastodon-iframe {
+        width: 100%;
+        left: 0;
+        height: calc(100% - 4rem);
     }
 }

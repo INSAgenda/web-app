@@ -89,7 +89,7 @@ async fn load<T: CachedData>() -> Result<T, ApiError> {
 impl CachedData for Vec<RawEvent> {
     fn storage_key() ->  &'static str { "events" }
     fn endpoint() ->  &'static str { "/api/schedule" }
-    fn cache_duration() -> u64 { 3600*2 }
+    fn cache_duration() -> u64 { 3600 / 2 }
     fn force_reload(&self) -> bool { self.is_empty() }
     fn on_cache(&mut self) { self.sort_by_key(|e| e.start_unixtime); }
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
@@ -99,18 +99,6 @@ impl CachedData for Vec<RawEvent> {
                 app_link.send_message(AppMsg::ScheduleSuccess(events));
             },
             Err(e) => app_link.send_message(AppMsg::ScheduleFailure(e)),
-        }
-    }
-}
-
-impl CachedData for Vec<AnnouncementDesc> {
-    fn storage_key() ->  &'static str { "announcements" }
-    fn endpoint() ->  &'static str { "/api/announcements" }
-    fn cache_duration() -> u64 { 3600 }
-    fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
-        match result {
-            Ok(announcements) => app_link.send_message(AppMsg::AnnouncementsSuccess(announcements)),
-            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
         }
     }
 }
