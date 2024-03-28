@@ -100,29 +100,32 @@
         const lds_ring = document.querySelector(".lds-ring");
         const lds_bar = document.querySelector(".lds-bar");
 
+        function display_quote() {
+            quote.style.opacity = "1";
+            let quote_index = Math.floor(Math.random() * quotes.length);
+            quote_text.innerText = quotes[quote_index].text;
+            quote_author.innerText = quotes[quote_index].author;
+            setTimeout(() => {
+                quote.style.opacity = "0";
+            }, 8600);
+        }
+
         var interval;
         let inlined_initializer = {
             onStart: () => {
-                console.log('Initialization started');
-                time_counter = performance.now();
-
-                if (!waiting_screen || !quote || !quote_text) { return }
+                if (!waiting_screen || !quote || !quote_text) {
+                    console.error("Missing elements");
+                    return;
+                }
                 waiting_screen.style.opacity = "1";
 
                 // Each 9 seconds, change the displayed quote
-                interval = setInterval(() => {
-                    if (window.localStorage.getItem("wasm-running-status") === "waiting") {
-                        quote.style.opacity = "0";
-                        setTimeout(() => {
-                            quote.style.opacity = "1";
-                            let quote_index = Math.floor(Math.random() * quotes.length);
-                            quote_text.innerText = quotes[quote_index].text;
-                            quote_author.innerText = quotes[quote_index].author;
-                        }, 400);
-                    } else {
-                        clearInterval(interval);
-                    }
-                }, 9000);
+                setTimeout(() => {
+                    display_quote();
+                    interval = setInterval(() => {
+                        display_quote();
+                    }, 9000);
+                }, 2000);
             },
             onProgress: ({current, total}) => {
                 if (total === 0) {
