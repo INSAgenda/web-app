@@ -25,7 +25,7 @@
     <link data-trunk rel="inline" href="src/friends/friends.css" />
     <link data-trunk rel="inline" href="src/comment/comment.css" />
     <link data-trunk rel="inline" href="styles/waiting-screen.css" />
-    <link data-trunk rel="rust" data-integrity="none" />
+    <link data-trunk rel="rust" data-integrity="none" data-initializer="post-build.sh" data-wasm-no-import />
 
     <link data-trunk rel="copy-dir" href="images" />
     <script common_code="head">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
@@ -33,7 +33,8 @@
 <body>
     <div id="render">
         <div id="waiting-screen" style="opacity: 0;">
-            <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+            <div class="lds-ring" style="display:none;"><div></div><div></div><div></div><div></div></div>
+            <div class="lds-bar" style="display:none;"><div></div></div>
             <p id="waiting-screen-message">Chargement...</p>
             <div id="waiting-screen-quote" style="opacity: 0;">
                 <p>
@@ -62,14 +63,9 @@
         }
     </script>
     <script>
-        // Check that ressources are loading correctly
-        function on_load_error() {
-            let waiting_screen_message = document.getElementById("waiting-screen-message");
-            waiting_screen_message.innerText = "Something is wrong";
-            window.location.reload();
-        }
+        var init;
+        var bindings;
 
-        // Checks that the WASM app runs correctly
         const quotes = [
             {
                 text: "We are all Satoshi.",
@@ -96,33 +92,78 @@
                 author: "1997 Air Force"
             }
         ];
-        window.localStorage.setItem("wasm-running-status", "waiting");
-        setTimeout(() => {
-            if (window.localStorage.getItem("wasm-running-status") === "waiting") {
-                const waiting_screen = document.getElementById("waiting-screen");
-                const quote = document.getElementById("waiting-screen-quote");
-                const quote_text = document.getElementById("waiting-screen-quote-text");
-                const quote_author = document.getElementById("waiting-screen-quote-author");
-                if (!waiting_screen || !quote || !quote_text) { return }
-                
+        
+        const waiting_screen = document.getElementById("waiting-screen");
+        const waiting_screen_message = document.getElementById("waiting-screen-message");
+        const quote = document.getElementById("waiting-screen-quote");
+        const quote_text = document.getElementById("waiting-screen-quote-text");
+        const quote_author = document.getElementById("waiting-screen-quote-author");
+        const lds_ring = document.querySelector(".lds-ring");
+        const lds_bar = document.querySelector(".lds-bar");
+
+        function display_quote() {
+            quote.style.opacity = "1";
+            let quote_index = Math.floor(Math.random() * quotes.length);
+            quote_text.innerText = quotes[quote_index].text;
+            quote_author.innerText = quotes[quote_index].author;
+            setTimeout(() => {
+                quote.style.opacity = "0";
+            }, 8600);
+        }
+
+        var interval;
+        let inlined_initializer = {
+            onStart: () => {
                 waiting_screen.style.opacity = "1";
 
                 // Each 9 seconds, change the displayed quote
-                const interval = setInterval(() => {
-                    if (window.localStorage.getItem("wasm-running-status") === "waiting") {
-                        quote.style.opacity = "0";
+                setTimeout(() => {
+                    interval = setInterval(() => {
+                        quote.style.opacity = "1";
+                        let quote_index = Math.floor(Math.random() * quotes.length);
+                        quote_text.innerText = quotes[quote_index].text;
+                        quote_author.innerText = quotes[quote_index].author;
                         setTimeout(() => {
-                            quote.style.opacity = "1";
-                            let quote_index = Math.floor(Math.random() * quotes.length);
-                            quote_text.innerText = quotes[quote_index].text;
-                            quote_author.innerText = quotes[quote_index].author;
-                        }, 400);
-                    } else {
-                        clearInterval(interval);
-                    }
-                }, 9000);
+                            quote.style.opacity = "0";
+                        }, 8600);
+                    }, 9000);
+                }, 2000);
+            },
+            onProgress: ({current, total}) => {
+                if (total === 0) {
+                    lds_ring.style.display = "block";
+                    lds_bar.style.display = "none";
+                } else {
+                    lds_ring.style.display = "none";
+                    lds_bar.style.display = "block";
+                    lds_bar.querySelector("div").style.width = `${(current / total) * 100}%`;
+                }
+            },
+            onComplete: () => {
+                clearInterval(interval);
+            },
+            onSuccess: (wasm) => {
+                lds_ring.style.display = "none";
+                lds_bar.style.display = "none";
+                successul_load = true;
+            },
+            onFailure: (error) => {
+                console.error("Failed to load the app", error);
+                waiting_screen_message.innerText = "Quelque chose ne va pas...";
+                setTimeout(() => { window.location.reload(); }, 700);
             }
-        }, 250);
+        };
+        
+        import('/agenda/JS_FILE')
+            .then(module => {
+                init = module.default;
+            })
+            .then(() => {
+                return __trunkInitializer('/agenda/WASM_FILE', inlined_initializer);
+            })
+            .catch(error => {
+                inlined_initializer.onFailure(error);
+            });
     </script>
     <script>
         /* https://css-tricks.com/the-trick-to-viewport-units-on-mobile/#css-custom-properties-the-trick-to-correct-sizing */
