@@ -25,7 +25,7 @@
     <link data-trunk rel="inline" href="src/friends/friends.css" />
     <link data-trunk rel="inline" href="src/comment/comment.css" />
     <link data-trunk rel="inline" href="styles/waiting-screen.css" />
-    <link data-trunk rel="rust" data-integrity="none" />
+    <link data-trunk rel="rust" data-integrity="none" data-initializer="post-build.sh" data-wasm-no-import />
 
     <link data-trunk rel="copy-dir" href="images" />
     <script common_code="head">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
@@ -123,6 +123,45 @@
                 }, 9000);
             }
         }, 250);
+    </script>
+    <script>
+        var init;
+        var bindings;
+        
+        let inlined_initializer = {
+            onStart: () => {
+                console.log('Initialization started');
+            },
+            onProgress: ({current, total}) => {
+                // the progress while loading, will be called periodically.
+                // "current" will contain the number of bytes of the WASM already loaded
+                // "total" will either contain the total number of bytes expected for the WASM, or if the server did not provide
+                //   the content-length header it will contain 0.
+            },
+            onComplete: () => {
+                // called when the initialization is complete (successfully or failed)
+            },
+            onSuccess: (wasm) => {
+                // called when the initialization is completed successfully, receives the `wasm` instance
+            },
+            onFailure: (error) => {
+                // called when the initialization is completed with an error, receives the `error`
+            }
+        };
+        
+        import('/agenda/JS_FILE')
+            .then(module => {
+                console.log('module', module);
+                init = module.default;
+                console.log('init', init);
+            })
+            .then((/*[_, bindings]*/) => {
+                window.wasmBindings = bindings;
+                return __trunkInitializer('/agenda/WASM_FILE', inlined_initializer);
+            })
+            .catch(error => {
+                inlined_initializer.onFailure(error);
+            });
     </script>
     <script>
         /* https://css-tricks.com/the-trick-to-viewport-units-on-mobile/#css-custom-properties-the-trick-to-correct-sizing */
