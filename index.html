@@ -112,6 +112,7 @@
         }
 
         var interval;
+        var successul_load = false;
         let inlined_initializer = {
             onStart: () => {
                 waiting_screen.style.opacity = "1";
@@ -145,8 +146,12 @@
             onSuccess: (wasm) => {
                 lds_ring.style.display = "none";
                 lds_bar.style.display = "none";
+                successul_load = true;
             },
             onFailure: (error) => {
+                if (successul_load) {
+                    return;
+                }
                 console.error("Failed to load the app", error);
                 waiting_screen_message.innerText = "Quelque chose ne va pas...";
                 setTimeout(() => { window.location.reload(); }, 700);
