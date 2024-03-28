@@ -39,7 +39,7 @@ wasm_file=$(ls $TRUNK_STAGING_DIR | grep 'web-app-[a-zA-Z0-9]*_bg\.wasm$')
 replace "JS_FILE" $js_file
 replace "WASM_FILE" $wasm_file
 replace "<script type=\"module\">" "<script>"
+replace "Content-Length" "X-Content-Length"
 comment_out "import init from"
 comment_out "import initializer from"
 comment_out "await __trunkInitializer"
-
