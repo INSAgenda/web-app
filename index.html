@@ -141,7 +141,7 @@
                 }
             },
             onComplete: () => {
-                interval.clearInterval();
+                clearInterval(interval);
             },
             onSuccess: (wasm) => {
                 lds_ring.style.display = "none";
