@@ -21,8 +21,6 @@ mod crash_handler;
 mod popup;
 #[path = "checkbox/checkbox.rs"]
 mod checkbox;
-#[path = "sortable/sortable.rs"]
-mod sortable;
 #[path = "tabbar/tabbar.rs"]
 mod tabbar;
 #[path = "friends/friends.rs"]
@@ -87,8 +85,7 @@ pub enum Msg {
     CommentCountsSuccess(CommentCounts),
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
-    ScheduleFailure(ApiError),
-    WiFiSuccess(WifiSettings),
+    ScheduleFailure(ApiError)
 }
 
 /// Methods for backward compatibility
@@ -114,8 +111,6 @@ pub struct App {
     seen_comment_counts: Rc<CommentCounts>,
     tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
-    wifi_ssid : Rc<Option<String>>,
-    wifi_password : Rc<Option<String>>,
     event_closing: bool,
     event_popup_size: Option<usize>,
     iframe: web_sys::Element,
@@ -156,7 +151,6 @@ impl Component for App {
         let friends = CachedData::init(ctx.link().clone());
         let friends_events = FriendsEvents::init();
         let comment_counts = CachedData::init(ctx.link().clone()).unwrap_or_default();
-        let wifi_settings: Option<WifiSettings> = CachedData::init(ctx.link().clone());
 
         // Load seen comment counts
         let local_storage = window().local_storage().unwrap().unwrap();
@@ -214,8 +208,6 @@ impl Component for App {
             friends: Rc::new(friends),
             friends_events,
             comment_counts: Rc::new(comment_counts),
-            wifi_ssid: Rc::new(wifi_settings.as_ref().map(|w: &WifiSettings| w.ssid.clone())),
-            wifi_password: Rc::new(wifi_settings.map(|w| w.password)),
             seen_comment_counts,
             tabbar_bait_points,
             page,
@@ -276,13 +268,6 @@ impl Component for App {
             Msg::CommentCountsSuccess(comment_counts) => {
                 self.comment_counts = Rc::new(comment_counts);
                 matches!(self.page, Page::Agenda)
-            }
-            Msg::WiFiSuccess(wifi_settings) => {
-                self.wifi_ssid = Rc::new(Some(wifi_settings.ssid));
-                self.wifi_password = Rc::new(Some(wifi_settings.password));
-                //matches!(self.page, Page::Notifications)
-                // TODO: find out where it's going to be
-                false
             },
             AppMsg::ScheduleFailure(api_error) => {
                 api_error.handle_api_error();

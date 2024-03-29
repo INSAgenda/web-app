@@ -55,7 +55,7 @@ impl FriendsEvents {
         
         // Save to local storage
         let local_storage = window().local_storage().unwrap().unwrap();
-        let events = records.into_iter().map(|(id, (time, events))| (id, (time, events))).collect::<HashMap<i64, (u64, Vec<RawEvent>)>>();
+        let events = records.into_iter().collect::<HashMap<i64, (u64, Vec<RawEvent>)>>();
         local_storage.set("cached_friends_events", &serde_json::to_string(&events).unwrap()).unwrap();
     }
 
