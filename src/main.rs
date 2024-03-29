@@ -19,8 +19,6 @@ mod calendar;
 mod crash_handler;
 #[path ="popup/popup.rs"]
 mod popup;
-#[path = "survey/survey.rs"]
-mod survey;
 #[path = "checkbox/checkbox.rs"]
 mod checkbox;
 #[path = "sortable/sortable.rs"]
@@ -56,7 +54,6 @@ pub enum Page {
     FriendAgenda { pseudo: String },
     Mastodon,
     Event { eid: String },
-    Survey { sid: String },
     Rick,
 }
 
@@ -68,7 +65,6 @@ impl Page {
             Page::Friends => (String::from("friends"), "Friends"),
             Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
             Page::Mastodon => (String::from("mastodon"), "Mastodon"),
-            Page::Survey { sid } => (format!("survey/{sid}"), "Survey"),
             Page::Event { eid } => (format!("event/{eid}"), "Event"),
             Page::Rick => (String::from("r"), "Rick"),
         }
@@ -80,7 +76,6 @@ pub enum Msg {
     /// Switch page
     SetPage { page: Page, silent: bool },
     FetchColors(HashMap<String, String>),
-    SaveSurveyAnswer(SurveyAnswers),
     UpdateFriends(FriendLists),
     MarkCommentsAsSeen(String),
     MastodonNotification,
@@ -92,7 +87,6 @@ pub enum Msg {
     CommentCountsSuccess(CommentCounts),
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
-    SurveysSuccess(Vec<Survey>, Vec<SurveyAnswers>),
     ScheduleFailure(ApiError),
     WiFiSuccess(WifiSettings),
 }
@@ -118,8 +112,6 @@ pub struct App {
     friends_events: FriendsEvents,
     comment_counts: Rc<CommentCounts>,
     seen_comment_counts: Rc<CommentCounts>,
-    surveys: Vec<Survey>,
-    survey_answers: Vec<SurveyAnswers>,
     tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
     wifi_ssid : Rc<Option<String>>,
@@ -150,7 +142,6 @@ impl Component for App {
                     let eid = event[6..].to_string();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
                 }
-                Some(survey) if survey.starts_with("survey/") => link2.send_message(Msg::SilentSetPage(Page::Survey { sid: survey[7..].to_string() })),
                 Some(agenda) if agenda.starts_with("friend-agenda/") => link2.send_message(Msg::SilentSetPage(Page::FriendAgenda { pseudo: agenda[14..].to_string() })),
                 _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 _ => alert(format!("Unknown pop state: {:?}", e.state())),
@@ -165,10 +156,7 @@ impl Component for App {
         let friends = CachedData::init(ctx.link().clone());
         let friends_events = FriendsEvents::init();
         let comment_counts = CachedData::init(ctx.link().clone()).unwrap_or_default();
-        let survey_response: SurveyResponse = CachedData::init(ctx.link().clone()).unwrap_or_default();
         let wifi_settings: Option<WifiSettings> = CachedData::init(ctx.link().clone());
-        let surveys = survey_response.surveys;
-        let survey_answers = survey_response.my_answers;
 
         // Load seen comment counts
         let local_storage = window().local_storage().unwrap().unwrap();
@@ -194,11 +182,9 @@ impl Component for App {
                 });
                 Page::Agenda
             }
-            survey if survey.starts_with("/survey/") => Page::Survey { sid: survey[8..].to_string() },
             friend_agenda if friend_agenda.starts_with("/friend-agenda/") => Page::FriendAgenda { pseudo: friend_agenda[15..].to_string() },
             "/agenda" => match window().location().hash() { // For compatibility with old links
                 Ok(hash) if hash == "#settings" => Page::Settings,
-                Ok(hash) if hash.starts_with("#survey-") => Page::Survey { sid: hash[8..].to_string() },
                 Ok(hash) if hash.is_empty() => Page::Agenda,
                 Ok(hash) => {
                     alert(format!("Page {hash} not found"));
@@ -212,21 +198,11 @@ impl Component for App {
             }
         };
 
-        // Open survey if one is available and required
-        if window().navigator().on_line() { // temporary
-            let now = now();
-            if let Some(survey_to_open) = surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now) {
-                if !survey_answers.iter().any(|a| a.id == survey_to_open.id) {
-                    ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey_to_open.id.clone() }));
-                }
-            }
-        }
-
         // Set TabBar bait points
         let tabbar_bait_points = (
             false,
             friends.as_ref().map(|f: &FriendLists| !f.incoming.is_empty()).unwrap_or(false),
-            false, // TODO
+            false,
             false
         );
 
@@ -241,8 +217,6 @@ impl Component for App {
             wifi_ssid: Rc::new(wifi_settings.as_ref().map(|w: &WifiSettings| w.ssid.clone())),
             wifi_password: Rc::new(wifi_settings.map(|w| w.password)),
             seen_comment_counts,
-            surveys,
-            survey_answers,
             tabbar_bait_points,
             page,
             event_closing: false,
@@ -273,32 +247,10 @@ impl Component for App {
                 self.friends_events.insert(uid, events);
                 matches!(self.page, Page::FriendAgenda { .. } )
             },
-            AppMsg::SurveysSuccess(surveys, survey_answers) => {
-                self.surveys = surveys;
-                self.survey_answers = survey_answers;
-
-                // Automatically open survey if one is available and required
-                let now = now();
-                if let Some(survey) = self.surveys.iter().find(|s| s.required && s.start_ts <= now && s.end_ts >= now && !self.survey_answers.iter().any(|a| a.id == s.id)) {
-                    ctx.link().send_message(Msg::SetPage(Page::Survey { sid: survey.id.clone() }));
-                }
-                
-                matches!(self.page, Page::Survey { .. }) || self.tabbar_bait_points.2
-            },
             AppMsg::ScheduleSuccess(events) => {
                 self.events = Rc::new(events);
                 matches!(self.page, Page::Agenda | Page::Event { .. })
             },
-            AppMsg::SaveSurveyAnswer(answers) => {
-                self.survey_answers.retain(|s| s.id != answers.id);
-                self.survey_answers.push(answers);
-                let to_save = SurveyResponse {
-                    surveys: self.surveys.clone(),
-                    my_answers: self.survey_answers.clone(),
-                };
-                to_save.save();
-                false
-            }
             Msg::UserInfoSuccess(user_info) => {
                 let mut should_refresh = false;
 
@@ -508,17 +460,6 @@ impl Component for App {
                 <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
-            Page::Survey { sid } => {
-                let survey = match self.surveys.iter().find(|s| s.id == *sid) {
-                    Some(s) => s,
-                    None => {
-                        redirect("/agenda");
-                        return html!();
-                    }
-                };
-                let answers = self.survey_answers.iter().find(|s| s.id == *sid).map(|a| a.answers.to_owned());
-                html!(<SurveyComp survey={survey.clone()} answers={answers} app_link={ctx.link().clone()} />)
-            },
             Page::Rick => {
                 let random = js_sys::Math::random();
                 let rick = if random > 0.1 {"rick1"} else {"rick2"};
