@@ -36,7 +36,7 @@
     display: none;
 }
 
-:root[data-theme="dark"] .tabbar-not-selected>img:nth-child(2) {
+:root[data-theme="dark"] .tabbar-not-selected>img:nth-child(2), :root[data-theme="insarcade"] .tabbar-not-selected>img:nth-child(2), :root[data-theme="moyeninsage"] .tabbar-not-selected>img:nth-child(2) {
     filter: invert(1);
 }
 

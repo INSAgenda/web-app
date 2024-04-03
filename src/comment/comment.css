@@ -74,7 +74,7 @@
 .comment-button:active {
     background-color: #ddd;
 }
-:root[data-theme="dark"] .comment-button:active {
+:root[data-theme="dark"] .comment-button:active, :root[data-theme="insarcade"] .comment-button:active, :root[data-theme="moyeninsage"] .comment-button:active {
     background-color: #444;
 }
 @media (min-width: 1000px) {

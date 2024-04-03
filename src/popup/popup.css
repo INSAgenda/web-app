@@ -115,20 +115,20 @@
 
 /* Dark theme */
 
-:root[data-theme="dark"] #popup-header, :root[data-theme="dark"] #popup {
+:root[data-theme="dark"] #popup-header, :root[data-theme="dark"] #popup, :root[data-theme="insarcade"] #popup-header, :root[data-theme="insarcade"] #popup, :root[data-theme="moyeninsage"] #popup-header, :root[data-theme="moyeninsage"] #popup {
     border-top: 1px solid #555;
     border-bottom: 1px solid #555;
     box-shadow: unset;
 }
 
 @media screen and (min-width: 1001px) {
-    :root[data-theme="dark"] #popup {
+    :root[data-theme="dark"] #popup, :root[data-theme="insarcade"] #popup, :root[data-theme="moyeninsage"] #popup {
         box-sizing: border-box;
         border-left: #555 solid 1px;
     }
 }
 
-:root[data-theme="dark"] #popup-header img {
+:root[data-theme="dark"] #popup-header img, :root[data-theme="insarcade"] #popup-header img, :root[data-theme="moyeninsage"] #popup-header img {
     filter: invert(1);
 }
 

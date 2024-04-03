@@ -120,11 +120,3 @@
         transition: opacity .5s ease;
     }
 }
-
-:root[data-theme="dark"] .hide-dark {
-    display: none;
-}
-
-:root[data-theme="light"] .hide-light {
-    display: none;
-}

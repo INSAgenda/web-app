@@ -6,6 +6,9 @@ lazy_static::lazy_static!{
         let theme = match local_storage.get_item("setting-theme").unwrap() {
             Some(theme) if theme == "dark" => 0,
             Some(theme) if theme == "light" => 1,
+            Some(theme) if theme == "insarcade" => 3,
+            Some(theme) if theme == "moyeninsage" => 4,
+            Some(theme) if theme == "random" => 5,
             _ => 2,
         };
         let lang = match local_storage.get_item("setting-lang").unwrap() {
@@ -48,6 +51,9 @@ pub enum Theme {
     Dark = 0,
     Light,
     System,
+    Insarcade,
+    MoyenInsage,
+    Random,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -74,6 +80,9 @@ impl SettingStore {
             0 => Theme::Dark,
             1 => Theme::Light,
             2 => Theme::System,
+            3 => Theme::Insarcade,
+            4 => Theme::MoyenInsage,
+            5 => Theme::Random,
             _ => unreachable!(),
         }
     }
@@ -85,6 +94,9 @@ impl SettingStore {
             0 => "dark",
             1 => "light",
             2 => "system",
+            3 => "insarcade",
+            4 => "moyeninsage",
+            5 => "random",
             _ => unreachable!(),
         };
 
@@ -228,6 +240,9 @@ impl Component for SettingsPage {
                     0 => "dark",
                     1 => "light",
                     2 => "system",
+                    3 => "insarcade",
+                    4 => "moyeninsage",
+                    5 => "random",
                     _ => unreachable!(),
                 };
 
@@ -243,7 +258,7 @@ impl Component for SettingsPage {
                     html.set_attribute("data-theme", theme).unwrap();
                     storage.set_item("setting-theme", theme).unwrap();
                 }
-                                
+                
                 true
             }
             Msg::LogOut => {
@@ -291,7 +306,7 @@ impl Component for SettingsPage {
 
         let theme_glider_selector = html! {
             <GliderSelector
-                values = { vec![t("Sombre"), t("Clair"), t("Système")] }
+                values = { vec![t("Sombre"), t("Clair"), t("Système"), "Ins'arcade", "Moyen InsAge", "Aléatoire"] }
                 on_change = { ctx.link().callback(Msg::ThemeChange) }
                 selected = { SETTINGS.theme() as usize } />
         };
