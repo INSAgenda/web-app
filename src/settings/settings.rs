@@ -47,6 +47,7 @@ lazy_static::lazy_static!{
     };
 }
 
+#[derive(PartialEq, Eq, Debug)]
 pub enum Theme {
     Dark = 0,
     Light,

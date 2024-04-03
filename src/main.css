@@ -4,7 +4,7 @@
     --border-color: #aaa;
 }
 
-:root[data-theme="dark"], :root[data-theme="insarcade"], :root[data-theme="moyeninsage"] {
+:root[data-theme="dark"], :root[data-theme="insarcade"] {
     --border-color: #666;
 }
 
@@ -122,7 +122,7 @@ body {
 
 /* Misc */
 
-:root[data-theme="dark"] .invert-when-dark, :root[data-theme="insarcade"] .invert-when-dark, :root[data-theme="moyeninsage"] .invert-when-dark {
+:root[data-theme="dark"] .invert-when-dark, :root[data-theme="insarcade"] .invert-when-dark {
     filter: invert(1);
 }
 

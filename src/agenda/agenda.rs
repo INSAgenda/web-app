@@ -343,6 +343,7 @@ impl Component for Agenda {
             onclick_previous = {ctx.link().callback(|_| AgendaMsg::Previous)},
             onclick_next = {ctx.link().callback(|_| AgendaMsg::Next)},
             republican = {SETTINGS.calendar() == CalendarKind::Republican},
+            moyeninsage = {SETTINGS.theme() == Theme::MoyenInsage},
             ...
         )
     }

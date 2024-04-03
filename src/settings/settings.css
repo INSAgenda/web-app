@@ -73,7 +73,7 @@
 .setting {
     padding: 1.5rem;
     min-height: 6.5rem;
-    overflow-x: scroll;
+    overflow-x: auto;
 }
 
 .setting:nth-child(1) .glider-selector {
