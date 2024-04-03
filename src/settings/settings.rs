@@ -23,11 +23,13 @@ lazy_static::lazy_static!{
             Some(theme) if theme == "random" => (random_theme(), true),
             _ => (Theme::System, false),
         };
+        let mut update_theme = randomly_selected;
         if (theme == Theme::Insarcade || theme == Theme::MoyenInsage) && (1712268000..=1712268000+86400).contains(&now()) {
             theme = Theme::Light;
+            update_theme = true;
         }
 
-        if randomly_selected {
+        if update_theme {
             let window = window();
             let doc = window.doc();
             let html = doc.first_element_child().unwrap();
