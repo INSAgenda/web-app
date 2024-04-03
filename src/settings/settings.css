@@ -35,6 +35,11 @@
 
 /* Containers */
 
+#settings-main {
+    overflow-y: auto;
+    max-height: calc(100% - 4rem);
+}
+
 #settings-container  {
     display: flex;
     justify-content: center;
@@ -103,7 +108,14 @@
     margin: 1.2rem auto;
 }
 
-@media all and (max-width: 800px){
+@media all and (max-width: 1000px) {
+    #settings-main {
+        max-height: unset;
+        overflow-y: unset;
+    }
+}
+
+@media all and (max-width: 800px) {
     .settings-group {
         align-items: center;
     }
