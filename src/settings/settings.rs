@@ -15,7 +15,7 @@ fn random_theme() -> Theme {
 lazy_static::lazy_static!{
     pub static ref SETTINGS: SettingStore = {
         let local_storage = window().local_storage().unwrap().unwrap();
-        let (theme, randomly_selected) = match local_storage.get_item("setting-theme").unwrap() {
+        let (mut theme, randomly_selected) = match local_storage.get_item("setting-theme").unwrap() {
             Some(theme) if theme == "dark" => (Theme::Dark, false),
             Some(theme) if theme == "light" => (Theme::Light, false),
             Some(theme) if theme == "insarcade" => (Theme::Insarcade, false),
@@ -23,6 +23,9 @@ lazy_static::lazy_static!{
             Some(theme) if theme == "random" => (random_theme(), true),
             _ => (Theme::System, false),
         };
+        if (theme == Theme::Insarcade || theme == Theme::MoyenInsage) && (1712268000..=1712268000+86400).contains(&now()) {
+            theme = Theme::Light;
+        }
 
         if randomly_selected {
             let window = window();
