@@ -19,88 +19,92 @@
     box-shadow: 0 .5rem .5rem rgba(0, 0, 0, 0.1);
 }
 
+/* Insarcade theme */
+
 :root[data-theme="insarcade"] {
     --background: #010101;
     --closer-background: #320055;
     --text: var(--light-text);
     --day: #220077cc;
-
-    & #agenda-main::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0.5;
-        background: url(/agenda/images/insarcade-background.png);
-        background-origin: border-box;
-        background-repeat: no-repeat;
-        background-position: center;
-        z-index: -1;
-    }
-    
-    & .day {
-        border: 2px solid #ff00dd77;
-        box-sizing: border-box;
-    }
 }
+
+:root[data-theme="insarcade"] #agenda-main::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+    background: url(/agenda/images/insarcade-background.png);
+    background-origin: border-box;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: -1;
+}
+
+:root[data-theme="insarcade"] .day {
+    border: 2px solid #ff00dd77;
+    box-sizing: border-box;
+}
+
+/* Moyen Insage theme */
 
 :root[data-theme="moyeninsage"] {
     --background: #e4e0cc;
     --closer-background: white;
     --day: #ffffff77;
+}
 
-    & body {
-        background-image: url(/agenda/images/moyeninsage-background2.jpg);
-    }
+:root[data-theme="moyeninsage"] body {
+    background-image: url(/agenda/images/moyeninsage-background2.jpg);
+}
 
-    & #agenda-main {
-        position: relative;
-    }
+:root[data-theme="moyeninsage"] #agenda-main {
+    position: relative;
+}
 
-    & #agenda-top > span {
-    	width: fit-content;
-        height: fit-content;
-        padding: 0 2px;
-        background-color: var(--closer-background);
-        z-index: 1;
-        border-radius: 2px;
-    }
+:root[data-theme="moyeninsage"] #agenda-top > span {
+    width: fit-content;
+    height: fit-content;
+    padding: 0 2px;
+    background-color: var(--closer-background);
+    z-index: 1;
+    border-radius: 2px;
+}
 
-    & .corner-image {
-        position: absolute;
-        width: 50%;
-        max-height: 50%;
-        aspect-ratio: 1 / 1;
-        background-size: contain;
-        background-repeat: no-repeat;
-    }
+:root[data-theme="moyeninsage"] .corner-image {
+    position: absolute;
+    width: 50%;
+    max-height: 50%;
+    aspect-ratio: 1 / 1;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
 
-    & .corner-image.top-left {
-        background-image: url('/agenda/images/moyeninsage-background.png');
-        top: 0;
-        left: 0;
-    }
+:root[data-theme="moyeninsage"] .corner-image.top-left {
+    background-image: url('/agenda/images/moyeninsage-background.png');
+    top: 0;
+    left: 0;
+}
 
-    & .corner-image.top-right {
-        background-image: url('/agenda/images/moyeninsage-background.png');
-        transform: scaleX(-1);
-        top: 0;
-        right: 0;
-    }
+:root[data-theme="moyeninsage"] .corner-image.top-right {
+    background-image: url('/agenda/images/moyeninsage-background.png');
+    transform: scaleX(-1);
+    top: 0;
+    right: 0;
+}
 
-    & .corner-image.bottom-left {
-        background-image: url('/agenda/images/moyeninsage-background.png');
-        transform: scaleY(-1);
-        bottom: 0;
-        left: 0;
-    }
+:root[data-theme="moyeninsage"] .corner-image.bottom-left {
+    background-image: url('/agenda/images/moyeninsage-background.png');
+    transform: scaleY(-1);
+    bottom: 0;
+    left: 0;
+}
 
-    & .corner-image.bottom-right {
-        background-image: url('/agenda/images/moyeninsage-background.png');
-        transform: rotate(180deg);
-        bottom: 0;
-        right: 0;
-    }
+:root[data-theme="moyeninsage"] .corner-image.bottom-right {
+    background-image: url('/agenda/images/moyeninsage-background.png');
+    transform: rotate(180deg);
+    bottom: 0;
+    right: 0;
 }
