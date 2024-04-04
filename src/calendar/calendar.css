@@ -43,11 +43,6 @@
     align-items: center;
 }
 
-#open-calendar-halving-countdown {
-    font-size: 1rem;
-    color: orange;
-}
-
 #calendar-days {
     display: flex;
     justify-content: space-around;

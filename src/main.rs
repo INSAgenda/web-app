@@ -29,6 +29,8 @@ mod friends;
 mod comment;
 #[path = "mastodon/mastodon.rs"]
 mod mastodon;
+#[path = "halving/halving.rs"]
+mod halving;
 
 mod util;
 mod slider;
