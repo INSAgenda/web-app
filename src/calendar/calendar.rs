@@ -1,4 +1,4 @@
-use crate::{prelude::*, slider::width};
+use crate::{halving::HalvingCountdown, prelude::*, slider::width};
 
 #[derive(Clone, Properties)]
 pub struct CalendarProps {
@@ -179,11 +179,7 @@ impl Component for Calendar {
                 format!("{} {gregorian_display_month}", selected.day())
             )}
         };
-        let opt_halving_countdown = match 1713372180 - now() {
-            d if d < 0 => None,
-            d if d < 86400 => Some(String::from("The Halving is happening!!")),
-            d => Some(format!("Halving in {}", format_time_diff_with_lang(d, false).trim_end_matches(" ago"))),
-        };
+        let halving_countdown = html! { <HalvingCountdown /> };
 
         let mut week_iter = Vec::new();
         let mut cases_iter = Vec::new();
