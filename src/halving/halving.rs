@@ -17,7 +17,7 @@ impl Component for HalvingCountdown {
     type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
-        let remaining_seconds = 1713602880 - now();
+        let remaining_seconds = 1713560400 - now();
 
         let mut interval_handle = None;
         if remaining_seconds > -86400/2 {
