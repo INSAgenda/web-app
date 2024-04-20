@@ -33,7 +33,7 @@ impl Component for HalvingCountdown {
             remaining_seconds,
             elapsed_seconds: 0,
             interval_handle,
-            emoji: match remaining_seconds % 5 {
+            emoji: match (remaining_seconds % 5).abs() {
                 0 => '🎉',
                 1 => '🚀',
                 2 => '🔥',
@@ -41,7 +41,7 @@ impl Component for HalvingCountdown {
                 4 => '💎',
                 _ => unreachable!(),
             },
-            message: match remaining_seconds % 3 {
+            message: match (remaining_seconds % 3).abs() {
                 0 => "Vires In Numeris",
                 1 => "We are all Satoshi",
                 2 => "Don't trust, verify",
