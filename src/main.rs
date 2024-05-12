@@ -72,7 +72,7 @@ impl Page {
             Page::Mastodon => (String::from("mastodon"), "Mastodon"),
             Page::Event { eid } => (format!("event/{eid}"), "Event"),
             Page::Rick => (String::from("r"), "Rick"),
-            Page::PixelWar => (String::from("pixel-war"), "PixelWar"),
+            Page::PixelWar => (String::from("pixel-war"), "Pixel War"),
         }
     }
 }
@@ -93,7 +93,8 @@ pub enum Msg {
     CommentCountsSuccess(CommentCounts),
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
-    ScheduleFailure(ApiError)
+    ScheduleFailure(ApiError),
+    SetPixelLockedState(bool),
 }
 
 /// Methods for backward compatibility
@@ -393,7 +394,7 @@ impl Component for App {
                 let local_storage = window().local_storage().unwrap().unwrap();
                 let _ = local_storage.set("seen_comment_counts", &serde_json::to_string(&self.seen_comment_counts.deref()).unwrap());
                 true
-            }
+            },
             AppMsg::MastodonNotification => {
                 if matches!(self.page, Page::Mastodon) {
                     mastodon_mark_all_seen();
@@ -402,7 +403,12 @@ impl Component for App {
                     self.tabbar_bait_points.2 = true;
                     true
                 }
-            }
+            },
+            AppMsg::SetPixelLockedState(pixel_locked) => {
+                let should_refresh = self.pixel_locked != pixel_locked;
+                self.pixel_locked = pixel_locked;
+                should_refresh
+            },
         }
     }
     
