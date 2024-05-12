@@ -5,7 +5,7 @@ pub struct TabBar {}
 #[derive(Clone, Properties)]
 pub struct TabBarProps {
     pub app_link: AppLink,
-    pub bait_points: (bool, bool, bool, bool),
+    pub bait_points: (bool, bool, bool, bool, bool),
     pub page: Page,
 }
 
@@ -41,6 +41,10 @@ impl Component for TabBar {
         let onclick_settings = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings));
         let mut settings_classes = String::from(if matches!(page, Page::Settings) {"tabbar-selected"} else {"tabbar-not-selected"});
         if ctx.props().bait_points.3 { settings_classes.push_str(" tabbar-with-bait"); }
+
+        let onclick_pixelwar = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::PixelWar));
+        let mut pixelwar_classes = String::from(if matches!(page, Page::PixelWar) {"tabbar-selected"} else {"tabbar-not-selected"});
+        if ctx.props().bait_points.3 { pixelwar_classes.push_str(" tabbar-with-bait"); }
 
         template_html!("src/tabbar/tabbar.html", ...)
     }

@@ -32,6 +32,9 @@ mod mastodon;
 #[path = "halving/halving.rs"]
 mod halving;
 
+#[path ="pixelwar/pixelwar.rs"]
+mod pixelwar;
+
 mod util;
 mod slider;
 mod api;
@@ -55,6 +58,7 @@ pub enum Page {
     Mastodon,
     Event { eid: String },
     Rick,
+    PixelWar,
 }
 
 impl Page {
@@ -67,6 +71,7 @@ impl Page {
             Page::Mastodon => (String::from("mastodon"), "Mastodon"),
             Page::Event { eid } => (format!("event/{eid}"), "Event"),
             Page::Rick => (String::from("r"), "Rick"),
+            Page::PixelWar => (String::from("pixel-war"), "PixelWar"),
         }
     }
 }
@@ -111,7 +116,7 @@ pub struct App {
     friends_events: FriendsEvents,
     comment_counts: Rc<CommentCounts>,
     seen_comment_counts: Rc<CommentCounts>,
-    tabbar_bait_points: (bool, bool, bool, bool),
+    tabbar_bait_points: (bool, bool, bool, bool, bool),
     page: Page,
     event_closing: bool,
     event_popup_size: Option<usize>,
@@ -135,6 +140,7 @@ impl Component for App {
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("mastodon") => link2.send_message(Msg::SilentSetPage(Page::Mastodon)),
                 Some("r") => link2.send_message(Msg::SilentSetPage(Page::Rick)),
+                Some("pixelwar") => link2.send_message(Msg::SilentSetPage(Page::PixelWar)),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].to_string();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -179,6 +185,7 @@ impl Component for App {
                 Page::Agenda
             }
             friend_agenda if friend_agenda.starts_with("/friend-agenda/") => Page::FriendAgenda { pseudo: friend_agenda[15..].to_string() },
+            "/pixel-war" => Page::PixelWar,
             "/agenda" => match window().location().hash() { // For compatibility with old links
                 Ok(hash) if hash == "#settings" => Page::Settings,
                 Ok(hash) if hash.is_empty() => Page::Agenda,
@@ -199,7 +206,8 @@ impl Component for App {
             false,
             friends.as_ref().map(|f: &FriendLists| !f.incoming.is_empty()).unwrap_or(false),
             false,
-            false
+            false,
+            false,
         );
 
         let iframe = init_mastodon(&page, ctx.link().clone());
@@ -294,6 +302,7 @@ impl Component for App {
                         }
                     },
                     Page::Settings => self.tabbar_bait_points.3 = false,
+                    Page::PixelWar => self.tabbar_bait_points.4 = false,
                     _ => (),
                 }
 
@@ -453,6 +462,11 @@ impl Component for App {
                 let raw_html = format!(r#"<video class="rick" autoplay src="/assets/{rick}.mp4" style="width: 100%;">Never gonna give you up</video>"#);
                 VNode::from_html_unchecked(raw_html.into())
             },
+            Page::PixelWar => html!(<>
+                <PixelWar app_link={ctx.link().clone()} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            </>),
+
         }
     }
 }
