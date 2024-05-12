@@ -43,6 +43,7 @@ mod translation;
 mod colors;
 
 use mastodon::{init_mastodon, mastodon_mark_all_seen};
+use pixelwar::init_pixelwar;
 use slider::width;
 use yew::virtual_dom::VNode;
 
@@ -121,6 +122,7 @@ pub struct App {
     event_closing: bool,
     event_popup_size: Option<usize>,
     iframe: web_sys::Element,
+    pixel_war_iframe: web_sys::Element,
 }
 
 impl Component for App {
@@ -211,7 +213,7 @@ impl Component for App {
         );
 
         let iframe = init_mastodon(&page, ctx.link().clone());
-
+        let pixel_war_iframe = init_pixelwar(&page, ctx.link().clone());
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
@@ -224,6 +226,7 @@ impl Component for App {
             event_closing: false,
             event_popup_size: None,
             iframe,
+            pixel_war_iframe,
         }
     }
 
@@ -311,6 +314,13 @@ impl Component for App {
                     self.iframe.set_attribute("style", "display: none").unwrap();
                 } else if !matches!(self.page, Page::Mastodon) && matches!(page, Page::Mastodon)  { // on
                     self.iframe.remove_attribute("style").unwrap();
+                }
+                
+                // Change the display of the PixelWar iframe when the user switches on or off the PixelWar page
+                if matches!(self.page, Page::PixelWar) && !matches!(page, Page::PixelWar) { // off
+                    self.pixel_war_iframe.set_attribute("style", "display: none").unwrap();
+                } else if !matches!(self.page, Page::PixelWar) && matches!(page, Page::PixelWar)  { // on
+                    self.pixel_war_iframe.remove_attribute("style").unwrap();
                 }
 
                 // FIXME TODO
@@ -463,7 +473,6 @@ impl Component for App {
                 VNode::from_html_unchecked(raw_html.into())
             },
             Page::PixelWar => html!(<>
-                <PixelWar app_link={ctx.link().clone()} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
 

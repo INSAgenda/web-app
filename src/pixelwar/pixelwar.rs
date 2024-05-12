@@ -4,8 +4,8 @@ use crate::prelude::*;
 pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
     // Start loading the iframe so that it is ready when the user clicks on the tab
     let iframe = window().doc().create_element("iframe").unwrap();
-    iframe.set_attribute("id", "pixelwar-iframe").unwrap();
-    iframe.set_attribute("src", "https://pixelwar.insa.lol/").unwrap();
+    iframe.set_attribute("id", "insaplace-iframe").unwrap();
+    iframe.set_attribute("src", "https://insaplace.insa.lol/").unwrap();
     window().doc().body().unwrap().append_child(&iframe).unwrap();
     if !matches!(page, Page::PixelWar) {
         iframe.set_attribute("style", "display: none").unwrap();
@@ -16,7 +16,7 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                 return;
             }
 
-            if e.origin() != "https://pixelwar.insa.lol/" {
+            if e.origin() != "https://insaplace.insa.lol/" {
                 log!("Received message from unknown origin {e:?}");
             }
         }) as Box<dyn FnMut(_)>);
