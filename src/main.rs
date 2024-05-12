@@ -123,6 +123,7 @@ pub struct App {
     event_popup_size: Option<usize>,
     iframe: web_sys::Element,
     pixel_war_iframe: web_sys::Element,
+    pixel_locked: bool,
 }
 
 impl Component for App {
@@ -227,6 +228,7 @@ impl Component for App {
             event_popup_size: None,
             iframe,
             pixel_war_iframe,
+            pixel_locked: true,
         }
     }
 
@@ -294,6 +296,11 @@ impl Component for App {
                 false
             },
             Msg::SetPage { page, silent } => {
+                if self.pixel_locked && !(matches!(page, Page::PixelWar) || matches!(page, Page::Settings)) {
+                    alert("Vous devez d'abord poser votre pixel pour accéder à cette page.");
+                    return false;
+                }
+
                 // Remove bait points
                 match page {
                     Page::Agenda => self.tabbar_bait_points.0 = false,
@@ -405,7 +412,7 @@ impl Component for App {
     
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
-            Page::Agenda => html!(<>
+            Page::Agenda if !self.pixel_locked => html!(<>
                 <Agenda
                     events={Rc::clone(&self.events)}
                     app_link={ctx.link().clone()}
@@ -415,7 +422,7 @@ impl Component for App {
                     seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
-            Page::Event { eid } => {
+            Page::Event { eid } if !self.pixel_locked  => {
                 let event = match self.events.iter().find(|e| e.eid == *eid) {
                     Some(event) => event.to_owned(),
                     None => {
@@ -435,11 +442,11 @@ impl Component for App {
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
-            Page::Friends => html!(<>
+            Page::Friends if !self.pixel_locked => html!(<>
                 <FriendsPage friends={Rc::clone(&self.friends)} app_link={ctx.link().clone()} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
-            Page::FriendAgenda { pseudo } => {
+            Page::FriendAgenda { pseudo } if !self.pixel_locked  => {
                 let email = format!("{pseudo}@insa-rouen.fr");
                 let uid = match self.friends.deref().as_ref().and_then(|f| f.friends.iter().find(|f| f.0.email == *email)) {
                     Some(f) => f.0.uid,
@@ -459,12 +466,12 @@ impl Component for App {
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
-            Page::Mastodon => html!(<>
+            Page::Mastodon if !self.pixel_locked  => html!(<>
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Settings => html!(<>
                 <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} others_disabled={self.pixel_locked} />
             </>),
             Page::Rick => {
                 let random = js_sys::Math::random();
@@ -472,8 +479,8 @@ impl Component for App {
                 let raw_html = format!(r#"<video class="rick" autoplay src="/assets/{rick}.mp4" style="width: 100%;">Never gonna give you up</video>"#);
                 VNode::from_html_unchecked(raw_html.into())
             },
-            Page::PixelWar => html!(<>
-                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            _ => html!(<>
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} others_disabled={self.pixel_locked} />
             </>),
 
         }
