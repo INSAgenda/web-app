@@ -16,15 +16,49 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
     if !matches!(page, Page::PixelWar) {
         iframe.set_attribute("style", "display: none").unwrap();
         // Listen for message
-        let mut skip = false;
         let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
-            if skip {
-                return;
-            }
-
             if e.origin() != PIXELWAR_IFRAME_URL {
                 log!("Received message from unknown origin {e:?}");
             }
+
+            let data = e.data();
+            let data: js_sys::Object = match data.dyn_into::<js_sys::Object>() {
+                Ok(data) => data,
+                Err(_) => {
+                    log!("Received message from insaplace with invalid data");
+                    return;
+                }
+            };
+            let ty = match Reflect::get(&data, &JsValue::from_str("ty")) {
+                Ok(ty) => match ty.as_string() {
+                    Some(ty) => ty,
+                    None => {
+                        log!("Received message from insaplace with invalid type");
+                        return;
+                    }
+                }
+                Err(_) => {
+                    log!("Received message from insaplace without type");
+                    return;
+                }
+            };
+            let data = match Reflect::get(&data, &JsValue::from_str("data")) {
+                Ok(data) => data,
+                Err(_) => {
+                    log!("Received message from insaplace without data");
+                    return;
+                }
+            };
+
+            match ty.as_str() {
+                "cookies" => {
+                    todo!()
+                }
+                ty => {
+                    log!("Received message from insaplace with unknown type {ty}");
+                }
+            }
+
         }) as Box<dyn FnMut(_)>);
         window().add_event_listener_with_callback("message", on_message.as_ref().unchecked_ref()).unwrap();
         on_message.forget();
