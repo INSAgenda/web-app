@@ -18,7 +18,7 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
         // Listen for message
         let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
             if e.origin() != PIXELWAR_IFRAME_URL {
-                log!("Received message from unknown origin {e:?}");
+                log!("Received message from unknown origin {e:?} origin {}", e.origin());
             }
 
             let data = e.data();
