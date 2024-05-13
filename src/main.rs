@@ -229,7 +229,7 @@ impl Component for App {
             event_popup_size: None,
             iframe,
             pixel_war_iframe,
-            pixel_locked: true,
+            pixel_locked: false,
         }
     }
 
@@ -405,9 +405,10 @@ impl Component for App {
                 }
             },
             AppMsg::SetPixelLockedState(pixel_locked) => {
-                let should_refresh = self.pixel_locked != pixel_locked;
-                self.pixel_locked = pixel_locked;
-                should_refresh
+                //let should_refresh = self.pixel_locked != pixel_locked;
+                //self.pixel_locked = pixel_locked;
+                //should_refresh
+                false
             },
         }
     }
