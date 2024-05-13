@@ -118,28 +118,6 @@ impl CachedData for UserInfo {
     }
 }
 
-#[derive(Serialize, Deserialize, Default)]
-pub struct SurveyResponse {
-    pub surveys: Vec<Survey>,
-    pub my_answers: Vec<SurveyAnswers>,
-}
-
-impl CachedData for SurveyResponse {
-    fn storage_key() ->  &'static str { "surveys" }
-    fn endpoint() ->  &'static str { "/api/surveys" }
-    fn cache_duration() -> u64 { 3600*6 }
-    fn on_cache(&mut self) { self.surveys.sort_by_key(|e| e.start_ts); }
-    fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
-        match result {
-            Ok(mut val) => {
-                val.surveys.sort_by_key(|e| e.start_ts);
-                app_link.send_message(AppMsg::SurveysSuccess(val.surveys, val.my_answers));
-            },
-            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
-        }
-    }
-}
-
 impl CachedData for FriendLists {
     fn storage_key() ->  &'static str { "friends" }
     fn endpoint() ->  &'static str { "/api/friends/" }
@@ -161,26 +139,6 @@ impl CachedData for CommentCounts {
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
         match result {
             Ok(val) => app_link.send_message(AppMsg::CommentCountsSuccess(val)),
-            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize)]
-
-pub struct WifiSettings {
-    pub ssid: String,
-    pub password: String,
-}
-
-impl CachedData for WifiSettings {
-    fn storage_key() ->  &'static str { "wifi_settings" }
-    fn endpoint() ->  &'static str { "/api/get-wifi" }
-    fn cache_duration() -> u64 { 3600 }
-    fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
-        match result {
-            Ok(val) => app_link.send_message(AppMsg::WiFiSuccess(val)),
-            Err(ApiError::Known(e)) if e.kind == "wifi_credentials_not_set" => (),
             Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
         }
     }

@@ -1,13 +1,41 @@
+use std::sync::atomic::AtomicBool;
+
 use crate::prelude::*;
+
+fn random_theme() -> Theme {
+    let mut bytes = [0u8; 1];
+    getrandom::getrandom(&mut bytes).unwrap();
+    if bytes[0] <= 150 {
+        Theme::Insarcade
+    } else {
+        Theme::MoyenInsage
+    }
+}
 
 lazy_static::lazy_static!{
     pub static ref SETTINGS: SettingStore = {
         let local_storage = window().local_storage().unwrap().unwrap();
-        let theme = match local_storage.get_item("setting-theme").unwrap() {
-            Some(theme) if theme == "dark" => 0,
-            Some(theme) if theme == "light" => 1,
-            _ => 2,
+        let (mut theme, randomly_selected) = match local_storage.get_item("setting-theme").unwrap() {
+            Some(theme) if theme == "dark" => (Theme::Dark, false),
+            Some(theme) if theme == "light" => (Theme::Light, false),
+            Some(theme) if theme == "insarcade" => (Theme::Insarcade, false),
+            Some(theme) if theme == "moyeninsage" => (Theme::MoyenInsage, false),
+            Some(theme) if theme == "random" => (random_theme(), true),
+            _ => (Theme::System, false),
         };
+        let mut update_theme = randomly_selected;
+        if (theme == Theme::Insarcade || theme == Theme::MoyenInsage) && (1712268000..=1712268000+86400).contains(&now()) {
+            theme = Theme::Light;
+            update_theme = true;
+        }
+
+        if update_theme {
+            let window = window();
+            let doc = window.doc();
+            let html = doc.first_element_child().unwrap();
+            html.set_attribute("data-theme", theme.as_ref()).unwrap();
+        }
+
         let lang = match local_storage.get_item("setting-lang").unwrap() {
             Some(lang) if lang == "french" => 0,
             Some(lang) if lang == "english" => 1,
@@ -37,17 +65,35 @@ lazy_static::lazy_static!{
         };
 
         SettingStore {
-            theme: AtomicUsize::new(theme),
+            theme: AtomicUsize::new(theme as usize),
+            randomly_selected: AtomicBool::new(randomly_selected),
             lang: AtomicUsize::new(lang),
             calendar: AtomicUsize::new(calendar),
         }
     };
 }
 
+#[derive(PartialEq, Eq, Debug)]
 pub enum Theme {
     Dark = 0,
     Light,
     System,
+    Insarcade,
+    MoyenInsage,
+    Random,
+}
+
+impl AsRef<str> for Theme {
+    fn as_ref(&self) -> &str {
+        match self {
+            Theme::Dark => "dark",
+            Theme::Light => "light",
+            Theme::System => "system",
+            Theme::Insarcade => "insarcade",
+            Theme::MoyenInsage => "moyeninsage",
+            Theme::Random => "random",
+        }
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -64,6 +110,7 @@ pub enum CalendarKind {
 
 pub struct SettingStore {
     theme: AtomicUsize,
+    randomly_selected: AtomicBool,
     lang: AtomicUsize,
     calendar: AtomicUsize,
 }
@@ -74,8 +121,26 @@ impl SettingStore {
             0 => Theme::Dark,
             1 => Theme::Light,
             2 => Theme::System,
+            3 => Theme::Insarcade,
+            4 => Theme::MoyenInsage,
+            5 => Theme::Random,
             _ => unreachable!(),
         }
+    }
+
+    fn real_theme(&self) -> Theme {
+        if self.randomly_selected.load(Ordering::Relaxed) {
+            return Theme::Random;
+        }
+        self.theme()
+    }
+
+    fn randomly_selected(&self) -> bool {
+        self.randomly_selected.load(Ordering::Relaxed)
+    }
+
+    fn set_randomly_selected(&self, value: bool) {
+        self.randomly_selected.store(value, Ordering::Relaxed)
     }
 
     fn set_theme(&self, theme: usize) {
@@ -85,6 +150,9 @@ impl SettingStore {
             0 => "dark",
             1 => "light",
             2 => "system",
+            3 => "insarcade",
+            4 => "moyeninsage",
+            5 => "random",
             _ => unreachable!(),
         };
 
@@ -175,6 +243,7 @@ impl Component for SettingsPage {
         Self {
             clone_storage: SettingStore {
                 theme: AtomicUsize::new(SETTINGS.theme.load(Ordering::Relaxed)),
+                randomly_selected: AtomicBool::new(SETTINGS.randomly_selected()),
                 lang: AtomicUsize::new(SETTINGS.lang.load(Ordering::Relaxed)),
                 calendar: AtomicUsize::new(SETTINGS.calendar.load(Ordering::Relaxed)),
             }
@@ -221,13 +290,30 @@ impl Component for SettingsPage {
                 SETTINGS.set_lang(self.clone_storage.lang.load(Ordering::Relaxed));
                 false
             }
-            Msg::ThemeChange(v) => {
-                SETTINGS.set_theme(v);
+            Msg::ThemeChange(v_to_store) => {
+                let mut v_to_display = v_to_store;
+                if v_to_store == 5 {
+                    v_to_display = random_theme() as usize;
+                    SETTINGS.set_randomly_selected(true);
+                }
+                SETTINGS.set_theme(v_to_display);
 
-                let theme = match v {
+                let theme_to_store = match v_to_store {
                     0 => "dark",
                     1 => "light",
                     2 => "system",
+                    3 => "insarcade",
+                    4 => "moyeninsage",
+                    5 => "random",
+                    _ => unreachable!(),
+                };
+
+                let theme_to_display = match v_to_display {
+                    0 => "dark",
+                    1 => "light",
+                    2 => "system",
+                    3 => "insarcade",
+                    4 => "moyeninsage",
                     _ => unreachable!(),
                 };
 
@@ -236,14 +322,14 @@ impl Component for SettingsPage {
                 let html = doc.first_element_child().unwrap();
                 let storage = window.local_storage().unwrap().unwrap();
 
-                if theme == "system" {
+                if theme_to_store == "system" {
                     storage.set_item("auto-theme", "true").unwrap();
                 } else {
                     storage.set_item("auto-theme", "false").unwrap();
-                    html.set_attribute("data-theme", theme).unwrap();
-                    storage.set_item("setting-theme", theme).unwrap();
+                    html.set_attribute("data-theme", theme_to_display).unwrap();
+                    storage.set_item("setting-theme", theme_to_store).unwrap();
                 }
-                                
+                
                 true
             }
             Msg::LogOut => {
@@ -291,9 +377,9 @@ impl Component for SettingsPage {
 
         let theme_glider_selector = html! {
             <GliderSelector
-                values = { vec![t("Sombre"), t("Clair"), t("Système")] }
+                values = { vec![t("Sombre"), t("Clair"), t("Système"), "Ins'arcade", "Moyen InsAge", "Aléatoire"] }
                 on_change = { ctx.link().callback(Msg::ThemeChange) }
-                selected = { SETTINGS.theme() as usize } />
+                selected = { SETTINGS.real_theme() as usize } />
         };
         let language_glider_selector = html! {
             <GliderSelector

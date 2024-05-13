@@ -91,6 +91,7 @@
 }
 
 .day {
+    position: relative;
     height: 100%;
     width: calc(100% / 6 - 1%);
     margin: 0 .5%;
@@ -98,27 +99,10 @@
     background-color: var(--day);
 }
 
-.tree {
-    height: 50%;
-    bottom: 0;
-    right: 1rem;
-    position: absolute;
-    z-index: 1;
-    pointer-events: none;
-}
-
 @media screen and (max-width: 1000px) {
     .day {
         width: 19%;
-    }
-
-    .tree {
-        background-repeat: no-repeat;
-        background-position: center;
-        background-position: right;
-        background-size: 50%;
     }    
-    
 }
 
 /* For popup animation on desktop */
@@ -134,39 +118,5 @@
 
     .day {
         transition: opacity .5s ease;
-    }
-}
-
-:root[data-theme="dark"] .hide-dark {
-    display: none;
-}
-
-:root[data-theme="light"] .hide-light {
-    display: none;
-}
-
-.header-garlands {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    pointer-events: none;
-    z-index: 9;
-}
-
-.hide-garlands-desktop {
-    display: none;
-}
-
-.hide-garlands-mobile {
-    display: initial;
-}
-
-@media screen and (min-width: 430px) {
-    .hide-garlands-mobile {
-        display: none;
-    }
-    
-    .hide-garlands-desktop {
-        display: initial;
     }
 }

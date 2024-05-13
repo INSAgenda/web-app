@@ -15,10 +15,6 @@
     width: 2rem;
 }
 
-:root[data-theme="dark"] .logout-button img {
-    filter: invert(1);
-}
-
 /* Titles */
 
 #settings-main h2 {
@@ -38,6 +34,11 @@
 }
 
 /* Containers */
+
+#settings-main {
+    overflow-y: auto;
+    max-height: calc(100% - 4rem);
+}
 
 #settings-container  {
     display: flex;
@@ -77,6 +78,11 @@
 .setting {
     padding: 1.5rem;
     min-height: 6.5rem;
+    overflow-x: auto;
+}
+
+.setting:nth-child(1) .glider-selector {
+    align-self: flex-start;
 }
 
 .setting > p {
@@ -102,20 +108,14 @@
     margin: 1.2rem auto;
 }
 
-/* /change-data tweaks (TODO: remove from here) */
-
-:root[data-theme="light"] #auth .dropdown-list-missing {
-    color: #666;
-}
-:root[data-theme="dark"] #auth .dropdown-list-missing {
-    color: #bbb;
+@media all and (max-width: 1000px) {
+    #settings-main {
+        max-height: unset;
+        overflow-y: unset;
+    }
 }
 
-#change-data-msg {
-    width: 100%;
-}
-
-@media all and (max-width: 800px){
+@media all and (max-width: 800px) {
     .settings-group {
         align-items: center;
     }

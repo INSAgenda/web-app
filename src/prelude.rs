@@ -1,7 +1,7 @@
 pub use crate::{
     agenda::*, alert::*, api::*, calendar::*, checkbox::*,
     colors::*, comment::*, event::*, friends::*, glider_selector::*, log, popup::Popup, popup::*,
-    settings::*, sortable::*, survey::*, tabbar::*, translation::*, util::*, App, Msg as AppMsg,
+    settings::*, tabbar::*, translation::*, util::*, App, Msg as AppMsg,
     Page,
 };
 pub use calendrier::{

@@ -9,6 +9,12 @@
     </div>
 </header>
 <main id="agenda-main">
+<virtual present-if={{moyeninsage}}>
+    <div class="corner-image top-left"></div>
+    <div class="corner-image top-right"></div>
+    <div class="corner-image bottom-left"></div>
+    <div class="corner-image bottom-right"></div>
+</virtual>
 <div id="agenda">
     <div present-if=!{{republican}} id="agenda-hours">
         <span>08:00</span>

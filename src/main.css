@@ -4,7 +4,7 @@
     --border-color: #aaa;
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"], :root[data-theme="insarcade"] {
     --border-color: #666;
 }
 
@@ -95,10 +95,6 @@ body {
     --border-color: #aaa;
 }
 
-:root[data-theme="dark"] #survey {
-    --border-color: #666;
-}
-
 #agenda-main {
     display: flex;
     justify-content: space-around;
@@ -126,13 +122,14 @@ body {
 
 /* Misc */
 
-:root[data-theme="dark"] .invert-when-dark {
+:root[data-theme="dark"] .invert-when-dark, :root[data-theme="insarcade"] .invert-when-dark {
     filter: invert(1);
 }
 
 /* Mastodon iframe */
 
-#mastodon-iframe {
+#mastodon-iframe, #insaplace-iframe {
+    background-color: white;
     width: calc(100% - 4rem);
     height: 100%;
     border: none;
@@ -177,9 +174,10 @@ body {
         box-shadow: unset;
     }
 
-    #mastodon-iframe {
+    #mastodon-iframe, #insaplace-iframe {
         width: 100%;
         left: 0;
         height: calc(100% - 4rem);
+        background-color: white;
     }
 }
