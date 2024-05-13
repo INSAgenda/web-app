@@ -1,7 +1,7 @@
 #!/bin/sh
 
 replace() {
-    if [[ "$OSTYPE" == "darwin"* ]]; then
+    if [ "$OSTYPE" = "darwin"* ]; then
         sed -i '' "s|$1|$2|" "$TRUNK_STAGING_DIR/index.html"
     else
         sed -i "s|$1|$2|" "$TRUNK_STAGING_DIR/index.html"
@@ -18,7 +18,7 @@ wasm_file=$(ls $TRUNK_STAGING_DIR | grep 'web-app-[a-zA-Z0-9]*_bg\.wasm$')
 # Juliette fixes
 to_replace="cachedBigInt64Memory0 = new BigInt64Array();"
 replacement="cachedBigInt64Memory0 = undefined; try { cachedBigInt64Memory0 = new BigInt64Array(); } catch (e) { console.error('BigInt64Array is not supported'); }"
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [ "$OSTYPE" = "darwin"* ]; then
     sed -i '' -e "s/$to_replace/$replacement/g" $js_file
 else
     sed -i -e "s/$to_replace/$replacement/g" $js_file
@@ -26,7 +26,7 @@ fi
 to_replace="cachedBigInt64Memory0 = new BigInt64Array(wasm.memory.buffer);"
 replacement="cachedBigInt64Memory0 = undefined; try { cachedBigInt64Memory0 = new BigInt64Array(wasm.memory.buffer); } catch (e) { console.error('BigInt64Array is not supported'); }"
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [ "$OSTYPE" = "darwin"* ]; then
     sed -i '' -e "s/$to_replace/$replacement/g" $js_file
 else
     sed -i -e "s/$to_replace/$replacement/g" $js_file
