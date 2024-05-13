@@ -138,13 +138,14 @@ impl Component for App {
         let link2 = ctx.link().clone();
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
             let state = e.state().as_string();
+            
             match state.as_deref() {
                 Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
                 Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("mastodon") => link2.send_message(Msg::SilentSetPage(Page::Mastodon)),
                 Some("r") => link2.send_message(Msg::SilentSetPage(Page::Rick)),
-                Some("pixelwar") => link2.send_message(Msg::SilentSetPage(Page::PixelWar)),
+                Some("pixel-war") => link2.send_message(Msg::SilentSetPage(Page::PixelWar)),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].to_string();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -229,7 +230,7 @@ impl Component for App {
             event_popup_size: None,
             iframe,
             pixel_war_iframe,
-            pixel_locked: false,
+            pixel_locked: true,
         }
     }
 
@@ -297,9 +298,10 @@ impl Component for App {
                 false
             },
             Msg::SetPage { page, silent } => {
+                let mut page = page;
                 if self.pixel_locked && !(matches!(page, Page::PixelWar) || matches!(page, Page::Settings)) {
                     alert("Vous devez d'abord poser votre pixel pour accéder à cette page.");
-                    return false;
+                    page = Page::PixelWar;
                 }
 
                 // Remove bait points
@@ -405,10 +407,9 @@ impl Component for App {
                 }
             },
             AppMsg::SetPixelLockedState(pixel_locked) => {
-                //let should_refresh = self.pixel_locked != pixel_locked;
-                //self.pixel_locked = pixel_locked;
-                //should_refresh
-                false
+                let should_refresh = self.pixel_locked != pixel_locked;
+                self.pixel_locked = pixel_locked;
+                should_refresh
             },
         }
     }
