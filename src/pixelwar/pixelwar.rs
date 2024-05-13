@@ -87,7 +87,7 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                         return;
                     }
                 };
-                
+
                 let send_insaplace_message = send_insaplace_message.clone();
                 spawn_local(async move {
                     send_insaplace_message("getSatus", &JsValue::null());
@@ -108,7 +108,6 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                                 user_token: user_token.clone(),
                                 validation_token: validation_token.clone(),
                             }));
-
                             let usernames = Array::new();
                             let cookies = Array::new();
                             for (user, user_cookies) in r {
@@ -120,7 +119,7 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                                 cookies.push(&JsValue::from(array));
                             }
                             let data = js_sys::Object::new();
-                            Reflect::set(&data, &JsValue::from_str("userames"), &JsValue::from(usernames)).unwrap();
+                            Reflect::set(&data, &JsValue::from_str("usernames"), &JsValue::from(usernames)).unwrap();
                             Reflect::set(&data, &JsValue::from_str("cookies"), &JsValue::from(cookies)).unwrap();
                             send_insaplace_message("cookies", &JsValue::from(data));
                             log!("Successfully sent insaplace friend cookies")
