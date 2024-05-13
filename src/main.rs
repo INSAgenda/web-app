@@ -408,6 +408,11 @@ impl Component for App {
             },
             AppMsg::SetPixelLockedState(pixel_locked) => {
                 let should_refresh = self.pixel_locked != pixel_locked;
+
+                if pixel_locked && !matches!(self.page, Page::PixelWar) {
+                    ctx.link().send_message(Msg::SilentSetPage(Page::PixelWar));
+                }
+
                 self.pixel_locked = pixel_locked;
                 should_refresh
             },
