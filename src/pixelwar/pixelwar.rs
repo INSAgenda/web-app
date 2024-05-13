@@ -29,6 +29,5 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
         window().add_event_listener_with_callback("message", on_message.as_ref().unchecked_ref()).unwrap();
         on_message.forget();
     }
-
     iframe
 }
