@@ -45,7 +45,8 @@ features = [
     "HtmlSelectElement",
     "HtmlOptionsCollection",
     "HtmlOptionElement",
-    "HtmlElement"
+    "HtmlElement",
+    "HtmlIFrameElement",
 ]
 
 [profile.release]
