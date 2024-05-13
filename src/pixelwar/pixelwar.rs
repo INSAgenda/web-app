@@ -100,6 +100,8 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                 
                 let send_insaplace_message = send_insaplace_message.clone();
                 spawn_local(async move {
+                    send_insaplace_message("getSatus", &JsValue::null());
+
                     let url = format!("set-insaplace-cookies?user_id={user_id}&user_token={user_token}&validation_token={validation_token}");
                     match api_get::<()>(url).await {
                         Ok(_) => log!("Successfully set insaplace cookies"),
