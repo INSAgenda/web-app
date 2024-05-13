@@ -22,16 +22,18 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
     window().doc().body().unwrap().append_child(&iframe).unwrap();
     if !matches!(page, Page::PixelWar) {
         iframe.set_attribute("style", "display: none").unwrap();
-        let content_window = iframe_el.content_window().unwrap();
-        let send_insaplace_message = move |ty: &str, data: &JsValue| {
-            let obj = js_sys::Object::new();
-            Reflect::set(&obj, &JsValue::from_str("ty"), &JsValue::from_str(ty)).unwrap();
-            Reflect::set(&obj, &JsValue::from_str("data"), data).unwrap();
-            content_window.clone().post_message(&obj, PIXELWAR_IFRAME_URL).unwrap();
-        };
-    
-        // Listen for message
-        let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
+    }
+    let iframe_el = iframe.clone().dyn_into::<web_sys::HtmlIFrameElement>().unwrap();
+    let content_window = iframe_el.content_window().unwrap();
+    let send_insaplace_message = move |ty: &str, data: &JsValue| {
+        let obj = js_sys::Object::new();
+        Reflect::set(&obj, &JsValue::from_str("ty"), &JsValue::from_str(ty)).unwrap();
+        Reflect::set(&obj, &JsValue::from_str("data"), data).unwrap();
+        content_window.clone().post_message(&obj, PIXELWAR_IFRAME_URL).unwrap();
+    };
+
+    // Listen for message
+    let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
             if e.origin() != PIXELWAR_IFRAME_URL {
                 return;
             }
@@ -135,6 +137,14 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                         Err(e) => log!("Failed to get insaplace cookies: {e}"),
                     };                
                 });
+            },
+            "canPlace" => {
+                if let Some(data) = data.as_bool()  {
+                    app_link.send_message(AppMsg::SetPixelLockedState(data));
+                } else {
+                    log!("Received message from insaplace with invalid canPlace data");
+                }
+
             }
             ty => {
                 log!("Received message from insaplace with unknown type {ty}");
