@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 
 #[cfg(feature = "debug")]
-const PIXELWAR_IFRAME_URL: &str = "http://127.0.0.1:8000";
+const PIXELWAR_IFRAME_URL: &str = "http://localhost:8000";
 
 #[cfg(not(feature = "debug"))]
 const PIXELWAR_IFRAME_URL: &str = "https://insaplace.insagenda.fr/";
