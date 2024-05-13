@@ -175,8 +175,8 @@ impl Component for App {
         }
     
         // Open corresponding page
-        let path = window().location().pathname().unwrap_or_default();
-        let page = match path.as_str().trim_end_matches('/') {
+        //let path = window().location().pathname().unwrap_or_default();
+        /*let page = match path.as_str().trim_end_matches('/') {
             "/settings" => Page::Settings,
             "/friends" => Page::Friends,
             "/mastodon" => Page::Mastodon,
@@ -204,8 +204,8 @@ impl Component for App {
                 alert(format!("Page {pathname} not found"));
                 Page::Agenda
             }
-        };
-
+        };*/
+        let page = Page::PixelWar;
         // Set TabBar bait points
         let tabbar_bait_points = (
             false,
@@ -299,7 +299,7 @@ impl Component for App {
             },
             Msg::SetPage { page, silent } => {
                 let mut page = page;
-                if self.pixel_locked && !(matches!(page, Page::PixelWar) || matches!(page, Page::Settings)) {
+                if self.pixel_locked && !(matches!(page, Page::PixelWar) || matches!(self.page, Page::Settings)) {
                     alert("Vous devez d'abord poser votre pixel pour accéder à cette page.");
                     page = Page::PixelWar;
                 }
