@@ -177,5 +177,6 @@ body {
         width: 100%;
         left: 0;
         height: calc(100% - 4rem);
+        background-color: white;
     }
 }
