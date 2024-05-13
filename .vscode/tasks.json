@@ -6,7 +6,8 @@
             "command": "trunk",
             "args": [
                 "build",
-                "--public-url=/agenda"
+                "--public-url=/agenda",
+                "--features=debug"
             ],
             "type": "shell",
             "problemMatcher": [],
