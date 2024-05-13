@@ -22,50 +22,40 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
     window().doc().body().unwrap().append_child(&iframe).unwrap();
     if !matches!(page, Page::PixelWar) {
         iframe.set_attribute("style", "display: none").unwrap();
-    }
-    let iframe_el = iframe.clone().dyn_into::<web_sys::HtmlIFrameElement>().unwrap();
-    let content_window = iframe_el.content_window().unwrap();
-    let send_insaplace_message = move |ty: &str, data: &JsValue| {
-        let obj = js_sys::Object::new();
-        Reflect::set(&obj, &JsValue::from_str("ty"), &JsValue::from_str(ty)).unwrap();
-        Reflect::set(&obj, &JsValue::from_str("data"), data).unwrap();
-        content_window.clone().post_message(&obj, PIXELWAR_IFRAME_URL).unwrap();
-    };
         // Listen for message
         let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
             if e.origin() != PIXELWAR_IFRAME_URL {
-                log!("Received message from unknown origin {e:?}");
                 return;
             }
 
-        let data = e.data();
-        let data: js_sys::Object = match data.dyn_into::<js_sys::Object>() {
-            Ok(data) => data,
-            Err(_) => {
-                log!("Received message from insaplace with invalid data");
-                return;
-            }
-        };
-        let ty = match Reflect::get(&data, &JsValue::from_str("ty")) {
-            Ok(ty) => match ty.as_string() {
-                Some(ty) => ty,
-                None => {
-                    log!("Received message from insaplace with invalid type");
+            let data = e.data();
+            let data: js_sys::Object = match data.dyn_into::<js_sys::Object>() {
+                Ok(data) => data,
+                Err(_) => {
+                    log!("Received message from insaplace with invalid data");
                     return;
                 }
-            }
-            Err(_) => {
-                log!("Received message from insaplace without type");
-                return;
-            }
-        };
-        let data = match Reflect::get(&data, &JsValue::from_str("data")) {
-            Ok(data) => data,
-            Err(_) => {
-                log!("Received message from insaplace without data");
-                return;
-            }
-        };
+            };
+            let ty = match Reflect::get(&data, &JsValue::from_str("ty")) {
+                Ok(ty) => match ty.as_string() {
+                    Some(ty) => ty,
+                    None => {
+                        log!("Received message from insaplace with invalid type");
+                        return;
+                    }
+                }
+                Err(_) => {
+                    log!("Received message from insaplace without type");
+                    return;
+                }
+            };
+            let data = match Reflect::get(&data, &JsValue::from_str("data")) {
+                Ok(data) => data,
+                Err(_) => {
+                    log!("Received message from insaplace without data");
+                    return;
+                }
+            };
 
         match ty.as_str() {
             "cookies" => {
@@ -111,19 +101,13 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                     };
                     match api_get::<Vec<(UserDesc, InsaplaceCookies)>>("get-insaplace-cookies").await {
                         Ok(mut r) => {
-                            r = vec![
-                                (UserDesc::new(1, String::from("test1")), InsaplaceCookies {
-                                    user_id: "test1".to_string(),
-                                    user_token: "test1".to_string(),
-                                    validation_token: "test1".to_string(),
-                                }),
-                                (UserDesc::new(2, String::from("test2")), InsaplaceCookies {
-                                    user_id: "test2".to_string(),
-                                    user_token: "test2".to_string(),
-                                    validation_token: "test2".to_string(),
-                                }),
-                            ];
                             log!("Successfully got insaplace friend cookies");
+                            
+                            r.insert(0, (UserDesc::new(0, String::from("Vous")), InsaplaceCookies {
+                                user_id: user_id.clone(),
+                                user_token: user_token.clone(),
+                                validation_token: validation_token.clone(),
+                            }));
 
                             let usernames = Array::new();
                             let cookies = Array::new();
@@ -144,14 +128,6 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                         Err(e) => log!("Failed to get insaplace cookies: {e}"),
                     };                
                 });
-            }
-            "canPlace" => {
-                if let Some(data) = data.as_bool()  {
-                    app_link.send_message(AppMsg::SetPixelLockedState(data));
-                } else {
-                    log!("Received message from insaplace with invalid canPlace data");
-                }
-
             }
             ty => {
                 log!("Received message from insaplace with unknown type {ty}");
