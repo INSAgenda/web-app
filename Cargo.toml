@@ -52,3 +52,6 @@ features = [
 lto = true
 codegen-units = 1
 opt-level = "z"
+
+[features]
+debug = []

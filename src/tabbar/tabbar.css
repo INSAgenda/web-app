@@ -56,6 +56,10 @@
     z-index: 1;
 }
 
+.tabbar-disabled {
+    opacity: 0.4 !important;
+}
+
 /* For desktop */
 
 @media screen and (min-width: 1000px) {

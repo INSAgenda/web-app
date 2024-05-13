@@ -32,6 +32,9 @@ mod mastodon;
 #[path = "halving/halving.rs"]
 mod halving;
 
+#[path ="pixelwar/pixelwar.rs"]
+mod pixelwar;
+
 mod util;
 mod slider;
 mod api;
@@ -40,6 +43,7 @@ mod translation;
 mod colors;
 
 use mastodon::{init_mastodon, mastodon_mark_all_seen};
+use pixelwar::init_pixelwar;
 use slider::width;
 use yew::virtual_dom::VNode;
 
@@ -55,6 +59,7 @@ pub enum Page {
     Mastodon,
     Event { eid: String },
     Rick,
+    PixelWar,
 }
 
 impl Page {
@@ -67,6 +72,7 @@ impl Page {
             Page::Mastodon => (String::from("mastodon"), "Mastodon"),
             Page::Event { eid } => (format!("event/{eid}"), "Event"),
             Page::Rick => (String::from("r"), "Rick"),
+            Page::PixelWar => (String::from("pixel-war"), "Pixel War"),
         }
     }
 }
@@ -87,7 +93,8 @@ pub enum Msg {
     CommentCountsSuccess(CommentCounts),
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
-    ScheduleFailure(ApiError)
+    ScheduleFailure(ApiError),
+    SetPixelLockedState(bool),
 }
 
 /// Methods for backward compatibility
@@ -111,11 +118,13 @@ pub struct App {
     friends_events: FriendsEvents,
     comment_counts: Rc<CommentCounts>,
     seen_comment_counts: Rc<CommentCounts>,
-    tabbar_bait_points: (bool, bool, bool, bool),
+    tabbar_bait_points: (bool, bool, bool, bool, bool),
     page: Page,
     event_closing: bool,
     event_popup_size: Option<usize>,
     iframe: web_sys::Element,
+    pixel_war_iframe: web_sys::Element,
+    pixel_locked: bool,
 }
 
 impl Component for App {
@@ -135,6 +144,7 @@ impl Component for App {
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("mastodon") => link2.send_message(Msg::SilentSetPage(Page::Mastodon)),
                 Some("r") => link2.send_message(Msg::SilentSetPage(Page::Rick)),
+                Some("pixelwar") => link2.send_message(Msg::SilentSetPage(Page::PixelWar)),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].to_string();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -179,6 +189,7 @@ impl Component for App {
                 Page::Agenda
             }
             friend_agenda if friend_agenda.starts_with("/friend-agenda/") => Page::FriendAgenda { pseudo: friend_agenda[15..].to_string() },
+            "/pixel-war" => Page::PixelWar,
             "/agenda" => match window().location().hash() { // For compatibility with old links
                 Ok(hash) if hash == "#settings" => Page::Settings,
                 Ok(hash) if hash.is_empty() => Page::Agenda,
@@ -199,11 +210,12 @@ impl Component for App {
             false,
             friends.as_ref().map(|f: &FriendLists| !f.incoming.is_empty()).unwrap_or(false),
             false,
-            false
+            false,
+            false,
         );
 
         let iframe = init_mastodon(&page, ctx.link().clone());
-
+        let pixel_war_iframe = init_pixelwar(&page, ctx.link().clone());
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
@@ -216,6 +228,8 @@ impl Component for App {
             event_closing: false,
             event_popup_size: None,
             iframe,
+            pixel_war_iframe,
+            pixel_locked: false,
         }
     }
 
@@ -283,6 +297,11 @@ impl Component for App {
                 false
             },
             Msg::SetPage { page, silent } => {
+                if self.pixel_locked && !(matches!(page, Page::PixelWar) || matches!(page, Page::Settings)) {
+                    alert("Vous devez d'abord poser votre pixel pour accéder à cette page.");
+                    return false;
+                }
+
                 // Remove bait points
                 match page {
                     Page::Agenda => self.tabbar_bait_points.0 = false,
@@ -294,6 +313,7 @@ impl Component for App {
                         }
                     },
                     Page::Settings => self.tabbar_bait_points.3 = false,
+                    Page::PixelWar => self.tabbar_bait_points.4 = false,
                     _ => (),
                 }
 
@@ -302,6 +322,13 @@ impl Component for App {
                     self.iframe.set_attribute("style", "display: none").unwrap();
                 } else if !matches!(self.page, Page::Mastodon) && matches!(page, Page::Mastodon)  { // on
                     self.iframe.remove_attribute("style").unwrap();
+                }
+                
+                // Change the display of the PixelWar iframe when the user switches on or off the PixelWar page
+                if matches!(self.page, Page::PixelWar) && !matches!(page, Page::PixelWar) { // off
+                    self.pixel_war_iframe.set_attribute("style", "display: none").unwrap();
+                } else if !matches!(self.page, Page::PixelWar) && matches!(page, Page::PixelWar)  { // on
+                    self.pixel_war_iframe.remove_attribute("style").unwrap();
                 }
 
                 // FIXME TODO
@@ -367,7 +394,7 @@ impl Component for App {
                 let local_storage = window().local_storage().unwrap().unwrap();
                 let _ = local_storage.set("seen_comment_counts", &serde_json::to_string(&self.seen_comment_counts.deref()).unwrap());
                 true
-            }
+            },
             AppMsg::MastodonNotification => {
                 if matches!(self.page, Page::Mastodon) {
                     mastodon_mark_all_seen();
@@ -376,7 +403,13 @@ impl Component for App {
                     self.tabbar_bait_points.2 = true;
                     true
                 }
-            }
+            },
+            AppMsg::SetPixelLockedState(pixel_locked) => {
+                //let should_refresh = self.pixel_locked != pixel_locked;
+                //self.pixel_locked = pixel_locked;
+                //should_refresh
+                false
+            },
         }
     }
     
@@ -386,7 +419,7 @@ impl Component for App {
     
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
-            Page::Agenda => html!(<>
+            Page::Agenda if !self.pixel_locked => html!(<>
                 <Agenda
                     events={Rc::clone(&self.events)}
                     app_link={ctx.link().clone()}
@@ -396,7 +429,7 @@ impl Component for App {
                     seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
-            Page::Event { eid } => {
+            Page::Event { eid } if !self.pixel_locked  => {
                 let event = match self.events.iter().find(|e| e.eid == *eid) {
                     Some(event) => event.to_owned(),
                     None => {
@@ -416,11 +449,11 @@ impl Component for App {
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
-            Page::Friends => html!(<>
+            Page::Friends if !self.pixel_locked => html!(<>
                 <FriendsPage friends={Rc::clone(&self.friends)} app_link={ctx.link().clone()} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
-            Page::FriendAgenda { pseudo } => {
+            Page::FriendAgenda { pseudo } if !self.pixel_locked  => {
                 let email = format!("{pseudo}@insa-rouen.fr");
                 let uid = match self.friends.deref().as_ref().and_then(|f| f.friends.iter().find(|f| f.0.email == *email)) {
                     Some(f) => f.0.uid,
@@ -440,12 +473,12 @@ impl Component for App {
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
-            Page::Mastodon => html!(<>
+            Page::Mastodon if !self.pixel_locked  => html!(<>
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Settings => html!(<>
                 <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} others_disabled={self.pixel_locked} />
             </>),
             Page::Rick => {
                 let random = js_sys::Math::random();
@@ -453,6 +486,10 @@ impl Component for App {
                 let raw_html = format!(r#"<video class="rick" autoplay src="/assets/{rick}.mp4" style="width: 100%;">Never gonna give you up</video>"#);
                 VNode::from_html_unchecked(raw_html.into())
             },
+            _ => html!(<>
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} others_disabled={self.pixel_locked} />
+            </>),
+
         }
     }
 }
