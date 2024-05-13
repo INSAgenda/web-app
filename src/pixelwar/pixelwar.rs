@@ -97,7 +97,7 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                         return;
                     }
                 };
-                
+
                 let send_insaplace_message = send_insaplace_message.clone();
                 spawn_local(async move {
                     let url = format!("set-insaplace-cookies?user_id={user_id}&user_token={user_token}&validation_token={validation_token}");
@@ -109,20 +109,13 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                     };
                     match api_get::<Vec<(UserDesc, InsaplaceCookies)>>("get-insaplace-cookies").await {
                         Ok(mut r) => {
-                            r = vec![
-                                (UserDesc::new(1, String::from("test1")), InsaplaceCookies {
-                                    user_id: "test1".to_string(),
-                                    user_token: "test1".to_string(),
-                                    validation_token: "test1".to_string(),
-                                }),
-                                (UserDesc::new(2, String::from("test2")), InsaplaceCookies {
-                                    user_id: "test2".to_string(),
-                                    user_token: "test2".to_string(),
-                                    validation_token: "test2".to_string(),
-                                }),
-                            ];
                             log!("Successfully got insaplace friend cookies");
-
+                            
+                            r.insert(0, (UserDesc::new(0, String::from("Vous")), InsaplaceCookies {
+                                user_id: user_id.clone(),
+                                user_token: user_token.clone(),
+                                validation_token: validation_token.clone(),
+                            }));
                             let usernames = Array::new();
                             let cookies = Array::new();
                             for (user, user_cookies) in r {
@@ -134,7 +127,7 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                                 cookies.push(&JsValue::from(array));
                             }
                             let data = js_sys::Object::new();
-                            Reflect::set(&data, &JsValue::from_str("userames"), &JsValue::from(usernames)).unwrap();
+                            Reflect::set(&data, &JsValue::from_str("usernames"), &JsValue::from(usernames)).unwrap();
                             Reflect::set(&data, &JsValue::from_str("cookies"), &JsValue::from(cookies)).unwrap();
                             send_insaplace_message("cookies", &JsValue::from(data));
                             log!("Successfully sent insaplace friend cookies")
