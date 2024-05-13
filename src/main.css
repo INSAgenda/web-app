@@ -129,6 +129,7 @@ body {
 /* Mastodon iframe */
 
 #mastodon-iframe, #insaplace-iframe {
+    background-color: white;
     width: calc(100% - 4rem);
     height: 100%;
     border: none;
