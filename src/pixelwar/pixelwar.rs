@@ -31,12 +31,12 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
         Reflect::set(&obj, &JsValue::from_str("data"), data).unwrap();
         content_window.clone().post_message(&obj, PIXELWAR_IFRAME_URL).unwrap();
     };
-
-    // Listen for messages
-    let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
-        if e.origin() != PIXELWAR_IFRAME_URL {
-            return;
-        }
+        // Listen for message
+        let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
+            if e.origin() != PIXELWAR_IFRAME_URL {
+                log!("Received message from unknown origin {e:?}");
+                return;
+            }
 
         let data = e.data();
         let data: js_sys::Object = match data.dyn_into::<js_sys::Object>() {
