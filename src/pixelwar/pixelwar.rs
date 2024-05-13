@@ -52,7 +52,43 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
 
             match ty.as_str() {
                 "cookies" => {
-                    todo!()
+                    let data = match data.dyn_into::<Array>() {
+                        Ok(data) => data.to_vec(),
+                        Err(_) => {
+                            log!("Received message from insaplace with invalid cookies data");
+                            return;
+                        }
+                    };
+                    let cookie_user_id = match data.first().and_then(|v| v.as_string()) {
+                        Some(cookie_user_id) => cookie_user_id,
+                        None => {
+                            log!("Received message from insaplace with invalid cookie_user_id");
+                            return;
+                        }
+                    };
+                    let cookie_user_token = match data.get(1).and_then(|v| v.as_string()) {
+                        Some(cookie_user_token) => cookie_user_token,
+                        None => {
+                            log!("Received message from insaplace with invalid cookie_user_token");
+                            return;
+                        }
+                    };
+                    let cookie_validation_token = match data.get(2).and_then(|v| v.as_string()) {
+                        Some(cookie_validation_token) => cookie_validation_token,
+                        None => {
+                            log!("Received message from insaplace with invalid cookie_validation_token");
+                            return;
+                        }
+                    };
+                    spawn_local(async move {
+                        let url = format!("set-insaplace-cookies?cookie_user_id={cookie_user_id}&cookie_user_token={cookie_user_token}&cookie_validation_token={cookie_validation_token}");
+                        match api_get::<()>(url).await {
+                            Ok(_) => log!("Successfully set insaplace cookies"),
+                            Err(e) => {
+                                log!("Failed to set insaplace cookies: {e}");
+                            }
+                        };
+                    });
                 }
                 ty => {
                     log!("Received message from insaplace with unknown type {ty}");
