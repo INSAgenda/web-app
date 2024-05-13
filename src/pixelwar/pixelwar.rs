@@ -18,7 +18,8 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
         // Listen for message
         let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
             if e.origin() != PIXELWAR_IFRAME_URL {
-                log!("Received message from unknown origin {e:?} origin {}", e.origin());
+                log!("Received message from unknown origin {e:?}");
+                return;
             }
 
             let data = e.data();
@@ -59,29 +60,29 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                             return;
                         }
                     };
-                    let cookie_user_id = match data.first().and_then(|v| v.as_string()) {
-                        Some(cookie_user_id) => cookie_user_id,
+                    let user_id = match data.first().and_then(|v| v.as_string()) {
+                        Some(user_id) => user_id,
                         None => {
-                            log!("Received message from insaplace with invalid cookie_user_id");
+                            log!("Received message from insaplace with invalid user_id");
                             return;
                         }
                     };
-                    let cookie_user_token = match data.get(1).and_then(|v| v.as_string()) {
-                        Some(cookie_user_token) => cookie_user_token,
+                    let user_token = match data.get(1).and_then(|v| v.as_string()) {
+                        Some(user_token) => user_token,
                         None => {
-                            log!("Received message from insaplace with invalid cookie_user_token");
+                            log!("Received message from insaplace with invalid user_token");
                             return;
                         }
                     };
-                    let cookie_validation_token = match data.get(2).and_then(|v| v.as_string()) {
-                        Some(cookie_validation_token) => cookie_validation_token,
+                    let validation_token = match data.get(2).and_then(|v| v.as_string()) {
+                        Some(validation_token) => validation_token,
                         None => {
-                            log!("Received message from insaplace with invalid cookie_validation_token");
+                            log!("Received message from insaplace with invalid validation_token");
                             return;
                         }
                     };
                     spawn_local(async move {
-                        let url = format!("set-insaplace-cookies?cookie_user_id={cookie_user_id}&cookie_user_token={cookie_user_token}&cookie_validation_token={cookie_validation_token}");
+                        let url = format!("set-insaplace-cookies?user_id={user_id}&user_token={user_token}&validation_token={validation_token}");
                         match api_get::<()>(url).await {
                             Ok(_) => log!("Successfully set insaplace cookies"),
                             Err(e) => {
