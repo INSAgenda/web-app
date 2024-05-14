@@ -230,7 +230,7 @@ impl Component for App {
             event_popup_size: None,
             iframe,
             pixel_war_iframe,
-            pixel_locked: true,
+            pixel_locked: false,
         }
     }
 
