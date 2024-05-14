@@ -72,61 +72,60 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
             "cookies" => {
                 send_insaplace_message("getSatus", &JsValue::null());
 
-                let data = match data.dyn_into::<Array>() {
-                    Ok(data) => data.to_vec(),
-                    Err(_) => {
-                        log!("Received message from insaplace with invalid cookies data");
-                        return;
-                    }
-                };
-                let user_id = match data.first().and_then(|v| v.as_string()) {
-                    Some(user_id) => user_id,
-                    None => {
-                        log!("Received message from insaplace with invalid user_id");
-                        return;
-                    }
-                };
-                let user_token = match data.get(1).and_then(|v| v.as_string()) {
-                    Some(user_token) => user_token,
-                    None => {
-                        log!("Received message from insaplace with invalid user_token");
-                        return;
-                    }
-                };
-                let validation_token = match data.get(2).and_then(|v| v.as_string()) {
-                    Some(validation_token) => validation_token,
-                    None => {
-                        log!("Received message from insaplace with invalid validation_token");
-                        return;
-                    }
-                };
-                let member_id = match data.get(3).and_then(|v| v.as_string()) {
-                    Some(member_id) => member_id,
-                    None => {
-                        log!("Received message from insaplace with invalid member_id");
-                        return;
-                    }
-                };
+                if !data.is_null() {
+                    let data = match data.dyn_into::<Array>() {
+                        Ok(data) => data.to_vec(),
+                        Err(_) => {
+                            log!("Received message from insaplace with invalid cookies data");
+                            return;
+                        }
+                    };
+                    let user_id = match data.first().and_then(|v| v.as_string()) {
+                        Some(user_id) => user_id,
+                        None => {
+                            log!("Received message from insaplace with invalid user_id");
+                            return;
+                        }
+                    };
+                    let user_token = match data.get(1).and_then(|v| v.as_string()) {
+                        Some(user_token) => user_token,
+                        None => {
+                            log!("Received message from insaplace with invalid user_token");
+                            return;
+                        }
+                    };
+                    let validation_token = match data.get(2).and_then(|v| v.as_string()) {
+                        Some(validation_token) => validation_token,
+                        None => {
+                            log!("Received message from insaplace with invalid validation_token");
+                            return;
+                        }
+                    };
+                    let member_id = match data.get(3).and_then(|v| v.as_string()) {
+                        Some(member_id) => member_id,
+                        None => {
+                            log!("Received message from insaplace with invalid member_id");
+                            return;
+                        }
+                    };
+    
+                    spawn_local(async move {
+                        let url = format!("set-insaplace-cookies?user_id={user_id}&user_token={user_token}&validation_token={validation_token}&member_id={member_id}");
+                        match api_get::<()>(url).await {
+                            Ok(_) => log!("Successfully set insaplace cookies"),
+                            Err(e) => {
+                                log!("Failed to set insaplace cookies: {e}");
+                            }
+                        };
+                    });
+                }
 
                 let send_insaplace_message = send_insaplace_message.clone();
                 spawn_local(async move {
-                    let url = format!("set-insaplace-cookies?user_id={user_id}&user_token={user_token}&validation_token={validation_token}&member_id={member_id}");
-                    match api_get::<()>(url).await {
-                        Ok(_) => log!("Successfully set insaplace cookies"),
-                        Err(e) => {
-                            log!("Failed to set insaplace cookies: {e}");
-                        }
-                    };
                     match api_get::<Vec<(UserDesc, InsaplaceCookies)>>("get-insaplace-cookies").await {
-                        Ok(mut r) => {
+                        Ok(r) => {
                             log!("Successfully got insaplace friend cookies");
                             
-                            r.insert(0, (UserDesc::new(0, String::from("Vous")), InsaplaceCookies {
-                                user_id: user_id.clone(),
-                                user_token: user_token.clone(),
-                                validation_token: validation_token.clone(),
-                                member_id: member_id.to_string(),
-                            }));
                             let usernames = Array::new();
                             let cookies = Array::new();
                             for (user, user_cookies) in r {
