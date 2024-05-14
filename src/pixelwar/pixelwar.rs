@@ -12,6 +12,7 @@ struct InsaplaceCookies {
     user_id: String,
     user_token: String,
     validation_token: String,
+    member_id: String,
 }
 
 pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
@@ -99,10 +100,17 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                         return;
                     }
                 };
+                let member_id = match data.get(3).and_then(|v| v.as_string()) {
+                    Some(member_id) => member_id,
+                    None => {
+                        log!("Received message from insaplace with invalid member_id");
+                        return;
+                    }
+                };
 
                 let send_insaplace_message = send_insaplace_message.clone();
                 spawn_local(async move {
-                    let url = format!("set-insaplace-cookies?user_id={user_id}&user_token={user_token}&validation_token={validation_token}");
+                    let url = format!("set-insaplace-cookies?user_id={user_id}&user_token={user_token}&validation_token={validation_token}&member_id={member_id}");
                     match api_get::<()>(url).await {
                         Ok(_) => log!("Successfully set insaplace cookies"),
                         Err(e) => {
@@ -117,6 +125,7 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                                 user_id: user_id.clone(),
                                 user_token: user_token.clone(),
                                 validation_token: validation_token.clone(),
+                                member_id: member_id.to_string(),
                             }));
                             let usernames = Array::new();
                             let cookies = Array::new();
@@ -126,6 +135,7 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                                 array.push(&JsValue::from_str(&user_cookies.user_id));
                                 array.push(&JsValue::from_str(&user_cookies.user_token));
                                 array.push(&JsValue::from_str(&user_cookies.validation_token));
+                                array.push(&JsValue::from_str(&user_cookies.member_id));
                                 cookies.push(&JsValue::from(array));
                             }
                             let data = js_sys::Object::new();
