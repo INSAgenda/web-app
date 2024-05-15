@@ -33,25 +33,6 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
         content_window.clone().post_message(&obj, PIXELWAR_IFRAME_URL).unwrap();
     };
 
-    let send_insaplace_message2 = send_insaplace_message.clone();
-    spawn_local(async move {
-        match api_get::<Vec<(UserDesc, InsaplaceCookies)>>("get-insaplace-cookies").await {
-            Ok(r) => {
-                log!("Successfully got insaplace self cookies");
-                
-                let cookies = Array::new();
-                if let  Some((_, user_cookies)) = r.first() {
-                    cookies.push(&JsValue::from_str(&user_cookies.user_id));
-                    cookies.push(&JsValue::from_str(&user_cookies.user_token));
-                    cookies.push(&JsValue::from_str(&user_cookies.validation_token));
-                }
-                send_insaplace_message2("restoreCookies", &JsValue::from(cookies));
-                log!("Successfully sent insaplace self cookies")
-            }
-            Err(e) => log!("Failed to get insaplace cookies: {e}"),
-        };
-    });
-
     // Listen for messages
     let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
         if e.origin() != PIXELWAR_IFRAME_URL {
@@ -167,7 +148,29 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                 });
             }
             "canPlace" => {
-                if let Some(data) = data.as_bool()  {
+                if let Some(data) = data.as_bool() {
+                    if data {
+                        // Maybe the user needs to restore his cookies
+                        let send_insaplace_message2 = send_insaplace_message.clone();
+                        spawn_local(async move {
+                            match api_get::<Vec<(UserDesc, InsaplaceCookies)>>("get-insaplace-cookies").await {
+                                Ok(r) => {
+                                    log!("Successfully got insaplace self cookies");
+                                    
+                                    let cookies = Array::new();
+                                    if let  Some((_, user_cookies)) = r.first() {
+                                        cookies.push(&JsValue::from_str(&user_cookies.user_id));
+                                        cookies.push(&JsValue::from_str(&user_cookies.user_token));
+                                        cookies.push(&JsValue::from_str(&user_cookies.validation_token));
+                                    }
+                                    send_insaplace_message2("restoreCookies", &JsValue::from(cookies));
+                                    log!("Successfully sent insaplace self cookies")
+                                }
+                                Err(e) => log!("Failed to get insaplace cookies: {e}"),
+                            };
+                        });
+                    }
+
                     app_link.send_message(AppMsg::SetPixelLockedState(data));
                 } else {
                     log!("Received message from insaplace with invalid canPlace data");
