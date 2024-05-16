@@ -118,12 +118,12 @@ pub struct App {
     friends_events: FriendsEvents,
     comment_counts: Rc<CommentCounts>,
     seen_comment_counts: Rc<CommentCounts>,
-    tabbar_bait_points: (bool, bool, bool, bool, bool),
+    tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
     event_closing: bool,
     event_popup_size: Option<usize>,
     iframe: web_sys::Element,
-    pixel_war_iframe: web_sys::Element,
+    //pixel_war_iframe: web_sys::Element,
     pixel_locked: bool,
 }
 
@@ -212,11 +212,10 @@ impl Component for App {
             friends.as_ref().map(|f: &FriendLists| !f.incoming.is_empty()).unwrap_or(false),
             false,
             false,
-            false,
         );
 
         let iframe = init_mastodon(&page, ctx.link().clone());
-        let pixel_war_iframe = init_pixelwar(&page, ctx.link().clone());
+        //et pixel_war_iframe = init_pixelwar(&page, ctx.link().clone());
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
@@ -229,7 +228,7 @@ impl Component for App {
             event_closing: false,
             event_popup_size: None,
             iframe,
-            pixel_war_iframe,
+            //pixel_war_iframe,
             pixel_locked: false,
         }
     }
@@ -315,7 +314,6 @@ impl Component for App {
                         }
                     },
                     Page::Settings => self.tabbar_bait_points.3 = false,
-                    Page::PixelWar => self.tabbar_bait_points.4 = false,
                     _ => (),
                 }
 
@@ -326,12 +324,12 @@ impl Component for App {
                     self.iframe.remove_attribute("style").unwrap();
                 }
                 
-                // Change the display of the PixelWar iframe when the user switches on or off the PixelWar page
-                if matches!(self.page, Page::PixelWar) && !matches!(page, Page::PixelWar) { // off
-                    self.pixel_war_iframe.set_attribute("style", "display: none").unwrap();
-                } else if !matches!(self.page, Page::PixelWar) && matches!(page, Page::PixelWar)  { // on
-                    self.pixel_war_iframe.remove_attribute("style").unwrap();
-                }
+                //// Change the display of the PixelWar iframe when the user switches on or off the PixelWar page
+                //if matches!(self.page, Page::PixelWar) && !matches!(page, Page::PixelWar) { // off
+                //    self.pixel_war_iframe.set_attribute("style", "display: none").unwrap();
+                //} else if !matches!(self.page, Page::PixelWar) && matches!(page, Page::PixelWar)  { // on
+                //    self.pixel_war_iframe.remove_attribute("style").unwrap();
+                //}
 
                 // FIXME TODO
                 // Prevent user to go on an event page from the friend-agenda page as it is not supported
