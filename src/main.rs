@@ -175,8 +175,8 @@ impl Component for App {
         }
     
         // Open corresponding page
-        //let path = window().location().pathname().unwrap_or_default();
-        /*let page = match path.as_str().trim_end_matches('/') {
+        let path = window().location().pathname().unwrap_or_default();
+        let page = match path.as_str().trim_end_matches('/') {
             "/settings" => Page::Settings,
             "/friends" => Page::Friends,
             "/mastodon" => Page::Mastodon,
@@ -204,8 +204,8 @@ impl Component for App {
                 alert(format!("Page {pathname} not found"));
                 Page::Agenda
             }
-        };*/
-        let page = Page::PixelWar;
+        };
+
         // Set TabBar bait points
         let tabbar_bait_points = (
             false,
