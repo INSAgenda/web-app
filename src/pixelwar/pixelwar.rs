@@ -138,14 +138,6 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                         Err(e) => log!("Failed to get insaplace cookies: {e}"),
                     };                
                 });
-            },
-            "canPlace" => {
-                if let Some(data) = data.as_bool()  {
-                    app_link.send_message(AppMsg::SetPixelLockedState(data));
-                } else {
-                    log!("Received message from insaplace with invalid canPlace data");
-                }
-
             }
             ty => {
                 log!("Received message from insaplace with unknown type {ty}");
