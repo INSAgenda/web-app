@@ -23,18 +23,53 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
     window().doc().body().unwrap().append_child(&iframe).unwrap();
     if !matches!(page, Page::PixelWar) {
         iframe.set_attribute("style", "display: none").unwrap();
-        // Listen for message
-        let mut skip = false;
-        let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
-            if skip {
+    }
+    let iframe_el = iframe.clone().dyn_into::<web_sys::HtmlIFrameElement>().unwrap();
+    let content_window = iframe_el.content_window().unwrap();
+    let send_insaplace_message = move |ty: &str, data: &JsValue| {
+        let obj = js_sys::Object::new();
+        Reflect::set(&obj, &JsValue::from_str("ty"), &JsValue::from_str(ty)).unwrap();
+        Reflect::set(&obj, &JsValue::from_str("data"), data).unwrap();
+        content_window.clone().post_message(&obj, PIXELWAR_IFRAME_URL).unwrap();
+    };
+
+    // Listen for messages
+    let on_message = Closure::wrap(Box::new(move |e: web_sys::MessageEvent| {
+        if e.origin() != PIXELWAR_IFRAME_URL {
+            return;
+        }
+
+        let data = e.data();
+        let data: js_sys::Object = match data.dyn_into::<js_sys::Object>() {
+            Ok(data) => data,
+            Err(_) => {
+                log!("Received message from insaplace with invalid data");
+                return;
+            }
+        };
+        let ty = match Reflect::get(&data, &JsValue::from_str("ty")) {
+            Ok(ty) => match ty.as_string() {
+                Some(ty) => ty,
+                None => {
+                    log!("Received message from insaplace with invalid type");
+                    return;
+                }
+            }
+            Err(_) => {
+                log!("Received message from insaplace without type");
+                return;
+            }
+        };
+        let data = match Reflect::get(&data, &JsValue::from_str("data")) {
+            Ok(data) => data,
+            Err(_) => {
+                log!("Received message from insaplace without data");
                 return;
             }
         };
 
         match ty.as_str() {
             "cookies" => {
-                send_insaplace_message("getSatus", &JsValue::null());
-
                 let data = match data.dyn_into::<Array>() {
                     Ok(data) => data.to_vec(),
                     Err(_) => {
@@ -66,6 +101,8 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
 
                 let send_insaplace_message = send_insaplace_message.clone();
                 spawn_local(async move {
+                    send_insaplace_message("getSatus", &JsValue::null());
+
                     let url = format!("set-insaplace-cookies?user_id={user_id}&user_token={user_token}&validation_token={validation_token}");
                     match api_get::<()>(url).await {
                         Ok(_) => log!("Successfully set insaplace cookies"),
@@ -101,13 +138,14 @@ pub fn init_pixelwar(page: &Page, app_link: AppLink) -> web_sys::Element {
                         Err(e) => log!("Failed to get insaplace cookies: {e}"),
                     };                
                 });
-            }
+            },
             "canPlace" => {
                 if let Some(data) = data.as_bool()  {
                     app_link.send_message(AppMsg::SetPixelLockedState(data));
                 } else {
                     log!("Received message from insaplace with invalid canPlace data");
                 }
+
             }
             ty => {
                 log!("Received message from insaplace with unknown type {ty}");
