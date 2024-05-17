@@ -32,9 +32,6 @@ mod mastodon;
 #[path = "halving/halving.rs"]
 mod halving;
 
-#[path ="pixelwar/pixelwar.rs"]
-mod pixelwar;
-
 mod util;
 mod slider;
 mod api;
@@ -43,7 +40,6 @@ mod translation;
 mod colors;
 
 use mastodon::{init_mastodon, mastodon_mark_all_seen};
-use pixelwar::init_pixelwar;
 use slider::width;
 use yew::virtual_dom::VNode;
 
@@ -59,7 +55,6 @@ pub enum Page {
     Mastodon,
     Event { eid: String },
     Rick,
-    PixelWar,
 }
 
 impl Page {
@@ -72,7 +67,6 @@ impl Page {
             Page::Mastodon => (String::from("mastodon"), "Mastodon"),
             Page::Event { eid } => (format!("event/{eid}"), "Event"),
             Page::Rick => (String::from("r"), "Rick"),
-            Page::PixelWar => (String::from("pixel-war"), "Pixel War"),
         }
     }
 }
@@ -94,7 +88,6 @@ pub enum Msg {
     ApiFailure(ApiError),
     ScheduleSuccess(Vec<RawEvent>),
     ScheduleFailure(ApiError),
-    SetPixelLockedState(bool),
 }
 
 /// Methods for backward compatibility
@@ -118,12 +111,11 @@ pub struct App {
     friends_events: FriendsEvents,
     comment_counts: Rc<CommentCounts>,
     seen_comment_counts: Rc<CommentCounts>,
-    tabbar_bait_points: (bool, bool, bool, bool, bool),
+    tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
     event_closing: bool,
     event_popup_size: Option<usize>,
     iframe: web_sys::Element,
-    pixel_war_iframe: web_sys::Element,
     pixel_locked: bool,
 }
 
@@ -144,7 +136,6 @@ impl Component for App {
                 Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
                 Some("mastodon") => link2.send_message(Msg::SilentSetPage(Page::Mastodon)),
                 Some("r") => link2.send_message(Msg::SilentSetPage(Page::Rick)),
-                Some("pixelwar") => link2.send_message(Msg::SilentSetPage(Page::PixelWar)),
                 Some(event) if event.starts_with("event/") => {
                     let eid = event[6..].to_string();
                     link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
@@ -189,7 +180,6 @@ impl Component for App {
                 Page::Agenda
             }
             friend_agenda if friend_agenda.starts_with("/friend-agenda/") => Page::FriendAgenda { pseudo: friend_agenda[15..].to_string() },
-            "/pixel-war" => Page::PixelWar,
             "/agenda" => match window().location().hash() { // For compatibility with old links
                 Ok(hash) if hash == "#settings" => Page::Settings,
                 Ok(hash) if hash.is_empty() => Page::Agenda,
@@ -211,11 +201,9 @@ impl Component for App {
             friends.as_ref().map(|f: &FriendLists| !f.incoming.is_empty()).unwrap_or(false),
             false,
             false,
-            false,
         );
 
         let iframe = init_mastodon(&page, ctx.link().clone());
-        let pixel_war_iframe = init_pixelwar(&page, ctx.link().clone());
         Self {
             events: Rc::new(events),
             user_info: Rc::new(user_info),
@@ -228,7 +216,6 @@ impl Component for App {
             event_closing: false,
             event_popup_size: None,
             iframe,
-            pixel_war_iframe,
             pixel_locked: false,
         }
     }
@@ -297,11 +284,6 @@ impl Component for App {
                 false
             },
             Msg::SetPage { page, silent } => {
-                if self.pixel_locked && !(matches!(page, Page::PixelWar) || matches!(page, Page::Settings)) {
-                    alert("Vous devez d'abord poser votre pixel pour accéder à cette page.");
-                    return false;
-                }
-
                 // Remove bait points
                 match page {
                     Page::Agenda => self.tabbar_bait_points.0 = false,
@@ -313,7 +295,6 @@ impl Component for App {
                         }
                     },
                     Page::Settings => self.tabbar_bait_points.3 = false,
-                    Page::PixelWar => self.tabbar_bait_points.4 = false,
                     _ => (),
                 }
 
@@ -322,13 +303,6 @@ impl Component for App {
                     self.iframe.set_attribute("style", "display: none").unwrap();
                 } else if !matches!(self.page, Page::Mastodon) && matches!(page, Page::Mastodon)  { // on
                     self.iframe.remove_attribute("style").unwrap();
-                }
-                
-                // Change the display of the PixelWar iframe when the user switches on or off the PixelWar page
-                if matches!(self.page, Page::PixelWar) && !matches!(page, Page::PixelWar) { // off
-                    self.pixel_war_iframe.set_attribute("style", "display: none").unwrap();
-                } else if !matches!(self.page, Page::PixelWar) && matches!(page, Page::PixelWar)  { // on
-                    self.pixel_war_iframe.remove_attribute("style").unwrap();
                 }
 
                 // FIXME TODO
@@ -403,12 +377,6 @@ impl Component for App {
                     self.tabbar_bait_points.2 = true;
                     true
                 }
-            },
-            AppMsg::SetPixelLockedState(pixel_locked) => {
-                //let should_refresh = self.pixel_locked != pixel_locked;
-                //self.pixel_locked = pixel_locked;
-                //should_refresh
-                false
             },
         }
     }
