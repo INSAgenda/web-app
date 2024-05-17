@@ -7,4 +7,3 @@ src/api/gen_code.rs
 .vscode/settings.json
 /locales/
 .DS_Store
-post-build.sh
