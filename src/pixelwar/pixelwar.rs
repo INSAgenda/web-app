@@ -5,7 +5,7 @@ use crate::prelude::*;
 const PIXELWAR_IFRAME_URL: &str = "http://localhost:8000";
 
 #[cfg(not(feature = "debug"))]
-const PIXELWAR_IFRAME_URL: &str = "https://insaplace2.insagenda.fr";
+const PIXELWAR_IFRAME_URL: &str = "https://insaplace.insagenda.fr";
 
 #[derive(Serialize, Deserialize)]
 struct InsaplaceCookies {
