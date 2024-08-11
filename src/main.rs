@@ -114,7 +114,6 @@ pub struct App {
     event_closing: bool,
     event_popup_size: Option<usize>,
     iframe: web_sys::Element,
-    pixel_locked: bool,
 }
 
 impl Component for App {
@@ -213,8 +212,7 @@ impl Component for App {
             page,
             event_closing: false,
             event_popup_size: None,
-            iframe,
-            pixel_locked: false,
+            iframe
         }
     }
 
@@ -385,7 +383,7 @@ impl Component for App {
     
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
-            Page::Agenda if !self.pixel_locked => html!(<>
+            Page::Agenda => html!(<>
                 <Agenda
                     events={Rc::clone(&self.events)}
                     app_link={ctx.link().clone()}
@@ -395,7 +393,7 @@ impl Component for App {
                     seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
-            Page::Event { eid } if !self.pixel_locked  => {
+            Page::Event { eid }  => {
                 let event = match self.events.iter().find(|e| e.eid == *eid) {
                     Some(event) => event.to_owned(),
                     None => {
@@ -415,11 +413,11 @@ impl Component for App {
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
-            Page::Friends if !self.pixel_locked => html!(<>
+            Page::Friends => html!(<>
                 <FriendsPage friends={Rc::clone(&self.friends)} app_link={ctx.link().clone()} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
-            Page::FriendAgenda { pseudo } if !self.pixel_locked  => {
+            Page::FriendAgenda { pseudo } => {
                 let email = format!("{pseudo}@insa-rouen.fr");
                 let uid = match self.friends.deref().as_ref().and_then(|f| f.friends.iter().find(|f| f.0.email == *email)) {
                     Some(f) => f.0.uid,
@@ -439,12 +437,12 @@ impl Component for App {
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
-            Page::Mastodon if !self.pixel_locked  => html!(<>
+            Page::Mastodon  => html!(<>
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Settings => html!(<>
                 <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
-                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} others_disabled={self.pixel_locked} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Rick => {
                 let random = js_sys::Math::random();
@@ -453,7 +451,7 @@ impl Component for App {
                 VNode::from_html_unchecked(raw_html.into())
             },
             _ => html!(<>
-                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} others_disabled={self.pixel_locked} />
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
 
         }
