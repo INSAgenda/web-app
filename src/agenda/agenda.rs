@@ -26,7 +26,7 @@ pub enum AgendaMsg {
     Goto{ day: u32, month: u32, year: i32 },
     Refresh,
     PushColors,
-    AppMsg(AppMsg),
+    AppMsg(Box<AppMsg>),
 }
 
 #[derive(Properties, Clone)]
@@ -164,7 +164,7 @@ impl Component for Agenda {
                 false
             },
             AgendaMsg::AppMsg(msg) => {
-                ctx.props().app_link.send_message(msg);
+                ctx.props().app_link.send_message(*msg);
                 false
             }
         }

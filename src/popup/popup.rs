@@ -108,14 +108,14 @@ impl Component for Popup {
                 true
             }
             PopupMsg::AppMsg(msg) => {
-                ctx.props().agenda_link.send_message(AgendaMsg::AppMsg(msg));
+                ctx.props().agenda_link.send_message(AgendaMsg::AppMsg(Box::new(msg)));
                 false
             }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let onclick_close = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Agenda)));
+        let onclick_close = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(Box::new(AppMsg::SetPage(Page::Agenda))));
 
         // Friend counter
         let friends: Vec<_> = ctx.props().friends.deref().as_ref().map(|friends| {
