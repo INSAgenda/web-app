@@ -239,6 +239,9 @@ impl Component for App {
                 matches!(self.page, Page::FriendAgenda { .. } )
             },
             AppMsg::ScheduleSuccess(events) => {
+                if self.events.len() <= 50 {
+                    alert_no_reporting("Votre agenda semble quasiment vide. Cochez bien tous vos groupes dans les paramètres.");
+                }
                 self.events = Rc::new(events);
                 matches!(self.page, Page::Agenda | Page::Event { .. })
             },
