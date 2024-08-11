@@ -407,7 +407,7 @@ impl Component for App {
                     <Agenda
                         events={Rc::clone(&self.events)}
                         app_link={ctx.link().clone()}
-                        popup={Some((event, self.event_closing, self.event_popup_size.to_owned()))}
+                        popup={Some(event)}
                         friends={Rc::clone(&self.friends)}
                         user_info={Rc::clone(&self.user_info)}
                         comment_counts={Rc::clone(&self.comment_counts)}

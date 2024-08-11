@@ -103,7 +103,7 @@ impl Component for EventComp {
 
         // Render
         let eid = ctx.props().event.eid.clone(); // FIXME: what if eid contains slashes and stuff?
-        let onclick = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Event { eid: eid.clone() } )));
+        let onclick = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(Box::new(AppMsg::SetPage(Page::Event { eid: eid.clone() } ))));
         template_html!(
             "src/event/event.html",
             teachers = { ctx.props().event.teachers.join(", ")},

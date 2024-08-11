@@ -34,7 +34,7 @@ pub struct AgendaProps {
     pub app_link: AppLink,
     pub events: Rc<Vec<RawEvent>>,
     #[prop_or_default]
-    pub popup: Option<(RawEvent, bool, Option<usize>)>,
+    pub popup: Option<RawEvent>,
     #[prop_or_default]
     pub profile_src: Option<String>,
     pub user_info: Rc<Option<UserInfo>>,
@@ -198,7 +198,6 @@ impl Component for Agenda {
         let mut day_names = Vec::new();
         for d in 0..6 {
             let day_start = Paris.from_local_datetime(&current_day.and_hms_opt(0,0,0).unwrap()).unwrap().timestamp() as u64;
-            let selected_event_other_day = !mobile && ctx.props().popup.as_ref().map(|(e,is_closing,_)| !is_closing && !(day_start..day_start+86400).contains(&e.start_unixtime)).unwrap_or(false);
 
             // Iterate over events, starting from the first one that starts during the current day
             let mut idx = match ctx.props().events.binary_search_by_key(&day_start, |e| e.start_unixtime) {
@@ -249,18 +248,8 @@ impl Component for Agenda {
 
             // Generate day styles
             let mut day_style = String::new();
-            let mut day_name_style = String::new();
             if mobile {
                 day_style.push_str(&format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20));
-            } else {
-                if selected_event_other_day {
-                    day_style.push_str("opacity: 0; pointer-events: none;");
-                    day_name_style.push_str("opacity: 0;");
-                }
-                if let Some((event, false, _)) = &ctx.props().popup {
-                    let week_day = Paris.from_local_datetime(&NaiveDateTime::from_timestamp_opt(event.start_unixtime as i64, 0).unwrap()).unwrap().weekday().num_days_from_monday();
-                    day_name_style.push_str(&format!("transform: translateX(calc(-100%*{week_day} + -10px*{week_day}))"));
-                }
             }
 
             let day_name = match SETTINGS.calendar() {
@@ -274,7 +263,7 @@ impl Component for Agenda {
                 },
             };
             day_names.push(html! {
-                <span id={if current_day == self.selected_day {"selected-day"} else {""}} style={day_name_style}>
+                <span id={if current_day == self.selected_day {"selected-day"} else {""}}>
                     { day_name }
                 </span>
             });
@@ -294,7 +283,7 @@ impl Component for Agenda {
                 month={self.selected_day.month()}
                 year={self.selected_day.year()} />
         };
-        let opt_popup = ctx.props().popup.as_ref().map(|(event, _, _)|
+        let opt_popup = ctx.props().popup.as_ref().map(|event|
             html! {
                 <Popup
                     event={event.clone()}
@@ -303,36 +292,9 @@ impl Component for Agenda {
                     user_info={Rc::clone(&ctx.props().user_info)} />
             }
         );
-        let popup_container_style = match &ctx.props().popup {
-            Some((_, false, popup_size)) => match mobile {
-                true => {
-                    let body_height = window().doc().body().unwrap().client_height() as usize;
-                    format!("top: calc(-{body_height}px + 4rem); height: calc({body_height}px - 4rem);") // 4rem is the height of the tabbar
-                }
-                false => match popup_size {
-                    Some(popup_size) => format!("left: calc(-{popup_size}px - 4rem); width: calc({popup_size}px + 4rem);"),
-                    None => "left: -70vw; width: 70vw;".to_string(),
-                }
-            },
-            Some((_, true, popup_size)) => match mobile {
-                true => {
-                    let screen_height = window().inner_height().unwrap().as_f64().unwrap() as usize;
-                    format!("height: {screen_height}px;")
-                }
-                false => match popup_size {
-                    Some(popup_size) => format!("width: {popup_size}px;"),
-                    None => "width: 70vw;".to_string(),
-                }
-            },
-            None => String::new(),
-        };
         
         let day_container_style = if mobile {
             format!("right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000))
-        } else if let Some((event, false, _)) = &ctx.props().popup {
-            let c = self.counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-            let week_day = Paris.from_local_datetime(&NaiveDateTime::from_timestamp_opt(event.start_unixtime as i64, 0).unwrap()).unwrap().weekday().num_days_from_monday();
-            format!("right: calc((100%/6)*{week_day}); c: {};", c) // c is a workarround for a bug in Yew
         } else {
             String::new()
         };
