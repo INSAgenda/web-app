@@ -17,7 +17,6 @@ fn format_day(day_name: Weekday, day: u32) -> String {
 pub struct Agenda {
     selected_day: NaiveDate,
     slider: Rc<RefCell<slider::SliderManager>>,
-    counter: AtomicUsize,
 }
 
 pub enum AgendaMsg {
@@ -51,6 +50,7 @@ impl PartialEq for AgendaProps {
             && self.user_info == other.user_info
             && self.comment_counts == other.comment_counts
             && self.seen_comment_counts == other.seen_comment_counts
+            && self.friends == other.friends
     }
 }
 
@@ -102,8 +102,7 @@ impl Component for Agenda {
 
         Self {
             selected_day: now.date_naive(),
-            slider,
-            counter: AtomicUsize::new(0),
+            slider
         }
     }
 
