@@ -36,38 +36,12 @@ mod api;
 mod prelude;
 mod translation;
 mod colors;
+mod pages;
 
 use mastodon::{init_mastodon, mastodon_mark_all_seen};
-use slider::width;
 use yew::virtual_dom::VNode;
 
 use crate::{prelude::*, settings::SettingsPage};
-
-/// The page that is currently displayed.
-#[derive(Clone, PartialEq)]
-pub enum Page {
-    Settings,
-    Agenda,
-    Friends,
-    FriendAgenda { pseudo: String },
-    Mastodon,
-    Event { eid: String },
-    Rick,
-}
-
-impl Page {
-    fn data_and_title(&self) -> (String, &'static str) {
-        match self {
-            Page::Settings => (String::from("settings"), "Settings"),
-            Page::Agenda => (String::from("agenda"), "Agenda"),
-            Page::Friends => (String::from("friends"), "Friends"),
-            Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
-            Page::Mastodon => (String::from("mastodon"), "Mastodon"),
-            Page::Event { eid } => (format!("event/{eid}"), "Event"),
-            Page::Rick => (String::from("r"), "Rick"),
-        }
-    }
-}
 
 /// A message that can be sent to the `App` component.
 pub enum Msg {
@@ -125,20 +99,8 @@ impl Component for App {
         let link2 = ctx.link().clone();
         let closure = Closure::wrap(Box::new(move |e: web_sys::PopStateEvent| {
             let state = e.state().as_string();
-            match state.as_deref() {
-                Some("settings") => link2.send_message(Msg::SilentSetPage(Page::Settings)),
-                Some("agenda") => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
-                Some("friends") => link2.send_message(Msg::SilentSetPage(Page::Friends)),
-                Some("mastodon") => link2.send_message(Msg::SilentSetPage(Page::Mastodon)),
-                Some("r") => link2.send_message(Msg::SilentSetPage(Page::Rick)),
-                Some(event) if event.starts_with("event/") => {
-                    let eid = event[6..].to_string();
-                    link2.send_message(Msg::SilentSetPage(Page::Event { eid }))
-                }
-                Some(agenda) if agenda.starts_with("friend-agenda/") => link2.send_message(Msg::SilentSetPage(Page::FriendAgenda { pseudo: agenda[14..].to_string() })),
-                _ if e.state().is_null() => link2.send_message(Msg::SilentSetPage(Page::Agenda)),
-                _ => alert(format!("Unknown pop state: {:?}", e.state())),
-            }
+            let page = state.map(|s| Page::from_path(&s)).unwrap_or(Page::Agenda);
+            link2.send_message(Msg::SilentSetPage(page));
         }) as Box<dyn FnMut(_)>);
         window().add_event_listener_with_callback("popstate", closure.as_ref().unchecked_ref()).unwrap();
         closure.forget();
@@ -161,34 +123,7 @@ impl Component for App {
     
         // Open corresponding page
         let path = window().location().pathname().unwrap_or_default();
-        let page = match path.as_str().trim_end_matches('/') {
-            "/settings" => Page::Settings,
-            "/friends" => Page::Friends,
-            "/mastodon" => Page::Mastodon,
-            event if event.starts_with("/event/") => {
-                let eid = event[7..].to_string();
-                let link2 = ctx.link().clone();
-                wasm_bindgen_futures::spawn_local(async move {
-                    sleep(Duration::from_millis(100)).await;
-                    link2.send_message(Msg::SetPage(Page::Event { eid }));
-                });
-                Page::Agenda
-            }
-            friend_agenda if friend_agenda.starts_with("/friend-agenda/") => Page::FriendAgenda { pseudo: friend_agenda[15..].to_string() },
-            "/agenda" => match window().location().hash() { // For compatibility with old links
-                Ok(hash) if hash == "#settings" => Page::Settings,
-                Ok(hash) if hash.is_empty() => Page::Agenda,
-                Ok(hash) => {
-                    alert(format!("Page {hash} not found"));
-                    Page::Agenda
-                },
-                _ => Page::Agenda,
-            }
-            pathname => {
-                alert(format!("Page {pathname} not found"));
-                Page::Agenda
-            }
-        };
+        let page = Page::from_path(&path);
 
         // Set TabBar bait points
         let tabbar_bait_points = (
@@ -415,19 +350,9 @@ impl Component for App {
                 let rick = if random > 0.1 {"rick1"} else {"rick2"};
                 let raw_html = format!(r#"<video class="rick" autoplay src="/assets/{rick}.mp4" style="width: 100%;">Never gonna give you up</video>"#);
                 VNode::from_html_unchecked(raw_html.into())
-            },
-            _ => html!(<>
-                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
-            </>),
-
+            }
         }
     }
-}
-
-/// Redirect the user
-fn redirect(page: &str) {
-    let _ = window().location().set_href(page);
-    log!("Redirecting to {page}");
 }
 
 /// Set status to running
