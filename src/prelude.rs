@@ -1,7 +1,7 @@
 pub use crate::{
     agenda::*, alert::*, api::*, calendar::*, checkbox::*,
     colors::*, comment::*, event::*, friends::*, glider_selector::*, log, popup::Popup, popup::*,
-    settings::*, tabbar::*, translation::*, util::*, App, Msg as AppMsg, pages::*,
+    settings::*, tabbar::*, translation::*, util::*, app::*, pages::*,
 };
 pub use calendrier::{
     Date as RepublicanDate, DateTime as RepublicanDateTime, Month as RepublicanMonth,
