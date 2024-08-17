@@ -33,8 +33,6 @@ pub struct AgendaProps {
     pub app_link: AppLink,
     pub events: Rc<Vec<RawEvent>>,
     #[prop_or_default]
-    pub popup: Option<RawEvent>,
-    #[prop_or_default]
     pub profile_src: Option<String>,
     pub user_info: Rc<Option<UserInfo>>,
     pub comment_counts: Rc<CommentCounts>,
@@ -46,7 +44,6 @@ impl PartialEq for AgendaProps {
     fn eq(&self, other: &Self) -> bool {
         !COLORS_CHANGED.load(Ordering::Relaxed)
             && self.events == other.events
-            && self.popup == other.popup
             && self.user_info == other.user_info
             && self.comment_counts == other.comment_counts
             && self.seen_comment_counts == other.seen_comment_counts
@@ -93,16 +90,10 @@ impl Component for Agenda {
                 link2.send_message(AgendaMsg::Next);
             });
         }
-        
-        // Disable slider if popup is open
-        let slider = slider::SliderManager::init(ctx.link().clone(), -20 * (now.date_naive().num_days_from_ce() - 730000));
-        if ctx.props().popup.is_some() {
-            slider.borrow_mut().disable();
-        }
 
         Self {
             selected_day: now.date_naive(),
-            slider
+            slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date_naive().num_days_from_ce() - 730000))
         }
     }
 
@@ -168,14 +159,9 @@ impl Component for Agenda {
             }
         }
     }
-
-    fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
-        if ctx.props().popup.is_some() {
-            self.slider.borrow_mut().disable();
-        } else {
-            self.slider.borrow_mut().enable();
-        }
-        true
+    
+    fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
+        crate::colors::COLORS_CHANGED.store(false, std::sync::atomic::Ordering::Relaxed);
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -282,15 +268,6 @@ impl Component for Agenda {
                 month={self.selected_day.month()}
                 year={self.selected_day.year()} />
         };
-        let opt_popup = ctx.props().popup.as_ref().map(|event|
-            html! {
-                <Popup
-                    event={event.clone()}
-                    agenda_link={ctx.link().clone()}
-                    friends={Rc::clone(&ctx.props().friends)}
-                    user_info={Rc::clone(&ctx.props().user_info)} />
-            }
-        );
         
         let day_container_style = if mobile {
             format!("right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000))

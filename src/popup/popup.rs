@@ -17,7 +17,7 @@ pub enum PopupMsg {
 #[derive(Properties, Clone)]
 pub struct PopupProps {
     pub event: RawEvent,
-    pub agenda_link: Scope<Agenda>,
+    pub app_link: AppLink,
     pub user_info: Rc<Option<UserInfo>>,
     pub friends: Rc<Option<FriendLists>>,
 }
@@ -75,16 +75,11 @@ impl Component for Popup {
                 let document = window().doc();
                 let el = document.get_element_by_id("popup-color-input").unwrap();
                 let background_color = el.dyn_into::<HtmlInputElement>().unwrap().value();
-
-                COLORS.set(&ctx.props().event.summary, background_color); 
+                COLORS.set(&ctx.props().event.summary, background_color);
 
                 // We need to set this so that other events know that they have to refresh
                 COLORS_CHANGED.store(true, Ordering::Relaxed);
 
-                if !mobile {
-                    ctx.props().agenda_link.send_message(AgendaMsg::Refresh);
-                }
-                
                 true
             }
             PopupMsg::Comment => {
@@ -108,14 +103,14 @@ impl Component for Popup {
                 true
             }
             PopupMsg::AppMsg(msg) => {
-                ctx.props().agenda_link.send_message(AgendaMsg::AppMsg(Box::new(msg)));
+                ctx.props().app_link.send_message(msg);
                 false
             }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let onclick_close = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(Box::new(AppMsg::SetPage(Page::Agenda))));
+        let onclick_close = ctx.props().app_link.callback(move |_| AppMsg::SetPage(Page::Agenda));
 
         // Friend counter
         let friends: Vec<_> = ctx.props().friends.deref().as_ref().map(|friends| {

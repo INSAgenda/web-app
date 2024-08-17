@@ -236,10 +236,6 @@ impl Component for App {
         }
     }
     
-    fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
-        crate::colors::COLORS_CHANGED.store(false, std::sync::atomic::Ordering::Relaxed);
-    }
-    
     fn view(&self, ctx: &Context<Self>) -> Html {
         match &self.page {
             Page::Agenda => html!(<>
@@ -260,15 +256,13 @@ impl Component for App {
                         return html!();
                     }
                 };
+
                 html!(<>
-                    <Agenda
-                        events={Rc::clone(&self.events)}
+                    <Popup
+                        event={event.clone()}
                         app_link={ctx.link().clone()}
-                        popup={Some(event)}
                         friends={Rc::clone(&self.friends)}
-                        user_info={Rc::clone(&self.user_info)}
-                        comment_counts={Rc::clone(&self.comment_counts)}
-                        seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
+                        user_info={Rc::clone(&self.user_info)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
