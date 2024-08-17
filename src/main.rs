@@ -111,8 +111,6 @@ pub struct App {
     seen_comment_counts: Rc<CommentCounts>,
     tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
-    event_closing: bool,
-    event_popup_size: Option<usize>,
     iframe: web_sys::Element,
 }
 
@@ -210,8 +208,6 @@ impl Component for App {
             seen_comment_counts,
             tabbar_bait_points,
             page,
-            event_closing: false,
-            event_popup_size: None,
             iframe
         }
     }
@@ -311,39 +307,6 @@ impl Component for App {
                 }
 
                 let document = window().doc();
-                if let Page::Event { eid } = &page {
-                    let should_mark_as_seen = self.comment_counts.get(eid).copied().unwrap_or_default() != self.seen_comment_counts.get(eid).copied().unwrap_or(0);
-                    let eid2 = eid.clone();
-                    if !matches!(self.page, Page::Event { .. }) || self.event_popup_size.is_none() {
-                        if let Some(day_el) = document.get_element_by_id("day0") {
-                            let rect = day_el.get_bounding_client_rect();
-                            self.event_popup_size = Some((width() as f64 - rect.width() - 2.0 * rect.left()) as usize)
-                        }
-                    }
-                    let app_link = ctx.link().clone();
-                    spawn_local(async move {
-                        window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
-                        sleep(Duration::from_millis(500)).await;
-                        window().doc().body().unwrap().remove_attribute("style").unwrap();
-                        if should_mark_as_seen {
-                            app_link.send_message(Msg::MarkCommentsAsSeen(eid2));
-                        }
-                    });
-                }
-                if matches!((&self.page, &page), (Page::Event { .. }, Page::Agenda)) && !self.event_closing {
-                    self.event_closing = true;
-                    let link = ctx.link().clone();
-                    spawn_local(async move {
-                        window().doc().body().unwrap().set_attribute("style", "overflow: hidden").unwrap();
-                        sleep(Duration::from_millis(500)).await;
-                        link.send_message(Msg::SetPage(Page::Agenda));
-                        window().doc().body().unwrap().remove_attribute("style").unwrap();
-                    });
-                    return true;
-                }
-                if matches!(&page, Page::Agenda) {
-                    self.event_closing = false;
-                }
                 let (data, title) = page.data_and_title();
                 if !silent {
                     if let Ok(history) = window().history() {
