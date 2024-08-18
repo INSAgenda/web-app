@@ -152,7 +152,7 @@ impl CachedData for Colors {
     fn cache_duration() -> u64 { 1800 }
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
         match result {
-            Ok(val) => app_link.send_message(AppMsg::FetchColors(val)),
+            Ok(val) => app_link.send_message(AppMsg::ColorsSuccess(val)),
             Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
         }
     }

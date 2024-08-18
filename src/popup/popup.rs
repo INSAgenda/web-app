@@ -3,11 +3,12 @@ use crate::prelude::*;
 pub struct Popup {
     comments: Option<Vec<Comment>>,
     friend_counter_folded: bool,
+    current_color: String,
 }
 
 pub enum PopupMsg {
     TriggerFriendCounter,
-    ChangeColor,
+    ColorInput,
     ReloadComments,
     Comment,
     CommentsLoaded(Vec<Comment>),
@@ -50,17 +51,19 @@ impl Component for Popup {
             }
         });
 
+        let summary = &ctx.props().event.summary;
+        let bg_color = ctx.props().colors.get(summary).map(|c| c.to_string()).unwrap_or_else(|| String::from("#CB6CE6"));
+
         Self {
             comments: None,
             friend_counter_folded: true,
+            current_color: bg_color,
         }
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        if ctx.props().event.eid != old_props.event.eid {
-            *self = Component::create(ctx);
-        }
-        true
+    fn destroy(&mut self, ctx: &Context<Self>) {
+        let summary = ctx.props().event.summary.to_owned();
+        ctx.props().app_link.send_message(AppMsg::UpdateColor { summary, color: std::mem::take(&mut self.current_color) })
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -70,16 +73,16 @@ impl Component for Popup {
                 self.comments = Some(new_comments);
                 true
             }
+            PopupMsg::ColorInput => {
+                let document = window().doc();
+                let el = document.get_element_by_id("popup-color-input").unwrap();
+                let color = el.dyn_into::<HtmlInputElement>().unwrap().value();
+                self.current_color = color;
+                true
+            },
             PopupMsg::ReloadComments => {
                 *self = Component::create(ctx);
                 false
-            }
-            PopupMsg::ChangeColor => {
-                let document = window().doc();
-                let el = document.get_element_by_id("popup-color-input").unwrap();
-                let background_color = el.dyn_into::<HtmlInputElement>().unwrap().value();
-                // TODO send message to app
-                true
             }
             PopupMsg::Comment => {
                 let el = window().doc().get_element_by_id("comment-textarea-top").unwrap();
@@ -126,8 +129,8 @@ impl Component for Popup {
         let only_one_friend = friend_count == 1;
         let z_index_iter = 1..friend_count+1;
 
-        let summary = &ctx.props().event.summary;
-        let bg_color = ctx.props().colors.get(summary).map(|c| c.to_string()).unwrap_or_else(|| String::from("#CB6CE6"));
+        let summary = ctx.props().event.summary.to_owned();
+        let bg_color = &self.current_color;
         let name = ctx.props().event.format_name();
         let opt_location = ctx.props().event.format_location();
 
@@ -156,8 +159,8 @@ impl Component for Popup {
             name = {&name},
             bg_color = {bg_color.clone()},
             onclick_close = {onclick_close.clone()},
-            oninput_save = {ctx.link().callback(|_| PopupMsg::ChangeColor)},
             onclick_fold = {ctx.link().callback(|_| PopupMsg::TriggerFriendCounter)},
+            input_color = {ctx.link().callback(|_| PopupMsg::ColorInput)},
             opt_location = {&opt_location},
             event_color = {event_color.clone()},
             alt_iter = { names.iter().map(|name| format!("Avatar of {}", name)) },

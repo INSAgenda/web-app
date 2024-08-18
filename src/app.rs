@@ -7,12 +7,13 @@ use crate::{prelude::*, settings::SettingsPage};
 pub enum AppMsg {
     /// Switch page
     SetPage { page: Page, silent: bool },
-    FetchColors(HashMap<String, String>),
-    UpdateFriends(FriendLists),
     MarkCommentsAsSeen(String),
     MastodonNotification,
+    UpdateFriends(FriendLists), // Use to locally update the friendlist
+    UpdateColor { summary: String, color: String },
 
     // Data updating messages sent by the loader in /src/api/generic.rs
+    ColorsSuccess(HashMap<String, String>),
     UserInfoSuccess(UserInfo),
     FriendsSuccess(FriendLists),
     FriendsEventsSuccess{ uid: i64, events: Vec<RawEvent> },
@@ -111,7 +112,7 @@ impl Component for App {
     /// Most of the messages handled in the function are sent by the data loader to update the data or report an error.
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            AppMsg::UpdateFriends(friends) => {
+            AppMsg::FriendsSuccess(friends) => {
                 // Detect changes to add bait point
                 if let Some(old_friends) = self.friends.as_ref() {
                     for new_incoming in &friends.incoming {
@@ -126,6 +127,10 @@ impl Component for App {
                 
                 matches!(self.page, Page::Friends | Page::Event { .. }) || self.tabbar_bait_points.1
             },
+            AppMsg::UpdateFriends(friends) => {
+                self.friends = Rc::new(Some(friends));
+                false
+            }
             AppMsg::FriendsEventsSuccess { uid, events } => {
                 self.friends_events.insert(uid, events);
                 matches!(self.page, Page::FriendAgenda { .. } )
@@ -154,10 +159,6 @@ impl Component for App {
                 self.user_info = Rc::new(Some(user_info));
 
                 should_refresh || matches!(self.page, Page::Settings)
-            },
-            AppMsg::FriendsSuccess(friends) => {
-                self.friends = Rc::new(Some(friends));
-                matches!(self.page, Page::Friends)
             },
             AppMsg::CommentCountsSuccess(comment_counts) => {
                 self.comment_counts = Rc::new(comment_counts);
@@ -213,7 +214,7 @@ impl Component for App {
                 self.page = page;
                 true
             },
-            AppMsg::FetchColors(new_colors) => {
+            AppMsg::ColorsSuccess(new_colors) => {
                 self.colors = Rc::new(new_colors);
                 matches!(self.page, Page::Agenda | Page::Event { .. })
             },
@@ -236,6 +237,22 @@ impl Component for App {
                     true
                 }
             },
+            AppMsg::UpdateColor { summary, color } => {
+                let to_publish = vec!((summary.clone(), color.clone()));
+
+                let mut new_colors: HashMap<_, _> = self.colors.as_ref().clone();
+                new_colors.insert(summary, color);
+                self.colors = Rc::new(new_colors);
+                Colors::save(&self.colors);
+
+                spawn_local(async move {
+                    if let Err(e) = api_post(to_publish, "colors").await {
+                        alert(format!("Failed to update color: {e}"));
+                    };
+                });
+
+                matches!(self.page, Page::Agenda | Page::FriendAgenda { .. } | Page::Event { .. })
+            }
         }
     }
     
