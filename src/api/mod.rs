@@ -4,8 +4,6 @@ mod error;
 pub use error::*;
 mod gen_code;
 pub use gen_code::gen_code;
-mod colors;
-pub use colors::*;
 mod generic;
 pub use generic::*;
 mod friends;

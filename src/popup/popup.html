@@ -29,14 +29,14 @@
             <h4>Couleur</h4>
             <p>Cliquez sur la prévisualisation ci-dessous pour changer la couleur de tous les cours de {{summary}}.</p>
             <div id="popup-color-picker">
-                <div style="background-color: {{event_color}}80; border-left: 0.3rem solid {{event_color}};">
+                <div style="background-color: {{bg_color}}80; border-left: 0.3rem solid {{bg_color}};">
                     <div class="event-container">
                         <span class="name">{{name}}</span>
                         <span class="teacher">{{teachers}}</span>
                         <span opt class="location">{{opt_location}}</span>
                     </div>
                 </div>
-                <input type="color" id="popup-color-input" value={{event_color}} oninput={{onclick_save}} />
+                <input type="color" id="popup-color-input" value={{bg_color}} oninput={{oninput_save}} />
             </div>
         </section>
         <section>

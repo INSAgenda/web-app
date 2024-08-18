@@ -34,7 +34,6 @@ mod slider;
 mod api;
 mod prelude;
 mod translation;
-mod colors;
 mod pages;
 
 use prelude::*;

@@ -24,7 +24,6 @@ pub enum AgendaMsg {
     Next,
     Goto{ day: u32, month: u32, year: i32 },
     Refresh,
-    PushColors,
     AppMsg(Box<AppMsg>),
 }
 
@@ -38,16 +37,17 @@ pub struct AgendaProps {
     pub comment_counts: Rc<CommentCounts>,
     pub seen_comment_counts: Rc<CommentCounts>,
     pub friends: Rc<Option<FriendLists>>,
+    pub colors: Rc<Colors>,
 }
 
 impl PartialEq for AgendaProps {
     fn eq(&self, other: &Self) -> bool {
-        !COLORS_CHANGED.load(Ordering::Relaxed)
-            && self.events == other.events
+        self.events == other.events
             && self.user_info == other.user_info
             && self.comment_counts == other.comment_counts
             && self.seen_comment_counts == other.seen_comment_counts
             && self.friends == other.friends
+            && self.colors == other.colors
     }
 }
 
@@ -58,27 +58,6 @@ impl Component for Agenda {
     fn create(ctx: &Context<Self>) -> Self {
         let now = chrono::Local::now();
         let now = now.with_timezone(&Paris);
-
-        // Trigger color sync when page is closed
-        let link = ctx.link().clone();
-        let unload = Closure::wrap(Box::new(move |_: web_sys::Event| {
-            link.send_message(AgendaMsg::PushColors);
-        }) as Box<dyn FnMut(_)>);
-        window().add_event_listener_with_callback("unload", unload.as_ref().unchecked_ref()).unwrap();
-        unload.forget();
-
-        // Get colors
-        crate::COLORS.fetch_colors(ctx.props().app_link.clone());
-
-        // Auto-push colors every 15s if needed
-        let link = ctx.link().clone();
-        let push_colors = Closure::wrap(Box::new(move || {
-            link.send_message(AgendaMsg::PushColors);
-        }) as Box<dyn FnMut()>);
-        if let Err(e) = window().set_interval_with_callback_and_timeout_and_arguments(push_colors.as_ref().unchecked_ref(), 1000*15, &Array::new()) {
-            sentry_report(JsValue::from(&format!("Failed to set timeout: {:?}", e)));
-        }
-        push_colors.forget();
 
         // Switch to next day if it's late or to monday if it's weekend
         let weekday = now.weekday();
@@ -148,20 +127,12 @@ impl Component for Agenda {
                     Err(_) => log!("reflectTheme not found")
                 }
                 true
-            },
-            AgendaMsg::PushColors => {
-                crate::COLORS.push_colors();
-                false
-            },
+            }
             AgendaMsg::AppMsg(msg) => {
                 ctx.props().app_link.send_message(*msg);
                 false
             }
         }
-    }
-    
-    fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
-        crate::colors::COLORS_CHANGED.store(false, std::sync::atomic::Ordering::Relaxed);
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -225,7 +196,8 @@ impl Component for Agenda {
                         agenda_link={ctx.link().clone()}
                         vertical_offset={overlapping_events.iter().position(|i2| i == *i2).map(|i| (i, overlapping_events.len())).unwrap_or((0, 1))}
                         comment_counts={Rc::clone(&ctx.props().comment_counts)}
-                        seen_comment_counts={Rc::clone(&ctx.props().seen_comment_counts)}>
+                        seen_comment_counts={Rc::clone(&ctx.props().seen_comment_counts)}
+                        colors={Rc::clone(&ctx.props().colors)}>
                     </EventComp>
                 });
                 idx += 1;

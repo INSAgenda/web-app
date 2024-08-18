@@ -1,5 +1,5 @@
 use crate::mastodon::{init_mastodon, mastodon_mark_all_seen};
-use yew::virtual_dom::VNode;
+use yew::virtual_dom::{VChild, VNode};
 
 use crate::{prelude::*, settings::SettingsPage};
 
@@ -42,6 +42,7 @@ pub struct App {
     friends: Rc<Option<FriendLists>>,
     friends_events: FriendsEvents,
     comment_counts: Rc<CommentCounts>,
+    colors: Rc<Colors>,
     seen_comment_counts: Rc<CommentCounts>,
     tabbar_bait_points: (bool, bool, bool, bool),
     page: Page,
@@ -69,6 +70,7 @@ impl Component for App {
         let friends = CachedData::init(ctx.link().clone());
         let friends_events = FriendsEvents::init();
         let comment_counts = CachedData::init(ctx.link().clone()).unwrap_or_default();
+        let colors = CachedData::init(ctx.link().clone()).unwrap_or_default();
 
         // Load seen comment counts
         let local_storage = window().local_storage().unwrap().unwrap();
@@ -98,6 +100,7 @@ impl Component for App {
             friends: Rc::new(friends),
             friends_events,
             comment_counts: Rc::new(comment_counts),
+            colors: Rc::new(colors),
             seen_comment_counts,
             tabbar_bait_points,
             page,
@@ -211,8 +214,8 @@ impl Component for App {
                 true
             },
             AppMsg::FetchColors(new_colors) => {
-                crate::COLORS.update_colors(new_colors);
-                true
+                self.colors = Rc::new(new_colors);
+                matches!(self.page, Page::Agenda | Page::Event { .. })
             },
             AppMsg::MarkCommentsAsSeen(eid) => {
                 let val = self.comment_counts.get(&eid).copied().unwrap_or_default();
@@ -245,7 +248,8 @@ impl Component for App {
                     user_info={Rc::clone(&self.user_info)}
                     friends={Rc::clone(&self.friends)}
                     comment_counts={Rc::clone(&self.comment_counts)}
-                    seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
+                    seen_comment_counts={Rc::clone(&self.seen_comment_counts)}
+                    colors={Rc::clone(&self.colors)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Event { eid }  => {
@@ -262,7 +266,8 @@ impl Component for App {
                         event={event.clone()}
                         app_link={ctx.link().clone()}
                         friends={Rc::clone(&self.friends)}
-                        user_info={Rc::clone(&self.user_info)} />
+                        user_info={Rc::clone(&self.user_info)}
+                        colors={Rc::clone(&self.colors)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
@@ -286,7 +291,8 @@ impl Component for App {
                         friends={Rc::clone(&self.friends)}
                         user_info={Rc::clone(&self.user_info)}
                         comment_counts={Rc::clone(&self.comment_counts)}
-                        seen_comment_counts={Rc::clone(&self.seen_comment_counts)} />
+                        seen_comment_counts={Rc::clone(&self.seen_comment_counts)}
+                        colors={Rc::clone(&self.colors)} />
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },

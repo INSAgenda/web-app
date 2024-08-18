@@ -1,4 +1,4 @@
-use crate::{prelude::*, slider::width};
+use crate::prelude::*;
 
 pub struct Popup {
     comments: Option<Vec<Comment>>,
@@ -7,7 +7,7 @@ pub struct Popup {
 
 pub enum PopupMsg {
     TriggerFriendCounter,
-    SaveColors,
+    ChangeColor,
     ReloadComments,
     Comment,
     CommentsLoaded(Vec<Comment>),
@@ -20,11 +20,15 @@ pub struct PopupProps {
     pub app_link: AppLink,
     pub user_info: Rc<Option<UserInfo>>,
     pub friends: Rc<Option<FriendLists>>,
+    pub colors: Rc<Colors>,
 }
 
 impl PartialEq for PopupProps {
     fn eq(&self, other: &Self) -> bool {
-        self.event == other.event && self.user_info == other.user_info
+        self.event == other.event
+            && self.user_info == other.user_info
+            && self.friends == other.friends
+            && self.colors.get(&self.event.summary) == other.colors.get(&self.event.summary)
     }
 }
 
@@ -70,16 +74,11 @@ impl Component for Popup {
                 *self = Component::create(ctx);
                 false
             }
-            PopupMsg::SaveColors => {
-                let mobile = width() <= 1000;
+            PopupMsg::ChangeColor => {
                 let document = window().doc();
                 let el = document.get_element_by_id("popup-color-input").unwrap();
                 let background_color = el.dyn_into::<HtmlInputElement>().unwrap().value();
-                COLORS.set(&ctx.props().event.summary, background_color);
-
-                // We need to set this so that other events know that they have to refresh
-                COLORS_CHANGED.store(true, Ordering::Relaxed);
-
+                // TODO send message to app
                 true
             }
             PopupMsg::Comment => {
@@ -127,8 +126,8 @@ impl Component for Popup {
         let only_one_friend = friend_count == 1;
         let z_index_iter = 1..friend_count+1;
 
-        let event_color = COLORS.get(&ctx.props().event.summary);
         let summary = &ctx.props().event.summary;
+        let bg_color = ctx.props().colors.get(summary).map(|c| c.to_string()).unwrap_or_else(|| String::from("#CB6CE6"));
         let name = ctx.props().event.format_name();
         let opt_location = ctx.props().event.format_location();
 
@@ -155,8 +154,9 @@ impl Component for Popup {
             teachers = {ctx.props().event.teachers.join(", ")},
             time = {ctx.props().event.format_time()},
             name = {&name},
+            bg_color = {bg_color.clone()},
             onclick_close = {onclick_close.clone()},
-            onclick_save = {ctx.link().callback(|_| PopupMsg::SaveColors)},
+            oninput_save = {ctx.link().callback(|_| PopupMsg::ChangeColor)},
             onclick_fold = {ctx.link().callback(|_| PopupMsg::TriggerFriendCounter)},
             opt_location = {&opt_location},
             event_color = {event_color.clone()},
