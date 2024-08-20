@@ -24,7 +24,7 @@
     <link data-trunk rel="inline" href="src/comment/comment.css" />
     <link data-trunk rel="inline" href="styles/waiting-screen.css" />
     <link data-trunk rel="inline" href="styles/themes.css" />
-    <link data-trunk rel="rust" data-integrity="none" data-initializer="post-build.sh" data-wasm-no-import />
+    <link data-trunk rel="rust" data-integrity="none" data-initializer="src/initializer.mjs" />
 
     <link data-trunk rel="copy-dir" href="images" />
     <script common_code="head">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
@@ -60,109 +60,6 @@
         if (typeof navigator.serviceWorker !== 'undefined') {
             navigator.serviceWorker.register('/sw.js?v=2')
         }
-    </script>
-    <script>
-        var init;
-        var bindings;
-
-        const quotes = [
-            {
-                text: "We are all Satoshi.",
-                author: "Satoshi"
-            },
-            {
-                text: "Never gonna give you up. Never gonna let you down.",
-                author: "Rick"
-            },
-            {
-                text: "Soutenir que l'on ne se préoccupe pas de la vie privée car on n'a rien à cacher, c'est comme soutenir que l'on ne se préoccupe pas de la liberté d'expression parce qu'on n'a rien à dire.",
-                author: "Edward Snowden"
-            },
-            {
-                text: "Piètre disciple qui ne dépasse pas son maître.",
-                author: "Léonard de Vinci"
-            },
-            {
-                text: "FTX va bien.",
-                author: "SBF"
-            },
-            {
-                text: "The missile knows where it is at all times. It knows this because it knows where it isn't.",
-                author: "1997 Air Force"
-            }
-        ];
-        
-        const waiting_screen = document.getElementById("waiting-screen");
-        const waiting_screen_message = document.getElementById("waiting-screen-message");
-        const quote = document.getElementById("waiting-screen-quote");
-        const quote_text = document.getElementById("waiting-screen-quote-text");
-        const quote_author = document.getElementById("waiting-screen-quote-author");
-        const lds_ring = document.querySelector(".lds-ring");
-        const lds_bar = document.querySelector(".lds-bar");
-
-        function display_quote() {
-            quote.style.opacity = "1";
-            let quote_index = Math.floor(Math.random() * quotes.length);
-            quote_text.innerText = quotes[quote_index].text;
-            quote_author.innerText = quotes[quote_index].author;
-            setTimeout(() => {
-                quote.style.opacity = "0";
-            }, 8600);
-        }
-
-        var interval;
-        let inlined_initializer = {
-            onStart: () => {
-                waiting_screen.style.opacity = "1";
-
-                // Each 9 seconds, change the displayed quote
-                setTimeout(() => {
-                    interval = setInterval(() => {
-                        quote.style.opacity = "1";
-                        let quote_index = Math.floor(Math.random() * quotes.length);
-                        quote_text.innerText = quotes[quote_index].text;
-                        quote_author.innerText = quotes[quote_index].author;
-                        setTimeout(() => {
-                            quote.style.opacity = "0";
-                        }, 8600);
-                    }, 9000);
-                }, 2000);
-            },
-            onProgress: ({current, total}) => {
-                if (total === 0) {
-                    lds_ring.style.display = "block";
-                    lds_bar.style.display = "none";
-                } else {
-                    lds_ring.style.display = "none";
-                    lds_bar.style.display = "block";
-                    lds_bar.querySelector("div").style.width = `${(current / total) * 100}%`;
-                }
-            },
-            onComplete: () => {
-                clearInterval(interval);
-            },
-            onSuccess: (wasm) => {
-                lds_ring.style.display = "none";
-                lds_bar.style.display = "none";
-                successul_load = true;
-            },
-            onFailure: (error) => {
-                console.error("Failed to load the app", error);
-                waiting_screen_message.innerText = "Quelque chose ne va pas...";
-                setTimeout(() => { window.location.reload(); }, 700);
-            }
-        };
-        
-        import('/agenda/JS_FILE')
-            .then(module => {
-                init = module.default;
-            })
-            .then(() => {
-                return __trunkInitializer('/agenda/WASM_FILE', inlined_initializer);
-            })
-            .catch(error => {
-                inlined_initializer.onFailure(error);
-            });
     </script>
     <script>
         /* https://css-tricks.com/the-trick-to-viewport-units-on-mobile/#css-custom-properties-the-trick-to-correct-sizing */
