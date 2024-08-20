@@ -4,6 +4,7 @@ pub struct Popup {
     comments: Option<Vec<Comment>>,
     friend_counter_folded: bool,
     current_color: String,
+    color_changed: bool,
 }
 
 pub enum PopupMsg {
@@ -58,12 +59,16 @@ impl Component for Popup {
             comments: None,
             friend_counter_folded: true,
             current_color: bg_color,
+            color_changed: false,
         }
     }
 
     fn destroy(&mut self, ctx: &Context<Self>) {
-        let summary = ctx.props().event.summary.to_owned();
-        ctx.props().app_link.send_message(AppMsg::UpdateColor { summary, color: std::mem::take(&mut self.current_color) })
+        if self.color_changed {
+            let summary = ctx.props().event.summary.to_owned();
+            ctx.props().app_link.send_message(AppMsg::UpdateColor { summary, color: std::mem::take(&mut self.current_color) })    
+        }
+        ctx.props().app_link.send_message(AppMsg::MarkCommentsAsSeen(ctx.props().event.eid.clone()));
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -78,6 +83,7 @@ impl Component for Popup {
                 let el = document.get_element_by_id("popup-color-input").unwrap();
                 let color = el.dyn_into::<HtmlInputElement>().unwrap().value();
                 self.current_color = color;
+                self.color_changed = true;
                 true
             },
             PopupMsg::ReloadComments => {
