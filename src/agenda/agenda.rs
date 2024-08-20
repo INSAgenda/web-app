@@ -17,7 +17,6 @@ fn format_day(day_name: Weekday, day: u32) -> String {
 pub struct Agenda {
     selected_day: NaiveDate,
     slider: Rc<RefCell<slider::SliderManager>>,
-    counter: AtomicUsize,
 }
 
 pub enum AgendaMsg {
@@ -25,8 +24,7 @@ pub enum AgendaMsg {
     Next,
     Goto{ day: u32, month: u32, year: i32 },
     Refresh,
-    PushColors,
-    AppMsg(AppMsg),
+    AppMsg(Box<AppMsg>),
 }
 
 #[derive(Properties, Clone)]
@@ -34,23 +32,24 @@ pub struct AgendaProps {
     pub app_link: AppLink,
     pub events: Rc<Vec<RawEvent>>,
     #[prop_or_default]
-    pub popup: Option<(RawEvent, bool, Option<usize>)>,
-    #[prop_or_default]
     pub profile_src: Option<String>,
+    #[prop_or_default]
+    pub selected_day: Option<NaiveDate>,
     pub user_info: Rc<Option<UserInfo>>,
     pub comment_counts: Rc<CommentCounts>,
     pub seen_comment_counts: Rc<CommentCounts>,
     pub friends: Rc<Option<FriendLists>>,
+    pub colors: Rc<Colors>,
 }
 
 impl PartialEq for AgendaProps {
     fn eq(&self, other: &Self) -> bool {
-        !COLORS_CHANGED.load(Ordering::Relaxed)
-            && self.events == other.events
-            && self.popup == other.popup
+        self.events == other.events
             && self.user_info == other.user_info
             && self.comment_counts == other.comment_counts
             && self.seen_comment_counts == other.seen_comment_counts
+            && self.friends == other.friends
+            && self.colors == other.colors
     }
 }
 
@@ -59,51 +58,29 @@ impl Component for Agenda {
     type Properties = AgendaProps;
 
     fn create(ctx: &Context<Self>) -> Self {
-        let now = chrono::Local::now();
-        let now = now.with_timezone(&Paris);
-
-        // Trigger color sync when page is closed
-        let link = ctx.link().clone();
-        let unload = Closure::wrap(Box::new(move |_: web_sys::Event| {
-            link.send_message(AgendaMsg::PushColors);
-        }) as Box<dyn FnMut(_)>);
-        window().add_event_listener_with_callback("unload", unload.as_ref().unchecked_ref()).unwrap();
-        unload.forget();
-
-        // Get colors
-        crate::COLORS.fetch_colors(ctx.props().app_link.clone());
-
-        // Auto-push colors every 15s if needed
-        let link = ctx.link().clone();
-        let push_colors = Closure::wrap(Box::new(move || {
-            link.send_message(AgendaMsg::PushColors);
-        }) as Box<dyn FnMut()>);
-        if let Err(e) = window().set_interval_with_callback_and_timeout_and_arguments(push_colors.as_ref().unchecked_ref(), 1000*15, &Array::new()) {
-            sentry_report(JsValue::from(&format!("Failed to set timeout: {:?}", e)));
-        }
-        push_colors.forget();
-
-        // Switch to next day if it's late or to monday if it's weekend
-        let weekday = now.weekday();
-        let has_event = has_event_on_day(&ctx.props().events, now.date_naive(), Weekday::Sat);
-        if now.hour() >= 19 || weekday == Weekday::Sun || (weekday == Weekday::Sat && !has_event) {
-            let link2 = ctx.link().clone();
-            spawn_local(async move {
-                sleep(Duration::from_millis(500)).await;
-                link2.send_message(AgendaMsg::Next);
-            });
-        }
+        let selected_day = match ctx.props().selected_day {
+            Some(selected_day) => selected_day,
+            None => {
+                let now = chrono::Local::now();
+                let now = now.with_timezone(&Paris);
         
-        // Disable slider if popup is open
-        let slider = slider::SliderManager::init(ctx.link().clone(), -20 * (now.date_naive().num_days_from_ce() - 730000));
-        if ctx.props().popup.is_some() {
-            slider.borrow_mut().disable();
-        }
+                // Switch to next day if it's late or to monday if it's weekend
+                let weekday = now.weekday();
+                let has_event = has_event_on_day(&ctx.props().events, now.date_naive(), Weekday::Sat);
+                if now.hour() >= 19 || weekday == Weekday::Sun || (weekday == Weekday::Sat && !has_event) {
+                    let link2 = ctx.link().clone();
+                    spawn_local(async move {
+                        sleep(Duration::from_millis(500)).await;
+                        link2.send_message(AgendaMsg::Next);
+                    });
+                }
+                now.date_naive()
+            }
+        };
 
         Self {
-            selected_day: now.date_naive(),
-            slider,
-            counter: AtomicUsize::new(0),
+            selected_day,
+            slider: slider::SliderManager::init(ctx.link().clone(), -20 * (selected_day.num_days_from_ce() - 730000))
         }
     }
 
@@ -158,25 +135,12 @@ impl Component for Agenda {
                     Err(_) => log!("reflectTheme not found")
                 }
                 true
-            },
-            AgendaMsg::PushColors => {
-                crate::COLORS.push_colors();
-                false
-            },
+            }
             AgendaMsg::AppMsg(msg) => {
-                ctx.props().app_link.send_message(msg);
+                ctx.props().app_link.send_message(*msg);
                 false
             }
         }
-    }
-
-    fn changed(&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
-        if ctx.props().popup.is_some() {
-            self.slider.borrow_mut().disable();
-        } else {
-            self.slider.borrow_mut().enable();
-        }
-        true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -198,7 +162,6 @@ impl Component for Agenda {
         let mut day_names = Vec::new();
         for d in 0..6 {
             let day_start = Paris.from_local_datetime(&current_day.and_hms_opt(0,0,0).unwrap()).unwrap().timestamp() as u64;
-            let selected_event_other_day = !mobile && ctx.props().popup.as_ref().map(|(e,is_closing,_)| !is_closing && !(day_start..day_start+86400).contains(&e.start_unixtime)).unwrap_or(false);
 
             // Iterate over events, starting from the first one that starts during the current day
             let mut idx = match ctx.props().events.binary_search_by_key(&day_start, |e| e.start_unixtime) {
@@ -241,7 +204,8 @@ impl Component for Agenda {
                         agenda_link={ctx.link().clone()}
                         vertical_offset={overlapping_events.iter().position(|i2| i == *i2).map(|i| (i, overlapping_events.len())).unwrap_or((0, 1))}
                         comment_counts={Rc::clone(&ctx.props().comment_counts)}
-                        seen_comment_counts={Rc::clone(&ctx.props().seen_comment_counts)}>
+                        seen_comment_counts={Rc::clone(&ctx.props().seen_comment_counts)}
+                        colors={Rc::clone(&ctx.props().colors)}>
                     </EventComp>
                 });
                 idx += 1;
@@ -249,18 +213,8 @@ impl Component for Agenda {
 
             // Generate day styles
             let mut day_style = String::new();
-            let mut day_name_style = String::new();
             if mobile {
                 day_style.push_str(&format!("position: absolute; left: {}%;", (current_day.num_days_from_ce()-730000) * 20));
-            } else {
-                if selected_event_other_day {
-                    day_style.push_str("opacity: 0; pointer-events: none;");
-                    day_name_style.push_str("opacity: 0;");
-                }
-                if let Some((event, false, _)) = &ctx.props().popup {
-                    let week_day = Paris.from_local_datetime(&NaiveDateTime::from_timestamp_opt(event.start_unixtime as i64, 0).unwrap()).unwrap().weekday().num_days_from_monday();
-                    day_name_style.push_str(&format!("transform: translateX(calc(-100%*{week_day} + -10px*{week_day}))"));
-                }
             }
 
             let day_name = match SETTINGS.calendar() {
@@ -274,7 +228,7 @@ impl Component for Agenda {
                 },
             };
             day_names.push(html! {
-                <span id={if current_day == self.selected_day {"selected-day"} else {""}} style={day_name_style}>
+                <span id={if current_day == self.selected_day {"selected-day"} else {""}}>
                     { day_name }
                 </span>
             });
@@ -294,45 +248,9 @@ impl Component for Agenda {
                 month={self.selected_day.month()}
                 year={self.selected_day.year()} />
         };
-        let opt_popup = ctx.props().popup.as_ref().map(|(event, _, _)|
-            html! {
-                <Popup
-                    event={event.clone()}
-                    agenda_link={ctx.link().clone()}
-                    friends={Rc::clone(&ctx.props().friends)}
-                    user_info={Rc::clone(&ctx.props().user_info)} />
-            }
-        );
-        let popup_container_style = match &ctx.props().popup {
-            Some((_, false, popup_size)) => match mobile {
-                true => {
-                    let body_height = window().doc().body().unwrap().client_height() as usize;
-                    format!("top: calc(-{body_height}px + 4rem); height: calc({body_height}px - 4rem);") // 4rem is the height of the tabbar
-                }
-                false => match popup_size {
-                    Some(popup_size) => format!("left: calc(-{popup_size}px - 4rem); width: calc({popup_size}px + 4rem);"),
-                    None => "left: -70vw; width: 70vw;".to_string(),
-                }
-            },
-            Some((_, true, popup_size)) => match mobile {
-                true => {
-                    let screen_height = window().inner_height().unwrap().as_f64().unwrap() as usize;
-                    format!("height: {screen_height}px;")
-                }
-                false => match popup_size {
-                    Some(popup_size) => format!("width: {popup_size}px;"),
-                    None => "width: 70vw;".to_string(),
-                }
-            },
-            None => String::new(),
-        };
         
         let day_container_style = if mobile {
             format!("right: {}%", 100 * (self.selected_day.num_days_from_ce() - 730000))
-        } else if let Some((event, false, _)) = &ctx.props().popup {
-            let c = self.counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-            let week_day = Paris.from_local_datetime(&NaiveDateTime::from_timestamp_opt(event.start_unixtime as i64, 0).unwrap()).unwrap().weekday().num_days_from_monday();
-            format!("right: calc((100%/6)*{week_day}); c: {};", c) // c is a workarround for a bug in Yew
         } else {
             String::new()
         };

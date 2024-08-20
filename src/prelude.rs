@@ -1,8 +1,7 @@
 pub use crate::{
-    agenda::*, alert::*, api::*, calendar::*, checkbox::*,
-    colors::*, comment::*, event::*, friends::*, glider_selector::*, log, popup::Popup, popup::*,
-    settings::*, tabbar::*, translation::*, util::*, App, Msg as AppMsg,
-    Page,
+    agenda::*, alert::*, api::*, app::*, calendar::*, checkbox::*, comment::*, event::*,
+    friends::*, glider_selector::*, log, pages::*, popup::Popup, popup::*, settings::*, tabbar::*,
+    translation::*, util::*,
 };
 pub use calendrier::{
     Date as RepublicanDate, DateTime as RepublicanDateTime, Month as RepublicanMonth,
@@ -18,9 +17,9 @@ pub use serde::{de::DeserializeOwned, Deserialize, Serialize};
 pub use std::{
     cell::{Cell, RefCell},
     collections::HashMap,
-    sync::atomic::{AtomicUsize, Ordering},
     ops::Deref,
     rc::Rc,
+    sync::atomic::{AtomicUsize, Ordering},
     time::Duration,
 };
 pub use wasm_bindgen::{prelude::*, JsCast, JsValue};

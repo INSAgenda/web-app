@@ -1,28 +1,18 @@
-#popup-container {
-    position: absolute;
-    left: 0;
-    height: 100%;
-    transition: left .5s ease;
-}
-
-@media all and (max-width: 1000px) {
-    #popup-container {
-        height: unset;
-        left: unset;
-        width: 100%;
-        top: 0;
-        transition: top .5s ease;
-    }
-}
-
 #popup {
-    width: 100%;
+    width: calc(100% - 4rem);
     height: 100%;
-    overflow-y: scroll;
+    overflow-y: auto;
     background-color: var(--closer-background);
     box-shadow: -0.5rem 0 .3rem rgba(0, 0, 0, 0.07);
     z-index: 4;
     position: inherit;
+}
+
+@media all and (max-width: 1000px) {
+    #popup {
+        width: 100%;
+        height: calc(100% - 4rem);
+    }
 }
 
 #popup-header {

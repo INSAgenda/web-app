@@ -143,3 +143,17 @@ impl CachedData for CommentCounts {
         }
     }
 }
+
+pub type Colors = HashMap<String, String>;
+
+impl CachedData for Colors {
+    fn storage_key() ->  &'static str { "colors" }
+    fn endpoint() ->  &'static str { "/api/colors" }
+    fn cache_duration() -> u64 { 1800 }
+    fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
+        match result {
+            Ok(val) => app_link.send_message(AppMsg::ColorsSuccess(val)),
+            Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),
+        }
+    }
+}

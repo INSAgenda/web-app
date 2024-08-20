@@ -13,16 +13,17 @@ pub struct EventCompProps {
     pub vertical_offset: (usize, usize),
     pub comment_counts: Rc<CommentCounts>,
     pub seen_comment_counts: Rc<CommentCounts>,
+    pub colors: Rc<Colors>,
 }
 
 impl PartialEq for EventCompProps {
     fn eq(&self, other: &Self) -> bool {
-        !COLORS_CHANGED.load(Ordering::Relaxed)
-            && self.event == other.event
+        self.event == other.event
             && self.day_start == other.day_start
             && self.week_day == other.week_day
             && self.comment_counts.get(&self.event.eid) == other.comment_counts.get(&other.event.eid)
             && self.seen_comment_counts.get(&self.event.eid) == other.seen_comment_counts.get(&other.event.eid)
+            && self.colors.get(&self.event.summary) == other.colors.get(&self.event.summary)
     }
 }
 
@@ -77,7 +78,8 @@ impl Component for EventComp {
     fn view(&self, ctx: &Context<Self>) -> Html {
         let name = ctx.props().event.format_name();
         let location = ctx.props().event.format_location();
-        let bg_color = COLORS.get(&ctx.props().event.summary);
+        let summary = &ctx.props().event.summary;
+        let bg_color = ctx.props().colors.get(summary).map(|c| c.to_string()).unwrap_or_else(|| String::from("#CB6CE6"));
 
         // Calculate position
         let day_sec_count = 43200.0;
@@ -103,7 +105,7 @@ impl Component for EventComp {
 
         // Render
         let eid = ctx.props().event.eid.clone(); // FIXME: what if eid contains slashes and stuff?
-        let onclick = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Event { eid: eid.clone() } )));
+        let onclick = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(Box::new(AppMsg::SetPage(Page::Event { eid: eid.clone() } ))));
         template_html!(
             "src/event/event.html",
             teachers = { ctx.props().event.teachers.join(", ")},

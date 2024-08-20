@@ -1,13 +1,15 @@
-use crate::{prelude::*, slider::width};
+use crate::prelude::*;
 
 pub struct Popup {
     comments: Option<Vec<Comment>>,
     friend_counter_folded: bool,
+    current_color: String,
+    color_changed: bool,
 }
 
 pub enum PopupMsg {
     TriggerFriendCounter,
-    SaveColors,
+    ColorInput,
     ReloadComments,
     Comment,
     CommentsLoaded(Vec<Comment>),
@@ -17,14 +19,18 @@ pub enum PopupMsg {
 #[derive(Properties, Clone)]
 pub struct PopupProps {
     pub event: RawEvent,
-    pub agenda_link: Scope<Agenda>,
+    pub app_link: AppLink,
     pub user_info: Rc<Option<UserInfo>>,
     pub friends: Rc<Option<FriendLists>>,
+    pub colors: Rc<Colors>,
 }
 
 impl PartialEq for PopupProps {
     fn eq(&self, other: &Self) -> bool {
-        self.event == other.event && self.user_info == other.user_info
+        self.event == other.event
+            && self.user_info == other.user_info
+            && self.friends == other.friends
+            && self.colors.get(&self.event.summary) == other.colors.get(&self.event.summary)
     }
 }
 
@@ -46,17 +52,23 @@ impl Component for Popup {
             }
         });
 
+        let summary = &ctx.props().event.summary;
+        let bg_color = ctx.props().colors.get(summary).map(|c| c.to_string()).unwrap_or_else(|| String::from("#CB6CE6"));
+
         Self {
             comments: None,
             friend_counter_folded: true,
+            current_color: bg_color,
+            color_changed: false,
         }
     }
 
-    fn changed(&mut self, ctx: &Context<Self>, old_props: &Self::Properties) -> bool {
-        if ctx.props().event.eid != old_props.event.eid {
-            *self = Component::create(ctx);
+    fn destroy(&mut self, ctx: &Context<Self>) {
+        if self.color_changed {
+            let summary = ctx.props().event.summary.to_owned();
+            ctx.props().app_link.send_message(AppMsg::UpdateColor { summary, color: std::mem::take(&mut self.current_color) })    
         }
-        true
+        ctx.props().app_link.send_message(AppMsg::MarkCommentsAsSeen(ctx.props().event.eid.clone()));
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -66,26 +78,17 @@ impl Component for Popup {
                 self.comments = Some(new_comments);
                 true
             }
+            PopupMsg::ColorInput => {
+                let document = window().doc();
+                let el = document.get_element_by_id("popup-color-input").unwrap();
+                let color = el.dyn_into::<HtmlInputElement>().unwrap().value();
+                self.current_color = color;
+                self.color_changed = true;
+                true
+            },
             PopupMsg::ReloadComments => {
                 *self = Component::create(ctx);
                 false
-            }
-            PopupMsg::SaveColors => {
-                let mobile = width() <= 1000;
-                let document = window().doc();
-                let el = document.get_element_by_id("popup-color-input").unwrap();
-                let background_color = el.dyn_into::<HtmlInputElement>().unwrap().value();
-
-                COLORS.set(&ctx.props().event.summary, background_color); 
-
-                // We need to set this so that other events know that they have to refresh
-                COLORS_CHANGED.store(true, Ordering::Relaxed);
-
-                if !mobile {
-                    ctx.props().agenda_link.send_message(AgendaMsg::Refresh);
-                }
-                
-                true
             }
             PopupMsg::Comment => {
                 let el = window().doc().get_element_by_id("comment-textarea-top").unwrap();
@@ -108,14 +111,14 @@ impl Component for Popup {
                 true
             }
             PopupMsg::AppMsg(msg) => {
-                ctx.props().agenda_link.send_message(AgendaMsg::AppMsg(msg));
+                ctx.props().app_link.send_message(msg);
                 false
             }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let onclick_close = ctx.props().agenda_link.callback(move |_| AgendaMsg::AppMsg(AppMsg::SetPage(Page::Agenda)));
+        let onclick_close = ctx.props().app_link.callback(move |_| AppMsg::SetPage(Page::Agenda));
 
         // Friend counter
         let friends: Vec<_> = ctx.props().friends.deref().as_ref().map(|friends| {
@@ -132,8 +135,8 @@ impl Component for Popup {
         let only_one_friend = friend_count == 1;
         let z_index_iter = 1..friend_count+1;
 
-        let event_color = COLORS.get(&ctx.props().event.summary);
-        let summary = &ctx.props().event.summary;
+        let summary = ctx.props().event.summary.to_owned();
+        let bg_color = &self.current_color;
         let name = ctx.props().event.format_name();
         let opt_location = ctx.props().event.format_location();
 
@@ -160,9 +163,10 @@ impl Component for Popup {
             teachers = {ctx.props().event.teachers.join(", ")},
             time = {ctx.props().event.format_time()},
             name = {&name},
+            bg_color = {bg_color.clone()},
             onclick_close = {onclick_close.clone()},
-            onclick_save = {ctx.link().callback(|_| PopupMsg::SaveColors)},
             onclick_fold = {ctx.link().callback(|_| PopupMsg::TriggerFriendCounter)},
+            input_color = {ctx.link().callback(|_| PopupMsg::ColorInput)},
             opt_location = {&opt_location},
             event_color = {event_color.clone()},
             alt_iter = { names.iter().map(|name| format!("Avatar of {}", name)) },

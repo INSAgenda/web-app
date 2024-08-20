@@ -1,5 +1,4 @@
-use std::sync::atomic::AtomicBool;
-
+use std::{sync::atomic::AtomicBool, collections::HashSet};
 use crate::prelude::*;
 
 fn random_theme() -> Theme {
@@ -10,6 +9,33 @@ fn random_theme() -> Theme {
     } else {
         Theme::MoyenInsage
     }
+}
+
+fn get_groups(ctx: &Context<SettingsPage>, group_list_expanded: bool) -> (Groups, Groups, Vec<String>) {
+    // Compute variable messages
+    let mut official_groups = Groups::new();
+    let mut selected_groups = Groups::new();
+    let mut available_groups = Vec::new();
+    if let Some(user_info) = ctx.props().user_info.as_ref() {
+        official_groups = user_info.official_groups.clone();
+        selected_groups = user_info.groups.clone();
+        available_groups = user_info.available_groups.groups().iter().cloned().collect::<Vec<_>>();
+        available_groups.sort();
+    }
+
+    // If the group list is not expanded, only show recommended groups
+    let mut shown_groups = available_groups;
+    if !group_list_expanded {
+        let recommended_prefixes = selected_groups
+            .groups()
+            .iter()
+            .chain(official_groups.groups().iter())
+            .map(|g| g.split('-').next().unwrap_or(g))
+            .collect::<HashSet<_>>();
+        shown_groups.retain(|g| recommended_prefixes.iter().any(|p| g.starts_with(p)));
+    }
+
+    (official_groups, selected_groups, shown_groups)
 }
 
 lazy_static::lazy_static!{
@@ -217,6 +243,7 @@ pub enum Msg {
     LogOut,
     LanguageChange(usize),
     CalendarChange(usize),
+    GroupListToggle,
 }
 
 #[derive(Properties, Clone)]
@@ -233,35 +260,45 @@ impl PartialEq for SettingsProps {
 
 pub struct SettingsPage {
     clone_storage: SettingStore,
+    group_list_expanded: bool,
 }
 
 impl Component for SettingsPage {
     type Message = Msg;
     type Properties = SettingsProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
+        let mut group_list_expanded = false;
+        if let Some(user_info) = ctx.props().user_info.as_ref() {
+            let selected_groups_count = user_info.groups.groups().len();
+            let official_groups_count = user_info.official_groups.groups().len();
+            if selected_groups_count + official_groups_count == 0 {
+                group_list_expanded = true;
+            }
+        }
+
         Self {
             clone_storage: SettingStore {
                 theme: AtomicUsize::new(SETTINGS.theme.load(Ordering::Relaxed)),
                 randomly_selected: AtomicBool::new(SETTINGS.randomly_selected()),
                 lang: AtomicUsize::new(SETTINGS.lang.load(Ordering::Relaxed)),
                 calendar: AtomicUsize::new(SETTINGS.calendar.load(Ordering::Relaxed)),
-            }
+            },
+            group_list_expanded,
         }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Confirm => {
-                // Collect checked groups
                 if let Some(user_info) = ctx.props().user_info.as_ref() {
-                    let mut available_groups = user_info.available_groups.groups().iter().cloned().collect::<Vec<_>>();
-                    available_groups.sort();
+                    let (_, _, shown_groups) = get_groups(ctx, self.group_list_expanded);
 
+                    // Get the groups selected by the user
                     let document = window().doc();
                     let mut groups = Groups::new();
-                    for (i, group) in available_groups.iter().enumerate() {
-                        let el = document.get_element_by_id(&format!("group-radio-{}", i)).unwrap();
+                    for (i, group) in shown_groups.iter().enumerate() {
+                        let Some(el) = document.get_element_by_id(&format!("group-radio-{}", i)) else {continue};
                         let el = el.dyn_into::<HtmlInputElement>().unwrap();
                         if el.checked() {
                             groups.insert(group);
@@ -353,27 +390,24 @@ impl Component for SettingsPage {
                 SETTINGS.set_calendar(v);
                 true
             }
+            Msg::GroupListToggle => {
+                self.group_list_expanded = !self.group_list_expanded;
+                true
+            }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        // Compute variable messages
-        let mut official_groups = Groups::new();
-        let mut selected_groups = Groups::new();
-        let mut available_groups = Vec::new();
-        if let Some(user_info) = ctx.props().user_info.as_ref() {
-            official_groups = user_info.official_groups.clone();
-            selected_groups = user_info.groups.clone();
-            available_groups = user_info.available_groups.groups().iter().cloned().collect::<Vec<_>>();
-            available_groups.sort();
-        }
+        let (official_groups, selected_groups, shown_groups) = get_groups(ctx, self.group_list_expanded);
 
-        let group_radio_i_iter = (0..available_groups.len()).map(|i| i.to_string());
+        // Produce iterators for the template
+        let group_radio_i_iter = (0..shown_groups.len()).map(|i| i.to_string());
         let group_radio_i2_iter = group_radio_i_iter.clone();
         let group_radio_i3_iter = group_radio_i_iter.clone();
-        let group_radio_label_iter = available_groups.iter().cloned();
-        let group_radio_official_iter = available_groups.iter().map(|g| if official_groups.groups().contains(g) {"(officiel)"} else {""});
-        let group_radio_checked_iter = available_groups.iter().map(|g| selected_groups.groups().contains(g));
+        let group_radio_label_iter = shown_groups.iter().cloned();
+        let group_radio_official_iter = shown_groups.iter().map(|g| if official_groups.groups().contains(g) {"(officiel)"} else {""});
+        let group_radio_checked_iter = shown_groups.iter().map(|g| selected_groups.groups().contains(g));
+        let group_list_expanded = self.group_list_expanded;
 
         let theme_glider_selector = html! {
             <GliderSelector
@@ -401,6 +435,7 @@ impl Component for SettingsPage {
             onclick_confirm = {ctx.link().callback(move |_| Msg::Confirm)},
             onclick_delete = {ctx.link().callback(move |_| Msg::Delete)},
             onclick_cancel = {ctx.link().callback(move |_| Msg::Cancel)},
+            onclick_group_list_toggle = {ctx.link().callback(|_| Msg::GroupListToggle)},
             republican = {SETTINGS.calendar() == CalendarKind::Republican},
             ...
         )

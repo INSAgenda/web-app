@@ -18,7 +18,9 @@
             <div class="settings-group">
                 <div class="setting">
                     <h4>Groupes</h4>
-                    <p>Cochez les groupes pour lesquels afficher les cours dans la liste suivante.</p>
+                    <p>
+                        Cochez les groupes dont vous suivez les cours. Les groupes marqués "officiel" proviennent du secrétariat et sont actualisés à chaque connexion par le CAS. Nous essayons de vous recommander les groupes les plus pertinents, mais sachez que nos recommandations sont limitées par un nommage parfois fantaisiste (notamment pour les humanités), et que vous pourriez devoir chercher parmi la liste complète.
+                    </p>
                     
                     <div id="group-list-setting">
                         <div iter class="checkbox">
@@ -26,9 +28,10 @@
                             <label for="group-radio-{{group_radio_i2_iter}}" class="checkbox-box"></label>
                             <label for="group-radio-{{group_radio_i3_iter}}">{{group_radio_label_iter}}&nbsp;<span class="group-radio-official">{{group_radio_official_iter}}</span></label>
                         </div>
-                    </div>
 
-                    <!--<div class="primary-button" onclick={{onclick_change_group}}>Modifier</div>-->
+                        <div present-if=!{{group_list_expanded}} id="group-list-toggle" onclick={{onclick_group_list_toggle}}>Afficher tout</div>
+                        <div present-if={{group_list_expanded}} id="group-list-toggle" onclick={{onclick_group_list_toggle}}>Afficher recommendations</div>
+                    </div>
                 </div>
             </div>
         </section>
