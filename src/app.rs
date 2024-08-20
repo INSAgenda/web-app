@@ -1,5 +1,5 @@
 use crate::mastodon::{init_mastodon, mastodon_mark_all_seen};
-use yew::virtual_dom::{VChild, VNode};
+use yew::virtual_dom::VNode;
 
 use crate::{prelude::*, settings::SettingsPage};
 
@@ -38,6 +38,7 @@ impl AppMsg {
 /// The main component of the app.
 /// Stores data that is shared between pages, as well as the page that is currently displayed.
 pub struct App {
+    next_selected_day: Option<NaiveDate>, // Use to instruct agenda to switch to a page
     user_info: Rc<Option<UserInfo>>,
     events: Rc<Vec<RawEvent>>,
     friends: Rc<Option<FriendLists>>,
@@ -96,6 +97,7 @@ impl Component for App {
 
         let iframe = init_mastodon(&page, ctx.link().clone());
         Self {
+            next_selected_day: None,
             events: Rc::new(events),
             user_info: Rc::new(user_info),
             friends: Rc::new(friends),
@@ -203,6 +205,15 @@ impl Component for App {
                     return false;
                 }
 
+                // When going from event to agenda, restore the selected day
+                if let (Page::Event { eid }, Page::Agenda) = (&self.page, &page) {
+                    if let Some(event) = self.events.iter().find(|e| e.eid == *eid) {
+                        if let Some(start) = Paris.timestamp_opt(event.start_unixtime as i64, 0).single() {
+                            self.next_selected_day = Some(start.date_naive());
+                        }
+                    }
+                }
+
                 let document = window().doc();
                 let (data, title) = page.data_and_title();
                 if !silent {
@@ -260,6 +271,7 @@ impl Component for App {
         match &self.page {
             Page::Agenda => html!(<>
                 <Agenda
+                    selected_day={self.next_selected_day}
                     events={Rc::clone(&self.events)}
                     app_link={ctx.link().clone()}
                     user_info={Rc::clone(&self.user_info)}
@@ -326,6 +338,12 @@ impl Component for App {
                 let raw_html = format!(r#"<video class="rick" autoplay src="/assets/{rick}.mp4" style="width: 100%;">Never gonna give you up</video>"#);
                 VNode::from_html_unchecked(raw_html.into())
             }
+        }
+    }
+
+    fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
+        if matches!(self.page, Page::Agenda) {
+            self.next_selected_day = None;
         }
     }
 }

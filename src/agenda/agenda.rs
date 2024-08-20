@@ -33,6 +33,8 @@ pub struct AgendaProps {
     pub events: Rc<Vec<RawEvent>>,
     #[prop_or_default]
     pub profile_src: Option<String>,
+    #[prop_or_default]
+    pub selected_day: Option<NaiveDate>,
     pub user_info: Rc<Option<UserInfo>>,
     pub comment_counts: Rc<CommentCounts>,
     pub seen_comment_counts: Rc<CommentCounts>,
@@ -56,23 +58,29 @@ impl Component for Agenda {
     type Properties = AgendaProps;
 
     fn create(ctx: &Context<Self>) -> Self {
-        let now = chrono::Local::now();
-        let now = now.with_timezone(&Paris);
-
-        // Switch to next day if it's late or to monday if it's weekend
-        let weekday = now.weekday();
-        let has_event = has_event_on_day(&ctx.props().events, now.date_naive(), Weekday::Sat);
-        if now.hour() >= 19 || weekday == Weekday::Sun || (weekday == Weekday::Sat && !has_event) {
-            let link2 = ctx.link().clone();
-            spawn_local(async move {
-                sleep(Duration::from_millis(500)).await;
-                link2.send_message(AgendaMsg::Next);
-            });
-        }
+        let selected_day = match ctx.props().selected_day {
+            Some(selected_day) => selected_day,
+            None => {
+                let now = chrono::Local::now();
+                let now = now.with_timezone(&Paris);
+        
+                // Switch to next day if it's late or to monday if it's weekend
+                let weekday = now.weekday();
+                let has_event = has_event_on_day(&ctx.props().events, now.date_naive(), Weekday::Sat);
+                if now.hour() >= 19 || weekday == Weekday::Sun || (weekday == Weekday::Sat && !has_event) {
+                    let link2 = ctx.link().clone();
+                    spawn_local(async move {
+                        sleep(Duration::from_millis(500)).await;
+                        link2.send_message(AgendaMsg::Next);
+                    });
+                }
+                now.date_naive()
+            }
+        };
 
         Self {
-            selected_day: now.date_naive(),
-            slider: slider::SliderManager::init(ctx.link().clone(), -20 * (now.date_naive().num_days_from_ce() - 730000))
+            selected_day,
+            slider: slider::SliderManager::init(ctx.link().clone(), -20 * (selected_day.num_days_from_ce() - 730000))
         }
     }
 
