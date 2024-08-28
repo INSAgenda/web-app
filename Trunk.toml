@@ -1,6 +1,0 @@
-trunk-version = "*"
-
-[[hooks]]
-stage = "post_build"
-command = "sh"
-command_arguments = ["post-build.sh"]
