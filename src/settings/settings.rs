@@ -370,16 +370,20 @@ impl Component for SettingsPage {
                 true
             }
             Msg::LogOut => {
-                wasm_bindgen_futures::spawn_local(async move {
-                    match logout().await{
-                        Ok(_) => (),
-                        Err(e) => {
-                            sentry_report(&e);
-                            alert_no_reporting(t("Echec de la déconnexion. Nous avons connaissance de ce problème et travaillons à sa résolution."));
-                        },
-                    }
-                });
-                window().location().replace("/login").unwrap();
+                // Clear local storage but themes
+                let window = window();
+                let local_storage = window.local_storage().unwrap().unwrap();
+                let theme = local_storage.get("setting-theme").unwrap();
+                let auto = local_storage.get("auto-theme").unwrap();
+                local_storage.clear().unwrap();
+                if let Some(theme) = theme {
+                    local_storage.set("setting-theme", &theme).unwrap();
+                }
+                if let Some(auto) = auto {
+                    local_storage.set("auto-theme", &auto).unwrap();
+                }
+
+                window.location().replace("https://auth.insa.lol/logout").unwrap();
                 false
             }
             Msg::LanguageChange(v) => {
