@@ -1,5 +1,3 @@
-mod auth;
-pub(crate) use auth::*;
 mod error;
 pub use error::*;
 mod generic;
