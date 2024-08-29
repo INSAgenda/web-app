@@ -62,13 +62,10 @@ fn load_cached<T: CachedData>() -> Option<(i64, T)> {
 }
 
 async fn load<T: CachedData>() -> Result<T, ApiError> {
-    let (api_key, counter) = get_login_info();
-
     let request = Request::new_with_str(T::endpoint())?;
-    request.headers().set(
-        "Api-Key",
-        &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
-    )?;
+
+    #[cfg(debug_assertions)]
+    request.headers().set("X-Insa-Auth-Email", USER)?;
 
     let resp = JsFuture::from(window().fetch_with_request(&request)).await?;
     let resp: web_sys::Response = resp.dyn_into()?;

@@ -41,18 +41,6 @@ impl HackTraitDocOnWindow for Window {
     }
 }
 
-pub trait HackTraitSelectedValueOnHtmlSelectElement {
-    fn selected_value(&self) -> String;
-}
-
-impl HackTraitSelectedValueOnHtmlSelectElement for HtmlSelectElement {
-    fn selected_value(&self) -> String {
-        unsafe {
-            self.selected_options().item(0).unwrap().dyn_into::<HtmlOptionElement>().unwrap_unchecked().value()
-        }
-    }
-}
-
 pub trait HackTraitHtmlCollectionIter {
     fn into_iter(self) -> HtmlCollectionIter;
 }

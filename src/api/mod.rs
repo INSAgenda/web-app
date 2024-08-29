@@ -2,8 +2,6 @@ mod auth;
 pub(crate) use auth::*;
 mod error;
 pub use error::*;
-mod gen_code;
-pub use gen_code::gen_code;
 mod generic;
 pub use generic::*;
 mod friends;
@@ -13,19 +11,8 @@ pub use textbook::*;
 
 use crate::prelude::*;
 
-fn get_login_info() -> (u64, u64) {
-    let local_storage = window().local_storage().unwrap().unwrap();
-    let (api_key, counter) = match (local_storage.get("api_key").unwrap(), local_storage.get("counter").unwrap()) {
-        (Some(api_key), Some(counter)) => (api_key.parse().expect("Invalid login data"), counter.parse().expect("Invalid login data")),
-        _ => {
-            window().location().replace("/login").unwrap();
-            std::process::exit(0);
-        }
-    };
-    local_storage.set("counter", &format!("{}", counter + 1)).unwrap();
-
-    (api_key, counter)
-}
+// When built in debug, will fake authentication to this user.
+pub const USER: &str = "edouard.foobar@insa-rouen.fr";
 
 /// Increase the counter, by a lot. Use when getting `counter_too_low` errors.
 pub fn counter_to_the_moon() {
@@ -36,17 +23,16 @@ pub fn counter_to_the_moon() {
 
 pub async fn api_post<T: Serialize>(data: T, endpoint: &str) -> Result<(), ApiError> {
     let body = serde_json::to_string(&data).unwrap();
-    let (api_key, counter) = get_login_info();
 
     let mut req_init = web_sys::RequestInit::new();
     req_init.method("POST");
     req_init.body(Some(&JsValue::from_str(&body)));
 
     let request = Request::new_with_str_and_init(&format!("/api/{endpoint}"), &req_init).unwrap();
-    request.headers().set(
-        "Api-Key",
-        &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
-    )?;
+
+    #[cfg(debug_assertions)]
+    request.headers().set("X-Insa-Auth-Email", USER)?;
+
     request.headers().set("Content-Type", "application/json")?;
 
     let response = JsFuture::from(window().fetch_with_request(&request)).await?;
@@ -63,17 +49,15 @@ pub async fn api_post<T: Serialize>(data: T, endpoint: &str) -> Result<(), ApiEr
 }
 
 pub async fn api_post_form(body: &str, endpoint: &str) -> Result<(), ApiError> {
-    let (api_key, counter) = get_login_info();
-
     let mut req_init = web_sys::RequestInit::new();
     req_init.method("POST");
     req_init.body(Some(&JsValue::from_str(body)));
 
     let request = Request::new_with_str_and_init(&format!("/api/{endpoint}"), &req_init).unwrap();
-    request.headers().set(
-        "Api-Key",
-        &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
-    )?;
+
+    #[cfg(debug_assertions)]
+    request.headers().set("X-Insa-Auth-Email", USER)?;
+    
     request.headers().set("Content-Type", "application/x-www-form-urlencoded")?;
 
     let response = JsFuture::from(window().fetch_with_request(&request)).await?;
@@ -99,16 +83,14 @@ pub async fn api_delete<T: DeserializeOwned>(endpoint: impl std::fmt::Display) -
 }
 
 async fn api_custom_method<T: DeserializeOwned>(endpoint: impl std::fmt::Display, method: &'static str) -> Result<T, ApiError> {
-    let (api_key, counter) = get_login_info();
-
     let mut req_init = web_sys::RequestInit::new();
     req_init.method(method);
 
-    let request = Request::new_with_str_and_init(&format!("/api/{endpoint}"), &req_init).unwrap();
-    request.headers().set(
-        "Api-Key",
-        &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
-    )?;
+    let request = Request::new_with_str_and_init(&format!("/api/{endpoint}"), &req_init)?;
+
+    #[cfg(debug_assertions)]
+    request.headers().set("X-Insa-Auth-Email", USER)?;
+
     request.headers().set("Content-Type", "application/json")?;
 
     let response = JsFuture::from(window().fetch_with_request(&request)).await?;

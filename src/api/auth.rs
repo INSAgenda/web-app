@@ -3,16 +3,14 @@ use super::*;
 pub(crate) async fn logout()-> Result<(), ApiError> {
     let window = window();
     let local_storage = window.local_storage().unwrap().unwrap();
-    let (api_key, counter) = get_login_info();
     
     let mut init = web_sys::RequestInit::new();
     init.method("POST");
     let request = Request::new_with_str_and_init("/api/auth/logout", &init).unwrap();
 
-    request.headers().set(
-        "Api-Key",
-        &format!("{}-{}-{}", api_key, counter, gen_code(api_key, counter)),
-    )?;
+    #[cfg(debug_assertions)]
+    request.headers().set("X-Insa-Auth-Email", USER)?;
+    
     let theme = local_storage.get("setting-theme").unwrap();
     let auto = local_storage.get("auto-theme").unwrap();
     local_storage.clear().unwrap();
