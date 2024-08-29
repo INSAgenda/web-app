@@ -370,6 +370,9 @@ impl Component for SettingsPage {
                 true
             }
             Msg::LogOut => {
+                // Clear local storage but themes
+                let window = window();
+                let local_storage = window.local_storage().unwrap().unwrap();
                 let theme = local_storage.get("setting-theme").unwrap();
                 let auto = local_storage.get("auto-theme").unwrap();
                 local_storage.clear().unwrap();
@@ -379,8 +382,8 @@ impl Component for SettingsPage {
                 if let Some(auto) = auto {
                     local_storage.set("auto-theme", &auto).unwrap();
                 }
-                
-                window().location().replace("https://auth.insa.lol/logout").unwrap();
+
+                window.location().replace("https://auth.insa.lol/logout").unwrap();
                 false
             }
             Msg::LanguageChange(v) => {
