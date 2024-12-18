@@ -38,9 +38,7 @@ pub async fn get_stotra_rank() -> Result<Option<usize>, ApiError> {
             let values: HashMap<String, Value> = serde_json::from_str(&text).map_err(|e| ApiError::Unknown(JsValue::from_str(&e.to_string())))?;
             let rank = values.get("rank").ok_or(ApiError::Unknown(JsValue::from_str("Failed to get rank")))?;
             let rank = rank.as_f64().ok_or(ApiError::Unknown(JsValue::from_str("Failed to convert rank to usize")))? as isize;
-            log!("storing");
             STOTRA_RANK_CACHED.store(rank, Ordering::Relaxed);
-            log!("stored");
             if rank <= 0 {
                 Ok(None)
             } else {
