@@ -15,7 +15,13 @@ pub const STOTRA_GET_PORTFOLIO_URL: &str = "https://stotra.insa.lol/api/user/por
 static STOTRA_RANK_CACHED: AtomicIsize = AtomicIsize::new(0);
 
 pub async fn get_stotra_rank() -> Result<Option<usize>, ApiError> {
-    let request = Request::new_with_str(STOTRA_GET_PORTFOLIO_URL).unwrap();
+    let mut request_init = RequestInit::new();
+    request_init.method("GET");
+
+    #[cfg(not(debug_assertions))]
+    request_init.credentials(web_sys::RequestCredentials::Include);
+
+    let request = Request::new_with_str_and_init(STOTRA_GET_PORTFOLIO_URL, &request_init).unwrap();
 
     #[cfg(debug_assertions)]
     request.headers().set("X-Username", "test")?;
