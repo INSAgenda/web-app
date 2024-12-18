@@ -128,7 +128,7 @@ body {
 
 /* Mastodon iframe */
 
-#mastodon-iframe, #insaplace-iframe {
+#mastodon-iframe, #stotra-iframe {
     background-color: white;
     width: calc(100% - 4rem);
     height: 100%;
@@ -174,7 +174,7 @@ body {
         box-shadow: unset;
     }
 
-    #mastodon-iframe, #insaplace-iframe {
+    #mastodon-iframe, #stotra-iframe {
         width: 100%;
         left: 0;
         height: calc(100% - 4rem);

@@ -1,6 +1,5 @@
-use crate::mastodon::{init_mastodon, mastodon_mark_all_seen};
+use crate::{mastodon::{init_mastodon, mastodon_mark_all_seen}, stotra::STOTRA_URL};
 use yew::virtual_dom::VNode;
-
 use crate::{prelude::*, settings::SettingsPage};
 
 /// A message that can be sent to the `App` component.
@@ -325,7 +324,11 @@ impl Component for App {
                     <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 </>)
             },
-            Page::Mastodon  => html!(<>
+            Page::Stotra => html!(<>
+                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+                <iframe src={STOTRA_URL} id="stotra-iframe"></iframe>
+            </>),
+            Page::Mastodon => html!(<>
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Settings => html!(<>
