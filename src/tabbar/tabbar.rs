@@ -1,4 +1,5 @@
 use crate::prelude::*;
+use crate::stotra::StotraRank;
 
 pub struct TabBar {}
 
@@ -33,6 +34,9 @@ impl Component for TabBar {
         let onclick_friends = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Friends));
         let mut friends_classes = String::from(if matches!(page, Page::Friends | Page::FriendAgenda { .. }) {"tabbar-selected"} else {"tabbar-not-selected"});
         if ctx.props().bait_points.1 { friends_classes.push_str(" tabbar-with-bait"); }
+
+        let onclick_stotra = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Stotra));
+        let stotra_classes = String::from(if matches!(page, Page::Stotra) {"tabbar-selected"} else {"tabbar-not-selected"});
 
         let onclick_mastodon = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Mastodon));
         let mut mastodon_classes = String::from(if matches!(page, Page::Mastodon) {"tabbar-selected"} else {"tabbar-not-selected"});

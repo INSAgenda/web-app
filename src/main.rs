@@ -27,6 +27,8 @@ mod friends;
 mod comment;
 #[path = "mastodon/mastodon.rs"]
 mod mastodon;
+#[path = "stotra/stotra.rs"]
+mod stotra;
 
 mod app;
 mod util;

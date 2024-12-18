@@ -60,6 +60,17 @@
     opacity: 0.4 !important;
 }
 
+#tabbar #stotra-rank {
+    position: absolute;
+    top: calc(50% - 0.8rem - 0.2rem);
+    left: calc(50% + 1rem - 0.2rem);
+    font-size: .8rem;
+}
+
+#tabbar .tabbar-selected > #stotra-rank {
+    color: var(--primary);
+}
+
 /* For desktop */
 
 @media screen and (min-width: 1000px) {
@@ -94,49 +105,3 @@
         padding: 1rem;
     }
 }
-
-#sled {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    background-color: transparent;
-    height: 15rem;
-    animation: move-sled 10s forwards;
-    z-index: 100;
-}
-
-/* animation move sled */
-@keyframes move-sled {
-    from {
-        left: 0;
-        transform: translateX(-100%);
-        top: 60%;
-        scale: 4;
-    }
-    to {
-        left: 100%;
-        transform: translateX(100%);
-        top: 0;
-        scale: 0.8;
-    }
-    
-}
-
-#snow-container {
-    position: relative;
-    overflow: hidden;
-}
-
-.snowflake {
-    position: fixed;
-    top: -10%; 
-    z-index: 9999;
-    opacity: 0.8; 
-}
-
-@keyframes fall {
-    0% { transform: translateY(0) translateX(-10vw) rotate(0deg); }
-    100% { transform: translateY(100vh) translateX(0vw) rotate(360deg); }
-}
-
-
