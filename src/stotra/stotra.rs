@@ -74,8 +74,6 @@ pub fn stotra_rank_component() -> Html {
                 <div id="stotra-rank">{"#"}{ *rank }</div>
             }
         },
-        None => {
-            return html!()
-        },
+        None => html!(),
     }
 }
