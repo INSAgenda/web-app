@@ -45,10 +45,6 @@ pub async fn get_stotra_rank() -> Result<Option<usize>, ApiError> {
                 Ok(Some(rank as usize))
             }
         },
-        400 | 500 => {
-            let json = JsFuture::from(response.json()?).await?;
-            Err(ApiError::from(json))
-        },
         _ => Err(ApiError::Unknown(response.into()))
     }
 }
