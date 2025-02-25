@@ -1,5 +1,7 @@
 #friends {
     width: calc(100% - 2rem);
+    height: calc(100% - 4rem);
+    overflow-y: auto;
     margin: 0 1rem;
 }
 
