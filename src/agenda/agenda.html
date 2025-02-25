@@ -4,9 +4,12 @@
         <h1 id="header-name" class="header-agenda">INSAgenda</h1>
     </a>
     {{calendar}}
-    <div style="height: 70%; aspect-ratio: 1 / 1;">
-        <img opt src={{opt_profile_src}} />
+    <div opt style="height: 70%; aspect-ratio: 1 / 1;">
+        <img src={{opt_profile_src}} />
     </div>
+    <a present-if={{profile_src_none}} id="ukraine-link" href="https://war.ukraine.ua/donate/">
+        <img src="/agenda/images/ukraine.svg" alt="Soutenez l'Ukraine" />
+    </a>
 </header>
 <main id="agenda-main">
 <virtual present-if={{moyeninsage}}>

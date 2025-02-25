@@ -26,6 +26,21 @@ header, #tabbar {
 
 #header-logo {
     aspect-ratio: 1 / 1;
+    height: 80% !important;
+}
+
+#ukraine-link {
+    height: 80%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#ukraine-link>img {
+    max-height: 100%;
+    max-width: 100%;
+    border-radius: 5%;
 }
 
 @media screen and (max-width: 420px) and (min-width: 400px) {
