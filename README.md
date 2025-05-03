@@ -1,10 +1,10 @@
 <div align="center">
     <a href="https://insagenda.insa.lol/">
-        <img src="https://insagenda.insa.lol/assets/logo/logo.svg" alt="INSAgenda's logo" width="80" height="80">
+        <img src="https://insagenda.insa.lol/assets/logo/logo.svg" alt="genda's logo" width="80" height="80">
     </a>
-    <h1 align="center">INSAgenda (web-app)</h1>
+    <h1 align="center">genda (web-app)</h1>
     <p align="center">
-        INSAgenda is a free website allowing students to view their course schedule at INSA Rouen.<br/>
+        genda is a free website allowing students to view their course schedule at **** Rouen.<br/>
         <a href="https://insagenda.insa.lol/"><b>Explore our website »</b></a><br/><br/>
     </p>
 </div>
@@ -53,7 +53,7 @@ In order to setup your development environment, you will thus need to clone thre
 Here is the **required** file structure:
 
 ```text
-insagenda/
+genda/
 ├─ frontend/
 ├─ web-app/
 ├─ common/
@@ -63,15 +63,15 @@ insagenda/
 Commands to run:
 
 ```bash
-mkdir insagenda && cd insagenda
+mkdir genda && cd genda
 git clone https://github.com/INSAgenda/frontend
 git clone https://github.com/INSAgenda/yew-template
 git clone https://github.com/INSAgenda/web-app
 git clone https://github.com/INSAgenda/common
 mkdir backend && cd backend
-wget https://insagenda.insa.lol/development/backend.tar.gz # Download the backend binary
+wget https://genda.insa.lol/development/backend.tar.gz # Download the backend binary
 tar -xvf backend.tar.gz
-wget https://insagenda.insa.lol/development/database # Download an empty database ready to be used by the backend
+wget https://genda.insa.lol/development/database # Download an empty database ready to be used by the backend
 cd ..
 ```
 
