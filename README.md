@@ -4,10 +4,12 @@
     </a>
     <h1 align="center">genda (web-app)</h1>
     <p align="center">
-        genda is a free website allowing students to view their course schedule at **** Rouen.<br/>
+        genda is a free website allowing students to view their course schedule at Rouen's engineering school.<br/>
         <a href="https://insagenda.insa.lol/"><b>Explore our website »</b></a><br/><br/>
     </p>
 </div>
+
+This project isn't affiliated with the school it is intended for.
 
 ## Table of contents
 
