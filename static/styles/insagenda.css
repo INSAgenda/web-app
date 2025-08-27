@@ -1,0 +1,226 @@
+/* Font */
+
+@import url('/assets/fonts/Roboto/css2.css');
+
+/* General */
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.centred {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+body {
+    background-color: var(--background);
+}
+
+a {
+    cursor: pointer;
+}
+
+/* Buttons */
+
+.primary-button, .secondary-button {
+    display: block;
+    box-sizing: content-box;
+    text-decoration: none;
+    font-weight: bold;
+    min-width: min-content;
+    white-space: nowrap;
+    height: 2.5rem;
+    width: calc(100% - 5rem - 4px);
+    font-size: 1.1rem;
+    line-height: 2.5rem;
+    padding: 0 2.5rem;
+    margin: 1rem 0;
+    border-radius: calc(1.25rem + 2px);
+    text-align: center;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.primary-button {
+    background-color: var(--primary);
+    color: var(--background);
+    border: 2px solid var(--primary);
+}
+
+.secondary-button {
+    background-color: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+}
+
+.primary-button:hover, .secondary-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 15px 12px -12px var(--primary);
+}
+
+.primary-button:active, .secondary-button:active {
+    transform: translateY(3px);
+}
+
+:root[data-theme="light"] .secondary-button:active {
+    background-color: white;
+}
+
+:root[data-theme="light"] .secondary-button:hover {
+    background-color: rgba(255,255,255,0.5);
+}
+
+:root[data-theme="light"] .primary-button:hover {
+    color: white;
+}
+
+/* Header */
+
+header {
+    background-color: var(--closer-background);
+    width: calc(100% - 6rem);
+    height: 5rem;
+    padding: 0 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 5;
+}
+
+#header-logo {
+    height: 70%;
+    user-select: none;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+#header-name {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--text);
+}
+
+#header-logo img {
+    height: 100%;
+}
+
+/* Section title page */
+
+.section-page-title {
+    padding: 0 4vw 0 4vw;
+    margin: 30px 0 0 0;
+}
+
+.page-title {
+    font-weight: bold;
+    font-size: 1.5em;
+    color: var(--text);
+}
+
+.divider-bar {
+    width: 114px;
+    height: 6px;
+    border-radius: 6px;
+    background-color: var(--primary);
+    margin: 5px 0 20px 0;
+}
+
+/* Labeled input */
+
+.labeled-input {
+    position: relative;
+    width: 100%;
+    min-width: 20rem;
+}
+
+.labeled-input>input {
+    width: calc(100% - 3rem);
+    height: 3.5rem;
+    padding: 0 1.5rem;
+    border-radius: 17.5rem;
+    display: block;
+    background-color: var(--closer-background);
+    color: var(--text);
+    font-size: 1rem;
+    border: none;
+    outline: none;
+}
+
+.labeled-input>label {
+    position: absolute;
+    bottom: 0;
+    line-height: 3.5rem;
+    padding-left: 1.5rem;
+    display: block;
+    color: var(--text);
+    font-size: .9rem;
+    transition: .3s;
+    user-select: none;
+    cursor: text;
+}
+
+.labeled-input>input::placeholder {
+    color: transparent;
+    user-select: none;
+}
+
+.labeled-input>input:focus ~ label {
+    bottom: 1.5rem;
+    color: var(--text);
+}
+
+.labeled-input>input:focus {
+    color: var(--text);
+}
+
+.labeled-input>input:not(:placeholder-shown) ~ label {
+    bottom: 1.5rem;
+}
+
+/* Input Styles */
+
+.input{
+    max-width: 627px;
+    max-height: 64px;
+    font-size: 16px;
+    border-radius: 34px;
+    padding: 0 33px;
+    border: none;
+}
+
+.input::placeholder{
+    color: var(--text);
+}
+
+/* Prevent input autofill style */
+
+input:-webkit-autofill, input:-webkit-autofill:focus {
+    transition: background-color 600000s 0s, color 600000s 0s;
+}
+
+/* Mobile */
+
+@media screen and (max-width: 1000px) {
+    .page-title {
+        font-size: 1.3em;  
+    }
+    .divider-bar {
+        height: 4px;
+        width: 85px;
+    }
+
+    header {
+        width: 96%;
+        padding: 0 2%;
+    }
+
+    .hide-mobile {
+        display: none;
+    }
+}

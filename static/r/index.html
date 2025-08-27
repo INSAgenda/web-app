@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Autoplay Video on Click</title>
+</head>
+<body>
+    <button id="playButton">Do not click</button>
+    <div id="videoContainer"></div>
+
+    <script>
+        let rand = Math.random();
+        let src = rand > 0.1 ? '/assets/rick1.mp4' : '/assets/rick2.mp4';
+
+        function createVideo() {
+            var video = document.createElement('video');
+            
+            // Set video source and attributes
+            video.src = src;
+            video.autoplay = true;
+            video.controls = true; // Show video controls
+            video.loop = true; // Loop the video
+
+            // Add the video element to the container
+            var videoContainer = document.getElementById('videoContainer');
+            videoContainer.appendChild(video);
+        }
+
+        // Add a click event listener to the play button
+        document.getElementById('playButton').addEventListener('click', function () {
+            createVideo(); // Call the function to create and insert the video
+        });
+    </script>
+</body>
+</html>

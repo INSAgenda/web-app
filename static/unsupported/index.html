@@ -1,0 +1,31 @@
+<html>
+    <head>
+        <title>Navigateur non supporté | INSAgenda</title>
+        <meta name="robots" content="noindex">
+        <meta charset="utf8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <link rel="stylesheet" href="/unsupported/unsupported.css"/>
+        <link rel="stylesheet" href="/styles/colors.css"/>
+        <link rel="stylesheet" href="/styles/insagenda.css"/>
+        <script common_code="head">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
+    </head>
+    <body>
+        <script common_code="header">var d=document;async function u(c,i){var f=d.createElement("div");f.innerHTML=await (await fetch(i)).text();for(var g=0;g<f.childNodes.length;g++){var a=f.childNodes[g];if(1==a.nodeType){var h=d.createElement(a.tagName);h.innerHTML=a.innerHTML;for(var b=0;b<a.attributes.length;b++)h.setAttribute(a.attributes[b].name,a.attributes[b].value);c.parentNode.insertBefore(h,c),a.remove()}}c.remove()}var e=d.currentScript;u(e,"/common-code/"+e.getAttribute("common_code")+".html")</script>
+        <main>
+            <div id="headline">
+                <h2>Votre navigateur est obsolète</h2>
+                <img src="/assets/elements/x-octagon.svg" alt="Warning icon">
+            </div>
+            <p>
+                INSAgenda repose sur <a href="https://en.wikipedia.org/wiki/WebAssembly">des technologies</a> créées en 2017, et ne peut fonctionner sur des navigateurs plus vieux.<br/>
+                Pour utiliser INSAgenda, faîtes toutes les <span class="bold">mises à jour</span> et utilisez un navigateur récent&#8239;:
+                <ul>
+                    <li><a href="https://brave.com/">Brave</a> (recommandé)</li>
+                    <li><a href="https://www.mozilla.org/fr/firefox/new/">Firefox</a></li>
+                    <li><a href="https://ungoogled-software.github.io/ungoogled-chromium-binaries/">Ungoogled Chromium</a></li>
+                    <li>...ou tous les autres navigateurs majeurs</li>
+                </ul>
+            </p>
+        </main>
+    </body>
+</html>

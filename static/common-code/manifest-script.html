@@ -1,0 +1,31 @@
+<!-- Adds the PWA manifest matching the user's language -->
+<script>
+    let element = document.createElement("link");
+    element.setAttribute("rel", "manifest");
+    let lang = window.localStorage.getItem("setting-lang");
+    if (lang === "english") {
+        element.setAttribute("href", "/manifest-en.json");
+    } else if (lang === "french") {
+        element.setAttribute("href", "/manifest-fr.json");
+    } else {
+        let nav = window.navigator;
+        let isset = false;
+        for (i = 0; i < nav.languages.length; i++) {
+            lang = nav.languages[i];
+            if (lang.startsWith("en-")) {
+                element.setAttribute("href", "/manifest-en.json");
+                isset = true;
+                break;
+            } else if (lang.startsWith("fr-")) {
+                element.setAttribute("href", "/manifest-fr.json");
+                isset = true;
+                break;
+            }
+        }
+        if (!isset) {
+            element.setAttribute("href", "/manifest-fr.json");
+        }
+    }
+    
+    document.getElementsByTagName('head')[0].appendChild(element);
+</script>
