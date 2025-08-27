@@ -1,0 +1,67 @@
+<header id="header">
+    <a id="header-logo" onclick={{onclick_rick}}>
+        <img src="/assets/logo/logo.svg" alt="Genda logo"/> 
+        <h1 id="header-name">Genda</h1>
+    </a>
+    <div style="display: flex;">
+        <div class="logout-button" onclick="{{onclick_logout}}">
+            <span>Se déconnecter</span>
+            <img src="/assets/icons/log-out.svg" class="invert-when-dark" alt="Logout button"/>
+        </div>
+    </div>
+</header>
+<main id="settings-main">
+    <h2>Paramètres</h2>
+    <div id="settings-container">
+        <section>
+            <h3>Général</h3>
+            <div class="settings-group">
+                <div class="setting">
+                    <h4>Groupes</h4>
+                    <p>
+                        Cochez les groupes dont vous suivez les cours. Les groupes marqués "officiel" proviennent du secrétariat et sont actualisés à chaque connexion par le CAS. Nous essayons de vous recommander les groupes les plus pertinents, mais sachez que nos recommandations sont limitées par un nommage parfois fantaisiste (notamment pour les humanités), et que vous pourriez devoir chercher parmi la liste complète.
+                    </p>
+                    
+                    <div id="group-list-setting">
+                        <div iter class="checkbox">
+                            <input type="checkbox" id="group-radio-{{group_radio_i_iter}}" checked={{group_radio_checked_iter}} />
+                            <label for="group-radio-{{group_radio_i2_iter}}" class="checkbox-box"></label>
+                            <label for="group-radio-{{group_radio_i3_iter}}">{{group_radio_label_iter}}&nbsp;<span class="group-radio-official">{{group_radio_official_iter}}</span></label>
+                        </div>
+
+                        <div present-if=!{{group_list_expanded}} id="group-list-toggle" onclick={{onclick_group_list_toggle}}>Afficher tout</div>
+                        <div present-if={{group_list_expanded}} id="group-list-toggle" onclick={{onclick_group_list_toggle}}>Afficher recommendations</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section>
+            <h3>Affichage</h3>
+            <div class="settings-group">
+                <div class="setting">
+                    <h4>Thème</h4>
+                    <p>Par défault, le thème est celui renseigné par votre navigateur.</p>
+                    {{theme_glider_selector}}
+                </div>
+                <div class="setting">
+                    <h4>Langue</h4>
+                    <p>Pour afficher l'interface dans langue de Molière.</p>
+                    {{language_glider_selector}}
+                </div>
+                <div class="setting">
+                    <h4>Calendrier</h4>
+                    <p present-if=!{{republican}}>
+                        Le calendrier de l'Église romaine, saints catholiques et fêtes religieuses. Adopté par le pape Grégoire XIII dans la bulle pontificale "Inter gravissimas" du 24 février 1582.
+                    </p>
+                    <p present-if={{republican}}>
+                        Il en est de la révolte comme de toute création humaine : elle ne vaut que par les détails.
+                    </p>
+                    {{calendar_glider_selector}}
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="primary-button" onclick={{onclick_confirm}}>Valider</div>
+    <div class="secondary-button" onclick={{onclick_cancel}}>Annuler</div>
+</main>

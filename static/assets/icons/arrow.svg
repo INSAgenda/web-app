@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="8.559" height="15.014" viewBox="0 0 8.559 15.014">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #DC6ACF;
+      }
+    </style>
+  </defs>
+  <g id="Arrow" transform="translate(105.699 -0.001) rotate(90)">
+    <path id="Tracé_1" data-name="Tracé 1" class="cls-1" d="M7.508,105.7a1.048,1.048,0,0,1-.743-.308L.309,98.935A1.051,1.051,0,0,1,1.8,97.448l5.712,5.712,5.712-5.712a1.051,1.051,0,0,1,1.487,1.487l-6.456,6.456A1.048,1.048,0,0,1,7.508,105.7Z" transform="translate(0 0)"/>
+  </g>
+</svg>

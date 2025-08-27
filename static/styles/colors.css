@@ -1,0 +1,29 @@
+/* Colors */
+
+:root {
+    /* All colors */
+    --primary: #DC6ACF;
+    --light-text: #F7F2F6;
+    --dark-text: #262126;
+    --dark: #141214;
+    --medium-dark: #333033;
+    --light: #FFFCFF;
+    --medium-light: #EBEAEA;
+    --error-red: #f44336;
+
+    /* home page colors */
+    --light-gray: #AEABAE;
+    --background: var(--medium-light);
+    --closer-background: var(--light);
+    --text: var(--dark-text);
+    --day: var(--light);
+}
+
+/* Dark-thème */
+
+:root[data-theme="dark"] {
+    --background: var(--dark);
+    --closer-background: var(--medium-dark);
+    --text: var(--light-text);
+    --day: #272627;
+}

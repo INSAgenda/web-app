@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>Genda | Agenda Rouen</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Venez découvrir votre agenda quotidien de manière rapide et efficace.">
+    <meta property="og:title" content="Genda">
+    <meta property="og:description" content="Venez découvrir votre agenda quotidien de manière rapide et efficace.">
+    <meta property="og:url" content="https://genda.dera.page">
+    <link rel="stylesheet" href="/styles/colors.css"/>
+    <link rel="stylesheet" href="/styles/insagenda.css"/>
+    <link rel="stylesheet" href="/styles/homepage.css"/>
+    <link rel="icon" href="/assets/logo/logo.svg"/>
+    <script src="/theme-toggle.js" defer></script>
+    <script src="/add-pwa.js" defer></script>
+</head>
+<body>
+    <header>
+        <a id="header-logo" href="index.html">
+            <img src="/assets/logo/logo.svg" alt="Genda logo"> 
+            <h1 id="header-name">Genda</h1>
+        </a>
+    </header>
+    <section id="home-section">
+        <!-- LeftPart -->
+        <div id="home-description">
+            <h2 id="home-title">Ne cherchez plus, Genda est là.</h2>
+            <p id="home-paragraph">Retrouvez votre emploi du temps, tout simplement.</p>
+            <a class="primary-button link-to-edt" id="register-button" href="/register">Se connecter à Genda</a>
+        </div>
+        <img id="home-image" src="/assets/screenshots/safari-screenshot.webp" alt="aperçu du site">
+    </section>
+    <!-- Steering rod -->
+    <div id="steering-rod">
+        <nav id="main-page-nav">
+            <a class="navigation-link" href="#features">Fonctionnalités</a>
+            <a class="navigation-link" href="#platforms">Plateformes</a>
+            <a class="navigation-link" href="#priorities">Nos priorités</a>
+            <a class="navigation-link" href="#open-source">Open Source</a>
+            <a class="navigation-link" href="#">En savoir plus</a>
+        </nav>
+        <div id="top-rod">
+            <div class="nw-rounded"></div>
+            <div class="h-rod"></div>
+        </div>
+        <div id="mid-rod">
+            <!-- Main content section -->
+            <div class="dot-rod">
+                <section id="features">
+                    <div class="title-block">
+                        <h3 class="section-title">Fonctionnalités.</h3>
+                        <h4 class="section-description">Genda est focalisé sur la praticité et la personnalisation.</h4>
+                    </div>
+                    <div id="mosaic">
+                        <div class="feature">
+                            <img class="feature-illustration" src="/assets/elements/magic-wand.webp" alt="illustration connexion sans mot de passe"/>
+                            <h5>Connexion sans mot de passe</h5>                            
+                        </div>
+                        <div class="feature">
+                            <img class="feature-illustration" src="/assets/elements/color-wheel.webp" alt="palette couleur"/>
+                            <h5>Changez la couleurs de vos cours</h5>                            
+                        </div>
+                        <div class="feature">
+                            <img class="feature-illustration" src="/assets/elements/languages.webp" alt="drapeau français et britanique"/>
+                            <h5>Disponible dans 2 langues</h5>                            
+                        </div>
+                        <div class="feature">
+                            <img class="feature-illustration" src="/assets/elements/theme-illustration.webp" alt="illustration possibilité theme clair et sombre"/>
+                            <h5>Compatible thème clair et sombre</h5>                            
+                        </div>
+                        <div class="feature">
+                            <img class="feature-illustration" src="/assets/elements/no-signal.webp" alt="illustration accessibilité sans réseau"/>
+                            <h5>Accessible hors-ligne</h5>                            
+                        </div>
+                    </div>
+                </section> 
+            </div>
+            <div class="dot-rod">
+                <section id="platforms">
+                    <div class="title-block">
+                        <h3 class="section-title">Plateformes.</h3>
+                        <h4 class="section-description">Genda est présent sur la majorité des plateformes.</h4>
+                    </div>
+                    <div id="plarforms-container">
+                        <div id="phone-part">
+                            <img src="/assets/screenshots/phone.webp"/>
+                            <div class="descriptor">
+                                <p><b>Votre emploi du temps toujours à portée de main.</b> Consultez votre emploi du temps en un clin d'oeil.</p>
+                                <p class="availables">PWA disponible pour IOS et Android.</p>
+                                <div class="platform-ico">
+                                    <img src="/assets/icons/apple-logo.svg" alt="logo apple"/>
+                                    <img src="/assets/icons/android-logo.svg" alt="logo android"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="desktop-part">
+                            <img src="/assets/screenshots/safari-light.webp"/>
+                            <div class="descriptor">
+                                <p><b>Votre emploi du temps sur tous vos appareils.</b> Consultez votre emploi du temps sur tous les navigateurs.</p>
+                                <p class="availables">Disponible sur tous les navigateurs.</p>
+                                <div class="platform-ico">
+                                    <img src="/assets/icons/safari.svg" alt="logo safari"/>
+                                    <img src="/assets/icons/chrome.svg" alt="logo chrome"/>
+                                    <img src="/assets/icons/firefox.svg" alt="logo firefox"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section> 
+            </div>
+            <div class="dot-rod">
+                <section id="open-source">
+                    <div class="title-block">
+                        <h3 class="section-title">Open Source.</h3>
+                        <h4 class="section-description">Nous travaillons publiquement sur des plateformes ouvertes. Vous pouvez nous y rencontrer, proposer des idées, et même améliorer le logiciel Genda.</h4>
+                        <a class="homepage-link" href="https://github.com/INSAgenda">Accéder à GitHub.</a>
+                        <a class="homepage-link" href="https://discord.gg/TpdbUyfcbJ">Accéder au Discord.</a>
+                    </div>
+                    
+                    <img id="github-overview" src="/assets/elements/open-source.webp" alt="aperçu du github"/>
+                </section> 
+            </div>
+        </div>
+        <div id="bottom-rod">
+            <div class="sw-rounded"></div>
+            <div class="h-rod"></div>
+            <div class="se-rounded"></div>
+            <a href="#">Revenir en haut de page</a>
+        </div>
+    </div>
+    <script>
+        // Register service worker
+        if (typeof navigator.serviceWorker !== 'undefined') {
+            navigator.serviceWorker.register('/sw.js?v=2')
+        }
+    </script>
+</body>
+</html>

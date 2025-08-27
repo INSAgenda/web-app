@@ -1,111 +1,129 @@
 <div align="center">
-    <a href="https://insagenda.insa.lol/">
-        <img src="https://insagenda.insa.lol/assets/logo/logo.svg" alt="genda's logo" width="80" height="80">
+    <a href="https://genda.dera.page/">
+        <img src="https://genda.dera.page/assets/logo/logo.svg" alt="genda's logo" width="80" height="80">
     </a>
-    <h1 align="center">genda (web-app)</h1>
+    <h1 align="center">Genda (web-app)</h1>
     <p align="center">
-        genda is a free website allowing students to view their course schedule at Rouen's engineering school.<br/>
-        <a href="https://insagenda.insa.lol/"><b>Explore our website »</b></a><br/><br/>
+        Genda is a free website allowing students to view their course schedule at Rouen's engineering school.<br/>
+        <a href="https://genda.dera.page/"><b>Explore our website »</b></a><br/><br/>
     </p>
 </div>
 
-This project isn't affiliated with the school it is intended for.
+## 🌱 Getting Started
 
-## Table of contents
+### 🤝 Joining the Project
 
-1. [Running](#running)
-    - [Install the tools](#install-the-tools)
-    - [Organize the data](#organize-data)
-    - [Run the code](#run-the-code)
-2. [Contributing](#contributing)
-    - [Recommandations](#recommandations)
-    - [License](#license)
+We’d love to have you on board! 💜
+To get started, please reach out to us on [our Discord server](https://discord.gg/TpdbUyfcbJ).
 
-## Running
+**⚠️ Heads-up**: You’ll need our approval to contribute since access to the backend server (not open-source) is required. Once you’re in, we’ll be thrilled to guide you!
 
-You can compile this project and run it on your local machine.  
-  
-In order to enable you to test the program, we will provide you with a binary of the backend[^backend-binary]. This binary is an unoptimized build that is intented to be used for *development purposes only*. This publicly provided backend is compatible with this public repository.  
-  
-However, the *production* backend will refuse all requests sent by clients you compiled yourself. Only we can compile clients that will be compatible with the production backend. When you contribute to this repository and your changes are accepted, we will take care of deploying your code to [insagenda.insa.lol](https://insagenda.insa.lol).  
-  
-If you need help at any time feel free to come chat with us on [our discord server](https://discord.gg/TpdbUyfcbJ).  
-Now that you know how we work, let's get started!
+### 🛠 Install the Tools
 
-### Install the tools
+Make sure you have the following installed on your machine:
+- [Rust](https://www.rust-lang.org/)
+- [SQLite3](https://www.sqlite.org/index.html)
+- [Trunk](https://trunkrs.dev/)
+- [Diesel CLI](https://diesel.rs/guides/getting-started)
 
-Please install [Rust](https://www.rust-lang.org/), [SQLite3](https://www.sqlite.org/index.html) and [Trunk](https://trunkrs.dev/) on your machine.
-
-Here are the commands to run on Ubuntu-based systems:
+For Ubuntu-based systems, run:
 
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sudo sh # Install Rust
-rustup target add wasm32-unknown-unknown # Install wasm target for Rust
-sudo apt install sqlite3 # Install SQLite3
-cargo install trunk # Install Trunk
+# Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sudo sh 
+
+# Wasm target
+rustup target add wasm32-unknown-unknown
+
+# SQLite3
+sudo apt install sqlite3
+
+# Trunk
+cargo install trunk
+
+# Diesel CLI
+cargo install diesel_cli --no-default-features --features "sqlite-bundled"
 ```
 
-### Organize data
+### 📂 Code Organization
 
-This repository only contains the web app hosted at `/agenda`.
-All other files are stored in [our frontend repository](https://github.com/INSAgenda/frontend), and the backend is closed-source. There is also [another public repository](https://github.com/INSAgenda/common) containing common data structures used by both the web app and the backend.  
+This repository contains the 3 open-source components of Genda:
+- Frontend files → `/static`
+- Shared data structures → `/common`
+- Web application → `/app`
 
-In order to setup your development environment, you will thus need to clone three repositories and download a backend binary[^backend-binary].
+The backend is closed-source, but you’ll get access if you need to 😉.
 
-Here is the **required** file structure:
+**Required file structure:**
 
 ```text
 genda/
-├─ frontend/
-├─ web-app/
-├─ common/
-├─ backend/
+├─ web-api/
+└─ web-app
 ```
 
-Commands to run:
+**Setup commands:**
 
 ```bash
 mkdir genda && cd genda
 git clone https://github.com/INSAgenda/frontend
-git clone https://github.com/INSAgenda/yew-template
 git clone https://github.com/INSAgenda/web-app
-git clone https://github.com/INSAgenda/common
-mkdir backend && cd backend
-wget https://genda.insa.lol/development/backend.tar.gz # Download the backend binary
-tar -xvf backend.tar.gz
-wget https://genda.insa.lol/development/database # Download an empty database ready to be used by the backend
+```
+
+### ⚙️ Database Initialization
+
+We use [Diesel](https://diesel.rs/) as our ORM. To set up the database, run:
+
+```bash
+# Create an empty database
+cd web-api
+diesel setup --database-url=./database
+cd ..
+```
+
+This creates a fresh SQLite database and ensures all required tables are ready to use. 🎉
+
+In the future, you may need to create and run migrations with:
+
+```bash
+cd web-api
+diesel migration generate <future_migration_name>
+diesel migration run --database-url=./database
 cd ..
 ```
 
 ### Run the code
 
 ```bash
-# Run the backend in a terminal
-./backend/backend
+# Start the backend in the background (use `fg` to bring it back to the foreground)
+cd web-api
+cargo run --features=fetching &
+cd ..
 
-# Build the web-app in another terminal
-cd web-app
+# Build the web-app
+cd web-app/app
 trunk build --public-url=agenda
+cd ../..
 ```
 
-The web-app will be served at `http://localhost:8088/agenda`. All files from the frontend folder will also be served.  
+The web app will be served at:
+👉 http://localhost:8088/agenda 🎉
 
-You can also run `trunk watch` instead of `trunk build`.
-This will continuously build the web-app as source files are modified.
+💡 You can also run `trunk watch` to rebuild automatically whenever you update source files.
 
-_Tip: Make yourself a script with the code above to increase your productivity._
+## 🙌 Contributing
 
-## Contributing
+Your input matters! Whether it’s fixing bugs, improving endpoints, or keeping things stable, every contribution helps ensure our system runs at its best.
 
-### Recommendations
+## 💬 Need Help?
 
-Unwraps are ok on many web_sys methods, but you have to be absolutely sure it will not panic on any modern browser.  
-  
-Errors are to be handled, but unhandled errors are to be displayed to the user using our custom alert function. We do not currently provide the list of errors that could occur on each endpoint, but that's definitely something we would like have.  
+We’ve got you covered! If you ever feel stuck, join our community on Discord:
+👉 [Join the Discord](https://discord.gg/TpdbUyfcbJ)
 
-### License
+Simon and Dimitri are always around (wherever they are 🌍) and will be delighted to help you contribute and get the most out of this project. Don’t hesitate to reach out!
 
-This project is unlicensed. This means the source code is protected by copyright laws in the most restrictive way.  
-You can read the code and contribute to it, but you mustn't use it for any other purpose.
+## License
 
-[^backend-binary]: The backend binary can be downloaded [from our website](https://insagenda.insa.lol/development/backend.tar.gz). This is obviously amd64 Linux-only. You will also need to download [an empty database](https://insagenda.insa.lol/development/database).
+This project is **unlicensed**.  
+The source code is strictly protected and belongs to its contributors.  
+🚫 You may **not** use any part of this project without permission.

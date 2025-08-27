@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /private/
+
+Sitemap: https://genda.dera.page/sitemap.xml
+
+# Vires In Numeris
