@@ -39,6 +39,7 @@ impl HackTraitEventFormat for RawEvent {
             Some(EventKind::Td) => format!("TD: {summary}"),
             Some(EventKind::Tp) => format!("TP: {summary}"),
             Some(EventKind::Cm) => format!("CM: {summary}"),
+            Some(EventKind::Tut) => format!("{summary} (Tutorat)"),
             None => summary.clone(),
         }
     }
