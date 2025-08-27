@@ -49,7 +49,7 @@
     }
     
     #agenda-arrow-left>div, #agenda-arrow-right>div {
-        background: url(/assets/elements/arrow.svg?v=1) center no-repeat;
+        background: url(/assets/icons/arrow.svg?v=1) center no-repeat;
         width: 100%;
         height: 100%;
     }
