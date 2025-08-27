@@ -8,7 +8,6 @@ pub enum Page {
     Friends,
     FriendAgenda { pseudo: String },
     Stotra,
-    Mastodon,
     Settings,
     Rick,
 }
@@ -21,7 +20,6 @@ impl Page {
             Page::Friends => (String::from("friends"), "Friends"),
             Page::FriendAgenda { pseudo } => (format!("friend-agenda/{pseudo}"), "Friend agenda"),
             Page::Stotra => (String::from("stotra"), "Stotra"),
-            Page::Mastodon => (String::from("mastodon"), "Mastodon"),
             Page::Event { eid } => (format!("event/{eid}"), "Event"),
             Page::Rick => (String::from("r"), "Rick"),
         }
@@ -34,7 +32,6 @@ impl Page {
             "friends" => Page::Friends,
             friend_agenda if friend_agenda.starts_with("friend-agenda/") => Page::FriendAgenda { pseudo: friend_agenda[14..].to_string() },
             "stotra" => Page::Stotra,
-            "mastodon" => Page::Mastodon,
             "settings" => Page::Settings,
             "r" => Page::Rick,
             pathname => {

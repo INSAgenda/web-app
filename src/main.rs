@@ -22,8 +22,6 @@ mod tabbar;
 mod friends;
 #[path = "comment/comment.rs"]
 mod comment;
-#[path = "mastodon/mastodon.rs"]
-mod mastodon;
 #[path = "stotra/stotra.rs"]
 mod stotra;
 #[path = "flag/flag.rs"]

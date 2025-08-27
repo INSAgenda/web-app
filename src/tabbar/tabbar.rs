@@ -6,7 +6,7 @@ pub struct TabBar {}
 #[derive(Clone, Properties)]
 pub struct TabBarProps {
     pub app_link: AppLink,
-    pub bait_points: (bool, bool, bool, bool),
+    pub bait_points: (bool, bool, bool),
     pub page: Page,
 }
 
@@ -38,13 +38,9 @@ impl Component for TabBar {
         let onclick_stotra = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Stotra));
         let stotra_classes = String::from(if matches!(page, Page::Stotra) {"tabbar-selected"} else {"tabbar-not-selected"});
 
-        let onclick_mastodon = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Mastodon));
-        let mut mastodon_classes = String::from(if matches!(page, Page::Mastodon) {"tabbar-selected"} else {"tabbar-not-selected"});
-        if ctx.props().bait_points.2 { mastodon_classes.push_str(" tabbar-with-bait"); }
-
         let onclick_settings = ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Settings));
         let mut settings_classes = String::from(if matches!(page, Page::Settings) {"tabbar-selected"} else {"tabbar-not-selected"});
-        if ctx.props().bait_points.3 { settings_classes.push_str(" tabbar-with-bait"); }
+        if ctx.props().bait_points.2 { settings_classes.push_str(" tabbar-with-bait"); }
 
         template_html!("src/tabbar/tabbar.html", ...)
     }
