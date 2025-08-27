@@ -2,23 +2,13 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
     <url>
-    <loc>https://insagenda.insa.lol/</loc>
+    <loc>https://genda.dera.page/</loc>
         <priority>1.00</priority>
         <changefreq>weekly</changefreq>
     </url>
     <url>
-        <loc>https://insagenda.insa.lol/register</loc>
-        <priority>0.8</priority>
-        <changefreq>weekly</changefreq>
-    </url>
-    <url>
-        <loc>https://insagenda.insa.lol/login</loc>
-        <priority>0.8</priority>
-        <changefreq>weekly</changefreq>
-    </url>
-    <url>
-        <loc>https://insagenda.insa.lol/agenda</loc>
+        <loc>https://genda.dera.page/agenda</loc>
         <priority>0.5</priority>
-        <changefreq>weekly</changefreq>
+        <changefreq>monthly</changefreq>
     </url>
 </urlset>
