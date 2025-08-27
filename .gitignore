@@ -1,4 +1,5 @@
 /target/
+/common/target/
 /dist/
 /Cargo.lock
 testing/**
