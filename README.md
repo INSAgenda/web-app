@@ -1,6 +1,6 @@
 <div align="center">
     <a href="https://genda.dera.page/">
-        <img src="https://genda.dera.page/assets/logo/logo.svg" alt="genda's logo" width="80" height="80">
+        <img src="./static/assets/logo/logo.svg" alt="genda's logo" width="80" height="80">
     </a>
     <h1 align="center">Genda (web-app)</h1>
     <p align="center">
