@@ -5,6 +5,7 @@ pub enum EventKind {
     Td,
     Cm,
     Tp,
+    Tut,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
