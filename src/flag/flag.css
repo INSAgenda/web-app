@@ -1,0 +1,15 @@
+/* Style for the flag link in the header */
+
+#flag-link {
+    height: 80%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#flag-link>img {
+    max-height: 100%;
+    max-width: 100%;
+    border-radius: .3rem;
+}

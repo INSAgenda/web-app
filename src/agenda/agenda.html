@@ -7,9 +7,7 @@
     <div opt style="height: 70%; aspect-ratio: 1 / 1;">
         <img src={{opt_profile_src}} />
     </div>
-    <a present-if={{profile_src_none}} id="ukraine-link" href="https://war.ukraine.ua/donate/">
-        <img src="/agenda/images/ukraine.svg" alt="Soutenez l'Ukraine" />
-    </a>
+    <component present-if={{profile_src_none}} name="Flag" />
 </header>
 <main id="agenda-main">
 <virtual present-if={{moyeninsage}}>

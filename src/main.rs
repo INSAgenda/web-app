@@ -29,6 +29,8 @@ mod comment;
 mod mastodon;
 #[path = "stotra/stotra.rs"]
 mod stotra;
+#[path = "flag/flag.rs"]
+mod flag;
 
 mod app;
 mod util;
