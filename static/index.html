@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/styles/homepage.css"/>
     <link rel="icon" href="/assets/logo/logo.svg"/>
     <script src="/theme-toggle.js" defer></script>
+    <script src="/add-pwa.js" defer></script>
 </head>
 <body>
     <header>
@@ -53,23 +54,23 @@
                     </div>
                     <div id="mosaic">
                         <div class="feature">
-                            <img class="feature-illustration" src="/assets/elements/main-page/magic-wand.webp" alt="illustration connexion sans mot de passe"/>
+                            <img class="feature-illustration" src="/assets/elements/magic-wand.webp" alt="illustration connexion sans mot de passe"/>
                             <h5>Connexion sans mot de passe</h5>                            
                         </div>
                         <div class="feature">
-                            <img class="feature-illustration" src="/assets/elements/main-page/color-wheel.webp" alt="palette couleur"/>
+                            <img class="feature-illustration" src="/assets/elements/color-wheel.webp" alt="palette couleur"/>
                             <h5>Changez la couleurs de vos cours</h5>                            
                         </div>
                         <div class="feature">
-                            <img class="feature-illustration" src="/assets/elements/main-page/languages.webp" alt="drapeau français et britanique"/>
+                            <img class="feature-illustration" src="/assets/elements/languages.webp" alt="drapeau français et britanique"/>
                             <h5>Disponible dans 2 langues</h5>                            
                         </div>
                         <div class="feature">
-                            <img class="feature-illustration" src="/assets/elements/main-page/theme-illustration.webp" alt="illustration possibilité theme clair et sombre"/>
+                            <img class="feature-illustration" src="/assets/elements/theme-illustration.webp" alt="illustration possibilité theme clair et sombre"/>
                             <h5>Compatible thème clair et sombre</h5>                            
                         </div>
                         <div class="feature">
-                            <img class="feature-illustration" src="/assets/elements/main-page/no-signal.webp" alt="illustration accessibilité sans réseau"/>
+                            <img class="feature-illustration" src="/assets/elements/no-signal.webp" alt="illustration accessibilité sans réseau"/>
                             <h5>Accessible hors-ligne</h5>                            
                         </div>
                     </div>
@@ -88,8 +89,8 @@
                                 <p><b>Votre emploi du temps toujours à portée de main.</b> Consultez votre emploi du temps en un clin d'oeil.</p>
                                 <p class="availables">PWA disponible pour IOS et Android.</p>
                                 <div class="platform-ico">
-                                    <img src="/assets/elements/plartforms/apple-logo.svg" alt="logo apple"/>
-                                    <img src="/assets/elements/plartforms/android-logo.svg" alt="logo android"/>
+                                    <img src="/assets/icons/apple-logo.svg" alt="logo apple"/>
+                                    <img src="/assets/icons/android-logo.svg" alt="logo android"/>
                                 </div>
                             </div>
                         </div>
@@ -99,9 +100,9 @@
                                 <p><b>Votre emploi du temps sur tous vos appareils.</b> Consultez votre emploi du temps sur tous les navigateurs.</p>
                                 <p class="availables">Disponible sur tous les navigateurs.</p>
                                 <div class="platform-ico">
-                                    <img src="/assets/elements/plartforms/safari.svg" alt="logo safari"/>
-                                    <img src="/assets/elements/plartforms/chrome.svg" alt="logo chrome"/>
-                                    <img src="/assets/elements/plartforms/firefox.svg" alt="logo firefox"/>
+                                    <img src="/assets/icons/safari.svg" alt="logo safari"/>
+                                    <img src="/assets/icons/chrome.svg" alt="logo chrome"/>
+                                    <img src="/assets/icons/firefox.svg" alt="logo firefox"/>
                                 </div>
                             </div>
                         </div>
@@ -117,7 +118,7 @@
                         <a class="homepage-link" href="https://discord.gg/TpdbUyfcbJ">Accéder au Discord.</a>
                     </div>
                     
-                    <img id="github-overview" src="/assets/elements/main-page/open-source.webp" alt="aperçu du github"/>
+                    <img id="github-overview" src="/assets/elements/open-source.webp" alt="aperçu du github"/>
                 </section> 
             </div>
         </div>
@@ -128,48 +129,11 @@
             <a href="#">Revenir en haut de page</a>
         </div>
     </div>
-    <div style="display: none;">
-        <a rel="me" href="https://mastodon.insa.lol/@insagenda">Mastodon</a>
-        <a rel="me" href="https://mastodon.insa.lol/@simon_girard">Mastodon</a>
-        <a rel="me" href="https://mastodon.insa.lol/@dimitri_timoz">Mastodon</a>
-    </div>
     <script>
         // Register service worker
         if (typeof navigator.serviceWorker !== 'undefined') {
             navigator.serviceWorker.register('/sw.js?v=2')
         }
     </script>
-    <!-- Adds the PWA manifest matching the user's language -->
-    <script>
-        let element = document.createElement("link");
-        element.setAttribute("rel", "manifest");
-        let lang = window.localStorage.getItem("setting-lang");
-        if (lang === "english") {
-            element.setAttribute("href", "/manifest-en.json");
-        } else if (lang === "french") {
-            element.setAttribute("href", "/manifest-fr.json");
-        } else {
-            let nav = window.navigator;
-            let isset = false;
-            for (i = 0; i < nav.languages.length; i++) {
-                lang = nav.languages[i];
-                if (lang.startsWith("en-")) {
-                    element.setAttribute("href", "/manifest-en.json");
-                    isset = true;
-                    break;
-                } else if (lang.startsWith("fr-")) {
-                    element.setAttribute("href", "/manifest-fr.json");
-                    isset = true;
-                    break;
-                }
-            }
-            if (!isset) {
-                element.setAttribute("href", "/manifest-fr.json");
-            }
-        }
-        
-        document.getElementsByTagName('head')[0].appendChild(element);
-    </script>
 </body>
 </html>
-

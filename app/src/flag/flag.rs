@@ -32,12 +32,31 @@ impl Component for Flag {
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
         let (href, alt, svg) = match self {
-            Flag::Palestine => ("https://donate.unrwa.org/int/en/general", "Soutenez le peuple palestinien", "/agenda/images/palestine.svg"),
-            Flag::Ukraine => ("https://war.ukraine.ua/donate/", "Soutenez l'Ukraine", "/agenda/images/ukraine.svg"),
-            Flag::Kanaky => ("https://www.amnesty.org/fr/latest/news/2024/05/kanaky-new-caledonia-french-authorities-must-uphold-rights-of-the-indigenous-kanak-people-amid-unrest/", "Drapeau kanak", "/agenda/images/kanaky.svg"),
-            Flag::HongKong => ("https://youtu.be/9iF7xiEU5c8", "Drapeau de Hong Kong", "/agenda/images/hongkong.svg"),
-            Flag::Taiwan => ("https://spiritofamerica.org/project/help-prepare-taiwan-for-an-emergency",
-            "Drapeau de Taïwan", "/agenda/images/taiwan.svg"),
+            Flag::Palestine => (
+                "https://donate.unrwa.org/int/en/general",
+                "Soutenez le peuple palestinien",
+                "/assets/icons/palestine.svg"
+            ),
+            Flag::Ukraine => (
+                "https://war.ukraine.ua/donate/",
+                "Soutenez l'Ukraine",
+                "/assets/icons/ukraine.svg"
+            ),
+            Flag::Kanaky => (
+                "https://www.amnesty.org/fr/latest/news/2024/05/kanaky-new-caledonia-french-authorities-must-uphold-rights-of-the-indigenous-kanak-people-amid-unrest/",
+                "Drapeau kanak",
+                "/assets/icons/kanaky.svg"
+            ),
+            Flag::HongKong => (
+                "https://youtu.be/9iF7xiEU5c8",
+                "Drapeau de Hong Kong",
+                "/assets/icons/hongkong.svg"
+            ),
+            Flag::Taiwan => (
+                "https://spiritofamerica.org/project/help-prepare-taiwan-for-an-emergency",
+                "Drapeau de Taïwan",
+                "/assets/icons/taiwan.svg"
+            ),
         };
 
         html! {

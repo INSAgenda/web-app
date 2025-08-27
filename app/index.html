@@ -6,9 +6,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Récupérez votre emploi du temps pour vos cours facilement">
-    <link rel="stylesheet" href="../styles/colors.css">
-    <link rel="stylesheet" href="../styles/insagenda.css">
-    <link rel="stylesheet" href="../styles/auth.css">
+    <link rel="stylesheet" href="/styles/colors.css">
+    <link rel="stylesheet" href="/styles/insagenda.css">
+    <link rel="stylesheet" href="/styles/auth.css">
     <link rel="icon" href="/assets/logo/logo.svg?v=1" />
     <link data-trunk rel="inline" href="src/main.css" />
     <link data-trunk rel="inline" href="src/popup/popup.css" />
@@ -27,8 +27,8 @@
     <link data-trunk rel="inline" href="styles/waiting-screen.css" />
     <link data-trunk rel="inline" href="styles/themes.css" />
     <link data-trunk rel="rust" data-integrity="none" data-initializer="src/initializer.mjs" />
-    <link data-trunk rel="copy-dir" href="images" />
     <script src="/theme-toggle.js" defer></script>
+    <script src="/add-pwa.js" defer></script>
 </head>
 <body>
     <div id="render">
@@ -71,37 +71,6 @@
 
         window.addEventListener('resize', appHeight);
         appHeight();
-    </script>
-    <!-- Adds the PWA manifest matching the user's language -->
-    <script>
-        let element = document.createElement("link");
-        element.setAttribute("rel", "manifest");
-        let lang = window.localStorage.getItem("setting-lang");
-        if (lang === "english") {
-            element.setAttribute("href", "/manifest-en.json");
-        } else if (lang === "french") {
-            element.setAttribute("href", "/manifest-fr.json");
-        } else {
-            let nav = window.navigator;
-            let isset = false;
-            for (i = 0; i < nav.languages.length; i++) {
-                lang = nav.languages[i];
-                if (lang.startsWith("en-")) {
-                    element.setAttribute("href", "/manifest-en.json");
-                    isset = true;
-                    break;
-                } else if (lang.startsWith("fr-")) {
-                    element.setAttribute("href", "/manifest-fr.json");
-                    isset = true;
-                    break;
-                }
-            }
-            if (!isset) {
-                element.setAttribute("href", "/manifest-fr.json");
-            }
-        }
-        
-        document.getElementsByTagName('head')[0].appendChild(element);
     </script>
 </body>
 </html>

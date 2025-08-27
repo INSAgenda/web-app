@@ -8,6 +8,9 @@
                 "build",
                 "--public-url=/agenda"
             ],
+            "options": {
+                "cwd": "${workspaceFolder}/app"
+            },
             "type": "shell",
             "problemMatcher": [],
             "group": {

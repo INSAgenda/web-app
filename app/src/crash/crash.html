@@ -3,7 +3,6 @@
 <head>
     <title>Crash report</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script noinline src="https://js.sentry-cdn.com/5d343bdb601a48ef99cec222ee944943.min.js" crossorigin="anonymous"></script>
     <style>
         body {
             width: 50%;
@@ -66,7 +65,7 @@
         }
     </style>
 </head>
-<body onload="Sentry.captureException(&quot;[MESSAGE]&quot;);">
+<body>
     <div id="title">
         <svg xmlns="http://www.w3.org/2000/svg" height="4rem" viewBox="0 0 24 24" width="4rem" fill="\#000000"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
         <h1>Fatal error</h1>
@@ -76,7 +75,7 @@
     <pre>[MESSAGE]</pre>
     <br/>
     <div>
-        <a href="mailto:simon@dera.page?subject=Genda%20crash%20report&body=[ENCODED MESSAGE]">Rapporter</a>
+        <a href="mailto:genda@dera.page?subject=Genda%20crash%20report&body=[ENCODED MESSAGE]">Rapporter</a>
         <a href="">Recharger la page</a>
     </div>
     <div style="height: 10rem;"></div>

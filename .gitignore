@@ -1,6 +1,6 @@
 /target/
 /common/target/
-/dist/
+/app/dist/
 /Cargo.lock
 testing/**
 src/api/gen_code_prod.rs
