@@ -383,7 +383,7 @@ impl Component for SettingsPage {
                     local_storage.set("auto-theme", &auto).unwrap();
                 }
 
-                window.location().replace("https://auth.insa.lol/logout").unwrap();
+                window.location().replace("https://auth.dera.page/logout").unwrap();
                 false
             }
             Msg::LanguageChange(v) => {

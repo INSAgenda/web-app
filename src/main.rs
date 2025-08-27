@@ -1,6 +1,3 @@
-//! Welcome to the INSAgenda web app! This is the main file of the app.
-//! INSAgenda uses the [Yew](https://yew.rs) framework to build a single page web app.
-
 #[path = "alert/alert.rs"]
 mod alert;
 #[path = "event/event.rs"]

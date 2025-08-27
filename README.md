@@ -1,11 +1,11 @@
 <div align="center">
-    <a href="https://insagenda.insa.lol/">
-        <img src="https://insagenda.insa.lol/assets/logo/logo.svg" alt="genda's logo" width="80" height="80">
+    <a href="https://genda.dera.page/">
+        <img src="https://genda.dera.page/assets/logo/logo.svg" alt="genda's logo" width="80" height="80">
     </a>
     <h1 align="center">genda (web-app)</h1>
     <p align="center">
         genda is a free website allowing students to view their course schedule at Rouen's engineering school.<br/>
-        <a href="https://insagenda.insa.lol/"><b>Explore our website »</b></a><br/><br/>
+        <a href="https://genda.dera.page/"><b>Explore our website »</b></a><br/><br/>
     </p>
 </div>
 
@@ -27,7 +27,7 @@ You can compile this project and run it on your local machine.
   
 In order to enable you to test the program, we will provide you with a binary of the backend[^backend-binary]. This binary is an unoptimized build that is intented to be used for *development purposes only*. This publicly provided backend is compatible with this public repository.  
   
-However, the *production* backend will refuse all requests sent by clients you compiled yourself. Only we can compile clients that will be compatible with the production backend. When you contribute to this repository and your changes are accepted, we will take care of deploying your code to [insagenda.insa.lol](https://insagenda.insa.lol).  
+However, the *production* backend will refuse all requests sent by clients you compiled yourself. Only we can compile clients that will be compatible with the production backend. When you contribute to this repository and your changes are accepted, we will take care of deploying your code to [genda.dera.page](https://genda.dera.page).  
   
 If you need help at any time feel free to come chat with us on [our discord server](https://discord.gg/TpdbUyfcbJ).  
 Now that you know how we work, let's get started!
@@ -71,9 +71,9 @@ git clone https://github.com/INSAgenda/yew-template
 git clone https://github.com/INSAgenda/web-app
 git clone https://github.com/INSAgenda/common
 mkdir backend && cd backend
-wget https://genda.insa.lol/development/backend.tar.gz # Download the backend binary
+wget https://genda.dera.page/development/backend.tar.gz # Download the backend binary
 tar -xvf backend.tar.gz
-wget https://genda.insa.lol/development/database # Download an empty database ready to be used by the backend
+wget https://genda.dera.page/development/database # Download an empty database ready to be used by the backend
 cd ..
 ```
 
@@ -108,4 +108,4 @@ Errors are to be handled, but unhandled errors are to be displayed to the user u
 This project is unlicensed. This means the source code is protected by copyright laws in the most restrictive way.  
 You can read the code and contribute to it, but you mustn't use it for any other purpose.
 
-[^backend-binary]: The backend binary can be downloaded [from our website](https://insagenda.insa.lol/development/backend.tar.gz). This is obviously amd64 Linux-only. You will also need to download [an empty database](https://insagenda.insa.lol/development/database).
+[^backend-binary]: The backend binary can be downloaded [from our website](https://genda.dera.page/development/backend.tar.gz). This is obviously amd64 Linux-only. You will also need to download [an empty database](https://genda.dera.page/development/database).

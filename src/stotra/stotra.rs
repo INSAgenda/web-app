@@ -5,12 +5,12 @@ use crate::prelude::*;
 #[cfg(debug_assertions)]
 pub const STOTRA_URL: &str = "http://localhost:5173";
 #[cfg(not(debug_assertions))]
-pub const STOTRA_URL: &str = "https://auth.insa.lol/cas/login?service=https%3A%2F%2Fstotra.insa.lol";
+pub const STOTRA_URL: &str = "https://auth.dera.page/cas/login?service=https%3A%2F%2Fstotra.dera.page";
 
 #[cfg(debug_assertions)]
 pub const STOTRA_GET_PORTFOLIO_URL: &str = "http://localhost:5173/api/user/portfolio";
 #[cfg(not(debug_assertions))]
-pub const STOTRA_GET_PORTFOLIO_URL: &str = "https://stotra.insa.lol/api/user/portfolio";
+pub const STOTRA_GET_PORTFOLIO_URL: &str = "https://stotra.dera.page/api/user/portfolio";
 
 static STOTRA_RANK_CACHED: AtomicIsize = AtomicIsize::new(0);
 
