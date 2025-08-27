@@ -1,4 +1,4 @@
-use crate::{mastodon::{init_mastodon, mastodon_mark_all_seen}, stotra::STOTRA_URL};
+use crate::stotra::STOTRA_URL;
 use yew::virtual_dom::VNode;
 use crate::{prelude::*, settings::SettingsPage};
 
@@ -7,7 +7,6 @@ pub enum AppMsg {
     /// Switch page
     SetPage { page: Page, silent: bool },
     MarkCommentsAsSeen(String),
-    MastodonNotification,
     UpdateFriends(FriendLists), // Use to locally update the friendlist
     UpdateColor { summary: String, color: String },
 
@@ -45,9 +44,8 @@ pub struct App {
     comment_counts: Rc<CommentCounts>,
     colors: Rc<Colors>,
     seen_comment_counts: Rc<CommentCounts>,
-    tabbar_bait_points: (bool, bool, bool, bool),
+    tabbar_bait_points: (bool, bool, bool),
     page: Page,
-    iframe: web_sys::Element,
 }
 
 impl Component for App {
@@ -91,10 +89,8 @@ impl Component for App {
             false,
             friends.as_ref().map(|f: &FriendLists| !f.incoming.is_empty()).unwrap_or(false),
             false,
-            false,
         );
 
-        let iframe = init_mastodon(&page, ctx.link().clone());
         Self {
             next_selected_day: None,
             events: Rc::new(events),
@@ -105,8 +101,7 @@ impl Component for App {
             colors: Rc::new(colors),
             seen_comment_counts,
             tabbar_bait_points,
-            page,
-            iframe
+            page
         }
     }
 
@@ -181,21 +176,8 @@ impl Component for App {
                 match page {
                     Page::Agenda => self.tabbar_bait_points.0 = false,
                     Page::Friends => self.tabbar_bait_points.1 = false,
-                    Page::Mastodon => {
-                        if self.tabbar_bait_points.2 {
-                            mastodon_mark_all_seen();
-                            self.tabbar_bait_points.2 = false;
-                        }
-                    },
-                    Page::Settings => self.tabbar_bait_points.3 = false,
+                    Page::Settings => self.tabbar_bait_points.2 = false,
                     _ => (),
-                }
-
-                // Change the display of the Mastodon iframe when the user switches on or off the Mastodon page
-                if matches!(self.page, Page::Mastodon) && !matches!(page, Page::Mastodon) { // off
-                    self.iframe.set_attribute("style", "display: none").unwrap();
-                } else if !matches!(self.page, Page::Mastodon) && matches!(page, Page::Mastodon)  { // on
-                    self.iframe.remove_attribute("style").unwrap();
                 }
 
                 // FIXME TODO
@@ -237,15 +219,6 @@ impl Component for App {
                 let local_storage = window().local_storage().unwrap().unwrap();
                 let _ = local_storage.set("seen_comment_counts", &serde_json::to_string(&self.seen_comment_counts.deref()).unwrap());
                 true
-            },
-            AppMsg::MastodonNotification => {
-                if matches!(self.page, Page::Mastodon) {
-                    mastodon_mark_all_seen();
-                    false
-                } else {
-                    self.tabbar_bait_points.2 = true;
-                    true
-                }
             },
             AppMsg::UpdateColor { summary, color } => {
                 let to_publish = vec!((summary.clone(), color.clone()));
@@ -327,9 +300,6 @@ impl Component for App {
             Page::Stotra => html!(<>
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
                 <iframe src={STOTRA_URL} id="stotra-iframe"></iframe>
-            </>),
-            Page::Mastodon => html!(<>
-                <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
             </>),
             Page::Settings => html!(<>
                 <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />

@@ -1,0 +1,23 @@
+/* Stotra iframe */
+
+#stotra-iframe {
+    background-color: white;
+    width: calc(100% - 4rem);
+    height: 100%;
+    border: none;
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 4rem;
+}
+
+/* For mobile */
+
+@media screen and (max-width: 1000px) {
+    #stotra-iframe {
+        width: 100%;
+        left: 0;
+        height: calc(100% - 4rem);
+        background-color: white;
+    }
+}
