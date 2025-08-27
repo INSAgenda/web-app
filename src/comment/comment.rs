@@ -132,7 +132,7 @@ impl Component for CommentComp {
                     ctx.props().popup_link.send_message(PopupMsg::AppMsg(AppMsg::SetPage(Page::Rick)));
                     return false;
                 }
-                let url_to_open = format!("mailto:simon.girard@insa-rouen.fr?subject=Report%20de%20commentaire%20({})", ctx.props().cid);
+                let url_to_open = format!("mailto:simon@dera.page?subject=Report%20de%20commentaire%20({})", ctx.props().cid);
                 web_sys::window().unwrap().open_with_url(&url_to_open).unwrap();
             }
             CommentMsg::Delete => {
