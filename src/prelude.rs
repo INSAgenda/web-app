@@ -1,5 +1,5 @@
 pub use crate::{
-    agenda::*, alert::*, api::*, app::*, calendar::*, checkbox::*, comment::*, event::*,
+    agenda::*, alert::*, api::*, app::*, calendar::*, checkbox::*, flag::*, comment::*, event::*,
     friends::*, glider_selector::*, log, pages::*, popup::Popup, popup::*, settings::*, tabbar::*,
     translation::*, util::*,
 };

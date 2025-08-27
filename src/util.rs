@@ -1,4 +1,3 @@
-use wasm_bindgen::JsCast;
 use web_sys::*;
 use crate::prelude::*;
 
