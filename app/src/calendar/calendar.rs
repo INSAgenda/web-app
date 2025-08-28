@@ -172,7 +172,7 @@ impl Component for Calendar {
         let (display_month, other_calendar_day) = match SETTINGS.calendar() {
             CalendarKind::Gregorian => {(
                 gregorian_display_month,
-                format!("{} {} an {}", selected_republican.day(), selected_republican.month(), selected_republican.year())
+                format!("{} {} {}", selected_republican.day(), selected_republican.month(), selected_republican.year())
             )}
             CalendarKind::Republican => {(
                 format!("{} {}", selected_republican.month(), selected_republican.year()),
