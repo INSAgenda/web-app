@@ -1,13 +1,5 @@
 /* Colors */
 
-:root {
-    --border-color: #aaa;
-}
-
-:root[data-theme="dark"], :root[data-theme="insarcade"] {
-    --border-color: #666;
-}
-
 html, body, #render {
     height: 100%;
 }
