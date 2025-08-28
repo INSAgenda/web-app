@@ -4,11 +4,9 @@
     <url>
     <loc>https://genda.dera.page/</loc>
         <priority>1.00</priority>
-        <changefreq>weekly</changefreq>
     </url>
     <url>
         <loc>https://genda.dera.page/agenda</loc>
         <priority>0.5</priority>
-        <changefreq>monthly</changefreq>
     </url>
 </urlset>
