@@ -72,7 +72,7 @@
     left: 0;
     width: 24.5rem;
     margin: 0 calc((100% - 24.5rem) / 2);
-    background-color: var(--closer-background);
+    background-color: var(--closest-background);
     padding-bottom: .5rem;
     border-radius: 0 0 1rem 1rem;
 }

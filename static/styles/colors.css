@@ -1,7 +1,6 @@
 /* Colors */
 
 :root {
-    /* All colors */
     --primary: #DC6ACF;
     --light-text: #F7F2F6;
     --dark-text: #262126;
@@ -11,19 +10,29 @@
     --medium-light: #EBEAEA;
     --error-red: #f44336;
 
-    /* home page colors */
     --light-gray: #AEABAE;
     --background: var(--medium-light);
     --closer-background: var(--light);
-    --text: var(--dark-text);
     --day: var(--light);
+    --closest-background: var(--light);
+    --text: var(--dark-text);
+    --border-color: #aaa;
 }
 
 /* Dark-thème */
 
 :root[data-theme="dark"] {
-    --background: var(--dark);
-    --closer-background: var(--medium-dark);
+    --background-100: #241b22;
+    --background-200: #393037;
+    --background-300: #4e464c;
+    --background-400: #655e63;
+    --background-500: #7d777b;
+    --background-600: #969094;
+
+    --background: var(--background-100);
+    --closer-background: var(--background-200);
+    --day: var(--background-300);
+    --closest-background: var(--background-400);
     --text: var(--light-text);
-    --day: #272627;
+    --border-color: var(--background-500);
 }
