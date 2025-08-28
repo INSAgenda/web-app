@@ -43,8 +43,9 @@ function display_quote() {
     }, 8600);
 }
 
+// Define the trunk initializer
 let interval = null;
-export default function myInitializer () {
+export default function myInitializer() {
     return {
         onStart: () => {
             waiting_screen.style.opacity = "1";
@@ -54,7 +55,7 @@ export default function myInitializer () {
                 interval = setInterval(display_quote, 9000);
             }, 2000);
         },
-        onProgress: ({current, total}) => {
+        onProgress: ({ current, total }) => {
             if (total === 0) {
                 lds_ring.style.display = "block";
                 lds_bar.style.display = "none";
