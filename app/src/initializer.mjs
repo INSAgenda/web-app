@@ -12,16 +12,16 @@ const quotes = [
         author: "Edward Snowden"
     },
     {
-        text: "Piètre disciple qui ne dépasse pas son maître.",
-        author: "Léonard de Vinci"
-    },
-    {
         text: "FTX va bien.",
         author: "SBF"
     },
     {
         text: "The missile knows where it is at all times. It knows this because it knows where it isn't.",
         author: "1997 Air Force"
+    },
+    {
+        text: "Je pensais que la bibliothèque donnait ce mot de passe sur demande.",
+        author: "M. Vasseur"
     }
 ];
 
