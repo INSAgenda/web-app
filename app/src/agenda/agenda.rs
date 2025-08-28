@@ -1,5 +1,5 @@
-use std::collections::BTreeSet;
 use crate::{prelude::*, slider};
+use std::collections::BTreeSet;
 
 fn format_day(day_name: Weekday, day: u32) -> String {
     let day_name = t(match day_name {
@@ -290,11 +290,32 @@ impl Component for Agenda {
                     { day_name }
                 </span>
             });
-            days.push(html! {
-                <div class="day" id={format!("day{d}")} style={day_style}>
-                    { event_comps }
-                </div>
-            });
+
+            const MOBILISATION: NaiveDate = NaiveDate::from_ymd_opt(2025, 9, 10).unwrap();
+            if current_day == MOBILISATION {
+                days.push(html! {
+                    <div class="day appel-mobilisation" id={format!("day{d}")} style={day_style}>
+                        <div class="margin"></div>
+                        <h2>{"Appel à la Mobilisation Nationale"}</h2>
+                        <p>
+                            {"Rejoignez le mouvement pour un arrêt total du pays dès le "}
+                            <strong>{"10 Septembre 2025"}</strong>
+                            {", une action pacifique pour dénoncer les injustices et reprendre le pouvoir collectivement."}<br/><br/>
+                            {"Stop à l'austérité Bayrou ! Le gouvernement sacrifie nos droits : deux jours fériés supprimés, coupes massives dans la santé, gel des retraites, suppression de milliers de postes publics... "}
+                            {"Ce plan injuste frappe les plus fragiles et détruit nos services essentiels. Une autre politique est possible : solidaire, juste, et humaine."}<br/><br/>
+                            <strong>{"Mobilisons-nous !"}</strong><br/><br/>
+                        </p>
+                        <a href="https://10s25.fr">{"Nous rejoindre"}</a>
+                        <div class="margin"></div>
+                    </div>
+                });
+            } else {
+                days.push(html! {
+                    <div class="day" id={format!("day{d}")} style={day_style}>
+                        { event_comps }
+                    </div>
+                });
+            }
 
             current_day += chrono::Duration::days(1);
         }
