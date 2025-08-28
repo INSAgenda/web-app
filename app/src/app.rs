@@ -133,7 +133,7 @@ impl Component for App {
             },
             AppMsg::ScheduleSuccess(events) => {
                 if events.len() <= 25 {
-                    alert_no_reporting("Votre agenda semble quasiment vide. Cochez bien tous vos groupes dans les paramètres.");
+                    alert("Votre agenda semble quasiment vide. Cochez bien tous vos groupes dans les paramètres.");
                 }
                 self.events = Rc::new(events);
                 matches!(self.page, Page::Agenda | Page::Event { .. })

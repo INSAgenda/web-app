@@ -107,7 +107,6 @@ impl CachedData for UserInfo {
     fn on_load(result: Result<Self, ApiError>, app_link: Scope<App>) {
         match result {
             Ok(user_info) => {
-                set_sentry_user_info(&user_info.email.0);
                 app_link.send_message(AppMsg::UserInfoSuccess(user_info))
             },
             Err(e) => app_link.send_message(AppMsg::ApiFailure(e)),

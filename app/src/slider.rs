@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{alert::alert, prelude::*};
 
 pub fn width() -> usize {
     window().inner_width().unwrap().as_f64().unwrap() as usize
@@ -52,7 +52,7 @@ impl SliderManager {
             let mut slider = match slider2.try_borrow_mut() {
                 Ok(slider) => slider,
                 Err(_) => {
-                    sentry_report("Slider could not be mutably borrowed");
+                    alert("Slider could not be mutably borrowed");
                     return
                 },
             };
@@ -91,7 +91,7 @@ impl SliderManager {
             let mut slider = match slider2.try_borrow_mut() {
                 Ok(slider) => slider,
                 Err(_) => {
-                    sentry_report("Slider could not be mutably borrowed");
+                    alert("Slider could not be mutably borrowed");
                     return
                 },
             };
@@ -107,7 +107,7 @@ impl SliderManager {
             let mut slider = match slider2.try_borrow_mut() {
                 Ok(slider) => slider,
                 Err(_) => {
-                    sentry_report("Slider could not be mutably borrowed");
+                    alert("Slider could not be mutably borrowed");
                     return
                 },
             };
@@ -133,7 +133,7 @@ impl SliderManager {
                         window().request_animation_frame((*move_animation2).as_ref().unchecked_ref()).unwrap();
                     }
                 },
-                Err(_) => sentry_report("Can't borrow slider."),
+                Err(_) => alert("Can't borrow slider."),
             }
         }) as Box<dyn FnMut(_)>);
         w.add_event_listener_with_callback("mousemove", mouse_move.as_ref().unchecked_ref()).unwrap();
