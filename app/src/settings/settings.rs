@@ -471,7 +471,7 @@ impl Component for SettingsPage {
                 on_change = { ctx.link().callback(Msg::CalendarChange) }
                 selected = { SETTINGS.calendar() as usize } />
         };
-        let token = if let Some(user_info) = ctx.props().user_info.as_ref() { user_info.token.clone() } else { "".to_string() };
+        let token = if let Some(user_info) = ctx.props().user_info.as_ref() { user_info.token.clone() } else { String::new() };
 
         // Build ICS absolute URL
         let location = window().location();
