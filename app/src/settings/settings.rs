@@ -243,6 +243,8 @@ pub enum Msg {
     LogOut,
     LanguageChange(usize),
     CalendarChange(usize),
+    RegenerateToken,
+    CopyIcs,
     GroupListToggle,
 }
 
@@ -298,7 +300,7 @@ impl Component for SettingsPage {
                     let document = window().doc();
                     let mut groups = Groups::new();
                     for (i, group) in shown_groups.iter().enumerate() {
-                        let Some(el) = document.get_element_by_id(&format!("group-radio-{}", i)) else {continue};
+                        let Some(el) = document.get_element_by_id(&format!("group-radio-{i}")) else {continue};
                         let el = el.dyn_into::<HtmlInputElement>().unwrap();
                         if el.checked() {
                             groups.insert(group);
@@ -312,7 +314,7 @@ impl Component for SettingsPage {
                         wasm_bindgen_futures::spawn_local(async move {
                             match api_post(groups.clone(), "set-groups").await {
                                 Ok(()) => app_link.send_message(AppMsg::UserInfoSuccess(UserInfo {groups, ..user_info})),
-                                Err(e) => alert(format!("Impossible de mettre à jour les groupes : {}", e)),
+                                Err(e) => alert(format!("Impossible de mettre à jour les groupes : {e}")),
                             }
                         })
                     }
@@ -398,6 +400,45 @@ impl Component for SettingsPage {
                 self.group_list_expanded = !self.group_list_expanded;
                 true
             }
+            Msg::RegenerateToken => {
+                let app_link = ctx.props().app_link.clone();
+                wasm_bindgen_futures::spawn_local(async move {
+                    if let Err(e) = api_post::<()>((), "regenerate-token").await {
+                        alert(format!("Impossible de régénérer le token : {e}"));
+                    } else {
+                        // Force refresh of user info to update token
+                        <UserInfo as CachedData>::refresh(app_link);
+                    }
+                });
+                true
+            }
+            Msg::CopyIcs => {
+                let document = window().doc();
+                let value = document
+                    .get_element_by_id("ics-url")
+                    .and_then(|e| e.dyn_into::<HtmlInputElement>().ok())
+                    .map(|i| i.value())
+                    .unwrap_or_default();
+
+                // We could use web-sys clipboard API but we are afraid it might panic on unsupported browsers. Could be changed in 2026
+                let nav = window().navigator();
+                if let Ok(clipboard) = Reflect::get(&nav, &JsValue::from_str("clipboard")) {
+                    if let Ok(write_text) = Reflect::get(&clipboard, &JsValue::from_str("writeText")) {
+                        if let Ok(f) = write_text.dyn_into::<js_sys::Function>() {
+                            let _ = f.call1(&clipboard, &JsValue::from_str(&value));
+                            return false;
+                        }
+                    }
+                }
+
+                // Fallback: select text so user can Cmd+C
+                if let Some(input) = document.get_element_by_id("ics-url") {
+                    if let Ok(input) = input.dyn_into::<HtmlInputElement>() {
+                        input.select();
+                    }
+                }
+                false
+            }
         }
     }
 
@@ -431,6 +472,12 @@ impl Component for SettingsPage {
                 on_change = { ctx.link().callback(Msg::CalendarChange) }
                 selected = { SETTINGS.calendar() as usize } />
         };
+        let token = if let Some(user_info) = ctx.props().user_info.as_ref() { user_info.token.clone() } else { String::new() };
+
+        // Build ICS absolute URL
+        let location = window().location();
+        let origin = location.origin().unwrap_or_else(|_| "".into());
+        let ics_url = if token.is_empty() { String::new() } else { format!("{origin}/api/ics?token={token}") };
 
         template_html!(
             "src/settings/settings.html",
@@ -440,6 +487,8 @@ impl Component for SettingsPage {
             onclick_delete = {ctx.link().callback(move |_| Msg::Delete)},
             onclick_cancel = {ctx.link().callback(move |_| Msg::Cancel)},
             onclick_group_list_toggle = {ctx.link().callback(|_| Msg::GroupListToggle)},
+            onclick_copy_ics = {ctx.link().callback(|_| Msg::CopyIcs)},
+            onclick_regenerate_token = {ctx.link().callback(|_| Msg::RegenerateToken)},
             republican = {SETTINGS.calendar() == CalendarKind::Republican},
             ...
         )

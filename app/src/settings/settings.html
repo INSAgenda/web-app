@@ -32,6 +32,16 @@
                         <div present-if=!{{group_list_expanded}} id="group-list-toggle" onclick={{onclick_group_list_toggle}}>Afficher tout</div>
                         <div present-if={{group_list_expanded}} id="group-list-toggle" onclick={{onclick_group_list_toggle}}>Afficher recommendations</div>
                     </div>
+
+                    <div class="ics-section">
+                        <h4>Abonnement calendrier (ICS)</h4>
+                        <p>Abonnez votre agenda (Google, Apple, Outlook…) avec ce lien sécurisé.</p>
+                        <div class="ics-row">
+                            <input id="ics-url" type="text" readonly value="{{ics_url}}" />
+                            <div class="tiny-button" onclick={{onclick_copy_ics}}>Copier</div>
+                            <div class="tiny-button outline" onclick={{onclick_regenerate_token}}>Régénérer</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
