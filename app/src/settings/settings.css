@@ -106,6 +106,45 @@
     margin: 1rem 0;
 }
 
+/* ICS subscription */
+.ics-section {
+    margin-top: 1rem;
+}
+
+.ics-row {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+}
+
+.ics-row input#ics-url {
+    flex: 1 1 auto;
+    padding: .4rem .6rem;
+    border: 1px solid var(--closer-background);
+    background: var(--background);
+    color: var(--text);
+    border-radius: .35rem;
+    font-family: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: .95rem;
+}
+
+.tiny-button {
+    all: unset;
+    background: var(--primary);
+    color: white;
+    padding: .35rem .6rem;
+    border-radius: .3rem;
+    cursor: pointer;
+    font-size: .9rem;
+}
+
+.tiny-button.outline {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+
 /* Buttons */
 
 #settings-main .primary-button, #settings-main .secondary-button {
