@@ -490,8 +490,6 @@ impl Component for SettingsPage {
             onclick_copy_ics = {ctx.link().callback(|_| Msg::CopyIcs)},
             onclick_regenerate_token = {ctx.link().callback(|_| Msg::RegenerateToken)},
             republican = {SETTINGS.calendar() == CalendarKind::Republican},
-            ics_url = {ics_url},
-            ics_open_url = {ics_open_url},
             ...
         )
     }
