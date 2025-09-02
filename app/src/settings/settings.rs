@@ -420,6 +420,7 @@ impl Component for SettingsPage {
                     .map(|i| i.value())
                     .unwrap_or_default();
 
+                // We could use web-sys clipboard API but we are afraid it might panic on unsupported browsers. Could be changed in 2026
                 let nav = window().navigator();
                 if let Ok(clipboard) = Reflect::get(&nav, &JsValue::from_str("clipboard")) {
                     if let Ok(write_text) = Reflect::get(&clipboard, &JsValue::from_str("writeText")) {
