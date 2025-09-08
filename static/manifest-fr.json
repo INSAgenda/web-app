@@ -2,8 +2,8 @@
     "lang": "fr-FR",
     "name": "Genda",
     "short_name": "Genda",
-    "start_url": "/agenda?ref=pwa",
-    "scope": "/agenda",
+    "start_url": "https://genda.dera.page/agenda?ref=pwa",
+    "scope": "https://genda.dera.page/agenda",
     "background_color": "#1A1A1B",
     "theme_color": "#CB6CE6",
     "categories": ["education", "news", "productivity", "utilities", "social"],
@@ -71,12 +71,17 @@
     "shortcuts": [
         {
             "name": "Agenda",
-            "url": "/agenda?ref=pwa",
+            "url": "https://genda.dera.page/agenda?ref=pwa",
             "description": "Voir les cours d'aujourd'hui"
         },
         {
+            "name": "Stotra",
+            "url": "https://genda.dera.page/stotra?ref=pwa",
+            "description": "Simulez vos choix d'investissements face aux autres"
+        },
+        {
             "name": "Paramètres",
-            "url": "/settings?ref=pwa",
+            "url": "https://genda.dera.page/settings?ref=pwa",
             "description": "Ouvrir les paramètres"
         }
     ]
