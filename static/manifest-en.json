@@ -3,7 +3,7 @@
     "name": "Genda",
     "short_name": "Genda",
     "start_url": "https://genda.dera.page/agenda?ref=pwa",
-    "scope": "https://genda.dera.page/agenda",
+    "scope": "https://genda.dera.page/",
     "background_color": "#1A1A1B",
     "theme_color": "#CB6CE6",
     "categories": ["education", "news", "productivity", "utilities", "social"],
