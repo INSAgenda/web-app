@@ -21,4 +21,7 @@ pub struct UserInfo {
     pub token: String,
     /// Uid
     pub uid: i64,
+    /// Whether the user has onboarded
+    #[serde(default)]
+    pub onboarded: bool,
 }
