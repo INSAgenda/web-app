@@ -20,6 +20,10 @@ pub struct Event {
     pub end_unixtime: u64,
     #[serde(default)]
     pub eid: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub links: Vec<String>,
 }
 
 impl PartialOrd for Event {
