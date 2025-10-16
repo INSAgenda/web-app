@@ -54,9 +54,10 @@ impl Component for OnboardingPage {
     type Message = Msg;
     type Properties = OnboardingProps;
 
-    fn create(_ctx: &Context<Self>) -> Self {
+    fn create(ctx: &Context<Self>) -> Self {
+        let (_, _, shown_groups) = get_groups(ctx, false);
         Self {
-            group_list_expanded: false,
+            group_list_expanded: shown_groups.is_empty()
         }
     }
 
@@ -117,7 +118,6 @@ impl Component for OnboardingPage {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let (official_groups, selected_groups, shown_groups) = get_groups(ctx, self.group_list_expanded);
-        log!("shown: {:?}", shown_groups.len());
 
         // Produce iterators for the template
         let group_radio_i_iter = (0..shown_groups.len()).map(|i| i.to_string());
