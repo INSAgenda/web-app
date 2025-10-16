@@ -17,9 +17,6 @@ pub struct UserInfo {
     pub available_groups: Groups,
     /// Last colors modification timestamp.
     pub last_colors_mod: i64,
-    /// has password
-    #[serde(default)]
-    pub has_password: bool,
     /// ICS Token
     pub token: String,
     /// Uid
