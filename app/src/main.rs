@@ -24,6 +24,8 @@ mod comment;
 mod stotra;
 #[path = "flag/flag.rs"]
 mod flag;
+#[path = "onboarding/onboarding.rs"]
+mod onboarding;
 
 mod app;
 mod util;

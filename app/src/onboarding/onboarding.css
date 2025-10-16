@@ -1,0 +1,41 @@
+#onboarding-main {
+    height: calc(100% - 4rem);
+    padding: 2rem;
+    box-sizing: border-box;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#onboarding-main>section {
+    margin-bottom: 1rem;
+}
+
+#onboarding-main>section>p {
+    margin: .5rem 0;
+}
+
+/* Group checkboxes */
+
+#onboarding-group-list .checkbox {
+    margin: 0.2rem 0;
+}
+
+#onboarding-group-list .group-radio-official {
+    opacity: 0.5;
+    font-size: .85rem;
+}
+
+#group-list-toggle {
+    all: unset;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    cursor: pointer;
+    padding: 0.3rem;
+    padding-bottom: 0.2rem;
+    font-size: .9rem;
+    border-radius: 0.3rem;
+    display: block;
+    width: fit-content;
+}

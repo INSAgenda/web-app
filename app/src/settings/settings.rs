@@ -1,4 +1,4 @@
-use std::{sync::atomic::AtomicBool, collections::HashSet};
+use std::sync::atomic::AtomicBool;
 use crate::prelude::*;
 
 fn random_theme() -> Theme {
@@ -9,33 +9,6 @@ fn random_theme() -> Theme {
     } else {
         Theme::MoyenInsage
     }
-}
-
-fn get_groups(ctx: &Context<SettingsPage>, group_list_expanded: bool) -> (Groups, Groups, Vec<String>) {
-    // Compute variable messages
-    let mut official_groups = Groups::new();
-    let mut selected_groups = Groups::new();
-    let mut available_groups = Vec::new();
-    if let Some(user_info) = ctx.props().user_info.as_ref() {
-        official_groups = user_info.official_groups.clone();
-        selected_groups = user_info.groups.clone();
-        available_groups = user_info.available_groups.groups().iter().cloned().collect::<Vec<_>>();
-        available_groups.sort();
-    }
-
-    // If the group list is not expanded, only show recommended groups
-    let mut shown_groups = available_groups;
-    if !group_list_expanded {
-        let recommended_prefixes = selected_groups
-            .groups()
-            .iter()
-            .chain(official_groups.groups().iter())
-            .map(|g| g.split('-').next().unwrap_or(g))
-            .collect::<HashSet<_>>();
-        shown_groups.retain(|g| recommended_prefixes.iter().any(|p| g.starts_with(p)));
-    }
-
-    (official_groups, selected_groups, shown_groups)
 }
 
 lazy_static::lazy_static!{
@@ -245,7 +218,7 @@ pub enum Msg {
     CalendarChange(usize),
     RegenerateToken,
     CopyIcs,
-    GroupListToggle,
+    OpenOnboarding,
 }
 
 #[derive(Properties, Clone)]
@@ -262,23 +235,13 @@ impl PartialEq for SettingsProps {
 
 pub struct SettingsPage {
     clone_storage: SettingStore,
-    group_list_expanded: bool,
 }
 
 impl Component for SettingsPage {
     type Message = Msg;
     type Properties = SettingsProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
-        let mut group_list_expanded = false;
-        if let Some(user_info) = ctx.props().user_info.as_ref() {
-            let selected_groups_count = user_info.groups.groups().len();
-            let official_groups_count = user_info.official_groups.groups().len();
-            if selected_groups_count + official_groups_count == 0 {
-                group_list_expanded = true;
-            }
-        }
-
+    fn create(_ctx: &Context<Self>) -> Self {
         Self {
             clone_storage: SettingStore {
                 theme: AtomicUsize::new(SETTINGS.theme.load(Ordering::Relaxed)),
@@ -286,40 +249,12 @@ impl Component for SettingsPage {
                 lang: AtomicUsize::new(SETTINGS.lang.load(Ordering::Relaxed)),
                 calendar: AtomicUsize::new(SETTINGS.calendar.load(Ordering::Relaxed)),
             },
-            group_list_expanded,
         }
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::Confirm => {
-                if let Some(user_info) = ctx.props().user_info.as_ref() {
-                    let (_, _, shown_groups) = get_groups(ctx, self.group_list_expanded);
-
-                    // Get the groups selected by the user
-                    let document = window().doc();
-                    let mut groups = Groups::new();
-                    for (i, group) in shown_groups.iter().enumerate() {
-                        let Some(el) = document.get_element_by_id(&format!("group-radio-{i}")) else {continue};
-                        let el = el.dyn_into::<HtmlInputElement>().unwrap();
-                        if el.checked() {
-                            groups.insert(group);
-                        }
-                    }
-                    
-                    // Update the groups both in backend and frontend
-                    if groups != user_info.groups {
-                        let app_link = ctx.props().app_link.clone();
-                        let user_info = user_info.clone();
-                        wasm_bindgen_futures::spawn_local(async move {
-                            match api_post(groups.clone(), "set-groups").await {
-                                Ok(()) => app_link.send_message(AppMsg::UserInfoSuccess(UserInfo {groups, ..user_info})),
-                                Err(e) => alert(format!("Impossible de mettre à jour les groupes : {e}")),
-                            }
-                        })
-                    }
-                }
-
                 ctx.props().app_link.send_message(AppMsg::SetPage(Page::Agenda));
                 false
             }
@@ -396,10 +331,6 @@ impl Component for SettingsPage {
                 SETTINGS.set_calendar(v);
                 true
             }
-            Msg::GroupListToggle => {
-                self.group_list_expanded = !self.group_list_expanded;
-                true
-            }
             Msg::RegenerateToken => {
                 let app_link = ctx.props().app_link.clone();
                 wasm_bindgen_futures::spawn_local(async move {
@@ -439,21 +370,14 @@ impl Component for SettingsPage {
                 }
                 false
             }
+            Msg::OpenOnboarding => {
+                ctx.props().app_link.send_message(AppMsg::SetPage(Page::Onboarding));
+                false
+            }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let (official_groups, selected_groups, shown_groups) = get_groups(ctx, self.group_list_expanded);
-
-        // Produce iterators for the template
-        let group_radio_i_iter = (0..shown_groups.len()).map(|i| i.to_string());
-        let group_radio_i2_iter = group_radio_i_iter.clone();
-        let group_radio_i3_iter = group_radio_i_iter.clone();
-        let group_radio_label_iter = shown_groups.iter().cloned();
-        let group_radio_official_iter = shown_groups.iter().map(|g| if official_groups.groups().contains(g) {"(officiel)"} else {""});
-        let group_radio_checked_iter = shown_groups.iter().map(|g| selected_groups.groups().contains(g));
-        let group_list_expanded = self.group_list_expanded;
-
         let theme_glider_selector = html! {
             <GliderSelector
                 values = { vec![t("Sombre"), t("Clair"), t("Système"), "Ins'arcade", "Moyen InsAge", "Aléatoire"] }
@@ -484,11 +408,10 @@ impl Component for SettingsPage {
             onclick_rick = {ctx.props().app_link.callback(|_| AppMsg::SetPage(Page::Rick))},
             onclick_logout = {ctx.link().callback(move |_| Msg::LogOut)},
             onclick_confirm = {ctx.link().callback(move |_| Msg::Confirm)},
-            onclick_delete = {ctx.link().callback(move |_| Msg::Delete)},
             onclick_cancel = {ctx.link().callback(move |_| Msg::Cancel)},
-            onclick_group_list_toggle = {ctx.link().callback(|_| Msg::GroupListToggle)},
             onclick_copy_ics = {ctx.link().callback(|_| Msg::CopyIcs)},
             onclick_regenerate_token = {ctx.link().callback(|_| Msg::RegenerateToken)},
+            onclick_open_onboarding = {ctx.link().callback(|_| Msg::OpenOnboarding)},
             republican = {SETTINGS.calendar() == CalendarKind::Republican},
             ...
         )

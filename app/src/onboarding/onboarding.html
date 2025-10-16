@@ -1,0 +1,37 @@
+<header id="header">
+    <div id="header-logo">
+        <img src="/assets/logo/logo.svg" alt="Genda logo"/> 
+        <h1 id="header-name">Genda</h1>
+    </div>
+</header>
+<main id="onboarding-main">
+    <section id="welcome-section">
+        <h2>Bienvenue sur Genda&nbsp;!</h2>
+        <p class="welcome-text">
+            Pour commencer, sélectionnez les groupes dont vous suivez les cours.
+        </p>
+    </section>
+
+    <section id="groups-section">
+        <h3>Sélection des groupes</h3>
+        <p class="groups-description">
+            Cochez les groupes dont vous suivez les cours. Les groupes marqués "officiel" proviennent du secrétariat. Nous essayons de vous recommander les groupes les plus pertinents, mais sachez que nos recommandations sont limitées par un nommage parfois fantaisiste (notamment pour les humanités), et que vous pourriez devoir chercher parmi la liste complète.
+        </p>
+        
+        <div id="onboarding-group-list">
+            <div iter class="checkbox">
+                <input type="checkbox" id="onboarding-group-radio-{{group_radio_i_iter}}" checked={{group_radio_checked_iter}} />
+                <label for="onboarding-group-radio-{{group_radio_i2_iter}}" class="checkbox-box"></label>
+                <label for="onboarding-group-radio-{{group_radio_i3_iter}}">{{group_radio_label_iter}}&nbsp;<span class="group-radio-official">{{group_radio_official_iter}}</span></label>
+            </div>
+
+            <div present-if=!{{group_list_expanded}} id="group-list-toggle" onclick={{onclick_group_list_toggle}}>Afficher tous les groupes</div>
+            <div present-if={{group_list_expanded}} id="group-list-toggle" onclick={{onclick_group_list_toggle}}>Afficher les recommandations</div>
+        </div>
+    </section>
+
+    <div id="onboarding-actions">
+        <div class="primary-button" onclick={{onclick_complete}}>Confirmer et commencer</div>
+        <div class="secondary-button" onclick={{onclick_skip}}>Passer cette étape</div>
+    </div>
+</main>

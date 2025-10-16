@@ -1,6 +1,6 @@
 use crate::stotra::STOTRA_URL;
 use yew::virtual_dom::VNode;
-use crate::{prelude::*, settings::SettingsPage};
+use crate::{prelude::*, settings::SettingsPage, onboarding::OnboardingPage};
 
 /// A message that can be sent to the `App` component.
 pub enum AppMsg {
@@ -152,9 +152,14 @@ impl Component for App {
 
                 // Set new user info
                 user_info.save();
-                self.user_info = Rc::new(Some(user_info));
+                self.user_info = Rc::new(Some(user_info.clone()));
 
-                should_refresh || matches!(self.page, Page::Settings)
+                // Check if user needs onboarding
+                if !user_info.onboarded && !matches!(self.page, Page::Onboarding) {
+                    ctx.link().send_message(AppMsg::SetPage(Page::Onboarding));
+                }
+
+                should_refresh || matches!(self.page, Page::Settings | Page::Onboarding)
             },
             AppMsg::CommentCountsSuccess(comment_counts) => {
                 self.comment_counts = Rc::new(comment_counts);
@@ -304,6 +309,9 @@ impl Component for App {
             Page::Settings => html!(<>
                 <SettingsPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
                 <TabBar app_link={ctx.link()} page={self.page.clone()} bait_points={self.tabbar_bait_points} />
+            </>),
+            Page::Onboarding => html!(<>
+                <OnboardingPage app_link={ ctx.link().clone() } user_info={Rc::clone(&self.user_info)} />
             </>),
             Page::Rick => {
                 let random = js_sys::Math::random();
