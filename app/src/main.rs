@@ -14,8 +14,6 @@ mod calendar;
 mod crash_handler;
 #[path ="popup/popup.rs"]
 mod popup;
-#[path = "checkbox/checkbox.rs"]
-mod checkbox;
 #[path = "tabbar/tabbar.rs"]
 mod tabbar;
 #[path = "friends/friends.rs"]
