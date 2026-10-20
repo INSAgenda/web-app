@@ -1,5 +1,6 @@
 .appel-mobilisation {
-    background-color: #fce34a;
+    background-color: #b91c1c;
+    color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -11,7 +12,15 @@
 }
 
 .appel-mobilisation h2 {
-    font-size: 2rem;
+    background-color: #171717;
+    color: #fff;
+    padding: 0.5rem 0.75rem;
+    margin-inline: 1rem;
+    font-family: Impact, "Arial Narrow", sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     text-align: center;
 }
@@ -21,17 +30,29 @@
     margin-inline: 1rem;
     flex-shrink: 1;
     min-height: 0;
+    line-height: 1.5;
 }
 
 .appel-mobilisation a {
-    background-color: black;
-    color: #fce34a;
-    padding: 0.2rem 0.5rem;
+    background-color: #fff;
+    color: #171717;
+    border: 3px solid #171717;
+    box-shadow: 4px 4px 0 #171717;
+    padding: 0.5rem 0.75rem;
     margin-inline: 1rem;
     text-align: center;
     text-decoration: none;
-    font-size: 2rem;
-    border-radius: 4px;
+    font-size: 1.25rem;
     text-transform: uppercase;
     font-weight: bold;
+}
+
+.appel-mobilisation a:hover {
+    background-color: #171717;
+    color: #fff;
+}
+
+.appel-mobilisation a:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 4px;
 }
