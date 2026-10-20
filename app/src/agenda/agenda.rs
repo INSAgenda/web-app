@@ -303,7 +303,7 @@ impl Component for Agenda {
                             {"Nous soutenons ce mouvement pour réformer le système éducatif et abaisser le coût de la scolarité."}<br/><br/>
                             <strong>{"Rejoignez-nous sur place pour participer au blocus et faire vivre la mobilisation !"}</strong>
                         </p>
-                        <a href="https://chat.whatsapp.com/IE44NXRwBpD8U4UJJ3K4Tk?s=cl&p=a&mlu=4&ilr=4">{"Rejoindre le groupe WhatsApp"}</a>
+                        <a href="https://chat.whatsapp.com/GTmhqLvv7uCDyfmgphGHsP">{"Rejoindre le groupe WhatsApp"}</a>
                         <div class="margin"></div>
                     </div>
                 });
