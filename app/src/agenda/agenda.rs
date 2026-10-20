@@ -291,21 +291,19 @@ impl Component for Agenda {
                 </span>
             });
 
-            const MOBILISATION: NaiveDate = NaiveDate::from_ymd_opt(2025, 9, 10).unwrap();
-            if current_day == MOBILISATION {
+            const BLOCUS_START: NaiveDate = NaiveDate::from_ymd_opt(2026, 10, 21).unwrap();
+            const BLOCUS_END: NaiveDate = NaiveDate::from_ymd_opt(2026, 10, 23).unwrap();
+            if (BLOCUS_START..=BLOCUS_END).contains(&current_day) {
                 days.push(html! {
                     <div class="day appel-mobilisation" id={format!("day{d}")} style={day_style}>
                         <div class="margin"></div>
-                        <h2>{"Appel à la Mobilisation Nationale"}</h2>
+                        <h2>{"Blocus total"}</h2>
                         <p>
-                            {"Rejoignez le mouvement pour un arrêt total du pays dès le "}
-                            <strong>{"10 Septembre 2025"}</strong>
-                            {", une action pacifique pour dénoncer les injustices et reprendre le pouvoir collectivement."}<br/><br/>
-                            {"Stop à l'austérité Bayrou ! Le gouvernement sacrifie nos droits : deux jours fériés supprimés, coupes massives dans la santé, gel des retraites, suppression de milliers de postes publics... "}
-                            {"Ce plan injuste frappe les plus fragiles et détruit nos services essentiels. Une autre politique est possible : solidaire, juste, et humaine."}<br/><br/>
-                            <strong>{"Mobilisons-nous !"}</strong><br/><br/>
+                            {"Voté par les étudiants à l'AG, ce blocus s'inscrit dans le mouvement national de la jeunesse. "}
+                            {"Nous soutenons ce mouvement pour réformer le système éducatif et abaisser le coût de la scolarité."}<br/><br/>
+                            <strong>{"Rejoignez-nous sur place pour participer au blocus et faire vivre la mobilisation !"}</strong>
                         </p>
-                        <a href="https://10s25.fr">{"Nous rejoindre"}</a>
+                        <a href="https://chat.whatsapp.com/IE44NXRwBpD8U4UJJ3K4Tk?s=cl&p=a&mlu=4&ilr=4">{"Rejoindre le groupe WhatsApp"}</a>
                         <div class="margin"></div>
                     </div>
                 });
