@@ -293,16 +293,24 @@ impl Component for Agenda {
 
             const BLOCUS_START: NaiveDate = NaiveDate::from_ymd_opt(2026, 10, 21).unwrap();
             const BLOCUS_END: NaiveDate = NaiveDate::from_ymd_opt(2026, 10, 23).unwrap();
-            if (BLOCUS_START..=BLOCUS_END).contains(&current_day) {
+            const BLOCUS_TOTAL: NaiveDate = NaiveDate::from_ymd_opt(2026, 11, 16).unwrap();
+            if (BLOCUS_START..=BLOCUS_END).contains(&current_day) || current_day == BLOCUS_TOTAL {
                 days.push(html! {
                     <div class="day appel-mobilisation" id={format!("day{d}")} style={day_style}>
                         <div class="margin"></div>
-                        <h2>{"Blocus total"}</h2>
+                        <h2>{if current_day == BLOCUS_TOTAL {"Blocus Total"} else {"Blocus total"}}</h2>
                         <p>
-                            {"Voté par les étudiants à l'AG, ce blocus s'inscrit dans le mouvement national de la jeunesse. "}
-                            {"Nous soutenons ce mouvement pour réformer le système éducatif et abaisser le coût de la scolarité."}<br/><br/>
-                            <strong>{"Rejoignez-nous sur place pour participer au blocus et faire vivre la mobilisation !"}</strong>
+                            if current_day == BLOCUS_TOTAL {
+                                {"Le CoDir ayant décliné l'invitation à signer la tribune du collectif, il apparaît que la suspension du blocus est suspendue."}
+                            } else {
+                                {"Voté par les étudiants à l'AG, ce blocus s'inscrit dans le mouvement national de la jeunesse. "}
+                                {"Nous soutenons ce mouvement pour réformer le système éducatif et abaisser le coût de la scolarité."}<br/><br/>
+                                <strong>{"Rejoignez-nous sur place pour participer au blocus et faire vivre la mobilisation !"}</strong>
+                            }
                         </p>
+                        if current_day == BLOCUS_TOTAL {
+                            <p>{"Toute aide est la bienvenue : venez sur place pour participer au blocus et contribuer à son organisation, même pour un court moment."}</p>
+                        }
                         <a href="https://chat.whatsapp.com/GTmhqLvv7uCDyfmgphGHsP">{"Rejoindre le groupe WhatsApp"}</a>
                         <div class="margin"></div>
                     </div>
